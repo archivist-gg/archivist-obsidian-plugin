@@ -234,3 +234,59 @@ describe("renderItemBlock — markdown description, base_item, cost", () => {
     expect(block.textContent ?? "").toContain("Bright 20 ft / Dim 40 ft");
   });
 });
+
+/**
+ * R4-G2 Task 2 (dual-repo half). dnd5e's `light` now has a SECOND arm: the
+ * converter's array of per-source entries keyed bright/dim/shape (97 entries over
+ * 81 docs), beside the object form {bright_radius, dim_radius} (173 carriers).
+ * The renderer reads both. The object arm's string is asserted EXACTLY, as a
+ * byte-stability control that is green on BOTH sides of the change; the array
+ * cases render "Bright undefined ft / Dim undefined ft" before the narrowing
+ * (vitest does not typecheck, so they are honestly red first, not merely
+ * uncompilable).
+ */
+describe("renderItemBlock — the two light spellings (R4-G2 §4)", () => {
+  /** The exact text of the "Light:" property value, or null when no Light line rendered. */
+  function lightValue(block: HTMLElement): string | null {
+    for (const line of Array.from(block.querySelectorAll(".archivist-property-line-icon"))) {
+      if (line.querySelector(".archivist-property-label")?.textContent === "Light:") {
+        return line.querySelector(".archivist-property-value")?.textContent ?? null;
+      }
+    }
+    return null;
+  }
+
+  it("CONTROL (green BOTH sides) · the OBJECT arm's string is byte-stable", async () => {
+    const item: ItemEntity = { name: "T", light: { bright_radius: 20, dim_radius: 40 } };
+    expect(lightValue(await renderItemBlock(item))).toBe("Bright 20 ft / Dim 40 ft");
+  });
+
+  it("array entry {dim} renders ONLY the dim part — no 'Bright undefined' (76 of 97 entries)", async () => {
+    const item: ItemEntity = { name: "T", light: [{ dim: 5 }] };
+    const block = await renderItemBlock(item);
+    expect(lightValue(block)).toBe("Dim 5 ft");
+    expect(block.textContent ?? "").not.toContain("undefined");
+  });
+
+  it("array entry {bright,dim,shape} renders all three, shape in parentheses (3 entries)", async () => {
+    const item: ItemEntity = { name: "T", light: [{ bright: 60, dim: 120, shape: "cone" }] };
+    expect(lightValue(await renderItemBlock(item))).toBe("Bright 60 ft / Dim 120 ft (cone)");
+  });
+
+  it("array entry {bright,shape} keeps the shape without a dim part (1 entry — Bullseye Lantern's family)", async () => {
+    const item: ItemEntity = { name: "T", light: [{ bright: 20, shape: "cone" }] };
+    expect(lightValue(await renderItemBlock(item))).toBe("Bright 20 ft (cone)");
+  });
+
+  it("TWO entries are joined with '; ' (Hooded Lantern)", async () => {
+    const item: ItemEntity = { name: "T", light: [{ bright: 30, dim: 60 }, { dim: 5 }] };
+    expect(lightValue(await renderItemBlock(item))).toBe("Bright 30 ft / Dim 60 ft; Dim 5 ft");
+  });
+
+  it("an entry with NO renderable radius is skipped, and an all-skipped array omits the Light line entirely", async () => {
+    const item: ItemEntity = { name: "T", light: [{ shape: "cone" }] };
+    const block = await renderItemBlock(item);
+    expect(lightValue(block)).toBeNull();
+    expect(block.textContent ?? "").not.toContain("Light:");
+  });
+});

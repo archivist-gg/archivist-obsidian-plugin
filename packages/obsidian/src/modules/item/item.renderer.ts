@@ -11,6 +11,34 @@ function capitalizeWords(str: string): string {
   return str.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/**
+ * `light` has two DIFFERENT spellings and they are never unified: the object form
+ * {bright_radius, dim_radius} (173 converter carriers) and the array of per-source
+ * entries keyed bright/dim/shape (97 entries over 81 docs, measured key-sets
+ * {dim} 76 · {bright,dim} 17 · {bright,dim,shape} 3 · {bright,shape} 1).
+ *
+ * The object arm's string is unchanged, byte for byte. An array entry renders only
+ * the fields it actually carries, so `undefined` can never reach the DOM; an entry
+ * with neither radius contributes nothing (defensive — no measured entry carries
+ * `shape` alone), and when nothing renders at all the caller omits the Light line
+ * rather than printing an empty one.
+ */
+function formatLight(light: NonNullable<ItemEntity["light"]>): string | null {
+  if (!Array.isArray(light)) {
+    return `Bright ${light.bright_radius} ft / Dim ${light.dim_radius} ft`;
+  }
+  const entries: string[] = [];
+  for (const entry of light) {
+    const parts: string[] = [];
+    if (typeof entry.bright === "number") parts.push(`Bright ${entry.bright} ft`);
+    if (typeof entry.dim === "number") parts.push(`Dim ${entry.dim} ft`);
+    if (parts.length === 0) continue;
+    const shape = typeof entry.shape === "string" && entry.shape.length > 0 ? ` (${entry.shape})` : "";
+    entries.push(`${parts.join(" / ")}${shape}`);
+  }
+  return entries.length > 0 ? entries.join("; ") : null;
+}
+
 function formatAttunement(attunement: Item["attunement"]): string {
   if (attunement === true) return "Required";
   if (typeof attunement === "string") return attunement;
@@ -150,7 +178,8 @@ export async function renderItemBlock(
     createIconProperty(props, "package", "Capacity:", ` ${item.container.capacity_weight} lb`);
   }
   if (item.light) {
-    createIconProperty(props, "lamp", "Light:", `Bright ${item.light.bright_radius} ft / Dim ${item.light.dim_radius} ft`);
+    const lightText = formatLight(item.light);
+    if (lightText !== null) createIconProperty(props, "lamp", "Light:", lightText);
   }
 
   // Tag chips
