@@ -8,7 +8,10 @@ import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared
 // `search("", type, ENUMERATE_LIMIT)` is the empty-query enumeration shim (see
 // browse-mode.ts collectCompendiumItems): the registry has no getAllByType, and
 // `name.includes("")` matches every entity of the type.
-const ENUMERATE_LIMIT = 10_000;
+//
+// INFINITE, not a number: a finite cap would drop identify candidates off the
+// end of a large bucket (item is already 7,834) with no signal to the user.
+const ENUMERATE_LIMIT = Number.POSITIVE_INFINITY;
 
 // The compendium entity types swept for identify candidates. Weapons and armor
 // are their own entity type; every other item category (potion/ring/wand/scroll/

@@ -7,7 +7,11 @@ import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared
 // `search("", "spell", ENUMERATE_LIMIT)` is the empty-query enumeration shim (see
 // browse-mode.ts collectCompendiumItems): the registry has no getAllByType, and
 // `name.includes("")` matches every entity of the type.
-const ENUMERATE_LIMIT = 10_000;
+//
+// INFINITE, not a number: the level/edition gates below run AFTER this call, so
+// a finite cap would silently hide matching scroll spells once the spell bucket
+// outgrows it.
+const ENUMERATE_LIMIT = Number.POSITIVE_INFINITY;
 
 /** A spell matches its scroll when it sits at the scroll's level AND shares the
  *  character's edition. An edition-less spell (homebrew) is kept so the picker

@@ -12,6 +12,7 @@ import { humanizeSlug, fixedGrantLines, fixedNamesFrom } from "../../../../share
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 const skillsOf = (e: RegisteredEntity): string[] =>
   (e.data as { skill_proficiencies?: string[] }).skill_proficiencies ?? [];
@@ -68,6 +69,10 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
   // The pinned ✦ Custom Background entry sits ABOVE the picker table: it opens a
   // parts builder that writes a real homebrew BackgroundEntity and selects it.
   renderCustomBackgroundRow(body, ctx);
+  // The engine seeds its bare-slug index from a total order; handing it the
+  // visibility predicate makes VISIBLE entities seed first, so a hidden
+  // compendium can never shadow a visible entity that shares a bare slug.
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
   renderEntityPicker(body, ctx, {
     entityType: "background",
     stateKey: "builder.background-picker",
@@ -84,7 +89,12 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
       // composes them on the restore pass (by then it IS the chosen background).
       const chosen = e.slug === stripSlug(ctx.resolved.definition.background);
       const d = e.data as BackgroundData;
-      const ledger = chosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities }) : null;
+      const ledger = chosen
+        ? buildDecisionLedger(ctx.resolved, {
+            registry: ctx.services.entities,
+            isEntityVisible: (en) => entityCompendiumVisible(en, hidden),
+          })
+        : null;
       const items = ledger?.origin.filter(isBackgroundStripItem) ?? [];
       // Shared lifted resolver (R2-m7): the SAME helper the resolver pipeline uses.
       const ofeat = chosen ? resolveOriginFeat(ctx.services.entities, d.origin_feat ?? null) : null;

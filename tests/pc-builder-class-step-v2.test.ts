@@ -5,6 +5,7 @@ import { renderClassStep } from "../packages/obsidian/src/modules/pc/components/
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "@core/entity-registry";
 import type { ClassData } from "../packages/obsidian/src/modules/pc/components/builder/class-chronicle";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -472,5 +473,100 @@ describe("renderClassStep", () => {
       { settings: { hiddenCompendiums: ["Mock", "SRD 5e", "SRD 2024", "SRD 5.2"] } };
     renderClassStep(c, ctx);
     expect(c.querySelector(".pc-bclass-orphan")).toBeNull(); // parent present, merely hidden
+  });
+});
+
+// ---------------------------------------------------------------------------
+// R4-G2 Task 8 fix round 1 (review I-1) · the THREADING witness.
+//
+// Task 8 threads `isEntityVisible` into the DecisionContext at the four builder
+// ctx constructors. The ENGINE half of that is pinned in dnd5e
+// (tests/decision-bybare-determinism.test.ts, Task 5); what had NO offline
+// witness is that the PLUGIN actually hands the engine the predicate — delete
+// `isEntityVisible:` at class-step.ts and the whole suite stayed green.
+//
+// This case drives the REAL constructor path: `renderClassStep` builds the
+// ledger itself, so the only thing under test here is the field the step passes.
+// Two feats share the bare slug "dupsite" and the class's `select-entity` choice
+// names it bare, so `enumerateOptions` must resolve the ambiguity through
+// `byBare`. The names are chosen so the HIDDEN copy WINS the engine's total
+// order (name `localeCompare`, then slug): "Aaa Hidden Twin" < "Zzz Visible
+// Twin". Without the predicate the hidden copy is therefore seeded first and the
+// chip carries its slug; with it, visible entities seed first and the visible
+// copy wins. The chip's `data-prof` is the resolved option value, i.e. the
+// winning entity's real slug (decision-strip.ts, the explicit-`from` chips row).
+// ---------------------------------------------------------------------------
+
+const HIDDEN_TWIN = "aaa-hidden_feat_dupsite";
+const VISIBLE_TWIN = "zzz-visible_feat_dupsite";
+
+function twinFeat(slug: string, name: string, compendium: string) {
+  return {
+    slug,
+    name,
+    entityType: "feat",
+    compendium,
+    data: { slug, name, description: "A twin.", effects: [] },
+  };
+}
+
+/** Bard whose own `choices` carry a select-entity pick on the ambiguous BARE
+ *  slug. `entity.choices` for class index 0 is walked at level 1 by the engine. */
+function bardWithBareFeatPick(): ClassData {
+  const d = bardData() as ClassData & { choices?: unknown };
+  d.choices = [
+    {
+      kind: "select-entity",
+      id: "twin-pick",
+      label: "Twin pick",
+      count: 1,
+      entity_type: "feat",
+      from: ["dupsite"],
+    },
+  ];
+  return d;
+}
+
+/** The class-step ctx with a REAL core registry (Gate 2 I-5 — never an ad-hoc
+ *  search stub) and a hidden compendium in plugin settings, which is what
+ *  `hiddenCompendiumSet(ctx.services.plugin?.settings)` reads at the constructor. */
+function mkTwinCtx(opts: { hidden: string[] }): ComponentRenderContext {
+  const classEntity = entityOf("srd-2024_bard", "Bard", bardWithBareFeatPick());
+  const ctx = mkCtx({
+    classEntries: [{ name: "srd-2024_bard", level: 1 }],
+    entities: [classEntity],
+  });
+  (ctx.services as { entities: unknown }).entities = buildMockRegistry([
+    { slug: classEntity.slug, name: classEntity.name, entityType: "class",
+      compendium: classEntity.compendium, data: classEntity.data },
+    twinFeat(HIDDEN_TWIN, "Aaa Hidden Twin", "Hidden HB"),
+    twinFeat(VISIBLE_TWIN, "Zzz Visible Twin", "Visible HB"),
+  ]);
+  (ctx.services as { plugin?: unknown }).plugin = { settings: { hiddenCompendiums: opts.hidden } };
+  return ctx;
+}
+
+const twinChip = (root: HTMLElement, slug: string): Element | null =>
+  root.querySelector(`.pc-bchoice-chip[data-prof="${slug}"]`);
+
+describe("class-step threads isEntityVisible into the DecisionContext (R4-G2 T8 I-1)", () => {
+  it("an ambiguous bare `from` slug resolves to the VISIBLE twin, not the hidden one", () => {
+    const c = mountContainer();
+    renderClassStep(c, mkTwinCtx({ hidden: ["Hidden HB"] }));
+
+    expect(twinChip(c, VISIBLE_TWIN)).not.toBeNull();
+    expect(twinChip(c, HIDDEN_TWIN)).toBeNull();
+  });
+
+  /** CONTROL — without the predicate having anything to hide, the SAME fixture
+   *  resolves the other way. Without this the case above could pass for the
+   *  wrong reason (e.g. if the visible twin simply won the total order anyway),
+   *  and dropping `isEntityVisible:` at the constructor would not be observable. */
+  it("CONTROL: with nothing hidden, the engine's total order picks the OTHER twin", () => {
+    const c = mountContainer();
+    renderClassStep(c, mkTwinCtx({ hidden: [] }));
+
+    expect(twinChip(c, HIDDEN_TWIN)).not.toBeNull();
+    expect(twinChip(c, VISIBLE_TWIN)).toBeNull();
   });
 });

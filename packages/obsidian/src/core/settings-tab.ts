@@ -1,6 +1,38 @@
 import { App, PluginSettingTab, Setting, type ToggleComponent } from "obsidian";
+import type { EntityRegistry } from "@archivist-gg/core";
 import type ArchivistPlugin from "../main";
 import { hiddenCompendiumSet, isCompendiumVisible, withCompendiumVisibility } from "../shared/entities/compendium-visibility";
+
+/**
+ * Per-compendium entity counts in ONE pass over the registry (spec §8 item 2).
+ *
+ * This replaces a `registry.search("", undefined, 99999)` sweep run once PER
+ * COMPENDIUM: each sweep materialised and sorted every registered entity, so the
+ * settings tab cost O(compendiums · n log n) just to print a number. Walking
+ * `getAllSlugs()` through `getBySlug()` visits the same `bySlug` set exactly once
+ * — the untyped `search("")` pool IS that set — so the counts are provably the
+ * ones the sweep produced.
+ *
+ * A registry only knows entities, so a compendium with NO entities is simply
+ * absent from the returned map. That omission is why the call site reads
+ * `counts.get(comp.name) ?? 0` and still prints "0 entities" for an empty
+ * compendium.
+ *
+ * `null` is accepted as well as `undefined`: `ArchivistPlugin.entityRegistry` is
+ * declared `EntityRegistry | null` and is null until the vault has loaded.
+ */
+export function compendiumEntityCounts(
+  registry: EntityRegistry | null | undefined,
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  if (!registry) return counts;
+  for (const slug of registry.getAllSlugs()) {
+    const entity = registry.getBySlug(slug);
+    if (!entity) continue;
+    counts.set(entity.compendium, (counts.get(entity.compendium) ?? 0) + 1);
+  }
+  return counts;
+}
 
 /**
  * Always-visible caption beside a settings toggle (R3-P7 F5): wraps the
@@ -82,14 +114,11 @@ export class ArchivistSettingTab extends PluginSettingTab {
       const registry = this.plugin.entityRegistry;
 
       const hidden = hiddenCompendiumSet(this.plugin.settings);
+      // ONE registry pass for the whole loop (spec §8 item 2). A compendium with
+      // no entities is not in the map at all, hence the `?? 0`.
+      const counts = compendiumEntityCounts(registry);
       for (const comp of allCompendiums) {
-        // Count entities in this compendium
-        let entityCount = 0;
-        if (registry) {
-          // Search with empty query returns all, then filter by compendium
-          const allEntities = registry.search("", undefined, 99999);
-          entityCount = allEntities.filter((e) => e.compendium === comp.name).length;
-        }
+        const entityCount = counts.get(comp.name) ?? 0;
 
         const desc = `${comp.description || ""} \u00b7 ${entityCount} entities${comp.homebrew ? " \u00b7 homebrew" : ""}`;
 

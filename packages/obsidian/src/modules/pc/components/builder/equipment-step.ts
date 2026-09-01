@@ -11,6 +11,7 @@ import { CurrencyStrip } from "../inventory/currency-strip";
 import { BrowseMode } from "../inventory/browse-mode";
 import { resolveGrants, type GrantedEntry, type SeedRegistry } from "../../builder/equipment-seed";
 import { goldStep, alreadySeeded, type GoldBaseline } from "../../builder/equipment-reconcile";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 type Mode = "starting" | "gold" | "empty";
 
@@ -143,7 +144,14 @@ function renderModeToggle(body: HTMLElement, ctx: ComponentRenderContext, mode: 
  *  `select-entity` children render through the SAME decision-strip picker the
  *  rest of the builder uses. */
 function renderStartingChoices(body: HTMLElement, ctx: ComponentRenderContext): void {
-  const ledger = buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities });
+  // The engine seeds its bare-slug index from a total order; handing it the
+  // visibility predicate makes VISIBLE entities seed first, so a hidden
+  // compendium can never shadow a visible entity that shares a bare slug.
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
+  const ledger = buildDecisionLedger(ctx.resolved, {
+    registry: ctx.services.entities,
+    isEntityVisible: (e) => entityCompendiumVisible(e, hidden),
+  });
 
   const classEntity = ctx.resolved.classes[0]?.entity ?? null;
   const classEquip = classEntity?.starting_equipment ?? [];

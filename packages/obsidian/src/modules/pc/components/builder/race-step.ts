@@ -8,6 +8,7 @@ import { stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 // Honest ledger columns for the race picker — size/speed exist in the entity
 // data today. Sorted by rank order (not alphabetically) and walking speed.
@@ -62,6 +63,10 @@ const stripSummary = (items: DecisionItem[]): string => {
  *  expanded row renders the same block WITHOUT the strip + Decisions tile. */
 export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const chosen = stripSlug(ctx.resolved.definition.race);
+  // The engine seeds its bare-slug index from a total order; handing it the
+  // visibility predicate makes VISIBLE entities seed first, so a hidden
+  // compendium can never shadow a visible entity that shares a bare slug.
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
   renderEntityPicker(body, ctx, {
     entityType: "race",
     stateKey: "builder.race-picker",
@@ -78,7 +83,12 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
       // composes them on the restore pass (by then it IS the chosen race).
       const isChosen = e.slug === stripSlug(ctx.resolved.definition.race);
       const d = e.data as RaceData;
-      const ledger = isChosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities }) : null;
+      const ledger = isChosen
+        ? buildDecisionLedger(ctx.resolved, {
+            registry: ctx.services.entities,
+            isEntityVisible: (en) => entityCompendiumVisible(en, hidden),
+          })
+        : null;
       const items = ledger?.origin.filter((i) => i.source.kind === "race") ?? [];
       const dv = d.vision?.darkvision;
       renderChronicleBlock(wrap, {
