@@ -102,3 +102,53 @@ describe("parseWeapon — error paths", () => {
     expect(parseWeapon(`name: x`).success).toBe(false);
   });
 });
+
+describe("parseWeapon — root extras (spec §5)", () => {
+  // `edition` is a REQUIRED enum on weaponEntitySchema, so every fixture must carry it.
+  const WITH_EXTRAS = `
+name: Longsword
+slug: longsword
+category: martial-melee
+damage: { dice: 1d8, type: slashing }
+edition: "2014"
+rendering_hint: ""
+has_fluff: true
+has_fluff_images: true
+image: Longsword.webp
+`;
+
+  it("declares rendering_hint/has_fluff/has_fluff_images/image at the root and never raw-bags them", () => {
+    const r = parseWeapon(WITH_EXTRAS);
+    expect(r.success).toBe(true);
+    if (!r.success) return;
+    // PINS (green both sides — `weaponEntitySchema` is `.loose()`, so the keys already land
+    // on the output pre-fix). Post-fix they are DECLARED, so typed access also pins the types.
+    expect(r.data.rendering_hint).toBe("");
+    expect(r.data.has_fluff).toBe(true);
+    expect(r.data.has_fluff_images).toBe(true);
+    expect(r.data.image).toBe("Longsword.webp");
+    // RED pre-fix: KNOWN_KEYS lacks all four, so the extras loop DUPLICATES every one of them
+    // into raw (census rows `weapon :: rendering_hint :: duplicated` 98,
+    // `weapon :: has_fluff_images :: duplicated` 39, `weapon :: has_fluff :: duplicated` 1).
+    expect(r.data.raw?.rendering_hint).toBeUndefined();
+    expect(r.data.raw?.has_fluff).toBeUndefined();
+    expect(r.data.raw?.has_fluff_images).toBeUndefined();
+    expect(r.data.raw?.image).toBeUndefined();
+    // The whole raw bag stays unset: no OTHER key leaked either.
+    expect(r.data.raw).toBeUndefined();
+  });
+
+  it("accepts the array form of image (>= 2 fluff images)", () => {
+    const src = `
+name: Longsword
+slug: longsword
+category: martial-melee
+damage: { dice: 1d8, type: slashing }
+edition: "2014"
+image: ["A.webp", "B.webp"]
+`;
+    const r = parseWeapon(src);
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.image).toEqual(["A.webp", "B.webp"]);
+  });
+});
