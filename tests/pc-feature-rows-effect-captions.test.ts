@@ -30,8 +30,9 @@ beforeAll(() => installObsidianDomHelpers());
 // file stands alone.
 //
 // DOM queries here use `Array.from` rather than spread: the repo's `lib` has no
-// `DOM.Iterable`, so `[...querySelectorAll(…)]` is a tsc error (20 of them in
-// the file this builder came from).
+// `DOM.Iterable`, so `[...querySelectorAll(…)]` is a tsc error. The file this
+// builder came from carries 19 of them (TS2488); its twentieth base error is an
+// unrelated TS2353 at :109, not a spread.
 // ─────────────────────────────────────────────────────────────
 
 const rf = (feature: object, extra: Partial<ResolvedFeature> = {}): ResolvedFeature =>
@@ -182,6 +183,63 @@ describe("renderEffectCaptions", () => {
     // dropping roll-modifiers wholesale.
     const self = recalc(resolvedWith(mkClass("sorcerer", "d6", 6), [{ ...imposed, subject: "self" }]));
     expect(self.rollModifiers.length).toBe(1);
+  });
+
+  // ── `restate`, arm by arm (every arm reachable through a non-self subject) ──
+
+  it("keeps the condition NAME in the body on apply-condition, with no tooltip", () => {
+    const { row } = renderOne({
+      name: "Hound of Ill Omen", description: "x",
+      effects: [{ kind: "apply-condition", condition: "Frightened", subject: "target" }],
+    });
+    // `condition` is the NAME on this arm (dnd5e types/feature-effect.ts builds it from `& Subject`,
+    // not `& Qualified`). Echoing it into a tooltip as well would repeat it; treating it AS a
+    // qualifier would hide the only word the caption has.
+    expect(captions(row)).toEqual(["target: Frightened"]);
+    expect(row.querySelector(".pc-feature-effect")?.getAttribute("aria-label")).toBeNull();
+  });
+
+  it("restates immune-condition with its `while` scope, and without one when absent", () => {
+    const withWhile = renderOne({
+      name: "Aura of Purity", description: "x",
+      effects: [{ kind: "immune-condition", condition: "Poisoned", while: "within 30 feet", subject: "allies" }],
+    });
+    expect(captions(withWhile.row)).toEqual(["allies: Poisoned while within 30 feet"]);
+    expect(withWhile.row.querySelector(".pc-feature-effect")?.getAttribute("aria-label")).toBeNull();
+
+    const bare = renderOne({
+      name: "Aura of Purity", description: "x",
+      effects: [{ kind: "immune-condition", condition: "Poisoned", subject: "allies" }],
+    });
+    // No trailing space, no dangling "while".
+    expect(captions(bare.row)).toEqual(["allies: Poisoned"]);
+  });
+
+  it("restates damage-bonus from its own amount and damage type", () => {
+    const { row } = renderOne({
+      name: "Hex", description: "x",
+      effects: [{ kind: "damage-bonus", amount: "1d6", damage_type: "fire", subject: "target" }],
+    });
+    expect(captions(row)).toEqual(["target: 1d6 fire"]);
+  });
+
+  it("restates an unmodelled kind through the default arm as a key/value list", () => {
+    const { row } = renderOne({
+      name: "Slow Aura", description: "x",
+      effects: [{ kind: "speed-bonus", mode: "walk", value: 10, subject: "target" }],
+    });
+    // `kind` names the effect; `subject` and `condition` are dropped (they are rendered elsewhere on
+    // the line). Measured, then pinned.
+    expect(captions(row)).toEqual(["target: speed-bonus mode=walk value=10"]);
+  });
+
+  it('reads roll: "any" as "rolls", never as one roll type', () => {
+    const { row } = renderOne({
+      name: "Bless", description: "x",
+      effects: [{ kind: "roll-modifier", mode: "advantage", roll: "any", subject: "allies" }],
+    });
+    // An `any` modifier covers checks, saves AND attacks; "ability checks" would understate it.
+    expect(captions(row)).toEqual(["allies: advantage on rolls"]);
   });
 
   it("renders NO caption for a self effect outside the caption kinds", () => {

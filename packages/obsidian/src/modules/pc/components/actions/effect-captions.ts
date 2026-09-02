@@ -27,6 +27,11 @@ import type { ComponentRenderContext } from "../component.types";
  * `ROLL_MODE_WORD` / `ROLL_NOUN` are the dnd5e-side vocabulary, declared beside the chip tags.
  * `restate` is not a vocabulary switch: each arm is a mechanical restatement of that arm's OWN
  * declared fields, which is exactly what a caption for an unmodelled imposition can say.
+ *
+ * One field is read differently per arm, and it has to be: `condition` is a QUALIFIER on the arms
+ * built from `& Qualified` and the condition NAME on `apply-condition` / `immune-condition`
+ * (`& Subject`). `CONDITION_IS_NAME` below is that split, so the name stays in the caption body and
+ * only a real qualifier becomes a tooltip.
  */
 
 /** The two healing-shaped kinds, as a reader names them. */
@@ -36,14 +41,26 @@ const NOUN: Record<"heal" | "temp-hp", string> = { heal: "Heals", "temp-hp": "Te
 const isNonSelf = (e: { subject?: string }) => e.subject !== undefined && e.subject !== "self";
 
 /**
+ * The kinds whose `condition` key is the condition NAME rather than a prose qualifier.
+ * dnd5e `types/feature-effect.ts` builds these two arms from `& Subject`, not `& Qualified`, and
+ * spells the reason in the `Qualified` docblock. Treating their name as a qualifier inverts the
+ * output: the name would move to a hover and the caption body would be left with the leftover
+ * fields. A set rather than an inline `kind === … || kind === …` so the rule is data, readable at a
+ * glance, and extends where the type does (invariant 3).
+ */
+const CONDITION_IS_NAME: ReadonlySet<FeatureEffect["kind"]> = new Set(["apply-condition", "immune-condition"]);
+
+/**
  * One arm's own fields, restated. The `subject` string is echoed verbatim rather than narrated:
  * its vocabulary is the converter's, open and unmapped, so "the Hound imposes ..." would be
  * invention. The final arm keeps this exhaustive over kinds nobody has authored a caption for yet.
  */
 function restate(e: FeatureEffect): string {
   switch (e.kind) {
-    case "roll-modifier": return `${ROLL_MODE_WORD[e.mode]} on ${ROLL_NOUN[e.roll === "any" ? "ability-check" : e.roll]}`;
+    case "roll-modifier": return `${ROLL_MODE_WORD[e.mode]} on ${ROLL_NOUN[e.roll]}`;
     case "apply-condition": return e.condition;
+    // `condition` is the NAME here too; `while` is the (optional) situational scope it holds under.
+    case "immune-condition": return `${e.condition}${e.while ? ` while ${e.while}` : ""}`;
     case "damage-bonus": return `${e.amount}${e.damage_type ? ` ${e.damage_type}` : ""}`;
     case "heal": case "temp-hp": return `${NOUN[e.kind]} ${e.amount}`;
     default: return `${e.kind} ${Object.entries(e).filter(([k]) => !["kind", "subject", "condition"].includes(k)).map(([k, v]) => `${k}=${String(v)}`).join(" ")}`;
@@ -53,23 +70,27 @@ function restate(e: FeatureEffect): string {
 /** The caption for one effect, or `undefined` when this effect has no row-local caption. */
 function captionFor(e: FeatureEffect): string | undefined {
   if (isNonSelf(e)) return `${e.subject}: ${restate(e)}`;
-  if (e.kind === "heal" || e.kind === "temp-hp") return `${NOUN[e.kind]} ${e.amount}`;
+  // Delegated, not duplicated: `restate`'s heal/temp-hp arm IS the self-subject caption, so the
+  // self and non-self paths cannot drift into two spellings of the same line.
+  if (e.kind === "heal" || e.kind === "temp-hp") return restate(e);
   if (e.kind === "extra-action") return `+${e.count} ${costLabel(e.action_type)}`;
   return undefined;
 }
 
 /**
- * Append the caption line to `row` (the feature row's NAME cell), one span per captioned effect.
- * The line is created lazily, so a feature with no captioned effect adds no empty div. A qualifier
- * (`condition`) becomes the span's tooltip, plain-texted · the roll-modifier idiom.
+ * Append the caption line to `host` (the feature row's NAME cell), one span per captioned effect.
+ * The line is created lazily, so a feature with no captioned effect adds no empty div. A `condition`
+ * QUALIFIER becomes the span's tooltip, plain-texted · the roll-modifier idiom. On the two kinds
+ * where `condition` is the condition NAME it stays in the caption body and no tooltip is set:
+ * hiding a name behind a hover is not a qualifier, it is a lost caption.
  */
-export function renderEffectCaptions(row: HTMLElement, rf: ResolvedFeature, _ctx: ComponentRenderContext): void {
+export function renderEffectCaptions(host: HTMLElement, rf: ResolvedFeature, _ctx: ComponentRenderContext): void {
   let line: HTMLElement | null = null;
   for (const e of rf.feature.effects ?? []) {
     const text = captionFor(e);
     if (!text) continue;
-    line ??= row.createDiv({ cls: "pc-feature-effect-line" });
+    line ??= host.createDiv({ cls: "pc-feature-effect-line" });
     const span = line.createSpan({ cls: "pc-feature-effect", text });
-    if (e.condition) setTooltip(span, plainText(e.condition));
+    if (e.condition && !CONDITION_IS_NAME.has(e.kind)) setTooltip(span, plainText(e.condition));
   }
 }
