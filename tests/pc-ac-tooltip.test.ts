@@ -30,6 +30,30 @@ describe("renderACTooltip", () => {
     const greys = root.querySelectorAll(".pc-ac-tooltip-row.is-greyed");
     expect(greys.length).toBe(4);
   });
+
+  // R4-G3a §3.2.5: an `ac-bonus` effect's `condition` rides the ACTerm to the row's `title`.
+  // The attribute is NEW · before this phase the row was a div with two spans and no title node ·
+  // so both cases below assert the attribute's TEXT, never that "a title exists".
+  it("a term with a condition renders its qualifier as the row title", () => {
+    const root = document.createElement("div");
+    const withCondition: ACTerm[] = [
+      { source: "Defense", amount: 1, kind: "feature", condition: "While wearing heavy armor" },
+    ];
+    renderACTooltip(root, { ac: 19, breakdown: withCondition, overridden: false });
+    const row = root.querySelector(".pc-ac-tooltip-row");
+    expect(row?.querySelector(".pc-ac-tooltip-source")?.textContent).toBe("Defense");
+    expect(row?.getAttribute("title")).toBe("While wearing heavy armor");
+  });
+
+  it("a term without a condition carries no title attribute", () => {
+    const root = document.createElement("div");
+    renderACTooltip(root, {
+      ac: 19,
+      breakdown: [{ source: "Defense", amount: 1, kind: "feature" }],
+      overridden: false,
+    });
+    expect(root.querySelector(".pc-ac-tooltip-row")?.hasAttribute("title")).toBe(false);
+  });
 });
 
 describe("AC tooltip CSS (parchment styling)", () => {

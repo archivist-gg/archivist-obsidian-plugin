@@ -1,6 +1,7 @@
 import type { ACTerm } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { InformationalBonus } from "../../item/item.conditions.types";
 import { renderSituationalRows } from "./situational-rows";
+import { plainText } from "../../../shared/rendering/plain-text";
 
 export interface ACTooltipOpts {
   ac: number;
@@ -19,6 +20,10 @@ export function renderACTooltip(parent: HTMLElement, opts: ACTooltipOpts): HTMLE
   }
   for (const t of opts.breakdown) {
     const row = tip.createDiv({ cls: `pc-ac-tooltip-row${opts.overridden ? " is-greyed" : ""}` });
+    // The term's situational qualifier, from the granting `ac-bonus` effect (R4-G3a §3.2.5).
+    // A `title` rather than a nested line: the row is already inside a tooltip. Authored prose,
+    // so markup comes off first; never evaluated.
+    if (t.condition) row.setAttribute("title", plainText(t.condition));
     row.createSpan({ cls: "pc-ac-tooltip-source", text: t.source });
     row.createSpan({ cls: "pc-ac-tooltip-amount", text: formatSignedAmount(t.amount) });
   }

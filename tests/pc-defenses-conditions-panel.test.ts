@@ -30,9 +30,17 @@ function ents(...vals: string[]): DefenseEntry[] {
  * assertion could tell which of the two fields the panel read (the `entry.value` →
  * `entry.label` mutation on both mutator call sites was measured surviving the whole
  * suite), and every entry it seeds is `origin: "manual"`.
+ *
+ * `sources` / `condition` are R4-G3a's grant attribution and qualifier. Both are OPTIONAL on
+ * DefenseEntry, and omitting them is what a manual entry (and an equipment entry, whose
+ * attribution half stays deferred) actually looks like · so the tooltip fixtures pass them
+ * and the negative controls leave them off.
  */
-function ent(value: string, label: string, origin: DefenseOrigin = "grant"): DefenseEntry {
-  return { value, label, origin };
+function ent(
+  value: string, label: string, origin: DefenseOrigin = "grant",
+  sources?: string[], condition?: string,
+): DefenseEntry {
+  return { value, label, origin, ...(sources ? { sources } : {}), ...(condition ? { condition } : {}) };
 }
 
 /** R4-G2 Task 6: chip labels come from the registered `condition` entity, not
@@ -308,6 +316,79 @@ describe("DefensesConditionsPanel · granted marking + data-type addressing", ()
     root.querySelector<HTMLElement>('.pc-def-chip[data-type="psychic"] .pc-def-chip-x')!.click();
     expect(editState.removeDefense).toHaveBeenCalledWith("resistances", "psychic");
     expect(editState.removeDefense).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * R4-G3a §3.2.4: a granted chip names the features it came from, and appends the qualifier when
+ * the effect carried one. The `obsidian` mock's `setTooltip` WRITES `aria-label` on the host (it is
+ * not a spy), so every assertion here reads the attribute's TEXT off the chip · which is also what
+ * separates "the tooltip says the right thing" from "a tooltip exists".
+ */
+describe("DefensesConditionsPanel · granted chip source tooltip", () => {
+  const grantCtx = (e: DefenseEntry, editState?: unknown) => ctx({
+    defenses: { resistances: ents(), immunities: [e], vulnerabilities: ents(), condition_immunities: ents() },
+    editState,
+  });
+  const chipOf = (root: HTMLElement, type: string) =>
+    root.querySelector(`.pc-def-cond-left .pc-def-chip.granted[data-type="${type}"]`);
+
+  it("names the granting feature", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, grantCtx(ent("poison", "poison", "grant", ["Purity of Body"])));
+    expect(chipOf(root, "poison")?.getAttribute("aria-label")).toBe("Purity of Body");
+  });
+
+  it("joins two granting features with ' · '", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root,
+      grantCtx(ent("poison", "poison", "grant", ["Purity of Body", "Yuan-ti Heritage"])));
+    expect(chipOf(root, "poison")?.getAttribute("aria-label")).toBe("Purity of Body · Yuan-ti Heritage");
+  });
+
+  it("appends the qualifier after ': ', stripped of markdown emphasis", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root,
+      grantCtx(ent("poison", "poison", "grant", ["Purity of Body"], "While *Bloodied*")));
+    // The asterisks are the point: qualifiers are authored prose and reach the chip verbatim
+    // from the effect, so the host runs them through `plainText` first.
+    expect(chipOf(root, "poison")?.getAttribute("aria-label")).toBe("Purity of Body: While Bloodied");
+  });
+
+  it("a qualifier with no sources stands alone (no leading separator)", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root,
+      grantCtx(ent("poison", "poison", "grant", undefined, "While raging")));
+    expect(chipOf(root, "poison")?.getAttribute("aria-label")).toBe("While raging");
+  });
+
+  it("a MANUAL chip gets no tooltip at all", () => {
+    const root = mountContainer();
+    // Seeded WITH sources so the negative is the origin guard, not an empty list.
+    new DefensesConditionsPanel().render(root, grantCtx(ent("poison", "poison", "manual", ["Purity of Body"])));
+    const chip = root.querySelector('.pc-def-cond-left .pc-def-chip[data-type="poison"]');
+    expect(chip).not.toBeNull();
+    expect(chip?.classList.contains("granted")).toBe(false);
+    expect(chip?.hasAttribute("aria-label")).toBe(false);
+  });
+
+  it("an EQUIPMENT chip with no sources gets no tooltip (equipment attribution is still deferred)", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, grantCtx(ent("poison", "poison", "equipment")));
+    const chip = chipOf(root, "poison");
+    expect(chip).not.toBeNull();
+    expect(chip?.hasAttribute("aria-label")).toBe(false);
+  });
+
+  it("the tooltip host does not disturb the × remover", () => {
+    const root = mountContainer();
+    const editState = { removeDefense: vi.fn() };
+    new DefensesConditionsPanel().render(root,
+      grantCtx(ent("poison", "poison", "grant", ["Purity of Body"]), editState));
+    const chip = chipOf(root, "poison");
+    expect(chip?.getAttribute("aria-label")).toBe("Purity of Body");
+    (chip!.querySelector(".pc-def-chip-x") as HTMLElement).click();
+    expect(editState.removeDefense).toHaveBeenCalledWith("immunities", "poison");
   });
 });
 

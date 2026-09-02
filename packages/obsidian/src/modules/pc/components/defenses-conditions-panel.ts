@@ -15,6 +15,7 @@ import {
   conditionTooltipParagraph,
 } from "../condition-labels";
 import { hiddenCompendiumSet } from "../../../shared/entities/compendium-visibility";
+import { plainText } from "../../../shared/rendering/plain-text";
 
 const DEFENSE_ROWS: ReadonlyArray<[label: string, key: DefenseKind]> = [
   ["Damage Resistances", "resistances"],
@@ -118,6 +119,18 @@ export class DefensesConditionsPanel implements SheetComponent {
           // row would close that; no surface needs it yet.
           const chip = row.createSpan({ cls: "pc-def-chip", attr: { "data-type": entry.value } });
           if (entry.origin !== "manual") chip.addClass("granted");
+          // Attribution for a chip the user did not type: the granting feature names, plus the
+          // effect's qualifier when it carried one. Gated on ORIGIN first (a manual entry is the
+          // user's own and names nothing) and then on the RESULT being non-empty · an
+          // equipment-origin entry passes the origin gate but carries no `sources` at all, because
+          // equipment-side attribution is R4-P5 §10.1's still-deferred half. `condition` is
+          // authored prose reaching us verbatim, so it goes through `plainText` before a host
+          // that renders no markdown.
+          if (entry.origin !== "manual") {
+            const tip = [entry.sources?.join(" · "), entry.condition ? plainText(entry.condition) : undefined]
+              .filter((s): s is string => !!s).join(": ");
+            if (tip) setTooltip(chip, tip);
+          }
           // `value` is canonical (toDefenseSlug); `label` is the first-spelling-wins
           // authored display string. Condition immunities get the registered
           // condition entity's name, keyed on the canonical value, and fall back to
