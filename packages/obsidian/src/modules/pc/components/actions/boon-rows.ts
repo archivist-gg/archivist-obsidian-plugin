@@ -83,8 +83,11 @@ export function renderBoonRow(
 
   row.createDiv({ cls: "pc-action-caret", text: "›" });
 
-  // Sibling expand card (hidden until the row is clicked) — the shared block
-  // card with the boon description. Resource-less: no Recharge/Die line.
+  // Sibling expand card (hidden until the row is clicked): the shared block card
+  // with the boon description. This site passes neither a `die` nor a `feature`, so
+  // the card renders NO properties block at all: not a die line, and not the Save/DC
+  // line a feature-backed card can now carry (R4-G3a §10.2.2). The `recharge` option
+  // this comment used to name was retired in Task 5 (§8.2 (3)).
   const expandKey = rowExpandKey("boon", poolLabel, kind, entry.slug);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
   const expanded = isRowExpanded(ctx, expandKey);

@@ -28,8 +28,11 @@ import { RESET_LABELS } from "../components/actions/reset-labels";
  *
  * The properties block is no longer resource-keyed. It renders when there is a Die
  * value (resource-keyed) OR a Save/DC line, and the Save/DC line is read straight
- * off the feature, so a resource-less racial trait such as the SRD Dragonborn's
- * Breath Weapon now carries one (R4-G3a §10.2.2). The `recharge` option that used
+ * off the feature, so a DIE-LESS racial trait such as the SRD Dragonborn's Breath
+ * Weapon now carries one (R4-G3a §10.2.2). Die-less, not resource-less: that trait
+ * does own a resource (`dragonborn:breath-weapon`, one use, short rest) and so gets
+ * a tracker on its row; what it has never had is a die, and therefore no properties
+ * block at all until the Save line. The `recharge` option that used
  * to sit beside Die had zero producers and was retired with its label twin
  * (R4-G3a §8.2 (3)).
  */

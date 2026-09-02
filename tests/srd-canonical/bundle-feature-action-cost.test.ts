@@ -16,6 +16,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseClass } from "@archivist-gg/dnd5e/class/class.parser";
 import { parseRace } from "@archivist-gg/dnd5e/race/race.parser";
+import { parseSubclass } from "@archivist-gg/dnd5e/subclass/subclass.parser";
 
 const BUNDLE_INDEX = path.resolve(__dirname, "../../.compendium-bundle/index.json");
 
@@ -24,7 +25,7 @@ interface RaceLike {
 }
 
 interface ClassLike {
-  features_by_level: Record<string, Array<{ id?: string; name: string; action?: string }>>;
+  features_by_level: Record<string, Array<{ id?: string; name: string; action?: string; action_cost?: string }>>;
 }
 
 function loadClassBundleEntry(bundleKey: string): ClassLike {
@@ -49,6 +50,18 @@ function loadRaceBundleEntry(bundleKey: string): RaceLike {
   const result = parseRace(m[1]);
   if (!result.success) throw new Error(`parseRace failed for ${bundleKey}: ${JSON.stringify(result.error)}`);
   return result.data as unknown as RaceLike;
+}
+
+function loadSubclassBundleEntry(bundleKey: string): ClassLike {
+  const raw = fs.readFileSync(BUNDLE_INDEX, "utf-8");
+  const bundle = JSON.parse(raw) as Record<string, string>;
+  const md = bundle[bundleKey];
+  if (!md) throw new Error(`Bundle entry not found: ${bundleKey}`);
+  const m = md.match(/```subclass\r?\n([\s\S]*?)\r?\n```/);
+  if (!m) throw new Error(`No subclass codeblock in ${bundleKey}`);
+  const result = parseSubclass(m[1]);
+  if (!result.success) throw new Error(`parseSubclass failed for ${bundleKey}: ${JSON.stringify(result.error)}`);
+  return result.data as unknown as ClassLike;
 }
 
 function findFeature(cls: ClassLike, id: string): { id?: string; name: string; action?: string } | undefined {
@@ -116,14 +129,40 @@ describe("bundle race traits: action_cost aliases onto action (R4-G3a §10.2.1)"
     expect(trait?.action_cost).toBe(expected);   // the declared one is retained, never deleted
   });
 
+  // The sweep covers all THREE fence kinds that carry features, because Task 7 wired the alias into
+  // the class and subclass parsers too (`aliasFeaturesByLevelActionCost` over `features_by_level`).
+  // A race-only sweep under a "whole population" title would be blind to a class or subclass feature
+  // gaining `action_cost`, which is a feature-level carrier exactly like a race trait. Measured
+  // 2026-09-02: 22 race + 24 class + 24 subclass fences, all parsing, 5 carriers, all on races.
   it("those five are the WHOLE population, so a new carrier cannot appear unpinned", () => {
     const bundle = JSON.parse(fs.readFileSync(BUNDLE_INDEX, "utf-8")) as Record<string, string>;
     const found: string[] = [];
+    let racesSeen = 0, classesSeen = 0, subclassesSeen = 0;
+
     for (const [key, md] of Object.entries(bundle)) {
-      if (!/```race\r?\n/.test(md)) continue;
-      const race = loadRaceBundleEntry(key);
-      for (const t of race.traits ?? []) if (t.action_cost) found.push(`${key}::${t.name}`);
+      if (/```race\r?\n/.test(md)) {
+        racesSeen++;
+        for (const t of loadRaceBundleEntry(key).traits ?? []) {
+          if (t.action_cost) found.push(`${key}::${t.name}`);
+        }
+      }
+      if (/```class\r?\n/.test(md)) {
+        classesSeen++;
+        for (const f of Object.values(loadClassBundleEntry(key).features_by_level ?? {}).flat()) {
+          if (f.action_cost) found.push(`${key}::${f.name}`);
+        }
+      }
+      if (/```subclass\r?\n/.test(md)) {
+        subclassesSeen++;
+        for (const f of Object.values(loadSubclassBundleEntry(key).features_by_level ?? {}).flat()) {
+          if (f.action_cost) found.push(`${key}::${f.name}`);
+        }
+      }
     }
+
+    // Guard the sweep itself: a regex that stopped matching would make the population trivially
+    // "correct" by looking at nothing. These counts are the bundle's, measured.
+    expect({ racesSeen, classesSeen, subclassesSeen }).toEqual({ racesSeen: 22, classesSeen: 24, subclassesSeen: 24 });
     expect(found.sort()).toEqual(
       RACE_ACTION_COST_CARRIERS.map(([f, t]) => `${f}::${t}`).sort(),
     );
