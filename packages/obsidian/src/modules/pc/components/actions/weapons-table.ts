@@ -1,7 +1,8 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { ActionEntry } from "./action-model";
-import { renderConditionTag } from "../condition-tag";
+import { renderConditionTag, type ConditionTagKind } from "../condition-tag";
+import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
@@ -111,10 +112,10 @@ export function renderWeaponRow(
       const sources = ce.sources
         .filter((s) => attackDisSources.has(s.condition))
         .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
-      renderConditionTag(hitCell, "DIS", `Disadvantage from ${sources.join(", ")}`);
+      renderConditionTag(hitCell, "dis", ROLL_MODE_TAG.disadvantage, `Disadvantage from ${sources.join(", ")}`);
     }
     if (ce.attack_advantage) {
-      renderConditionTag(hitCell, "ADV", `Advantage from invisible`);
+      renderConditionTag(hitCell, "adv", ROLL_MODE_TAG.advantage, `Advantage from invisible`);
     }
     const isAction = cost === "action" || cost === "reaction" || cost === "bonus-action";
     if (isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
@@ -124,9 +125,9 @@ export function renderWeaponRow(
   // advantage/disadvantage). Order-preserving; one chip per matching entry.
   for (const rm of ctx.derived.rollModifiers ?? []) {
     if (rm.roll !== "attack") continue;
-    const tag = rm.mode === "advantage" ? "ADV" : "DIS";
+    const cls: ConditionTagKind = rm.mode === "advantage" ? "adv" : rm.mode === "disadvantage" ? "dis" : "rider";
     const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-    renderConditionTag(hitCell, tag, tip);
+    renderConditionTag(hitCell, cls, ROLL_MODE_TAG[rm.mode], tip);
   }
 
   // Damage (inline italic; versatile shows both stacked)

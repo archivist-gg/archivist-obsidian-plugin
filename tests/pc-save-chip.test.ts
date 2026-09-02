@@ -14,6 +14,7 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
     overrideBonus?: number;
     bonus?: number;
     rollModifiers?: unknown[];
+    saveOutcomes?: unknown[];
   } = {}) {
     const editState = {
       toggleSaveProficient: vi.fn(),
@@ -37,6 +38,7 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
         derived: {
           saves: { [abl]: { bonus: opts.bonus ?? 0, proficient: effectiveProf } },
           rollModifiers: opts.rollModifiers ?? [],
+          saveOutcomes: opts.saveOutcomes ?? [],
         },
         resolved: {
           classes: [{ entity: { saving_throws: classSaves } }],
@@ -150,6 +152,71 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
       });
       new SaveChip("wis").render(root, ctx);
       expect(root.querySelector(".pc-cond-tag")).toBeNull();
+    });
+
+    // R4-G3a §6.2.1 — the two new `mode` members. Before this phase all three chip surfaces
+    // spelled `mode === "advantage" ? "ADV" : "DIS"`, so a `reroll` rendered "DIS": a green tree
+    // with a false chip. The text now comes from dnd5e's ROLL_MODE_TAG (§14 row 8ii).
+    it('renders "RR" (rider class) for a reroll saving-throw roll-modifier', () => {
+      const root = mountContainer();
+      const { ctx } = interactiveCtx({
+        ability: "str",
+        rollModifiers: [{ mode: "reroll", roll: "saving-throw", label: "Indomitable" }],
+      });
+      new SaveChip("str").render(root, ctx);
+      const tag = root.querySelector(".pc-cond-tag");
+      expect(tag?.textContent).toBe("RR");
+      expect(tag?.classList.contains("pc-cond-tag-rider")).toBe(true);
+    });
+
+    // R4-G3a §6.2.3 render half of §14 row 19: a scope the normaliser could not map stays RAW on
+    // the entry and must match NO chip — the pre-phase behaviour, preserved on purpose. (The fold
+    // half of row 19 lives in dnd5e; this fixture is hand-built and never runs applyEffect.)
+    it("a RESIDUAL prose scope renders no chip on any save chip (pass-through control)", () => {
+      for (const abl of ["str", "dex", "wis", "cha"] as const) {
+        const root = mountContainer();
+        const { ctx } = interactiveCtx({
+          ability: abl,
+          rollModifiers: [{ mode: "reroll", roll: "saving-throw", scope: "Death Saving Throws", label: "Champion" }],
+        });
+        new SaveChip(abl).render(root, ctx);
+        expect(root.querySelector(".pc-cond-tag")).toBeNull();
+      }
+    });
+  });
+
+  // R4-G3a §5.3 — `save-outcome` tags on the save chip's tag rail. The tag TEXT comes from
+  // dnd5e's saveOutcomeTag over the two closed enums; never an "EVA" literal (Spellfire Sorcery
+  // is not Evasion).
+  describe("save-outcome tags (R4-G3a §5.3)", () => {
+    const evasion = [{ ability: "dex", on_success: "none", on_failure: "half", label: "Evasion", appliesTo: "a spell" }];
+
+    it("renders the 0/½ outcome tag on the DEX chip with the source tooltip", () => {
+      const root = mountContainer();
+      const { ctx } = interactiveCtx({ ability: "dex", saveOutcomes: evasion });
+      new SaveChip("dex").render(root, ctx);
+      const tag = root.querySelector(".pc-cond-tag-outcome");
+      expect(tag?.textContent).toBe("0/½");
+      expect(tag?.getAttribute("aria-label")).toBe("Evasion: on a success 0, on a failure ½ · a spell");
+    });
+
+    it("does NOT render a dex-scoped outcome tag on the STR chip", () => {
+      const root = mountContainer();
+      const { ctx } = interactiveCtx({ ability: "str", saveOutcomes: evasion });
+      new SaveChip("str").render(root, ctx);
+      expect(root.querySelector(".pc-cond-tag")).toBeNull();
+    });
+
+    it("an ability-less outcome (the folded `any`) renders on STR too", () => {
+      const root = mountContainer();
+      const { ctx } = interactiveCtx({
+        ability: "str",
+        saveOutcomes: [{ ability: undefined, on_success: "none", on_failure: "half", label: "Spellfire Ward" }],
+      });
+      new SaveChip("str").render(root, ctx);
+      const tag = root.querySelector(".pc-cond-tag-outcome");
+      expect(tag?.textContent).toBe("0/½");
+      expect(tag?.getAttribute("aria-label")).toBe("Spellfire Ward: on a success 0, on a failure ½");
     });
   });
 });

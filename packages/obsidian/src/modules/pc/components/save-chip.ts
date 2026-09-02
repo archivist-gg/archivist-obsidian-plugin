@@ -1,7 +1,8 @@
 import { setTooltip } from "obsidian";
 import type { Ability } from "@archivist-gg/dnd5e";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import { renderConditionTag } from "./condition-tag";
+import { renderConditionTag, type ConditionTagKind } from "./condition-tag";
+import { ROLL_MODE_TAG, AUTO_FAIL_TAG, OUTCOME, saveOutcomeTag } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { numberOverride } from "./edit-primitives";
 import { attachStatTooltip } from "./stat-tooltip";
 import { renderSituationalRows } from "./situational-rows";
@@ -76,7 +77,7 @@ export class SaveChip implements SheetComponent {
             return slug === "paralyzed" || slug === "petrified" || slug === "stunned" || slug === "unconscious";
           })
           .map((s) => s.condition);
-        renderConditionTag(tags(), "AUTO-FAIL", `Auto-fail from ${sources.join(", ") || "condition"}`);
+        renderConditionTag(tags(), "fail", AUTO_FAIL_TAG, `Auto-fail from ${sources.join(", ") || "condition"}`);
       } else if (dis) {
         const sources = ce.sources
           .filter((s) => {
@@ -85,7 +86,7 @@ export class SaveChip implements SheetComponent {
             return false;
           })
           .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
-        renderConditionTag(tags(), "DIS", `Disadvantage from ${sources.join(", ")}`);
+        renderConditionTag(tags(), "dis", ROLL_MODE_TAG.disadvantage, `Disadvantage from ${sources.join(", ")}`);
       }
 
       if (ce.d20_test_penalty !== 0 && !autofail) {
@@ -104,9 +105,18 @@ export class SaveChip implements SheetComponent {
     for (const rm of ctx.derived.rollModifiers ?? []) {
       if (rm.roll !== "saving-throw") continue;
       if (rm.scope && rm.scope !== this.ability) continue;
-      const tag = rm.mode === "advantage" ? "ADV" : "DIS";
+      const cls: ConditionTagKind = rm.mode === "advantage" ? "adv" : rm.mode === "disadvantage" ? "dis" : "rider";
       const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-      renderConditionTag(tags(), tag, tip);
+      renderConditionTag(tags(), cls, ROLL_MODE_TAG[rm.mode], tip);
+    }
+
+    // R4-G3a §5.3 · `save-outcome` entries beside the roll-modifier loop. An ABSENT `ability` is
+    // the folded `ability: "any"` and matches every chip, exactly as an absent scope does above.
+    // The outcome glyphs come from dnd5e's OUTCOME table, never a plugin literal.
+    for (const e of ctx.derived.saveOutcomes ?? []) {
+      if (e.ability && e.ability !== this.ability) continue;
+      const tip = `${e.label}: on a success ${OUTCOME[e.on_success]}, on a failure ${OUTCOME[e.on_failure]}${e.appliesTo ? ` · ${e.appliesTo}` : ""}`;
+      renderConditionTag(tags(), "outcome", saveOutcomeTag(e.on_success, e.on_failure), tip);
     }
 
     if (ctx.editState) {

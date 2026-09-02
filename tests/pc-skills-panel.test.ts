@@ -126,6 +126,86 @@ describe("SkillsPanel — roll-modifier chips", () => {
   });
 });
 
+/**
+ * R4-G3a §6 — the new `mode` members on skill rows, and the ABILITY-KEY scope match.
+ *
+ * `normalizeRollScope` maps "Strength checks" to the ability key "str", not to a skill slug, so
+ * the panel must also match an ability-key scope against the row's OWN ability. The obvious
+ * shortcut (`SKILL_ABILITY[skillSlug]`) is WRONG: that table is keyed by space-separated display
+ * names ("animal handling"), so it returns undefined for `animal-handling` and `sleight-of-hand`
+ * and those two rows would silently never match. `ctx.derived.skills[slug].ability` is the
+ * already-in-scope, correctly-keyed source — the two multi-word rows below are that control.
+ */
+describe("SkillsPanel — roll-modifier chips: new modes + ability-key scope (R4-G3a §6)", () => {
+  function ctxWithScopedSkills(rollModifiers: unknown[]): ComponentRenderContext {
+    return {
+      resolved: {} as ResolvedCharacter,
+      derived: {
+        skills: mkSkills({
+          athletics: { bonus: 5, proficiency: "proficient", ability: "str" },
+          investigation: { bonus: 3, proficiency: "proficient", ability: "int" },
+          "sleight-of-hand": { bonus: 4, proficiency: "proficient", ability: "dex" },
+          "animal-handling": { bonus: 2, proficiency: "none", ability: "wis" },
+        }),
+        rollModifiers,
+      } as unknown as DerivedStats,
+      services: {} as never,
+      app: {} as never,
+      editState: null,
+    };
+  }
+
+  it('renders "+D4" on the scoped skill row only (add-d4)', () => {
+    const container = mountContainer();
+    new SkillsPanel().render(container, ctxWithScopedSkills([
+      { mode: "add-d4", roll: "ability-check", scope: "investigation", label: "Vedalken Dispassion" },
+    ]));
+    const inv = container.querySelector<HTMLElement>('[data-skill="investigation"]')!;
+    expect(inv.querySelector(".pc-cond-tag.pc-cond-tag-rider")?.textContent).toBe("+D4");
+    expect(container.querySelector<HTMLElement>('[data-skill="athletics"]')!.querySelector(".pc-cond-tag")).toBeNull();
+  });
+
+  it('an ability-key scope "str" renders on Athletics (the STR row)', () => {
+    const container = mountContainer();
+    new SkillsPanel().render(container, ctxWithScopedSkills([
+      { mode: "advantage", roll: "ability-check", scope: "str", label: "Enlarge" },
+    ]));
+    expect(container.querySelector<HTMLElement>('[data-skill="athletics"]')!
+      .querySelector(".pc-cond-tag.pc-cond-tag-adv")?.textContent).toBe("ADV");
+    expect(container.querySelector<HTMLElement>('[data-skill="investigation"]')!.querySelector(".pc-cond-tag")).toBeNull();
+  });
+
+  it('an ability-key scope "dex" reaches the multi-word slug Sleight of Hand', () => {
+    const container = mountContainer();
+    new SkillsPanel().render(container, ctxWithScopedSkills([
+      { mode: "advantage", roll: "ability-check", scope: "dex", label: "Cat's Grace" },
+    ]));
+    expect(container.querySelector<HTMLElement>('[data-skill="sleight-of-hand"]')!
+      .querySelector(".pc-cond-tag.pc-cond-tag-adv")?.textContent).toBe("ADV");
+    expect(container.querySelector<HTMLElement>('[data-skill="animal-handling"]')!.querySelector(".pc-cond-tag")).toBeNull();
+  });
+
+  it('an ability-key scope "wis" reaches the multi-word slug Animal Handling', () => {
+    const container = mountContainer();
+    new SkillsPanel().render(container, ctxWithScopedSkills([
+      { mode: "advantage", roll: "ability-check", scope: "wis", label: "Guidance" },
+    ]));
+    expect(container.querySelector<HTMLElement>('[data-skill="animal-handling"]')!
+      .querySelector(".pc-cond-tag.pc-cond-tag-adv")?.textContent).toBe("ADV");
+    expect(container.querySelector<HTMLElement>('[data-skill="sleight-of-hand"]')!.querySelector(".pc-cond-tag")).toBeNull();
+  });
+
+  // Render half of §14 row 19: a residual prose scope matches no row. (The fold half is dnd5e's —
+  // this fixture is hand-built and never runs applyEffect.)
+  it("a RESIDUAL prose scope renders no chip on any skill row (pass-through control)", () => {
+    const container = mountContainer();
+    new SkillsPanel().render(container, ctxWithScopedSkills([
+      { mode: "advantage", roll: "ability-check", scope: "Initiative rolls", label: "Feral Instinct" },
+    ]));
+    expect(container.querySelector(".pc-cond-tag")).toBeNull();
+  });
+});
+
 describe("SkillsPanel — interactive (SP4)", () => {
   function interactiveCtx(skills: Record<string, { bonus: number; proficiency: "none" | "proficient" | "expertise"; ability: string }>) {
     const editState = { cycleSkill: vi.fn() };

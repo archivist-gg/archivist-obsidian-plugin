@@ -245,6 +245,18 @@ describe("renderWeaponRow", () => {
     expect(hitCell.querySelector(".pc-cond-tag.pc-cond-tag-dis")?.textContent).toBe("DIS");
   });
 
+  // R4-G3a §6.2.1/§6.2.2 — before this phase the hit cell spelled `mode === "advantage" ? "ADV"
+  // : "DIS"`, so a Kensei-shaped `reroll` rendered "DIS". The text is now ROLL_MODE_TAG's.
+  it('renders "RR" in the hit cell for a reroll attack roll-modifier', () => {
+    const root = mountContainer();
+    const attacks = [sword()];
+    renderWeapons(root, attacks, ctxWithRollModifiers(attacks, [
+      { mode: "reroll", roll: "attack", label: "Way of the Kensei" },
+    ]));
+    const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
+    expect(hitCell.querySelector(".pc-cond-tag.pc-cond-tag-rider")?.textContent).toBe("RR");
+  });
+
   it("renders a crit caption in the damage cell when critRange < 20", () => {
     const root = mountContainer();
     const attacks = [{

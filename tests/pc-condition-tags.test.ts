@@ -107,7 +107,7 @@ describe("renderConditionTag — primitive", () => {
   it("renders a tag with the given kind label", async () => {
     const { renderConditionTag } = await import("../packages/obsidian/src/modules/pc/components/condition-tag");
     const root = mountContainer();
-    renderConditionTag(root, "ADV", "test tooltip");
+    renderConditionTag(root, "adv", "ADV", "test tooltip");
     const tag = root.querySelector(".pc-cond-tag-adv") as HTMLElement;
     expect(tag).not.toBeNull();
     expect(tag.textContent).toBe("ADV");
@@ -115,7 +115,7 @@ describe("renderConditionTag — primitive", () => {
   it("renders cond-tags with the shared .pc-meta-chip base alongside .pc-cond-tag", async () => {
     const { renderConditionTag } = await import("../packages/obsidian/src/modules/pc/components/condition-tag");
     const root = mountContainer();
-    renderConditionTag(root, "ADV", "x");
+    renderConditionTag(root, "adv", "ADV", "x");
     const tag = root.querySelector(".pc-cond-tag")!;
     expect(tag.classList.contains("pc-meta-chip")).toBe(true);
     expect(tag.classList.contains("pc-cond-tag-adv")).toBe(true);
