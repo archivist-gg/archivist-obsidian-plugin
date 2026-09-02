@@ -40,3 +40,4 @@ scratchpad/
 # directory: docs/design/ holds 9 tracked files.
 docs/design/decoupling-roadmap.md
 
+.claude/skills/
