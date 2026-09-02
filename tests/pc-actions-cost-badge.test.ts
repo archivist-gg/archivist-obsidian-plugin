@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { renderCostBadge, type ActionCost } from "../packages/obsidian/src/modules/pc/components/actions/cost-badge";
+import type { ActionCost } from "@archivist-gg/dnd5e/types/resource";
+import { renderCostBadge } from "../packages/obsidian/src/modules/pc/components/actions/cost-badge";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

@@ -4,6 +4,7 @@ import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
+import { renderEffectCaptions } from "./effect-captions";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
@@ -85,6 +86,12 @@ export function renderFeatureRow(
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
   nameCell.createDiv({ cls: "pc-action-row-name", text: title });
   if (sourceLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: sourceLabel });
+  // R4-G3a §4: the caption line for heal / temp-hp / extra-action and for every
+  // effect imposed on someone else. It hangs off the NAME cell, not the detail
+  // slot: that slot is single-occupancy and the resource tracker wins it on
+  // exactly the flagship bearers (Second Wind, Action Surge), which are the rows
+  // a caption matters most on. Boon rows do not come through here by design.
+  renderEffectCaptions(nameCell, rf, ctx);
   if (feature.activatable && feature.id) {
     const buffId = feature.id;
     const buffWrap = nameCell.createDiv({ cls: "pc-action-buff" });

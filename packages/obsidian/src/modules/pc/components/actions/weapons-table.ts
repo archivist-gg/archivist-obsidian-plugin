@@ -3,7 +3,8 @@ import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/
 import type { ActionEntry } from "./action-model";
 import { renderConditionTag, MODE_CLASS } from "../condition-tag";
 import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
-import { renderCostBadge, type ActionCost } from "./cost-badge";
+import type { ActionCost } from "@archivist-gg/dnd5e/types/resource";
+import { renderCostBadge } from "./cost-badge";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderSituationalRows } from "../situational-rows";

@@ -7281,6 +7281,22 @@ body.theme-light .archivist-tag-atk:hover {
   font-size: var(--pc-fs-small);
   color: var(--pc-text-soft);
 }
+/* R4-G3a §4: the row-local effect caption, a block child of the NAME cell (the
+ * right detail slot is single-occupancy and the resource tracker holds it on the
+ * rows that carry these effects). Same serif/italic/soft treatment as the attack
+ * note above so the two read as one register of row-local aside; several
+ * captions on one feature wrap as chips rather than stacking. */
+.archivist-pc-sheet .pc-action-namecell .pc-feature-effect-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-feature-effect {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
 .archivist-pc-sheet .pc-action-caret {
   color: var(--pc-text-muted);
   text-align: center;
