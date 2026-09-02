@@ -1,7 +1,7 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { ActionEntry } from "./action-model";
-import { renderConditionTag, type ConditionTagKind } from "../condition-tag";
+import { renderConditionTag, MODE_CLASS } from "../condition-tag";
 import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
@@ -125,9 +125,8 @@ export function renderWeaponRow(
   // advantage/disadvantage). Order-preserving; one chip per matching entry.
   for (const rm of ctx.derived.rollModifiers ?? []) {
     if (rm.roll !== "attack") continue;
-    const cls: ConditionTagKind = rm.mode === "advantage" ? "adv" : rm.mode === "disadvantage" ? "dis" : "rider";
     const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-    renderConditionTag(hitCell, cls, ROLL_MODE_TAG[rm.mode], tip);
+    renderConditionTag(hitCell, MODE_CLASS[rm.mode], ROLL_MODE_TAG[rm.mode], tip);
   }
 
   // Damage (inline italic; versatile shows both stacked)

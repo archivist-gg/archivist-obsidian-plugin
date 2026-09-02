@@ -1,7 +1,7 @@
 import { setTooltip } from "obsidian";
 import type { Ability } from "@archivist-gg/dnd5e";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import { renderConditionTag, type ConditionTagKind } from "./condition-tag";
+import { renderConditionTag, MODE_CLASS } from "./condition-tag";
 import { ROLL_MODE_TAG, AUTO_FAIL_TAG, OUTCOME, saveOutcomeTag } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { numberOverride } from "./edit-primitives";
 import { attachStatTooltip } from "./stat-tooltip";
@@ -105,9 +105,8 @@ export class SaveChip implements SheetComponent {
     for (const rm of ctx.derived.rollModifiers ?? []) {
       if (rm.roll !== "saving-throw") continue;
       if (rm.scope && rm.scope !== this.ability) continue;
-      const cls: ConditionTagKind = rm.mode === "advantage" ? "adv" : rm.mode === "disadvantage" ? "dis" : "rider";
       const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-      renderConditionTag(tags(), cls, ROLL_MODE_TAG[rm.mode], tip);
+      renderConditionTag(tags(), MODE_CLASS[rm.mode], ROLL_MODE_TAG[rm.mode], tip);
     }
 
     // R4-G3a §5.3 · `save-outcome` entries beside the roll-modifier loop. An ABSENT `ability` is

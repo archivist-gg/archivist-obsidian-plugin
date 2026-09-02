@@ -3,7 +3,7 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { ALL_SKILLS } from "@archivist-gg/dnd5e/dnd/constants";
 import { formatModifier } from "@archivist-gg/dnd5e/dnd/math";
 import type { SkillSlug } from "@archivist-gg/dnd5e";
-import { renderConditionTag, type ConditionTagKind } from "./condition-tag";
+import { renderConditionTag, MODE_CLASS } from "./condition-tag";
 import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { numberOverride } from "./edit-primitives";
 
@@ -81,9 +81,8 @@ export class SkillsPanel implements SheetComponent {
       for (const rm of ctx.derived.rollModifiers ?? []) {
         if (rm.roll !== "ability-check") continue;
         if (rm.scope && rm.scope !== skillSlug && rm.scope !== entry.ability) continue;
-        const cls: ConditionTagKind = rm.mode === "advantage" ? "adv" : rm.mode === "disadvantage" ? "dis" : "rider";
         const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-        renderConditionTag(row, cls, ROLL_MODE_TAG[rm.mode], tip);
+        renderConditionTag(row, MODE_CLASS[rm.mode], ROLL_MODE_TAG[rm.mode], tip);
       }
       if (ctx.editState) {
         row.addEventListener("click", () => ctx.editState!.cycleSkill(skillSlug));

@@ -5818,7 +5818,12 @@ body.theme-light .archivist-tag-atk:hover {
    `rider` carries the roll-modifier modes that are neither advantage nor disadvantage
    ("RR", "+D4"): they change HOW you roll, not whether the roll is better or worse, so
    neither the crimson nor the rare-blue reading is right for them.
-   `outcome` carries the save-outcome rail ("0/½"), which is a damage result, not a roll. */
+   `outcome` carries the save-outcome rail ("0/½"), which is a damage result, not a roll.
+   Its `letter-spacing` override is the load-bearing one: the shared .pc-cond-tag rule sets
+   0.1em for the micro-caps word tags, which pushes the glyphs of a "0/½" fraction apart until
+   it reads as three symbols rather than one ratio. `text-transform: none` beside it is purely
+   DEFENSIVE and changes nothing today (uppercasing "0", "/" and "½" is a no-op); it is there so
+   a later outcome glyph with a lower-case letter cannot be silently upper-cased. */
 .archivist-pc-sheet .pc-cond-tag-rider {
   border: 1px solid var(--pc-text-muted);
   color: var(--pc-text-muted);

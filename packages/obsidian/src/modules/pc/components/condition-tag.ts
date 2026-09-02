@@ -1,4 +1,5 @@
 import { setTooltip } from "obsidian";
+import type { RollModifierMode } from "@archivist-gg/dnd5e/pc/pc.types";
 
 /**
  * The tag's CSS-CLASS key, not its display string (R4-G3a §5.2).
@@ -22,6 +23,24 @@ const KIND_CLASS: Record<ConditionTagKind, string> = {
   fail: "pc-cond-tag-fail",
   rider: "pc-cond-tag-rider",
   outcome: "pc-cond-tag-outcome",
+};
+
+/**
+ * Engine `mode` to tag COLOUR (spec §6.2.2). A `Record<RollModifierMode, ConditionTagKind>`, not
+ * a ternary at each of the three chip surfaces: the TEXT half of the render decision already gets
+ * a compile guard from dnd5e's `Record<RollModifierMode, string>` label tables, and the CLASS half
+ * must get the same one. Spelled as a ternary, a FIFTH `mode` member would silently route to
+ * "rider" and ship a wrong colour with a green tree; spelled as this Record, it is a tsc error
+ * here (the same control as §14 row 8i, one layer up).
+ *
+ * `reroll` and `add-d4` share `rider` deliberately: they change HOW you roll rather than whether
+ * the roll is better or worse, so neither the advantage nor the disadvantage colour reads right.
+ */
+export const MODE_CLASS: Record<RollModifierMode, ConditionTagKind> = {
+  advantage: "adv",
+  disadvantage: "dis",
+  reroll: "rider",
+  "add-d4": "rider",
 };
 
 /**
