@@ -3,6 +3,7 @@ import type { FeatEntity, FeatPrerequisite } from "@archivist-gg/dnd5e/feat/feat
 import { featCategoryLabel } from "@archivist-gg/dnd5e/feat/feat.category-codes";
 import { el, createIconProperty, sourceBadgeText } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
+import { costLabel } from "../../shared/rendering/action-cost-label";
 
 /** Capitalize only the first letter of each whitespace-delimited word. Anchoring
  *  on start/whitespace (rather than `\b`) avoids uppercasing the letter after an
@@ -71,6 +72,10 @@ export async function renderFeatBlock(
     createIconProperty(props, "lock", "Prerequisites:", data.prerequisites.map(prereqText).join("; "));
   }
   if (data.repeatable) createIconProperty(props, "repeat", "Repeatable:", "Yes");
+  // R4-G3a §10.2.3 · a feat's entity-level action cost (SRD 2024 Boon of the Night Spirit).
+  // The label comes from the ONE shared action-cost table, never a further copy of the
+  // vocabulary (it is already declared eleven times across ten files).
+  if (data.action_cost) createIconProperty(props, "zap", "Action:", costLabel(data.action_cost));
 
   if (data.description && data.description.length > 0) {
     const descDiv = el("div", { cls: "spell-description", parent: block });

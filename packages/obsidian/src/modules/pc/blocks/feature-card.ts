@@ -7,6 +7,7 @@ import { evaluateMaxFormula } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import { type App } from "obsidian";
 import { createIconProperty } from "../../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../../shared/rendering/markdown-description";
+import { plainText } from "../../../shared/rendering/plain-text";
 // R4-G3a §8.2 (3): the reset-label twin that used to live here is retired onto
 // the single `ResetTrigger`-keyed table shared with the row trackers.
 import { RESET_LABELS } from "../components/actions/reset-labels";
@@ -95,13 +96,27 @@ export function renderFeatureCard(parent: HTMLElement, opts: FeatureCardOptions)
   header.createEl("h3", { cls: "archivist-item-name", text: opts.title });
   if (opts.sourceLabel) header.createDiv({ cls: "archivist-item-subtitle", text: opts.sourceLabel });
 
-  // Properties · the die line, when the pool has one. Same icon-property rhythm
-  // as an item block's Weight/Cost lines; a resource-less feature/passive/boon
-  // card renders no properties block at all. (The `recharge` option next to it
-  // had zero producers and was retired with the label twin, R4-G3a §8.2 (3).)
-  if (opts.die) {
+  // R4-G3a §10.2.2 · the Save / DC line. `feature.save` is the canonical nested key (the two
+  // Dragonborns carry it); a bare `feature.dc_formula` is the prose fallback (208 converter
+  // carriers, "your spell save DC" ×56). The formula is ECHOED as authored, through the shared
+  // `plainText` stripper, and NEVER evaluated: `{prof_bonus}` is not a `resource-formula` ident, so
+  // the SRD Dragonborn's own DC would THROW, and teaching the DSL that spelling fixes 87 of the 208
+  // carriers while breaking 121. Rendering the authored text is the whole feature.
+  const feature = opts.feature;
+  const saveLine = feature?.save
+    ? `${feature.save.ability.toUpperCase()} · ${plainText(feature.save.dc_formula)}`
+    : feature?.dc_formula ? plainText(feature.dc_formula) : undefined;
+
+  // Properties · the die line, when the pool has one, and the Save/DC line. Same icon-property
+  // rhythm as an item block's Weight/Cost lines; a card with neither renders no properties block at
+  // all. (The `recharge` option that used to sit here had zero producers and was retired with the
+  // label twin, R4-G3a §8.2 (3).)
+  if (opts.die || saveLine) {
     const props = block.createDiv({ cls: "archivist-item-properties" });
-    createIconProperty(props, "dices", "Die:", opts.die);
+    if (opts.die) createIconProperty(props, "dices", "Die:", opts.die);
+    // The label is narrowed on `saveLine` rather than on `feature.save` so the value stays a
+    // `string` for `createIconProperty` (which takes no undefined).
+    if (saveLine) createIconProperty(props, "shield", feature?.save ? "Save:" : "DC:", saveLine);
   }
 
   // Description (information only) — `description ?? entries` — plus any chosen
