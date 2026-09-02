@@ -129,8 +129,8 @@ describe("bundle race traits: action_cost aliases onto action (R4-G3a §10.2.1)"
     expect(trait?.action_cost).toBe(expected);   // the declared one is retained, never deleted
   });
 
-  // The sweep covers all THREE fence kinds that carry features, because Task 7 wired the alias into
-  // the class and subclass parsers too (`aliasFeaturesByLevelActionCost` over `features_by_level`).
+  // The sweep covers the three fence kinds Task 7 wired the alias into: race, class and subclass
+  // (`aliasFeaturesByLevelActionCost` over `features_by_level` for the latter two).
   // A race-only sweep under a "whole population" title would be blind to a class or subclass feature
   // gaining `action_cost`, which is a feature-level carrier exactly like a race trait. Measured
   // 2026-09-02: 22 race + 24 class + 24 subclass fences, all parsing, 5 carriers, all on races.

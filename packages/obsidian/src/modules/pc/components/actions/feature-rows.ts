@@ -209,8 +209,9 @@ export function renderCardResource(parent: HTMLElement, resource: Resource, ctx:
  * Returns true when a tracker was rendered.
  *
  * Exported (R4-G3a §11) for the Passive tab's race block, whose trait rows host
- * the same tracker for a costless race trait: those traits never reach a feature
- * row, so before the export their seeded uses had no UI to spend.
+ * the same tracker for any trait carrying `resources[]`. The case it exists for is
+ * the COSTLESS one: those traits never reach a feature row, so before the export
+ * their seeded uses had no UI to spend.
  */
 export function renderFirstResourceTracker(detail: HTMLElement, feature: Feature, ctx: ComponentRenderContext): boolean {
   const res0 = feature.resources?.[0];

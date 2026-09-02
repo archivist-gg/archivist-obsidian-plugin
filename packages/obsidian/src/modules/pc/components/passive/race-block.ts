@@ -136,9 +136,13 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
         traitRow.createDiv({ cls: "pc-cb-trait-n", text: t.name });
         // A trait carrying `resources[]` gets the SAME first-resource tracker the
         // feature rows use (§11): its uses are seeded into `state.feature_uses`
-        // and listed in the rest modal, but a costless race trait never reaches a
-        // feature row (the passive tab drops the `race` sub-group), so this host
-        // is the only place it can be spent. Only the tracker's own host is added
+        // and listed in the rest modal, but a COSTLESS race trait never reaches a
+        // feature row (the passive tab drops the `race` sub-group), so for that
+        // subset this host is the only place it can be spent. The gate here is
+        // `t.resources?.length`, not the routing cost, so a ROUTED carrier (the
+        // SRD Dragonborn's Breath Weapon) shows a tracker in BOTH the Actions tab
+        // and here on the same `feature_uses` id: consistent state, and a G3b/user
+        // choice whether to gate on the cost. Only the tracker's own host is added
         // here, so a trait without resources renders exactly as before.
         if (t.resources?.length) {
           const trackHost = traitRow.createDiv({ cls: "pc-cb-trait-track" });
