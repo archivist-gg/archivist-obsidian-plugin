@@ -207,8 +207,12 @@ export function renderCardResource(parent: HTMLElement, resource: Resource, ctx:
  * `feature_uses[resources[0].id ?? feature.id]`, spent via
  * `editState.expend/restoreFeatureUse` (identical to the retired features-table).
  * Returns true when a tracker was rendered.
+ *
+ * Exported (R4-G3a §11) for the Passive tab's race block, whose trait rows host
+ * the same tracker for a costless race trait: those traits never reach a feature
+ * row, so before the export their seeded uses had no UI to spend.
  */
-function renderFirstResourceTracker(detail: HTMLElement, feature: Feature, ctx: ComponentRenderContext): boolean {
+export function renderFirstResourceTracker(detail: HTMLElement, feature: Feature, ctx: ComponentRenderContext): boolean {
   const res0 = feature.resources?.[0];
   const key = res0?.id ?? feature.id;
   const fu = key ? ctx.resolved.state.feature_uses?.[key] : undefined;

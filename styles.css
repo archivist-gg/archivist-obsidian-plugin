@@ -9147,6 +9147,25 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:last-child { border-bottom: none; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-n { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
+/* Resource tracker on a race trait (R4-G3a §11): the pips sit on the name line,
+   the description keeps its own full-width line under them. The whole row turns
+   into a wrapping flex ONLY when a `.pc-cb-trait-track` host is present, so a
+   trait without resources keeps the plain block layout it has always had
+   (`:has()` is supported in every Chromium >= 105, i.e. all current Obsidian
+   builds; the same floor components.css already relies on). Nothing here dresses
+   the tracker itself: the pips are `.archivist-toggle-box` (archivist-dnd.css)
+   and the wrapper plus the italic recovery caption are `.pc-charge-boxes` /
+   `.pc-charge-recovery` (actions.css). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:has(> .pc-cb-trait-track) {
+  display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait > .pc-cb-trait-track { margin-left: auto; }
+/* The shared pip row carries a `margin: 6px 0 12px` for the stat-block contexts
+   it was written for (archivist-dnd.css); on this one-line trait header that
+   margin only skews the pips against the name, so it is zeroed HERE (scoped to
+   the trait track, leaving every other tracker host untouched). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait > .pc-cb-trait-track .archivist-toggle-box-row { margin: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:has(> .pc-cb-trait-track) > .pc-cb-trait-d { flex: 0 0 100%; }
 /* Markdown-rendered description dress (smoke r7): trait + decision descriptions
    now render through the shared markdown path, so their `p`/`table`/`ul` must
    inherit the quiet dress. Tables follow the progression cast-table idiom (caps

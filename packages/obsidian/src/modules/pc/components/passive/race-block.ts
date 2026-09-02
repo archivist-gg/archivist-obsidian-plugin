@@ -3,6 +3,7 @@ import type { RaceEntity } from "@archivist-gg/dnd5e/race/race.types";
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
+import { renderFirstResourceTracker } from "../actions/feature-rows";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 
 /**
@@ -133,6 +134,16 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
       for (const t of traits) {
         const traitRow = host.createDiv({ cls: "pc-cb-trait" });
         traitRow.createDiv({ cls: "pc-cb-trait-n", text: t.name });
+        // A trait carrying `resources[]` gets the SAME first-resource tracker the
+        // feature rows use (§11): its uses are seeded into `state.feature_uses`
+        // and listed in the rest modal, but a costless race trait never reaches a
+        // feature row (the passive tab drops the `race` sub-group), so this host
+        // is the only place it can be spent. Only the tracker's own host is added
+        // here, so a trait without resources renders exactly as before.
+        if (t.resources?.length) {
+          const trackHost = traitRow.createDiv({ cls: "pc-cb-trait-track" });
+          renderFirstResourceTracker(trackHost, t, ctx);
+        }
         // The description renders through the SHARED markdown path (ctx.app threaded,
         // async) so a trait carrying a pipe table shows a real table, not raw `|...|`
         // text. The `.catch` paints a visible error div; the `.pc-cb-trait-d`
