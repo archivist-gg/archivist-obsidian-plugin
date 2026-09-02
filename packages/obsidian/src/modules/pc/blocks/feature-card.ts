@@ -20,10 +20,18 @@ import { RESET_LABELS } from "../components/actions/reset-labels";
  * (crimson header rule, serif title, top-right source badge, icon property-lines,
  * justified description). It was previously trapped as a private, Resource-keyed
  * helper in `components/actions/resource-badge.ts` that rendered `feature.description`
- * ONLY — so `entries`-only features (racial traits, some class features, Invoke
+ * ONLY, so `entries`-only features (racial traits, some class features, Invoke
  * Hell) rendered blank. Generalizing here adds the `description ?? entries`
- * fallback and a resource-less path (no Recharge/Die line, no recovery action)
- * so the consolidated first-tab rows (Task 3/4/5) can all share ONE card.
+ * fallback and a path for a feature with no resource behind it (no Die line, no
+ * recovery action) so the consolidated first-tab rows (Task 3/4/5) can all share
+ * ONE card.
+ *
+ * The properties block is no longer resource-keyed. It renders when there is a Die
+ * value (resource-keyed) OR a Save/DC line, and the Save/DC line is read straight
+ * off the feature, so a resource-less racial trait such as the SRD Dragonborn's
+ * Breath Weapon now carries one (R4-G3a §10.2.2). The `recharge` option that used
+ * to sit beside Die had zero producers and was retired with its label twin
+ * (R4-G3a §8.2 (3)).
  */
 
 /** A chosen `select-inline` pick surfaced on the parent feature's card. */
@@ -54,8 +62,10 @@ export interface FeatureCardOptions {
   die?: string;
   /** Explicit description prose; overrides the {@link feature} fallback when set. */
   description?: string;
-  /** Source feature; description falls back to `description ?? entries` when
-   *  {@link description} is absent (see {@link featureCardDescription}). */
+  /** Source feature. Feeds TWO things: the description falls back to
+   *  `description ?? entries` when {@link description} is absent (see
+   *  {@link featureCardDescription}), and the Save/DC property line is rendered from
+   *  its `save` (or, failing that, its bare `dc_formula`) as authored TEXT. */
   feature?: Feature;
   /** Chosen inline picks → "Chose · <label>: <description>" (or "Chose · <label>"). */
   chosenInline?: FeatureCardChosen[];
@@ -77,11 +87,12 @@ export function featureCardDescription(feature?: Feature): string | undefined {
 
 /**
  * The shared expand card. Renders (in order): source badge (top-right), header
- * (title + italic source subtitle), property-lines (Recharge/Die — resource-keyed
- * only), the description + any chosen-inline picks, and finally the recovery
- * action (resource-keyed only).
+ * (title + italic source subtitle), the property lines (a Die value when the card is
+ * resource-keyed, and/or the feature's Save/DC line; the whole block is omitted when
+ * there is neither), the description + any chosen-inline picks, and finally the
+ * recovery action (resource-keyed only).
  *
- * The block is informational; usage is NEVER spent here — it lives in the list
+ * The block is informational; usage is NEVER spent here, it lives in the list
  * row's tracker (unchanged rule).
  */
 export function renderFeatureCard(parent: HTMLElement, opts: FeatureCardOptions): void {
