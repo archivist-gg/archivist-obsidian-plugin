@@ -5,15 +5,10 @@ import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { renderEffectCaptions } from "./effect-captions";
+import { RESET_LABELS, CUSTOM_RESET_TIP } from "./reset-labels";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
-
-/** Reset trigger → the charge-box recovery bucket (moved verbatim from actions-tab.ts). */
-const RESET_TO_RECOVERY: Record<string, "dawn" | "short" | "long" | "special"> = {
-  "short-rest": "short", "long-rest": "long", "dawn": "dawn", "dusk": "long",
-  "turn": "special", "round": "special", "custom": "special",
-};
 
 /**
  * One unified feature/passive row:
@@ -200,7 +195,8 @@ export function renderCardResource(parent: HTMLElement, resource: Resource, ctx:
   renderChargeBoxes(track, {
     used: fu.used,
     max: fu.max,
-    recovery: { amount: String(fu.max), reset: RESET_TO_RECOVERY[resource.reset] ?? "special" },
+    recovery: { amount: String(fu.max), label: RESET_LABELS[resource.reset] },
+    recoveryTitle: resource.reset === "custom" ? CUSTOM_RESET_TIP : undefined,
     onExpend: () => ctx.editState?.expendFeatureUse(id),
     onRestore: () => ctx.editState?.restoreFeatureUse(id),
   });
@@ -222,7 +218,8 @@ function renderFirstResourceTracker(detail: HTMLElement, feature: Feature, ctx: 
   renderChargeBoxes(track, {
     used: fu.used,
     max: fu.max,
-    recovery: { amount: String(fu.max), reset: RESET_TO_RECOVERY[reset] ?? "special" },
+    recovery: { amount: String(fu.max), label: RESET_LABELS[reset] },
+    recoveryTitle: reset === "custom" ? CUSTOM_RESET_TIP : undefined,
     onExpend: () => ctx.editState?.expendFeatureUse(key),
     onRestore: () => ctx.editState?.restoreFeatureUse(key),
   });

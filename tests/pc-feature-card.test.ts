@@ -6,8 +6,8 @@ import {
   featureCardDescription,
   resolveFeatureDescription,
   formatSourceLabel,
-  RESET_LABEL,
 } from "../packages/obsidian/src/modules/pc/blocks/feature-card";
+import { RESET_LABELS } from "../packages/obsidian/src/modules/pc/components/actions/reset-labels";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -102,9 +102,11 @@ describe("relocated helpers", () => {
     expect(formatSourceLabel(undefined)).toBe("");
   });
 
-  it("RESET_LABEL maps reset triggers to friendly labels", () => {
-    expect(RESET_LABEL["short-rest"]).toBe("Short Rest");
-    expect(RESET_LABEL["long-rest"]).toBe("Long Rest");
+  // R4-G3a §8.2 (3): the `RESET_LABEL` twin that used to live in feature-card.ts
+  // is retired onto the single `RESET_LABELS` table; these two pins move with it.
+  it("RESET_LABELS maps reset triggers to friendly labels", () => {
+    expect(RESET_LABELS["short-rest"]).toBe("Short Rest");
+    expect(RESET_LABELS["long-rest"]).toBe("Long Rest");
   });
 
   it("resolveFeatureDescription returns the base and appends chosen picks", () => {

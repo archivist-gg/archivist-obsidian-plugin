@@ -80,4 +80,39 @@ describe("renderChargeBoxes", () => {
     renderChargeBoxes(root, { used: 0, max: 1, recovery: { amount: "0", reset: "special" } });
     expect(root.querySelector(".pc-charge-recovery")?.textContent?.toLowerCase()).toContain("special");
   });
+
+  // R4-G3a §8.2 (viii): `recovery` is a discriminated shape. The FEATURE path
+  // passes a caption STRING built from `RESET_LABELS`; the ITEM path keeps the
+  // persisted `dawn|short|long|special` vocabulary and its own four-member map
+  // (invariant 4 · the item enum is untouched on both the persist and the
+  // display side).
+  it("renders the caption-STRING form verbatim (the feature path)", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 1, recovery: { amount: "1", label: "Short or Long Rest" } });
+    expect(root.querySelector(".pc-charge-recovery")?.textContent).toBe("/ Short or Long Rest");
+  });
+
+  it("still reads the ITEM four-member map on the `reset` form", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 1, recovery: { amount: "1", reset: "dawn" } });
+    expect(root.querySelector(".pc-charge-recovery")?.textContent).toBe("/ Dawn");
+  });
+
+  it("hangs `recoveryTitle` on the caption as a title attribute (the `custom` tooltip)", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, {
+      used: 0, max: 1,
+      recovery: { amount: "1", label: "Special" },
+      recoveryTitle: "Recovery is described in this feature's text",
+    });
+    const rec = root.querySelector(".pc-charge-recovery");
+    expect(rec?.textContent).toBe("/ Special");
+    expect(rec?.getAttribute("title")).toBe("Recovery is described in this feature's text");
+  });
+
+  it("sets NO title attribute when `recoveryTitle` is absent", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 1, recovery: { amount: "1", label: "Short Rest" } });
+    expect(root.querySelector(".pc-charge-recovery")?.getAttribute("title")).toBeNull();
+  });
 });

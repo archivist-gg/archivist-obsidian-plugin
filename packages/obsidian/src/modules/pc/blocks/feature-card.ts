@@ -7,6 +7,9 @@ import { evaluateMaxFormula } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import { type App } from "obsidian";
 import { createIconProperty } from "../../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../../shared/rendering/markdown-description";
+// R4-G3a §8.2 (3): the reset-label twin that used to live here is retired onto
+// the single `ResetTrigger`-keyed table shared with the row trackers.
+import { RESET_LABELS } from "../components/actions/reset-labels";
 
 /**
  * Shared feature/resource block-card renderer.
@@ -21,13 +24,6 @@ import { renderMarkdownDescription } from "../../../shared/rendering/markdown-de
  * fallback and a resource-less path (no Recharge/Die line, no recovery action)
  * so the consolidated first-tab rows (Task 3/4/5) can all share ONE card.
  */
-
-/** Title-cased reset labels (the row label is CSS-uppercased; the block meta is
- *  shown as-is). */
-export const RESET_LABEL: Record<string, string> = {
-  "short-rest": "Short Rest", "long-rest": "Long Rest", "dawn": "Dawn",
-  "dusk": "Dusk", "turn": "Per Turn", "round": "Per Round", "custom": "Special",
-};
 
 /** A chosen `select-inline` pick surfaced on the parent feature's card. */
 export interface FeatureCardChosen {
@@ -53,8 +49,6 @@ export interface FeatureCardOptions {
   sourceLabel?: string;
   /** Edition source-badge text (top-right); null/undefined → no badge. */
   sourceBadge?: string | null;
-  /** Recharge-cadence property-line value (resource-keyed). Omit → no Recharge line. */
-  recharge?: string;
   /** Die property-line value (resource-keyed). Omit → no Die line. */
   die?: string;
   /** Explicit description prose; overrides the {@link feature} fallback when set. */
@@ -101,13 +95,13 @@ export function renderFeatureCard(parent: HTMLElement, opts: FeatureCardOptions)
   header.createEl("h3", { cls: "archivist-item-name", text: opts.title });
   if (opts.sourceLabel) header.createDiv({ cls: "archivist-item-subtitle", text: opts.sourceLabel });
 
-  // Properties — recharge cadence (and die, when the pool has one). Same
-  // icon-property rhythm as an item block's Weight/Cost lines. Resource-keyed
-  // cards pass `recharge`; a resource-less feature/passive/boon card has neither.
-  if (opts.recharge || opts.die) {
+  // Properties · the die line, when the pool has one. Same icon-property rhythm
+  // as an item block's Weight/Cost lines; a resource-less feature/passive/boon
+  // card renders no properties block at all. (The `recharge` option next to it
+  // had zero producers and was retired with the label twin, R4-G3a §8.2 (3).)
+  if (opts.die) {
     const props = block.createDiv({ cls: "archivist-item-properties" });
-    if (opts.recharge) createIconProperty(props, "rotate-ccw", "Recharge:", opts.recharge);
-    if (opts.die) createIconProperty(props, "dices", "Die:", opts.die);
+    createIconProperty(props, "dices", "Die:", opts.die);
   }
 
   // Description (information only) — `description ?? entries` — plus any chosen
@@ -176,7 +170,7 @@ export function renderRecoveryAction(block: HTMLElement, resource: Resource, sou
 
   // Use already spent → show a spent hint instead of an interactive picker.
   if (fu && fu.used >= fu.max) {
-    actions.createDiv({ cls: "pc-recover-hint", text: `Already used — recharges on a ${RESET_LABEL[resource.reset] ?? "Special"}.` });
+    actions.createDiv({ cls: "pc-recover-hint", text: `Already used — recharges on a ${RESET_LABELS[resource.reset]}.` });
     return;
   }
 

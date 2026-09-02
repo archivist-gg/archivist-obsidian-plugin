@@ -1,7 +1,20 @@
 export interface ChargeBoxesOpts {
   used: number;
   max: number;
-  recovery?: { amount: string; reset: "dawn" | "short" | "long" | "special" };
+  /**
+   * The recovery caption under the boxes, in one of TWO shapes (R4-G3a §8.2 (viii)):
+   *   - `{ amount, reset }` · the ITEM path. `reset` is the PERSISTED item-charge
+   *     vocabulary (`pc.schema.ts` `equipmentEntryStateSchema.recovery.reset`),
+   *     rendered through {@link RESET_LABEL} below. Untouched (invariant 4).
+   *   - `{ amount, label }` · the FEATURE path. `label` is already a caption,
+   *     built by the caller from `RESET_LABELS` (the `ResetTrigger`-keyed table
+   *     in ./reset-labels), and is rendered verbatim.
+   */
+  recovery?:
+    | { amount: string; reset: "dawn" | "short" | "long" | "special" }
+    | { amount: string; label: string };
+  /** Optional `title` for the recovery caption (the `custom` recovery tooltip). */
+  recoveryTitle?: string;
   /**
    * Atomic per-click setter. Receives the new `used` count after applying
    * legendary-style click semantics:
@@ -71,12 +84,16 @@ export function renderChargeBoxes(parent: HTMLElement, opts: ChargeBoxesOpts): H
 
   if (opts.recovery) {
     const label = formatRecovery(opts.recovery);
-    wrap.createDiv({ cls: "pc-charge-recovery", text: `/ ${label}` });
+    const cap = wrap.createDiv({ cls: "pc-charge-recovery", text: `/ ${label}` });
+    if (opts.recoveryTitle) cap.setAttribute("title", opts.recoveryTitle);
   }
   return wrap;
 }
 
-function formatRecovery(rec: { amount: string; reset: "dawn" | "short" | "long" | "special" }): string {
+function formatRecovery(rec: NonNullable<ChargeBoxesOpts["recovery"]>): string {
+  // The feature path hands over a finished caption; only the item path consults
+  // the four-member map (and only it carries the dawn "N per dawn" suffix).
+  if ("label" in rec) return rec.label;
   const base = RESET_LABEL[rec.reset];
   if (rec.reset === "dawn" && rec.amount && rec.amount !== "1") {
     return `${base} ${rec.amount}`;
