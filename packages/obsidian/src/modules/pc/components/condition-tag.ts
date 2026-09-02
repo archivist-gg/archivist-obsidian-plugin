@@ -6,7 +6,7 @@ import { setTooltip } from "obsidian";
  * Until G3a the kind WAS the text: `ConditionTagKind` was `"DIS" | "ADV" | "AUTO-FAIL"` and the
  * primitive rendered `text: kind`. That collapsed two concerns into one union, so a fourth tag
  * text could not exist without inventing a fourth colour, and the three chip surfaces each grew
- * their own `mode === "advantage" ? "ADV" : "DIS"` ternary — a vocabulary switch on game data
+ * their own `mode === "advantage" ? "ADV" : "DIS"` ternary: a vocabulary switch on game data
  * inside a component (invariant 3), which rendered "DIS" for a `reroll` the moment the engine's
  * `mode` widened.
  *
@@ -27,7 +27,7 @@ const KIND_CLASS: Record<ConditionTagKind, string> = {
 /**
  * Render a small condition tag chip ("ADV" / "DIS" / "RR" / "+D4" / "AUTO-FAIL" / "0/½") with a
  * tooltip explaining the source. Used by save-chip, skills-panel, and the actions tables. Tags
- * are decorative — they have no click handler.
+ * are decorative: they have no click handler.
  */
 export function renderConditionTag(
   parent: HTMLElement,

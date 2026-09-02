@@ -72,7 +72,7 @@ export class SkillsPanel implements SheetComponent {
 
       // Structured roll-modifier effects scoped to ability checks. An entry
       // applies to this row when it is unscoped (all checks), when its scope
-      // matches the skill slug, or — R4-G3a §6.2.3 — when its scope is the
+      // matches the skill slug, or (R4-G3a §6.2.3) when its scope is the
       // ABILITY KEY this row rolls with ("Strength checks" normalises to "str",
       // not to a skill). `entry.ability` is the row's own already-resolved key:
       // SKILL_ABILITY is keyed by space-separated display names and returns

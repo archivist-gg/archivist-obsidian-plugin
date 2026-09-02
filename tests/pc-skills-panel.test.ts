@@ -127,16 +127,16 @@ describe("SkillsPanel — roll-modifier chips", () => {
 });
 
 /**
- * R4-G3a §6 — the new `mode` members on skill rows, and the ABILITY-KEY scope match.
+ * R4-G3a §6 · the new `mode` members on skill rows, and the ABILITY-KEY scope match.
  *
  * `normalizeRollScope` maps "Strength checks" to the ability key "str", not to a skill slug, so
  * the panel must also match an ability-key scope against the row's OWN ability. The obvious
  * shortcut (`SKILL_ABILITY[skillSlug]`) is WRONG: that table is keyed by space-separated display
  * names ("animal handling"), so it returns undefined for `animal-handling` and `sleight-of-hand`
  * and those two rows would silently never match. `ctx.derived.skills[slug].ability` is the
- * already-in-scope, correctly-keyed source — the two multi-word rows below are that control.
+ * already-in-scope, correctly-keyed source; the two multi-word rows below are that control.
  */
-describe("SkillsPanel — roll-modifier chips: new modes + ability-key scope (R4-G3a §6)", () => {
+describe("SkillsPanel · roll-modifier chips: new modes + ability-key scope (R4-G3a §6)", () => {
   function ctxWithScopedSkills(rollModifiers: unknown[]): ComponentRenderContext {
     return {
       resolved: {} as ResolvedCharacter,
@@ -195,7 +195,7 @@ describe("SkillsPanel — roll-modifier chips: new modes + ability-key scope (R4
     expect(container.querySelector<HTMLElement>('[data-skill="sleight-of-hand"]')!.querySelector(".pc-cond-tag")).toBeNull();
   });
 
-  // Render half of §14 row 19: a residual prose scope matches no row. (The fold half is dnd5e's —
+  // Render half of §14 row 19: a residual prose scope matches no row. (The fold half is dnd5e's:
   // this fixture is hand-built and never runs applyEffect.)
   it("a RESIDUAL prose scope renders no chip on any skill row (pass-through control)", () => {
     const container = mountContainer();

@@ -245,7 +245,7 @@ describe("renderWeaponRow", () => {
     expect(hitCell.querySelector(".pc-cond-tag.pc-cond-tag-dis")?.textContent).toBe("DIS");
   });
 
-  // R4-G3a §6.2.1/§6.2.2 — before this phase the hit cell spelled `mode === "advantage" ? "ADV"
+  // R4-G3a §6.2.1/§6.2.2 · before this phase the hit cell spelled `mode === "advantage" ? "ADV"
   // : "DIS"`, so a Kensei-shaped `reroll` rendered "DIS". The text is now ROLL_MODE_TAG's.
   it('renders "RR" in the hit cell for a reroll attack roll-modifier', () => {
     const root = mountContainer();

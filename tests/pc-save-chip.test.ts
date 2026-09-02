@@ -154,7 +154,7 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
       expect(root.querySelector(".pc-cond-tag")).toBeNull();
     });
 
-    // R4-G3a §6.2.1 — the two new `mode` members. Before this phase all three chip surfaces
+    // R4-G3a §6.2.1 · the two new `mode` members. Before this phase all three chip surfaces
     // spelled `mode === "advantage" ? "ADV" : "DIS"`, so a `reroll` rendered "DIS": a green tree
     // with a false chip. The text now comes from dnd5e's ROLL_MODE_TAG (§14 row 8ii).
     it('renders "RR" (rider class) for a reroll saving-throw roll-modifier', () => {
@@ -170,7 +170,7 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
     });
 
     // R4-G3a §6.2.3 render half of §14 row 19: a scope the normaliser could not map stays RAW on
-    // the entry and must match NO chip — the pre-phase behaviour, preserved on purpose. (The fold
+    // the entry and must match NO chip: the pre-phase behaviour, preserved on purpose. (The fold
     // half of row 19 lives in dnd5e; this fixture is hand-built and never runs applyEffect.)
     it("a RESIDUAL prose scope renders no chip on any save chip (pass-through control)", () => {
       for (const abl of ["str", "dex", "wis", "cha"] as const) {
@@ -185,7 +185,7 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
     });
   });
 
-  // R4-G3a §5.3 — `save-outcome` tags on the save chip's tag rail. The tag TEXT comes from
+  // R4-G3a §5.3 · `save-outcome` tags on the save chip's tag rail. The tag TEXT comes from
   // dnd5e's saveOutcomeTag over the two closed enums; never an "EVA" literal (Spellfire Sorcery
   // is not Evasion).
   describe("save-outcome tags (R4-G3a §5.3)", () => {
