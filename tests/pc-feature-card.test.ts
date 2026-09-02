@@ -8,6 +8,7 @@ import {
   formatSourceLabel,
 } from "../packages/obsidian/src/modules/pc/blocks/feature-card";
 import { RESET_LABELS } from "../packages/obsidian/src/modules/pc/components/actions/reset-labels";
+import type { ResetTrigger } from "@archivist-gg/dnd5e/types/resource";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -42,7 +43,7 @@ describe("renderFeatureCard — generalized card", () => {
     expect(root.querySelectorAll(".archivist-item-description .description-paragraph").length).toBe(1);
   });
 
-  it("(b) a card with NO Resource renders NO Recharge/Die property-line and NO recovery action", () => {
+  it("(b) a card with NO die renders NO properties block and NO recovery action", () => {
     const root = mountContainer();
     renderFeatureCard(root, {
       title: "Stonecunning",
@@ -90,6 +91,55 @@ describe("renderFeatureCard — generalized card", () => {
     const root = mountContainer();
     renderFeatureCard(root, { title: "Pick", app: {} as App, chosenInline: [{ label: "A" }] });
     expect(root.querySelector(".archivist-item-description")).toBeTruthy();
+  });
+});
+
+describe("renderRecoveryAction · the spent hint (R4-G3a Task 5)", () => {
+  // The ONE reader of the retired `RESET_LABEL` twin, now reading `RESET_LABELS`.
+  // Reached through the PUBLIC render path: `renderFeatureCard` calls
+  // `renderRecoveryAction` whenever `opts.recovery` is present, and that function
+  // short-circuits to the hint when the resource's own use is spent
+  // (`fu.used >= fu.max`). `ctx` is untouched on that branch, so the fixture
+  // passes a stub. The resource MUST author a `recovery[]` entry and an `id` or
+  // the whole action area is skipped.
+  const spentCard = (reset: ResetTrigger): HTMLElement => {
+    const root = mountContainer();
+    renderFeatureCard(root, {
+      title: "Arcane Recovery",
+      app: {} as App,
+      feature: { name: "Arcane Recovery", description: "x" },
+      recovery: {
+        resource: {
+          id: "wizard:arcane-recovery", name: "Arcane Recovery", max_formula: "1",
+          reset, recovery: [{ id: "wizard:arcane-recovery:rec", name: "Recover slots", amount: "1", reset }],
+        },
+        source: { kind: "class", slug: "wizard", level: 1 },
+        ctx: {} as never,
+        fu: { used: 1, max: 1 },
+      },
+    });
+    return root;
+  };
+
+  it("pins the spent-hint TEXT, label and glyph included", () => {
+    const root = spentCard("long-rest");
+    const hint = root.querySelector(".pc-recover-hint");
+    expect(hint?.textContent).toBe("Already used · recharges on a Long Rest.");
+    // The label half comes from the single table, not from a literal here.
+    expect(hint?.textContent).toContain(RESET_LABELS["long-rest"]);
+    // The interactive picker is suppressed in the spent state. `.pc-recover-foot`
+    // (the Recover button row) is emitted ONLY on the interactive path, so this
+    // absence discriminates; `.pc-recover-pip` would not (the renderer spells it
+    // `pc-recover-pips`, so a query for it is null on BOTH paths).
+    expect(root.querySelector(".pc-recover-foot")).toBeNull();
+    expect(root.querySelector(".pc-recover-title")?.textContent).toBe("Recover spell slots");
+  });
+
+  it("reads the SAME table for a trigger the retired twin used to mislabel", () => {
+    // `dusk` reached "/ Long Rest" through the retired bucket hop; the twin in
+    // this file had "Dusk" all along, so this pins that the merge kept the right one.
+    expect(spentCard("dusk").querySelector(".pc-recover-hint")?.textContent)
+      .toBe("Already used · recharges on a Dusk.");
   });
 });
 

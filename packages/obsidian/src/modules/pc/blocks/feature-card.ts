@@ -170,7 +170,7 @@ export function renderRecoveryAction(block: HTMLElement, resource: Resource, sou
 
   // Use already spent → show a spent hint instead of an interactive picker.
   if (fu && fu.used >= fu.max) {
-    actions.createDiv({ cls: "pc-recover-hint", text: `Already used — recharges on a ${RESET_LABELS[resource.reset]}.` });
+    actions.createDiv({ cls: "pc-recover-hint", text: `Already used · recharges on a ${RESET_LABELS[resource.reset]}.` });
     return;
   }
 

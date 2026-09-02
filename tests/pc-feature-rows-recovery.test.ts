@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { PassiveFeaturesTab } from "../packages/obsidian/src/modules/pc/components/passive-features-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import { CUSTOM_RESET_TIP } from "../packages/obsidian/src/modules/pc/components/actions/reset-labels";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type {
   ResolvedCharacter,
@@ -142,5 +143,45 @@ describe("feature resource trackers read RESET_LABELS (R4-G3a §8.2)", () => {
     );
     const cardCaption = root.querySelector(".pc-card-resource .pc-charge-recovery");
     expect(cardCaption?.textContent).toBe("/ Dusk");
+  });
+
+  it("the card-tracker site carries the custom tooltip too, and only on custom", () => {
+    // `renderCardResource` has its OWN `reset === "custom"` ternary, spelled for
+    // its own local. The row-tracker case above cannot see it: the two sites are
+    // separate lines, and a caption caught in only one of them would ship a
+    // tooltip on the in-row tracker and none on the card.
+    const { root } = renderOne(
+      {
+        name: "Mixed Pools", id: "mixed-pools", description: "x",
+        resources: [
+          { id: "g3:lead", name: "Lead", max_formula: "1", reset: "short-rest" },
+          { id: "g3:special", name: "Special", max_formula: "1", reset: "custom" },
+          { id: "g3:plain", name: "Plain", max_formula: "1", reset: "turn" },
+        ],
+      },
+      {
+        featureUses: {
+          "g3:lead": { used: 0, max: 1 },
+          "g3:special": { used: 0, max: 1 },
+          "g3:plain": { used: 0, max: 1 },
+        },
+      },
+    );
+    const cards = Array.from(root.querySelectorAll(".pc-card-resource"));
+    const captionOf = (name: string): Element | null | undefined =>
+      cards
+        .find((c) => c.querySelector(".pc-card-resource-name")?.textContent === name)
+        ?.querySelector(".pc-charge-recovery");
+
+    const custom = captionOf("Special");
+    expect(custom?.textContent).toBe("/ Special");
+    expect(custom?.getAttribute("title")).toBe(CUSTOM_RESET_TIP);
+
+    // The control at the SAME site: a non-custom trigger gets no tooltip, so the
+    // assertion above is about the `custom` branch and not about the site always
+    // setting a title.
+    const plain = captionOf("Plain");
+    expect(plain?.textContent).toBe("/ Per Turn");
+    expect(plain?.getAttribute("title")).toBeNull();
   });
 });
