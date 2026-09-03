@@ -17,6 +17,10 @@ import * as path from "node:path";
 import { parseClass } from "@archivist-gg/dnd5e/class/class.parser";
 import { parseRace } from "@archivist-gg/dnd5e/race/race.parser";
 import { parseSubclass } from "@archivist-gg/dnd5e/subclass/subclass.parser";
+import { PCResolver } from "@archivist-gg/dnd5e/pc/pc.resolver";
+import { parseEntityFile } from "../../packages/obsidian/src/shared/entities/entity-vault-store";
+import { buildDraftCharacter } from "../../packages/obsidian/src/modules/pc/builder/character-stub";
+import { buildMockRegistry } from "../fixtures/pc/mock-entity-registry";
 
 const BUNDLE_INDEX = path.resolve(__dirname, "../../.compendium-bundle/index.json");
 
@@ -165,6 +169,57 @@ describe("bundle race traits: action_cost aliases onto action (R4-G3a §10.2.1)"
     expect({ racesSeen, classesSeen, subclassesSeen }).toEqual({ racesSeen: 22, classesSeen: 24, subclassesSeen: 24 });
     expect(found.sort()).toEqual(
       RACE_ACTION_COST_CARRIERS.map(([f, t]) => `${f}::${t}`).sort(),
+    );
+  });
+
+  /**
+   * R4-G3a Task 12 · the SHEET's path, which is NOT the parser's path.
+   *
+   * Every assertion above goes through `parseRace`. The PC sheet never calls it: the registry is
+   * filled by `CompendiumManager.loadAllEntities` → `parseEntityFile` (raw `yaml.load` of the fence,
+   * no dnd5e parser anywhere), and `PCResolver.resolve` → `collectResolvedFeatures` pushes
+   * `race.traits` into `resolved.features`, which is what the badge router reads. So a parser-side
+   * alias is invisible to the sheet, and Task 11's live verification measured all four 2014/2024
+   * carriers still routing to Passive on a real character. This walks that exact path on the shipped
+   * bundle bytes: raw note → real `EntityRegistry` → the dnd5e resolver. Measured RED before the
+   * resolve-time alias landed: all five resolved to `action: undefined`.
+   */
+  it("the five carriers route through the SHEET's own path: raw note → registry → resolver", () => {
+    const bundle = JSON.parse(fs.readFileSync(BUNDLE_INDEX, "utf-8")) as Record<string, string>;
+    const resolvedActions: Record<string, string | undefined> = {};
+
+    for (const [file, traitName] of RACE_ACTION_COST_CARRIERS) {
+      const note = parseEntityFile(bundle[file]);
+      if (!note) throw new Error(`parseEntityFile returned null for ${file}`);
+      // A REAL core `EntityRegistry` (the helper only builds the entries), registered from the raw
+      // note exactly as `CompendiumManager.loadAllEntities` does: `note.data` is the untouched
+      // `yaml.load` of the ```race fence, no dnd5e parser between the file and the registry.
+      const registry = buildMockRegistry([
+        {
+          slug: note.slug,
+          name: note.name,
+          entityType: note.entityType,
+          filePath: file,
+          data: note.data,
+          compendium: note.compendium,
+          readonly: true,
+        },
+      ]);
+
+      const character = { ...buildDraftCharacter("Action Cost Pin"), race: `[[${note.slug}]]` };
+      const resolved = new PCResolver(registry).resolve(character);
+      // Filter on the SOURCE kind, not the name alone: `collectChosenGrantedFeatures` also pushes
+      // race-sourced synthetics, and a trait name is only unique within its own race entity.
+      const rf = resolved.character.features.find(
+        (f) => f.source.kind === "race" && f.feature.name === traitName,
+      );
+      resolvedActions[`${file}::${traitName}`] = rf?.feature.action;
+    }
+
+    // One record comparison rather than five assertions: a regression shows every carrier it broke
+    // in a single run, and a trait that stopped resolving at all reads as `undefined`, not as absent.
+    expect(resolvedActions).toEqual(
+      Object.fromEntries(RACE_ACTION_COST_CARRIERS.map(([f, t, action]) => [`${f}::${t}`, action])),
     );
   });
 });
