@@ -8,6 +8,7 @@ import {
 } from "./ability-methods";
 import type { PointBuyRule } from "./ability-methods";
 import { abilityBonusBreakdown } from "@archivist-gg/dnd5e/pc/pc.recalc";
+import { assembleEffectFeatures, computeFeatureEffects } from "@archivist-gg/dnd5e/pc/pc.feature-effects";
 import { clampPopover } from "./popover-clamp";
 
 const ABILITY_LABELS: Record<Ability, string> = {
@@ -46,7 +47,9 @@ function redraw(body: HTMLElement, ctx: ComponentRenderContext): void {
 }
 
 function renderTiles(body: HTMLElement, ctx: ComponentRenderContext, method: AbilityMethod): void {
-  const breakdown = abilityBonusBreakdown(ctx.resolved);
+  // R4-G3b §4: thread the effect totals so a level-20 capstone's +4 reads "+4 class" and the tile reconciles.
+  const { features: effectFeatures, activeBuffs } = assembleEffectFeatures(ctx.resolved);
+  const breakdown = abilityBonusBreakdown(ctx.resolved, computeFeatureEffects(effectFeatures, { activeBuffs }));
   // DerivedStats holds the final totals on `scores` + the modifiers on `mods`.
   const derivedScores = ctx.derived.scores;
   const derivedMods = ctx.derived.mods;
