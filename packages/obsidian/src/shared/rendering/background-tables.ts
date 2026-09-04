@@ -30,9 +30,11 @@ function renderOne(parent: HTMLElement, name: string, dice: string, rows: Array<
 }
 
 /** `background.tables` (67 converter docs, 88 tables) as 2-column tables: header = dice | name; text through
- *  the markdown path. Renders EVERY table it is handed: the converter also embeds 84 of those 88 as markdown
- *  pipe tables inside `description`, so the NOTE path filters through `tablesNotInDescription` first (R4-G3b
- *  Task 15) while the builder step, which renders its description as plain TEXT, passes them all. */
+ *  the markdown path. Renders EVERY table it is handed: the converter also embeds each of those 88 as a
+ *  markdown pipe table inside prose (84 inside `description`, the other 4 inside the feature's description),
+ *  so BOTH call sites filter through `tablesNotInDescription` first · the note against both prose fields
+ *  (R4-G3b Task 15, Task 15c) and the builder step against the feature's description alone, since
+ *  `renderChronicleBlock` shows the background description as plain `text:` and never as a table. */
 export function renderBackgroundTables(parent: HTMLElement, tables: BgTable[] | undefined, app?: App, component?: Component): void {
   for (const t of tables ?? []) renderOne(parent, t.name, t.dice, t.rows, app, component);
 }
@@ -80,11 +82,15 @@ export function descriptionEmbedsTable(description: string | null | undefined, t
   return lines.some((c) => (c[0] === dice && c[1] === name) || (roll !== null && c[0] === roll && c[1].startsWith(prefix)));
 }
 
-/** The tables a description does NOT already embed. A fresh array from `filter`; the input is never mutated.
- *  The entity-note path renders through this so a converter background does not show the same roll table
- *  twice (R4-G3b Task 15). */
-export function tablesNotInDescription(tables: BgTable[] | undefined, description: string | null | undefined): BgTable[] {
-  return (tables ?? []).filter((t) => !descriptionEmbedsTable(description, t));
+/** The tables NONE of the given descriptions already embeds: a table is dropped when ANY of them embeds it.
+ *  A fresh array from `filter`; the input is never mutated. Variadic because a background carries its prose
+ *  in two fields and each surface renders a different subset of them (R4-G3b Task 15c): the entity NOTE
+ *  renders `description` AND the feature's description through the markdown path, so it scans both, while
+ *  the builder STEP scans the feature's description ONLY · its background description reaches
+ *  `renderChronicleBlock` as plain `text:`, so it can never become a second copy of a table. Passing one
+ *  description keeps the Task 15 meaning exactly. */
+export function tablesNotInDescription(tables: BgTable[] | undefined, ...descriptions: Array<string | null | undefined>): BgTable[] {
+  return (tables ?? []).filter((t) => !descriptions.some((d) => descriptionEmbedsTable(d, t)));
 }
 
 const cellText = (v: Cell): string => typeof v === "string" ? v

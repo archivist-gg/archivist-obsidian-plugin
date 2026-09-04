@@ -236,7 +236,7 @@ describe("renderBackgroundBlock · tables + suggested characteristics (R4-G3b §
     suggested_characteristics: { bonds: { "1": "a" } },
   } as unknown as BackgroundEntity;
 
-  it("renders one structured table per `tables` entry the description does not embed, plus one per numeric characteristics record", async () => {
+  it("renders one structured table per `tables` entry neither description embeds, plus one per numeric characteristics record", async () => {
     const root = mountContainer();
     root.appendChild(await renderBackgroundBlock(charlatan));
     await flush();
@@ -305,5 +305,40 @@ describe("renderBackgroundBlock · tables + suggested characteristics (R4-G3b §
     expect(tables).toHaveLength(2);
     expect(Array.from(tables[0].querySelectorAll("th")).map((t) => t.textContent)).toEqual(["d6", "Scam"]);
     expect(Array.from(tables[1].querySelectorAll("th")).map((t) => t.textContent)).toEqual(["d10", "Contact"]);
+  });
+
+  // R4-G3b Task 15c (rider, second arm): the note renders `feature.description`
+  // through the SAME markdown path as `description`, and 4 of the corpus's 88
+  // roll tables are embedded there instead (Astral Drifter, GGtR Dimir Operative,
+  // GGtR Rakdos Cultist, SCAG Inheritor), so those still rendered twice after
+  // Task 15. The note now scans BOTH descriptions.
+  const PERFORMER = { name: "Type of Performer", dice: "d8", rows: [{ roll: "1", text: "Spikewheel acrobat" }] };
+  /** The shipped Rakdos shape: the roll table sits in the FEATURE's description. */
+  const FEATURE_EMBEDDED_DESC = [
+    "As a member of the Rakdos, you have a role in the show.",
+    "",
+    "| d8 | Type of Performer |",
+    "| --- | --- |",
+    "| 1 | Spikewheel acrobat |",
+  ].join("\n");
+  const featureEmbedded: BackgroundEntity = {
+    ...acolyte,
+    slug: "ggtr-2014_rakdos-cultist",
+    description: "You have always had a way with people.",
+    feature: { name: "Fearsome Reputation", description: FEATURE_EMBEDDED_DESC },
+    tables: [PERFORMER, CONTACT],
+    suggested_characteristics: null,
+  } as unknown as BackgroundEntity;
+
+  it("a table the FEATURE description embeds is dropped too; the one neither description embeds survives", async () => {
+    const root = mountContainer();
+    root.appendChild(await renderBackgroundBlock(featureEmbedded));
+    await flush();
+    const tables = Array.from(root.querySelectorAll(".archivist-background-block table.archivist-table"));
+    // RED FIRST at 27875c5d: the note filtered against `description` only, so it
+    // rendered BOTH structured tables beside the feature description's own copy
+    // of Type of Performer, and this read 2.
+    expect(tables).toHaveLength(1);
+    expect(Array.from(tables[0].querySelectorAll("th")).map((t) => t.textContent)).toEqual(["d10", "Contact"]);
   });
 });

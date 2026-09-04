@@ -130,7 +130,8 @@ describe("renderSuggestedCharacteristics", () => {
 // R4-G3b Task 15 (rider): the converter emits BOTH representations of a roll
 // table · a markdown pipe table inside `description` and the structured
 // `tables:` key · so the NOTE rendered 84 of the corpus's 88 tables twice.
-// These two pure helpers are the dedupe the note path filters through.
+// These two pure helpers are the dedupe. The note path filters through them
+// from Task 15; the builder step joined it in Task 15c (the describe below).
 describe("descriptionEmbedsTable / tablesNotInDescription (R4-G3b Task 15)", () => {
   const SCAM: BgTable = {
     name: "Scam",
@@ -217,5 +218,54 @@ describe("descriptionEmbedsTable / tablesNotInDescription (R4-G3b Task 15)", () 
     expect(descriptionEmbedsTable(CHARLATAN_DESC, rowless)).toBe(true);
     expect(descriptionEmbedsTable("| 1 | I cheat at games of chance. |", rowless)).toBe(false);
     expect(tablesNotInDescription(undefined, CHARLATAN_DESC)).toEqual([]);
+  });
+});
+
+// R4-G3b Task 15c (rider, second arm): 4 of the corpus's 88 roll tables are
+// embedded in `feature.description` rather than in `description` (Astral Drifter,
+// GGtR Dimir Operative, GGtR Rakdos Cultist, SCAG Inheritor). Both surfaces render
+// the feature description through the markdown path, so both showed those tables
+// twice. The filter therefore takes ANY number of descriptions and drops a table
+// that ANY of them embeds; the note hands it both, the step only the feature one.
+describe("tablesNotInDescription over several descriptions (R4-G3b Task 15c)", () => {
+  const PERFORMER: BgTable = { name: "Type of Performer", dice: "d8", rows: [{ roll: "1", text: "Spikewheel acrobat" }] };
+  const CONTACT8: BgTable = { name: "Contact", dice: "d8", rows: [{ roll: "1", text: "A guildmaster who owes you a favour." }] };
+  const CONTACT10: BgTable = { name: "Contact", dice: "d10", rows: [{ roll: "1", text: "A rival performer you admire." }] };
+  /** The shipped Rakdos Cultist shape: the two Contact tables live in `description`. */
+  const DESC = [
+    "Rakdos Cultist prose.",
+    "",
+    "| d8 | Contact |",
+    "| --- | --- |",
+    "| 1 | A guildmaster who owes you a favour. |",
+    "",
+    "| d10 | Contact |",
+    "| --- | --- |",
+    "| 1 | A rival performer you admire. |",
+  ].join("\n");
+  /** ... while `d8 | Type of Performer` lives in the FEATURE's description only. */
+  const FEATURE_DESC = [
+    "As a member of the Rakdos, you have a role in the show.",
+    "",
+    "| d8 | Type of Performer |",
+    "| --- | --- |",
+    "| 1 | Spikewheel acrobat |",
+  ].join("\n");
+
+  it("a table embedded only in the SECOND description is dropped; a table embedded in neither survives", () => {
+    // RED FIRST at 27875c5d: the filter took ONE description, so at runtime the
+    // extra argument was ignored and Type of Performer survived beside Contact.
+    expect(tablesNotInDescription([PERFORMER, CONTACT10], "Prose with no pipe table.", FEATURE_DESC)).toEqual([CONTACT10]);
+    // A null or undefined extra argument is ignored, never treated as a match.
+    expect(tablesNotInDescription([PERFORMER, CONTACT10], "Prose with no pipe table.", null)).toEqual([PERFORMER, CONTACT10]);
+    expect(tablesNotInDescription([PERFORMER, CONTACT10], "Prose with no pipe table.", undefined)).toEqual([PERFORMER, CONTACT10]);
+  });
+
+  it("the Rakdos shape: over both descriptions nothing survives; over the description alone Type of Performer does", () => {
+    // RED FIRST at 27875c5d: the feature arm did not exist, so this read
+    // [PERFORMER]. The second assertion is the Task 15 regression pin: the
+    // one-description call keeps its exact old meaning.
+    expect(tablesNotInDescription([PERFORMER, CONTACT8, CONTACT10], DESC, FEATURE_DESC)).toEqual([]);
+    expect(tablesNotInDescription([PERFORMER, CONTACT8, CONTACT10], DESC)).toEqual([PERFORMER]);
   });
 });

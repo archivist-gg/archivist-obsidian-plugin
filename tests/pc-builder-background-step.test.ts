@@ -455,10 +455,12 @@ describe("renderBackgroundStep · the fixed entry's Equipment text (R4-G1a D5, G
 });
 
 // R4-G3b §10 (Task 11): the chosen background's entity data carries the
-// converter's `tables`; the step renders each under its own section rule, inside
-// a `.pc-cb-trait-d` host so the chronicle cast-table dress applies. Its own
-// one-row picker pool leaves the shared BACKGROUNDS list (and the row-count
-// assertions that measure it) untouched.
+// converter's `tables`; the step renders each one its feature description does
+// not embed (Task 15c) under its own section rule, inside a `.pc-cb-trait-d`
+// host so the chronicle cast-table dress applies. CRIMINAL_TABLES_DATA carries no
+// feature, so nothing is filtered here. Its own one-row picker pool leaves the
+// shared BACKGROUNDS list (and the row-count assertions that measure it)
+// untouched.
 const CRIMINAL_TABLES_DATA = {
   ...CRIMINAL_2024_DATA,
   tables: [
@@ -473,7 +475,7 @@ const CRIMINAL_TABLES_ROW: RegisteredEntity = {
 } as unknown as RegisteredEntity;
 
 describe("renderBackgroundStep · background tables (R4-G3b §10)", () => {
-  it("a chosen background carrying `tables` renders each one under its own section rule", () => {
+  it("a chosen background carrying `tables` renders each one the feature description does not embed under its own section rule", () => {
     const c = mountContainer();
     const ctx = mkCtx({
       background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal, backgrounds: [CRIMINAL_TABLES_ROW],
@@ -486,5 +488,85 @@ describe("renderBackgroundStep · background tables (R4-G3b §10)", () => {
     expect(c.querySelectorAll(".pc-cb-trait-d tbody tr")).toHaveLength(16);
     expect(Array.from(c.querySelectorAll(".pc-cb-sec-l")).map((s) => s.textContent)).toContain("Origin");
     expect(Array.from(c.querySelectorAll(".pc-cb-trait-d tbody tr td:first-child")).map((t) => t.textContent)).toContain("2-3");
+  });
+});
+
+// R4-G3b Task 15c (rider, second arm): the step renders the 2014 feature's
+// description through the shared markdown path (renderGearProps), so a roll table
+// embedded there became a real table on the step AND rendered again as a
+// structured `tables:` entry. 4 of the corpus's 88 tables are in that shape
+// (Astral Drifter, GGtR Dimir Operative, GGtR Rakdos Cultist, SCAG Inheritor).
+// The step filters against the FEATURE description only: renderChronicleBlock
+// passes the background description to `.pc-cb-flavor` as plain `text:`, so the
+// step never had a description-side copy to dedupe (pinned by the control below).
+const RAKDOS_FEATURE_DESC = [
+  "As a member of the Rakdos, you have a role in the show.",
+  "",
+  "| d8 | Type of Performer |",
+  "| --- | --- |",
+  "| 1 | Spikewheel acrobat |",
+].join("\n");
+
+const RAKDOS_TABLES_DATA = {
+  ...CRIMINAL_2024_DATA,
+  feature: { name: "Fearsome Reputation", description: RAKDOS_FEATURE_DESC },
+  tables: [
+    { name: "Type of Performer", dice: "d8", rows: [{ roll: "1", text: "Spikewheel acrobat" }] },
+    { name: "Contact", dice: "d10", rows: [{ roll: "1", text: "A rival performer you admire." }] },
+  ],
+};
+
+const RAKDOS_TABLES_ROW: RegisteredEntity = {
+  slug: "srd-2024_criminal", name: "Criminal", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024", data: RAKDOS_TABLES_DATA,
+} as unknown as RegisteredEntity;
+
+const SCAM_FLAVOR_DATA = {
+  ...CRIMINAL_2024_DATA,
+  description: [
+    "You have always had a way with people.",
+    "",
+    "| d6 | Scam |",
+    "| --- | --- |",
+    "| 1 | I cheat at games of chance. |",
+  ].join("\n"),
+  tables: [{ name: "Scam", dice: "d6", rows: [{ roll: "1", text: "I cheat at games of chance." }] }],
+};
+
+const SCAM_FLAVOR_ROW: RegisteredEntity = {
+  slug: "srd-2024_criminal", name: "Criminal", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024", data: SCAM_FLAVOR_DATA,
+} as unknown as RegisteredEntity;
+
+describe("renderBackgroundStep · background tables the feature description embeds (R4-G3b Task 15c)", () => {
+  it("a table the FEATURE description embeds gets no section rule and no host; the one it omits keeps both", () => {
+    const c = mountContainer();
+    const ctx = mkCtx({
+      background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal, backgrounds: [RAKDOS_TABLES_ROW],
+    });
+    renderBackgroundStep(c, ctx);
+    // RED FIRST at 27875c5d: the step rendered a structured table for BOTH
+    // entries beside the feature description's own copy of Type of Performer, so
+    // this read 2. The feature's own `.pc-cb-trait-d` host holds no <table>: the
+    // jsdom obsidian mock renders markdown as textContent.
+    expect(c.querySelectorAll(".pc-cb-trait-d table")).toHaveLength(1);
+    const rules = Array.from(c.querySelectorAll(".pc-cb-sec-l")).map((s) => s.textContent);
+    expect(rules).not.toContain("Type of Performer");
+    expect(rules).toContain("Contact");
+    expect(Array.from(c.querySelectorAll(".pc-cb-trait-d th")).map((t) => t.textContent)).toEqual(["d10", "Contact"]);
+  });
+
+  it("the control: a table the background DESCRIPTION embeds still renders on the step, because the flavor is plain text", () => {
+    const c = mountContainer();
+    const ctx = mkCtx({
+      background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal, backgrounds: [SCAM_FLAVOR_ROW],
+    });
+    renderBackgroundStep(c, ctx);
+    expect(Array.from(c.querySelectorAll(".pc-cb-sec-l")).map((s) => s.textContent)).toContain("Scam");
+    expect(c.querySelectorAll(".pc-cb-trait-d table")).toHaveLength(1);
+    // The premise, pinned: the description reaches the step as TEXT, bars and all,
+    // so it never becomes a second copy of the table.
+    expect(c.querySelector(".pc-cb-flavor")?.textContent).toContain("| d6 | Scam |");
+    expect(c.querySelector(".pc-cb-flavor table")).toBeNull();
   });
 });

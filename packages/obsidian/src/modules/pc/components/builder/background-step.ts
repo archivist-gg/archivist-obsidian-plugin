@@ -12,7 +12,7 @@ import { humanizeSlug, fixedGrantLines, fixedNamesFrom } from "../../../../share
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
-import { renderBackgroundTables, renderSuggestedCharacteristics, type BgTable } from "../../../../shared/rendering/background-tables";
+import { renderBackgroundTables, renderSuggestedCharacteristics, tablesNotInDescription, type BgTable } from "../../../../shared/rendering/background-tables";
 import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 const skillsOf = (e: RegisteredEntity): string[] =>
@@ -127,7 +127,14 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
           // Each table gets its own section rule (name on the left, die on the
           // right) and its own `.pc-cb-trait-d` host, which is the class the
           // chronicle cast-table dress is scoped to.
-          for (const t of d.tables ?? []) {
+          // R4-G3b Task 15c: 4 of the corpus's 88 tables are ALSO embedded as a
+          // pipe table inside the 2014 feature's description, which renderGearProps
+          // above renders through the markdown path · a real table on this step ·
+          // so those four rendered twice here. Only the feature's description is
+          // scanned: the background description reaches renderChronicleBlock as
+          // `flavor` and is shown as plain `text:`, never as a table (the other 84
+          // are embedded there and MUST keep their structured render on the step).
+          for (const t of tablesNotInDescription(d.tables, d.feature?.description)) {
             renderSectionRule(host, t.name, t.dice);
             renderBackgroundTables(host.createDiv({ cls: "pc-cb-trait-d" }), [t], ctx.app);
           }

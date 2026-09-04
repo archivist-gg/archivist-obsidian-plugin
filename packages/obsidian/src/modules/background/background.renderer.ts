@@ -133,13 +133,17 @@ export async function renderBackgroundBlock(
   // render on the BLOCK element, so the `.archivist-background-block
   // table.archivist-table` dress reaches them; every cell text goes through the
   // shared markdown path.
-  // R4-G3b Task 15: on the NOTE the description's OWN copy wins. The converter
-  // emits 84 of its 88 roll tables twice · as a pipe table inside `description`
-  // and as a `tables:` entry · and the description path above renders (and
-  // `.archivist-table`-tags) the pipe one, so only the tables the description
-  // does not embed are rendered structurally here. The builder step needs no
-  // such filter: it renders its description as plain text.
-  renderBackgroundTables(block, tablesNotInDescription(data.tables, data.description), app, component);
+  // R4-G3b Task 15: on the NOTE the prose's OWN copy wins. The converter emits
+  // every one of its 88 roll tables twice · as a `tables:` entry and as a pipe
+  // table inside prose · and BOTH prose fields above go through the markdown
+  // path, which `.archivist-table`-tags the tables it renders. So only the
+  // tables neither field embeds are rendered structurally here.
+  // R4-G3b Task 15c: the split is 84 inside `description` and the remaining 4
+  // inside the feature's description (Astral Drifter, GGtR Dimir Operative,
+  // GGtR Rakdos Cultist, SCAG Inheritor; none is in neither), which is why the
+  // filter is handed both fields. The builder step filters too, against the
+  // feature's description alone: it shows the background description as text.
+  renderBackgroundTables(block, tablesNotInDescription(data.tables, data.description, data.feature?.description), app, component);
   renderSuggestedCharacteristics(block, data.suggested_characteristics, app, component);
 
   return wrapper;
