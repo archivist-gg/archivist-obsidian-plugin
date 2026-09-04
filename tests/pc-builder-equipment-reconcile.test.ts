@@ -132,9 +132,14 @@ describe("uncoveredByUntagged · the qty-aware subtraction the step seeds (R4-G3
     (qty === undefined ? { item } : { item, qty }) as EquipmentEntry;
 
   it("FULL coverage returns nothing at all", () => {
-    // RED FIRST before the final wave (e1ef541): `uncoveredByUntagged` did not
-    // exist, so this file failed to load and every case in it errored before its
-    // first expect. The values below are what the helper must produce.
+    // RED FIRST before the final wave (e1ef541): the export did not exist, so
+    // this call read `undefined` and threw `TypeError: uncoveredByUntagged is
+    // not a function` before reaching the comparison. An ESM import of a missing
+    // NAMED export does not fail the module, so the file LOADED and ran
+    // `22 tests | 6 failed`: the 16 `goldStep` / `alreadySeeded` cases above
+    // passed and only the six cases below threw, each at its own first call
+    // (evidence/g3b-fw-a-red.txt). The values here are what the helper must
+    // produce.
     expect(uncoveredByUntagged(
       [g("srd-5e_armor_leather"), g("srd-5e_weapon_dagger", 2)],
       [untagged("[[srd-5e_armor_leather]]"), untagged("[[srd-5e_weapon_dagger]]", 2)],

@@ -607,12 +607,21 @@ describe("renderEquipmentStep · a fixed entry with no grants (R4-G1a D5, G9)", 
 //
 // The shape: `finishBuild` strips every `granted_by`, so the kit the builder
 // seeded reads as hand-managed gear. A background `fixed` grant (LIVE since Task
-// 10; 101 of 175 converter backgrounds carry a resolving one, `pouch` the
-// commonest) is a resolved entry the finished file has NEVER held, so the
-// multiset containment of `alreadySeeded` fails and the whole list used to be
-// pushed beside the untagged copies · one duplication of the entire class kit
-// per visit. The step now hands `syncStartingEquipment` only what the file does
-// not already hold untagged.
+// 10) is a resolved entry the finished file has NEVER held, so the multiset
+// containment of `alreadySeeded` fails and the whole list used to be pushed
+// beside the untagged copies · one duplication of the entire class kit per
+// visit. The step now hands `syncStartingEquipment` only what the file does not
+// already hold untagged.
+//
+// The population, MEASURED 2026-09-04 over the converter output (175/175 docs
+// parsed from the ```background block), counting `item:` grants only: 894
+// background item grants, of which 379 are slug-shaped and 515 are written as
+// human names with spaces and can therefore never resolve (spec §9.1). Of the
+// 491 that sit on a `kind: fixed` entry, 170 are slug-shaped, and 109 of the 175
+// documents carry at least one such grant · 99 of those 109 include `pouch`,
+// which is also the commonest slug-shaped item in the corpus. Slug-shaped is the
+// UPPER BOUND for resolving: whether an entity with that bare slug exists in the
+// installed compendium is not measured here.
 // ─────────────────────────────────────────────────────────────────────────────
 describe("R4-G3b final wave · a finished character re-entering the Equipment step is not re-kitted", () => {
   const POOL = [
