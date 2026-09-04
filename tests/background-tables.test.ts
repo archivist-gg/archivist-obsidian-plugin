@@ -5,6 +5,9 @@ import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-hel
 import {
   renderBackgroundTables,
   renderSuggestedCharacteristics,
+  descriptionEmbedsTable,
+  tablesNotInDescription,
+  type BgTable,
 } from "../packages/obsidian/src/shared/rendering/background-tables";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -121,5 +124,98 @@ describe("renderSuggestedCharacteristics", () => {
     const c = mountContainer();
     renderSuggestedCharacteristics(c, null);
     expect(c.childElementCount).toBe(0);
+  });
+});
+
+// R4-G3b Task 15 (rider): the converter emits BOTH representations of a roll
+// table · a markdown pipe table inside `description` and the structured
+// `tables:` key · so the NOTE rendered 84 of the corpus's 88 tables twice.
+// These two pure helpers are the dedupe the note path filters through.
+describe("descriptionEmbedsTable / tablesNotInDescription (R4-G3b Task 15)", () => {
+  const SCAM: BgTable = {
+    name: "Scam",
+    dice: "d6",
+    rows: [{ roll: "1", text: "I cheat at games of chance." }, { roll: "2", text: "I shave coins." }],
+  };
+  /** The real Charlatan shape: prose, the pipe table, more prose. */
+  const CHARLATAN_DESC = [
+    "You have always had a way with people.",
+    "",
+    "| d6 | Scam |",
+    "| --- | --- |",
+    "| 1 | I cheat at games of chance. |",
+    "| 2 | I shave coins. |",
+    "",
+    "You have a knack for reading people.",
+  ].join("\n");
+
+  it("the header arm: a pipe line whose first two cells are the table's dice and name", () => {
+    expect(descriptionEmbedsTable(CHARLATAN_DESC, SCAM)).toBe(true);
+  });
+
+  it("the row arm: the header is spelled differently but the first row is present verbatim", () => {
+    const desc = CHARLATAN_DESC.replace("| d6 | Scam |", "| d6 | Scams and cons |");
+    // The header arm cannot fire here ("scams and cons" is not "scam"), so a TRUE
+    // is the row arm and nothing else.
+    expect(descriptionEmbedsTable(desc, SCAM)).toBe(true);
+  });
+
+  it("the Rakdos shape: the description embeds the two Contact tables, so only Type of Performer survives the filter", () => {
+    // Measured on the shipped GGtR Rakdos Cultist: the description carries
+    // `d8 | Contact` and `d10 | Contact`, while `d8 | Type of Performer` appears
+    // in `tables:` only (its first row "Spikewheel acrobat" is nowhere in the
+    // description). Both embedded tables carry a roll-1 row, so the row arm is
+    // live on this fixture too.
+    const desc = [
+      "Rakdos Cultist prose.",
+      "",
+      "| d8 | Contact |",
+      "| --- | --- |",
+      "| 1 | A guildmaster who owes you a favour. |",
+      "",
+      "| d10 | Contact |",
+      "| --- | --- |",
+      "| 1 | A rival performer you admire. |",
+    ].join("\n");
+    const performer: BgTable = { name: "Type of Performer", dice: "d8", rows: [{ roll: "1", text: "Spikewheel acrobat" }] };
+    const contact8: BgTable = { name: "Contact", dice: "d8", rows: [{ roll: "1", text: "A guildmaster who owes you a favour." }] };
+    const contact10: BgTable = { name: "Contact", dice: "d10", rows: [{ roll: "1", text: "A rival performer you admire." }] };
+    expect(tablesNotInDescription([performer, contact8, contact10], desc)).toEqual([performer]);
+  });
+
+  it("a description with no pipe table keeps every table, in a FRESH array, leaving the input untouched", () => {
+    const input = [SCAM, { name: "Contact", dice: "d10", rows: [{ roll: "1", text: "A fence." }] }];
+    const out = tablesNotInDescription(input, "You have always had a way with people.");
+    expect(out).toHaveLength(2);
+    expect(out).not.toBe(input);
+    expect(input).toHaveLength(2);
+  });
+
+  it("a separator block and an unrelated table header match nothing, a dice-less and name-less table included", () => {
+    const desc = ["| --- | --- |", "", "| Spell Level | Spells |", "| --- | --- |", "| 1st | Bless |"].join("\n");
+    expect(descriptionEmbedsTable(desc, SCAM)).toBe(false);
+    // A separator normalises to EMPTY cells, and empty-celled lines are dropped
+    // before any arm sees them · so even a degenerate table cannot match one.
+    expect(descriptionEmbedsTable(desc, { name: "", dice: "", rows: [] })).toBe(false);
+  });
+
+  it("the row arm compares a PREFIX of the first row's text, not the roll alone", () => {
+    // A description whose only pipe rows share the roll "1" with the table but
+    // carry different text. This is the case an empty prefix would flip TRUE.
+    const desc = ["| d20 | Other |", "| --- | --- |", "| 1 | Unrelated row text |"].join("\n");
+    expect(descriptionEmbedsTable(desc, SCAM)).toBe(false);
+  });
+
+  it("case and punctuation insensitivity: `| D6 | scam: |` matches dice d6 name Scam", () => {
+    expect(descriptionEmbedsTable("| D6 | scam: |", SCAM)).toBe(true);
+  });
+
+  it("an absent description, and a table with no rows, fall to the header arm only", () => {
+    expect(descriptionEmbedsTable(null, SCAM)).toBe(false);
+    expect(descriptionEmbedsTable(undefined, SCAM)).toBe(false);
+    const rowless: BgTable = { name: "Scam", dice: "d6", rows: [] };
+    expect(descriptionEmbedsTable(CHARLATAN_DESC, rowless)).toBe(true);
+    expect(descriptionEmbedsTable("| 1 | I cheat at games of chance. |", rowless)).toBe(false);
+    expect(tablesNotInDescription(undefined, CHARLATAN_DESC)).toEqual([]);
   });
 });

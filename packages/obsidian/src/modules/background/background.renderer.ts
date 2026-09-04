@@ -7,7 +7,11 @@ import type {
 import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment-grant";
 import { el, createIconProperty, sourceBadgeText, fixedGrantLines } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
-import { renderBackgroundTables, renderSuggestedCharacteristics } from "../../shared/rendering/background-tables";
+import {
+  renderBackgroundTables,
+  renderSuggestedCharacteristics,
+  tablesNotInDescription,
+} from "../../shared/rendering/background-tables";
 
 /** Capitalize only the first letter of each whitespace-delimited word. Anchoring
  *  on start/whitespace (rather than `\b`) avoids uppercasing the letter after an
@@ -129,7 +133,13 @@ export async function renderBackgroundBlock(
   // render on the BLOCK element, so the `.archivist-background-block
   // table.archivist-table` dress reaches them; every cell text goes through the
   // shared markdown path.
-  renderBackgroundTables(block, data.tables, app, component);
+  // R4-G3b Task 15: on the NOTE the description's OWN copy wins. The converter
+  // emits 84 of its 88 roll tables twice · as a pipe table inside `description`
+  // and as a `tables:` entry · and the description path above renders (and
+  // `.archivist-table`-tags) the pipe one, so only the tables the description
+  // does not embed are rendered structurally here. The builder step needs no
+  // such filter: it renders its description as plain text.
+  renderBackgroundTables(block, tablesNotInDescription(data.tables, data.description), app, component);
   renderSuggestedCharacteristics(block, data.suggested_characteristics, app, component);
 
   return wrapper;

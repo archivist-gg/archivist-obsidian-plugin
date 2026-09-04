@@ -29,9 +29,61 @@ function renderOne(parent: HTMLElement, name: string, dice: string, rows: Array<
   }
 }
 
-/** `background.tables` (67 converter docs) as 2-column tables: header = dice | name; text through the markdown path. */
+/** `background.tables` (67 converter docs, 88 tables) as 2-column tables: header = dice | name; text through
+ *  the markdown path. Renders EVERY table it is handed: the converter also embeds 84 of those 88 as markdown
+ *  pipe tables inside `description`, so the NOTE path filters through `tablesNotInDescription` first (R4-G3b
+ *  Task 15) while the builder step, which renders its description as plain TEXT, passes them all. */
 export function renderBackgroundTables(parent: HTMLElement, tables: BgTable[] | undefined, app?: App, component?: Component): void {
   for (const t of tables ?? []) renderOne(parent, t.name, t.dice, t.rows, app, component);
+}
+
+/** Lowercase, every run of non-alphanumerics collapsed to ONE space, trimmed. The shared normal form for
+ *  comparing a description's pipe cells against a structured table's own strings, so "Scam", "scam:" and
+ *  "  SCAM  " are one key. */
+const normCell = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+/** How many characters of the first row's `text` the row arm compares. Long enough that no two rows of a
+ *  corpus table share the prefix, short enough to survive a trailing edit in either copy. */
+const ROW_PREFIX = 24;
+
+/** Every markdown pipe line of a description as normalised cells. A pipe line is a trimmed line that opens
+ *  AND closes with `|`; the outer bars come off before the split, so `| d6 | Scam |` yields ["d6", "scam"].
+ *  A separator line (`| --- | --- |`) normalises to all-empty cells and is dropped here, so no arm can ever
+ *  match one. Lines with fewer than two cells are dropped too. */
+function pipeCells(description: string): string[][] {
+  const out: string[][] = [];
+  for (const raw of description.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!/^\|.*\|$/.test(line)) continue;
+    const cells = line.slice(1, -1).split("|").map(normCell);
+    if (cells.length < 2 || cells.every((c) => c === "")) continue;
+    out.push(cells);
+  }
+  return out;
+}
+
+/** True when `description` already carries this table as a markdown pipe table. Two arms, either sufficient,
+ *  measured to AGREE on all 88 converter tables (R4-G3b Task 15): the HEADER arm matches a pipe line whose
+ *  first two cells are the table's own `dice` and `name` (Charlatan `| d6 | Scam |`); the ROW arm matches a
+ *  pipe line whose first two cells are the FIRST row's `roll` and the opening of its `text`, which catches a
+ *  description that spells the header differently. A prefix, not an equality: the description cell holds the
+ *  whole row text, and `normCell` of a prefix is always a prefix of `normCell` of the whole. An absent
+ *  description is false; a table with no rows falls to the header arm only. */
+export function descriptionEmbedsTable(description: string | null | undefined, t: BgTable): boolean {
+  if (!description) return false;
+  const lines = pipeCells(description);
+  const dice = normCell(t.dice ?? ""), name = normCell(t.name ?? "");
+  const first = t.rows?.[0];
+  const roll = first ? normCell(first.roll ?? "") : null;
+  const prefix = first ? normCell((first.text ?? "").slice(0, ROW_PREFIX)) : "";
+  return lines.some((c) => (c[0] === dice && c[1] === name) || (roll !== null && c[0] === roll && c[1].startsWith(prefix)));
+}
+
+/** The tables a description does NOT already embed. A fresh array from `filter`; the input is never mutated.
+ *  The entity-note path renders through this so a converter background does not show the same roll table
+ *  twice (R4-G3b Task 15). */
+export function tablesNotInDescription(tables: BgTable[] | undefined, description: string | null | undefined): BgTable[] {
+  return (tables ?? []).filter((t) => !descriptionEmbedsTable(description, t));
 }
 
 const cellText = (v: Cell): string => typeof v === "string" ? v

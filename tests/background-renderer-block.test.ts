@@ -256,4 +256,54 @@ describe("renderBackgroundBlock · tables + suggested characteristics (R4-G3b §
     await flush();
     expect(root.querySelector("table")).toBeNull();
   });
+
+  // R4-G3b Task 15 (rider): the converter emits the SAME roll table twice · as a
+  // markdown pipe table inside `description` and as a structured `tables:` entry ·
+  // and `renderMarkdownDescription` tags every rendered <table> `.archivist-table`,
+  // so the note showed 84 of the corpus's 88 tables twice. The note path now
+  // filters `tables` through `tablesNotInDescription`.
+  const SCAM = { name: "Scam", dice: "d6", rows: [{ roll: "1", text: "I cheat at games of chance." }] };
+  const CONTACT = { name: "Contact", dice: "d10", rows: [{ roll: "1", text: "A fence who owes you." }] };
+  /** The Charlatan shape: the description carries `d6 | Scam` as a pipe table. */
+  const EMBEDDED_DESC = [
+    "You have always had a way with people.",
+    "",
+    "| d6 | Scam |",
+    "| --- | --- |",
+    "| 1 | I cheat at games of chance. |",
+  ].join("\n");
+  // Spread from `acolyte` (suggested_characteristics: null), NOT from `charlatan`
+  // above, so every <table> counted below is a structured `tables:` entry and
+  // nothing else. The jsdom obsidian mock renders markdown as textContent, so the
+  // description's own pipe table never becomes a <table> here · what these two
+  // cases measure is the DUPLICATE structured render, not the description copy.
+  const embedded: BackgroundEntity = {
+    ...acolyte,
+    slug: "phb-2014_charlatan",
+    description: EMBEDDED_DESC,
+    tables: [SCAM, CONTACT],
+    suggested_characteristics: null,
+  } as unknown as BackgroundEntity;
+
+  it("a table the description already embeds is dropped; the one the description omits survives", async () => {
+    const root = mountContainer();
+    root.appendChild(await renderBackgroundBlock(embedded));
+    await flush();
+    const tables = Array.from(root.querySelectorAll(".archivist-background-block table.archivist-table"));
+    // RED FIRST at e2219ad3: the note rendered BOTH structured tables beside the
+    // description's own copy of Scam, so this read 2.
+    expect(tables).toHaveLength(1);
+    expect(Array.from(tables[0].querySelectorAll("th")).map((t) => t.textContent)).toEqual(["d10", "Contact"]);
+  });
+
+  it("the control: with the pipe table removed from the description, BOTH structured tables render, Scam first", async () => {
+    const root = mountContainer();
+    const noEmbed = { ...embedded, description: "You have always had a way with people." } as unknown as BackgroundEntity;
+    root.appendChild(await renderBackgroundBlock(noEmbed));
+    await flush();
+    const tables = Array.from(root.querySelectorAll(".archivist-background-block table.archivist-table"));
+    expect(tables).toHaveLength(2);
+    expect(Array.from(tables[0].querySelectorAll("th")).map((t) => t.textContent)).toEqual(["d6", "Scam"]);
+    expect(Array.from(tables[1].querySelectorAll("th")).map((t) => t.textContent)).toEqual(["d10", "Contact"]);
+  });
 });
