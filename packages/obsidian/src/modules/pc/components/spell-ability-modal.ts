@@ -5,6 +5,7 @@ import type { Ability } from "@archivist-gg/dnd5e";
 import { ABILITY_KEYS } from "@archivist-gg/dnd5e/dnd/constants";
 import type { ComponentRenderContext } from "./component.types";
 import type { CharacterEditState } from "../pc.edit-state";
+import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
 import { characterHasOwnSpellcastingAbility } from "./inventory/scroll-spell-picker";
 
 let current: SpellAbilityModal | null = null;
@@ -135,9 +136,12 @@ export function renderSpellAbilityBody(host: HTMLElement, ctx: ComponentRenderCo
 
   // Non-caster scroll row: this is the base pick (not a per-class override), so
   // no revert. A caster's scrolls resolve via ownSpellcastingAbility, so this
-  // row is non-caster-only and the two axes never collide.
+  // row is non-caster-only and the two axes never collide. The gate reads the
+  // spell-source descriptor's consumable section, the SAME read as the launcher
+  // that opens this modal (spells-tab.ts renderSpellAbilityLauncher), so the two
+  // halves of the feature can never drift apart.
   if (!characterHasOwnSpellcastingAbility(ctx.derived)
-      && ctx.resolved.spells.some((s) => s.source === "item")) {
+      && ctx.resolved.spells.some((s) => spellSource(s).section === "consumable")) {
     const currentAbility = overrides.spellcasting_ability;
     const row = el(host, "div", "pc-spellability-row");
     const head = el(row, "div", "pc-spellability-head");
