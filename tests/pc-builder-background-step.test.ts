@@ -453,3 +453,38 @@ describe("renderBackgroundStep · the fixed entry's Equipment text (R4-G1a D5, G
     expect(c.textContent).not.toContain("Equipment");
   });
 });
+
+// R4-G3b §10 (Task 11): the chosen background's entity data carries the
+// converter's `tables`; the step renders each under its own section rule, inside
+// a `.pc-cb-trait-d` host so the chronicle cast-table dress applies. Its own
+// one-row picker pool leaves the shared BACKGROUNDS list (and the row-count
+// assertions that measure it) untouched.
+const CRIMINAL_TABLES_DATA = {
+  ...CRIMINAL_2024_DATA,
+  tables: [
+    { name: "Origin", dice: "d8", rows: Array.from({ length: 8 }, (_, i) => ({ roll: String(i + 1), text: `Origin ${i + 1}` })) },
+    { name: "Specialty", dice: "d8", rows: [...Array.from({ length: 7 }, (_, i) => ({ roll: String(i + 1), text: `S${i + 1}` })), { roll: "2-3", text: "Ranged" }] },
+  ],
+};
+
+const CRIMINAL_TABLES_ROW: RegisteredEntity = {
+  slug: "srd-2024_criminal", name: "Criminal", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024", data: CRIMINAL_TABLES_DATA,
+} as unknown as RegisteredEntity;
+
+describe("renderBackgroundStep · background tables (R4-G3b §10)", () => {
+  it("a chosen background carrying `tables` renders each one under its own section rule", () => {
+    const c = mountContainer();
+    const ctx = mkCtx({
+      background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal, backgrounds: [CRIMINAL_TABLES_ROW],
+    });
+    renderBackgroundStep(c, ctx);
+    // RED FIRST before Task 11 (df04139a): the step rendered no table, so this
+    // read 0. CRIMINAL_2024_DATA carries no `feature`, so the only
+    // `.pc-cb-trait-d` hosts on this block are the two table hosts.
+    expect(c.querySelectorAll(".pc-cb-trait-d table")).toHaveLength(2);
+    expect(c.querySelectorAll(".pc-cb-trait-d tbody tr")).toHaveLength(16);
+    expect(Array.from(c.querySelectorAll(".pc-cb-sec-l")).map((s) => s.textContent)).toContain("Origin");
+    expect(Array.from(c.querySelectorAll(".pc-cb-trait-d tbody tr td:first-child")).map((t) => t.textContent)).toContain("2-3");
+  });
+});

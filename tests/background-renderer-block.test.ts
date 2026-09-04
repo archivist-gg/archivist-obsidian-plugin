@@ -218,3 +218,42 @@ describe("renderBackgroundBlock · the fixed entry's Equipment text (R4-G1a D5, 
     expect(equipLine(root)!.querySelector(".archivist-property-value")!.textContent).toBe("");
   });
 });
+
+// R4-G3b §10 (Task 11): the converter's `tables` and `suggested_characteristics`
+// render on the entity note, inside the BLOCK element, so the
+// `.archivist-background-block table.archivist-table` dress applies to them.
+describe("renderBackgroundBlock · tables + suggested characteristics (R4-G3b §10)", () => {
+  /** The corpus shape: 8 rows, `roll` a STRING on every row. */
+  const ORIGIN_TABLE = {
+    name: "Origin",
+    dice: "d8",
+    rows: Array.from({ length: 8 }, (_, i) => ({ roll: String(i + 1), text: `Origin ${i + 1}` })),
+  };
+  const charlatan: BackgroundEntity = {
+    ...acolyte,
+    slug: "phb-2014_charlatan",
+    tables: [ORIGIN_TABLE],
+    suggested_characteristics: { bonds: { "1": "a" } },
+  } as unknown as BackgroundEntity;
+
+  it("renders one table per `tables` entry plus one per numeric characteristics record", async () => {
+    const root = mountContainer();
+    root.appendChild(await renderBackgroundBlock(charlatan));
+    await flush();
+    const tables = root.querySelectorAll(".archivist-background-block table.archivist-table");
+    // RED FIRST before Task 11 (df04139a): the note rendered neither field, so
+    // this read 0.
+    expect(tables).toHaveLength(2);
+    expect(root.querySelectorAll("tbody tr")).toHaveLength(9);
+    expect(Array.from(tables[0].querySelectorAll("th")).map((t) => t.textContent)).toEqual(["d8", "Origin"]);
+    expect(Array.from(tables[1].querySelectorAll("th")).map((t) => t.textContent)).toEqual(["d1", "Bonds"]);
+    expect(tables[0].querySelector("tbody tr td:last-child")?.textContent).toBe("Origin 1");
+  });
+
+  it("the control: no `tables` and `suggested_characteristics: null` renders NO table", async () => {
+    const root = mountContainer();
+    root.appendChild(await renderBackgroundBlock(acolyte));
+    await flush();
+    expect(root.querySelector("table")).toBeNull();
+  });
+});

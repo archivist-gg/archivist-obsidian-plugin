@@ -883,6 +883,12 @@
   border: none;
   font-size: 12px;
 }
+/* R4-G3b §10: the background note's roll-table cells render through the markdown
+   path, which wraps each cell text in a `<p>`; zero its margin so the cell keeps
+   the table's own row rhythm. EXPECTED-NOT-MEASURED (§10.2.2: no call site
+   rendered markdown into a `<td>` before Task 11); verified at the G3b live
+   verify; dropped if it changes nothing. */
+.archivist-background-block table.archivist-table td > p { margin: 0; }
 .archivist-spell-block table.archivist-table td:first-child,
 .archivist-item-block table.archivist-table td:first-child,
 .archivist-class-block table.archivist-table td:first-child,
@@ -9150,7 +9156,9 @@ body.theme-light .archivist-tag-atk:hover {
 /* Resource tracker on a race trait (R4-G3a §11): the pips sit on the name line,
    the description keeps its own full-width line under them. The whole row turns
    into a wrapping flex ONLY when a `.pc-cb-trait-track` host is present, so a
-   trait without resources keeps the plain block layout it has always had
+   trait without resources keeps the plain block layout it has always had; since
+   R4-G3b §11 that host serves only COSTLESS traits, so a routed trait (whose
+   tracker lives on its Actions row) keeps the plain layout too
    (`:has()` is supported in every Chromium >= 105, i.e. all current Obsidian
    builds; the same floor components.css already relies on). Nothing here dresses
    the tracker itself: the pips are `.archivist-toggle-box` (archivist-dnd.css)
@@ -9211,6 +9219,13 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tr:last-child td { border-bottom: none; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d tbody tr:nth-child(even) td,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tbody tr:nth-child(even) td { background: rgba(232, 213, 176, 0.28); }
+/* R4-G3b §10: a background roll-table cell renders through the markdown path,
+   which wraps the cell text in a `<p>` carrying the app's own paragraph margin
+   (the `.pc-cb-trait-d > p` rule above is a CHILD selector and never reaches it).
+   EXPECTED-NOT-MEASURED (§10.2.2: no call site rendered markdown into a `<td>`
+   before Task 11); verified at the G3b live verify; dropped if it changes
+   nothing. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d td > p { margin: 0; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-more { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-crimson); cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop { display: flex; align-items: flex-start; gap: 0.5em; margin: 0.3em 0; font-size: 12.5px; color: var(--pc-text-primary); line-height: 1.5; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop-l { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); flex: none; min-width: 96px; margin-top: 2px; }

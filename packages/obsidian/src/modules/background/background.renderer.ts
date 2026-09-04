@@ -7,6 +7,7 @@ import type {
 import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment-grant";
 import { el, createIconProperty, sourceBadgeText, fixedGrantLines } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
+import { renderBackgroundTables, renderSuggestedCharacteristics } from "../../shared/rendering/background-tables";
 
 /** Capitalize only the first letter of each whitespace-delimited word. Anchoring
  *  on start/whitespace (rather than `\b`) avoids uppercasing the letter after an
@@ -123,6 +124,13 @@ export async function renderBackgroundBlock(
       await renderMarkdownDescription(body, data.feature.description, app, component);
     }
   }
+
+  // R4-G3b §10: the converter roll tables and the suggested characteristics
+  // render on the BLOCK element, so the `.archivist-background-block
+  // table.archivist-table` dress reaches them; every cell text goes through the
+  // shared markdown path.
+  renderBackgroundTables(block, data.tables, app, component);
+  renderSuggestedCharacteristics(block, data.suggested_characteristics, app, component);
 
   return wrapper;
 }

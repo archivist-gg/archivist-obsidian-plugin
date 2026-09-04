@@ -876,6 +876,12 @@
   border: none;
   font-size: 12px;
 }
+/* R4-G3b §10: the background note's roll-table cells render through the markdown
+   path, which wraps each cell text in a `<p>`; zero its margin so the cell keeps
+   the table's own row rhythm. EXPECTED-NOT-MEASURED (§10.2.2: no call site
+   rendered markdown into a `<td>` before Task 11); verified at the G3b live
+   verify; dropped if it changes nothing. */
+.archivist-background-block table.archivist-table td > p { margin: 0; }
 .archivist-spell-block table.archivist-table td:first-child,
 .archivist-item-block table.archivist-table td:first-child,
 .archivist-class-block table.archivist-table td:first-child,

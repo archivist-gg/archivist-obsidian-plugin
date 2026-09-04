@@ -12,6 +12,7 @@ import { humanizeSlug, fixedGrantLines, fixedNamesFrom } from "../../../../share
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
+import { renderBackgroundTables, renderSuggestedCharacteristics, type BgTable } from "../../../../shared/rendering/background-tables";
 import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 const skillsOf = (e: RegisteredEntity): string[] =>
@@ -41,6 +42,8 @@ interface BackgroundData {
   ability_score_increases?: { pool?: string[] } | null;
   origin_feat?: string | null;
   choices?: Array<{ kind: string; id?: string; domain?: string; count?: number; points?: number; max_per?: number; pool?: string[] }>;
+  tables?: BgTable[];
+  suggested_characteristics?: Parameters<typeof renderSuggestedCharacteristics>[1];
 }
 
 const stripSummary = (items: DecisionItem[]): string => {
@@ -120,6 +123,18 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
             renderOriginFeatStripRow(strip, ctx, e);
           }
           renderGearProps(host, ctx, d);
+          // R4-G3b §10: the converter's roll tables and suggested characteristics.
+          // Each table gets its own section rule (name on the left, die on the
+          // right) and its own `.pc-cb-trait-d` host, which is the class the
+          // chronicle cast-table dress is scoped to.
+          for (const t of d.tables ?? []) {
+            renderSectionRule(host, t.name, t.dice);
+            renderBackgroundTables(host.createDiv({ cls: "pc-cb-trait-d" }), [t], ctx.app);
+          }
+          if (d.suggested_characteristics) {
+            renderSectionRule(host, "Suggested Characteristics", "");
+            renderSuggestedCharacteristics(host.createDiv({ cls: "pc-cb-trait-d" }), d.suggested_characteristics, ctx.app);
+          }
         },
       });
     },
