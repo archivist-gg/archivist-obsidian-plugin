@@ -1,5 +1,6 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
+import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderAddDrawer } from "./add-drawer";
@@ -58,11 +59,12 @@ export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext
 
   const addBtn = head.createEl("button", { cls: "pc-spell-addbtn" });
 
-  // Item (scroll) spells are managed on the inventory, never in the Prepare list,
-  // so their levels must not seed the Level filter chips either.
+  // Only a row whose descriptor sets showInPrepare belongs here; an item (scroll)
+  // spell is managed on the inventory, never in the Prepare list, so its level must
+  // not seed the Level filter chips either.
   const presentLevels = [
     ...new Set(
-      ctx.resolved.spells.filter((s) => s.source !== "item").map((s) => s.entity.level ?? 0),
+      ctx.resolved.spells.filter((s) => spellSource(s).showInPrepare).map((s) => s.entity.level ?? 0),
     ),
   ].sort((a, b) => a - b);
 
@@ -125,8 +127,9 @@ export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext
       drawLevelChips();
       drawClassChips();
       const shown = ctx.resolved.spells.filter((s) => {
-        // Item (scroll) spells never appear as preparable/locked rows here.
-        if (s.source === "item") return false;
+        // A row the descriptor keeps out of the Prepare list (an item/scroll spell)
+        // never appears as a preparable/locked row here.
+        if (!spellSource(s).showInPrepare) return false;
         if (levelFilter !== "all" && (s.entity.level ?? 0) !== levelFilter) return false;
         if (classFilter !== "all" && baseClassName(s.classSlug ?? "") !== classFilter) return false;
         return true;
@@ -197,8 +200,8 @@ function renderPrepareRow(
   if (tag) name.parentElement!.createSpan({ cls: `pc-spell-srctag ${tag.mod}`, text: tag.label });
   if (spell.alwaysPrepared) name.createSpan({ cls: "pc-spell-always", text: "always" });
   if (spell.entity.school) nameWrap.createDiv({ cls: "pc-spell-sub", text: spell.entity.school });
-  // Prepare-view spells are never scrolls (source "item" is filtered out), so
-  // entryIndex is absent → a stable `<slug>#` tail.
+  // Prepare-view spells are never scrolls (the consumable section is filtered out
+  // above), so entryIndex is absent → a stable `<slug>#` tail.
   const expandKey = rowExpandKey("spell", "prep", `${spell.slug}#${spell.entryIndex ?? ""}`);
   nameWrap.addEventListener("click", () => {
     toggleSpellBlock(host, spell, ctx);
@@ -213,17 +216,21 @@ function renderPrepareRow(
     host.classList.add("pc-open-expand");
   }
 
-  // Remove with inline two-tap confirm
-  const rm = row.createEl("button", { cls: "pc-spell-remove", text: "✕" });
-  let armed = false;
-  rm.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (!armed) {
-      armed = true;
-      rm.classList.add("armed");
-      rm.setText("Remove?");
-      return;
-    }
-    ctx.editState?.removeKnownSpell(spell.slug);
-  });
+  // Remove with inline two-tap confirm. removeKnownSpell edits character.spells.known,
+  // so the control renders ONLY for a row that lives there (ResolvedSpell.persisted);
+  // on a grant it would be a silent no-op, and the "always" badge is the explanation.
+  if (spell.persisted) {
+    const rm = row.createEl("button", { cls: "pc-spell-remove", text: "✕" });
+    let armed = false;
+    rm.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!armed) {
+        armed = true;
+        rm.classList.add("armed");
+        rm.setText("Remove?");
+        return;
+      }
+      ctx.editState?.removeKnownSpell(spell.slug);
+    });
+  }
 }

@@ -55,6 +55,32 @@ describe("SpellsTab", () => {
     expect(c.querySelector(".pc-spell-cast-row")?.textContent).toContain("12");
   });
 
+  it("surfaces a race-granted spell on a non-caster (an Air Genasi's Levitate), not the empty state", () => {
+    // R4-G3b §6: the empty-state gate is the descriptor's `countsAsGranted`, so a
+    // race grant lifts "No Spellcasting" exactly as a feat grant does, and the row
+    // reaches the free-cast section through the descriptor's `freeCastWhenNoSlot`.
+    // RED FIRST before Task 7 (plugin 7bb5d39b): the gate read
+    // `s.source === "feat" || s.source === "item"`, so this character read "No Spellcasting".
+    const c = mountContainer();
+    const raceSpell: ResolvedSpell = {
+      entity: { name: "Levitate", level: 2, saving_throw: { ability: "constitution" } } as never,
+      slug: "eepc_spell_levitate", classSlug: null, source: "race", prepared: true, alwaysPrepared: true, ability: "con",
+    };
+    new SpellsTab().render(c, {
+      resolved: resolved([raceSpell]),
+      derived: derived({ spellcastingClasses: [], derivedSpellSlots: {}, abilitySpellcasting: { con: { saveDC: 13, attackBonus: 5 } } as never }),
+      services: {} as never, app: {} as never, editState: null,
+    });
+    expect(c.querySelector(".pc-spells-empty-title")).toBeNull();
+    // Array.from, not a spread: the one-off per-file tsconfig used by the phase's
+    // tsc control lacks the iterator lib, and a spread would add a TS2488 row.
+    const names = Array.from(c.querySelectorAll(".pc-spell-name")).map((e) => e.textContent);
+    expect(names).toContain("Levitate");
+    // The race grant carries the always-prepared marker and its OWN (CON) DC.
+    expect(c.querySelector(".pc-spell-always")).not.toBeNull();
+    expect(c.querySelector(".pc-spell-cast-row")?.textContent).toContain("13");
+  });
+
   it("surfaces an item (scroll) spell on a non-caster, not the empty state (P4 T6)", () => {
     // A non-caster holding a Spell Scroll must still get the Spells section: the
     // scroll surfaces under Scrolls & Consumables, never the "No Spellcasting"

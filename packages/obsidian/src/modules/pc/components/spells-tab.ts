@@ -1,4 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
 import { renderCastView } from "./spells/cast-view";
 import { renderPrepareView } from "./spells/prepare-view";
 import { renderActiveEffectsRail } from "./active-effects-rail";
@@ -23,11 +24,12 @@ export class SpellsTab implements SheetComponent {
     el.empty();
     const root = el.createDiv({ cls: "pc-tab-body pc-spells-body" });
     const casters = ctx.derived.spellcastingClasses;
-    // Feat-granted spells (Magic Initiate) and item-granted spells (Spell Scrolls)
-    // both surface even on a class with no spellcasting feature, so the Cast view
-    // must render for them too. Only a character with neither a spellcasting class
-    // NOR a feat/item spell gets the "No Spellcasting" empty state.
-    const hasGrantedSpells = ctx.resolved.spells.some((s) => s.source === "feat" || s.source === "item");
+    // A granted spell (a feat pick such as Magic Initiate, a race trait, a Spell
+    // Scroll) surfaces even on a class with no spellcasting feature, so the Cast view
+    // must render for it too. Which sources count is the descriptor's countsAsGranted;
+    // only a character with neither a spellcasting class NOR a granted spell gets the
+    // "No Spellcasting" empty state.
+    const hasGrantedSpells = ctx.resolved.spells.some((s) => spellSource(s).countsAsGranted);
 
     if (casters.length === 0 && !hasGrantedSpells) {
       const empty = root.createDiv({ cls: "pc-spells-empty" });
@@ -103,7 +105,7 @@ export class SpellsTab implements SheetComponent {
    * `overrides.spellcasting_ability` (the resolver's scroll DC-ability fallback).
    */
   private renderSpellAbilityLauncher(root: HTMLElement, ctx: ComponentRenderContext): void {
-    const hasScrollSpells = ctx.resolved.spells.some((s) => s.source === "item");
+    const hasScrollSpells = ctx.resolved.spells.some((s) => spellSource(s).section === "consumable");
     if (!hasScrollSpells || characterHasOwnSpellcastingAbility(ctx.derived)) return;
 
     const launcher = root.createDiv({ cls: "pc-spellability-launcher pc-edit-click" });

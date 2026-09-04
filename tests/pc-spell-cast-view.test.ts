@@ -41,6 +41,30 @@ function nonCasterCtx(spells: unknown[]): ComponentRenderContext {
   } as never;
 }
 
+// R4-G3b §6 · a RACE grant on the same non-caster. A second builder rather than a
+// parameter on nonCasterCtx, so every pre-existing case above stays byte-unchanged.
+// abilitySpellcasting.con for an Air Genasi Fighter 5 (prof 3) with CON 14 (+2): DC 13, atk +5.
+const raceSpell = {
+  entity: { name: "Levitate", level: 2, school: "transmutation", saving_throw: { ability: "constitution" } },
+  slug: "eepc_spell_levitate", classSlug: null, source: "race", prepared: true, alwaysPrepared: true, ability: "con",
+};
+function nonCasterConCtx(spells: unknown[]): ComponentRenderContext {
+  return {
+    resolved: {
+      definition: { overrides: {} },
+      state: { spell_slots: {} },
+      spells,
+    },
+    derived: {
+      spellcastingClasses: [],
+      derivedSpellSlots: {},
+      pactMagic: null,
+      abilitySpellcasting: { con: { saveDC: 13, attackBonus: 5 } },
+    },
+    editState: null,
+  } as never;
+}
+
 const rowByName = (root: HTMLElement, name: string): HTMLElement | undefined =>
   [...root.querySelectorAll<HTMLElement>(".pc-spell-cast-row")].find(
     (r) => r.querySelector(".pc-spell-name")?.textContent === name,
@@ -80,5 +104,21 @@ describe("renderCastView · feat-granted spells (non-caster)", () => {
     expect(secLabels(root)).toEqual(expect.arrayContaining(["Cantrips", "1st Level"]));
     expect(dcOf(rowByName(root, "Sacred Flame")!)).toBe("14");
     expect(dcOf(rowByName(root, "Command")!)).toBe("14");
+  });
+});
+
+describe("renderCastView · race-granted spells (non-caster) · R4-G3b §6", () => {
+  it("surfaces a leveled race grant in its own free-cast level section, with its OWN (CON) DC", () => {
+    // RED FIRST before Task 7 (plugin 7bb5d39b): the free-cast block read
+    // `s.source === "feat"`, so a race row produced no "2nd Level" section at all.
+    const root = mountContainer();
+    renderCastView(root, nonCasterConCtx([raceSpell]));
+    expect(secLabels(root)).toContain("2nd Level"); // section exists despite zero owned slots
+    const row = rowByName(root, "Levitate");
+    expect(row).toBeDefined();
+    expect(dcOf(row!)).toBe("13"); // from abilitySpellcasting.con, NOT spellcastingClasses[0] ?? 0
+    expect(row!.querySelector(".pc-spell-free")).not.toBeNull();
+    expect(row!.querySelector(".pc-spell-castbtn")).toBeNull();
+    expect(row!.querySelector(".pc-spell-always")).not.toBeNull();
   });
 });

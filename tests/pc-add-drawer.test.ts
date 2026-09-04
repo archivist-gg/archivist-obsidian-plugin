@@ -100,6 +100,23 @@ describe("renderAddDrawer: known-set excludes scroll (source:item) spells (AC-S4
     expect(editState.addKnownSpell).toHaveBeenCalledWith("fireball", { class: "wizard" });
     expect(editState.removeKnownSpell).not.toHaveBeenCalled();
   });
+
+  it("clicking a GRANTED (non-persisted) spell's ✓ is inert: neither removeKnownSpell nor addKnownSpell", () => {
+    // R4-G3b §6.2.3: the drawer's ✓ calls removeKnownSpell, a silent no-op for a row
+    // that does not live in character.spells.known. The handler holds only the known
+    // Set, so it re-reads the matching resolved spell's `persisted` flag; a grant has
+    // none, so the toggle does nothing at all (the "always" badge is the explanation).
+    // RED FIRST before Task 7 (plugin 7bb5d39b): the handler called removeKnownSpell
+    // unconditionally whenever known.has(slug).
+    const root = mountContainer();
+    const editState = { addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() };
+    renderAddDrawer(root, ctxKnown([{ slug: "fireball", source: "feat" }], editState));
+    const fb = toggleFor(root, "Fireball");
+    fb.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(editState.removeKnownSpell).not.toHaveBeenCalled();
+    expect(editState.addKnownSpell).not.toHaveBeenCalled();
+    expect(fb.classList.contains("on")).toBe(true); // the grant still reads as known (✓)
+  });
 });
 
 // Hidden-compendium filtering (R3-P6, F3). SpellCandidate carries no compendium,

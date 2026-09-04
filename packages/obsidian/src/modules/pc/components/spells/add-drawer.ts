@@ -1,4 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
+import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
 import { classSpellCandidates, type SpellCandidate } from "@archivist-gg/dnd5e/spell/spell.access";
 import { renderSpellBlock } from "../../../spell/spell.renderer";
 import { compactCastingTime, formatRange, componentLetters, abbrAbility } from "./spell-display";
@@ -95,10 +96,16 @@ function renderRow(
 
   const addTd = tr.createDiv({ cls: "col-add" });
   const toggle = addTd.createEl("button", { cls: `pc-add-toggle${isKnown ? " on" : ""}`, text: isKnown ? "✓" : "＋" });
+  // removeKnownSpell edits character.spells.known, so the ✓ may only fire for a row
+  // that lives there. The handler holds just the known Set, so it re-reads the matching
+  // resolved spell's `persisted` flag; on a grant the ✓ is inert (no new copy: the row's
+  // "always" badge in the Prepare list is the explanation).
   toggle.addEventListener("click", (ev) => {
     ev.stopPropagation();
-    if (known.has(c.slug)) ctx.editState?.removeKnownSpell(c.slug);
-    else ctx.editState?.addKnownSpell(c.slug, { class: firstClass });
+    const existing = ctx.resolved.spells.find((s) => s.slug === c.slug);
+    if (known.has(c.slug)) {
+      if (existing?.persisted) ctx.editState?.removeKnownSpell(c.slug);
+    } else ctx.editState?.addKnownSpell(c.slug, { class: firstClass });
   });
 
   const nameTd = tr.createDiv({ cls: "col-name" });
@@ -190,11 +197,12 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     ...Object.keys(ctx.derived.derivedSpellSlots).map(Number),
     ctx.derived.pactMagic?.level ?? 0,
   );
-  // Scroll-granted spells (source:"item") are NOT part of the known/prepared
-  // list, so excluding them keeps a caster's own class spell that they happen
-  // to carry a scroll of ADDABLE here (mirrors prepare-view / cast-view). AC-S4.
+  // Only rows the descriptor keeps in the Prepare list count as known here.
+  // Scroll-granted spells are NOT part of the known/prepared list, so excluding
+  // them keeps a caster's own class spell that they happen to carry a scroll of
+  // ADDABLE here (mirrors prepare-view / cast-view). AC-S4.
   const knownSet = () => new Set(
-    ctx.resolved.spells.filter((s) => s.source !== "item").map((s) => s.slug),
+    ctx.resolved.spells.filter((s) => spellSource(s).showInPrepare).map((s) => s.slug),
   );
 
   // Persistent toolbar shell (search must survive redraws or it loses focus).

@@ -11,7 +11,7 @@ const REG = buildMockRegistry([{ slug: "fireball", entityType: "spell", data: { 
 
 function sp(name: string, level: number, prepared: boolean, alwaysPrepared = false): ResolvedSpell {
   return { entity: { name, level } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),
-    classSlug: "wizard", source: "class", prepared, alwaysPrepared };
+    classSlug: "wizard", source: "class", prepared, alwaysPrepared, persisted: true };
 }
 function ctx(spells: ResolvedSpell[], editState: unknown, preparation: "prepared" | "known" = "prepared"): ComponentRenderContext {
   return {
@@ -51,6 +51,23 @@ describe("renderPrepareView", () => {
     expect(removeKnownSpell).not.toHaveBeenCalled();           // first click = arm confirm
     rm.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(removeKnownSpell).toHaveBeenCalledWith("magic-missile");
+  });
+
+  it("a granted (non-persisted) row renders no ✕ and keeps its locked prepared box", () => {
+    // R4-G3b §6.2.3: the ✕ calls removeKnownSpell, which is a silent no-op off
+    // character.spells.known, so it renders only for a row that LIVES there
+    // (ResolvedSpell.persisted). A grant carries no such entry whatever its `source`
+    // (a class-table, feat or race grant): no ✕, and the always-prepared box stays
+    // locked as it already did.
+    // RED FIRST before Task 7 (plugin 7bb5d39b): the ✕ was rendered unconditionally,
+    // so this row showed a .pc-spell-remove that removed nothing.
+    const root = mountContainer();
+    const granted = sp("Magic Missile", 1, true, true);
+    delete granted.persisted;
+    renderPrepareView(root, ctx([granted], { togglePrepared: vi.fn(), removeKnownSpell: vi.fn() }));
+    expect(root.querySelector(".pc-spell-remove")).toBeNull();
+    const box = root.querySelector(".pc-spell-prep-row .archivist-toggle-box") as HTMLElement;
+    expect(box.classList.contains("pc-box-locked")).toBe(true);
   });
 
   it("known casters render no prepared boxes (Manage mode)", () => {

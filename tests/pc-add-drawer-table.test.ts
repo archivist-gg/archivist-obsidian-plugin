@@ -31,7 +31,10 @@ const REG = buildMockRegistry([
 
 function ctx(known: string[] = [], editState: object = { addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() }): ComponentRenderContext {
   return {
-    resolved: { spells: known.map((slug) => ({ slug })) } as never,
+    // R4-G3b §6: these model PERSISTED class rows (an entry in character.spells.known),
+    // which is what the "✓ removes a known one" case below acts on. `source` completes
+    // the required ResolvedSpell field the descriptor table is keyed by.
+    resolved: { spells: known.map((slug) => ({ slug, source: "class", persisted: true })) } as never,
     derived: { spellcastingClasses: [{ classSlug: "wizard" }], derivedSpellSlots: { 1: 4, 2: 3 }, pactMagic: null } as never,
     services: { entities: REG } as never, app: {} as never, editState: editState as never,
   };
