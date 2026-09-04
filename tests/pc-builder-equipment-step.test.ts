@@ -506,15 +506,16 @@ describe("R4-P5b · mode, clamp and residual behaviour", () => {
   });
 });
 
-describe("R4-P5b · the dead background limb and the no-bag disable", () => {
-  // §7.1 · pins CURRENT behaviour, deliberately. The Equipment step reads
-  // `background.starting_equipment`, but BackgroundEntity's key is `equipment`,
-  // so the whole background limb is dead: no rows render and no gold is granted.
-  // This is recorded as its own unowned row; the fixture exists so that repairing
-  // the key reddens here rather than silently changing what characters receive.
+describe("R4-G3b §9 · the background limb is LIVE", () => {
+  // Provenance: until R4-G3b Task 10 the Equipment step read
+  // `background.starting_equipment` while BackgroundEntity's key is `equipment`,
+  // so the whole background limb was dead · no rows rendered and no gold was
+  // granted · and this fixture pinned that with two `expect.soft` negatives. Task
+  // 10 deleted the three casts and reads `.equipment` typed; both assertions are
+  // now positive, which is exactly the flip the pinned fixture was armed for.
   //
-  // ⚠️ Three things ARM it · without any one of them the repair changes nothing
-  // here and the guard is decoration:
+  // ⚠️ Three things ARM it · without any one of them the repair would have changed
+  // nothing here and the guard would be decoration:
   //   · the entry is `kind: "choice"`. The background section rule (and the name
   //     "Acolyte" with it) is gated on `hasChoice`, which is `kind === "choice"`,
   //     so a `fixed` entry stays invisible even with the key repaired.
@@ -524,9 +525,7 @@ describe("R4-P5b · the dead background limb and the no-bag disable", () => {
   //   · the baseline is pre-seeded. On a FRESH bag `goldStep` takes rule 1
   //     (adopt), which lands 0 whatever the contribution is, and would mask the
   //     write entirely; seeded at lastG 0 a repaired limb takes rule 3 instead.
-  // Repaired, BOTH assertions go red: "Acolyte" renders and adjustCurrency is
-  // called with { gp: 15 }. `expect.soft` so one run evidences both arms.
-  it("a background's starting equipment is NOT rendered or granted (dead limb, pinned)", () => {
+  it("a background's starting equipment IS rendered and granted", () => {
     const c = mountContainer();
     const background = { name: "Acolyte", equipment: [
       { kind: "choice", options: [{ label: "15 GP", grants: [{ gold: 15 }] }] },
@@ -535,9 +534,31 @@ describe("R4-P5b · the dead background limb and the no-bag disable", () => {
       originChoices: { "background:equipment-0": "option-0" } });
     x.builderUiState!.set("builder.eqrec.gold", { applied: 0, lastG: 0 });
     renderEquipmentStep(c, x);
-    expect.soft(c.textContent).not.toContain("Acolyte");
-    expect.soft((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
-      .not.toHaveBeenCalled();
+    expect(c.textContent).toContain("Acolyte");
+    expect((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
+      .toHaveBeenCalledWith({ gp: 15 });
+  });
+
+  // The `fixed` twin of the case above · the shape the converter actually emits
+  // for the coin (PHB 2014 Charlatan: a fixed pouch carrying `contains_value:
+  // 1500`, in COPPER). It needs BOTH halves of Task 10: the limb must read
+  // `.equipment` to see the entry at all, and the seeder must turn the copper into
+  // gold. No section rule renders here · `hasChoice` is false for a `fixed` entry ·
+  // so the wallet write is the whole observable.
+  it("a background's `fixed` pouch seeds its contains_value as gold", () => {
+    const c = mountContainer();
+    const background = { name: "Charlatan", equipment: [
+      { kind: "fixed", grants: [{ item: "pouch", contains_value: 1500 }] },
+    ] };
+    const x = ctx({ background, startingEquipment: [], pool: [
+      entity("srd-2024_chain-mail", "Chain Mail", "armor", { category: "heavy" }),
+      entity("srd-2024_greatsword", "Greatsword", "weapon", { category: "martial-melee" }),
+      entity("srd-2024_pouch", "Pouch", "item"),
+    ] });
+    x.builderUiState!.set("builder.eqrec.gold", { applied: 0, lastG: 0 });
+    renderEquipmentStep(c, x);
+    expect((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
+      .toHaveBeenCalledWith({ gp: 15 });
   });
 
   // G8 · no bag means the gold half is disabled outright, never "always adopt".

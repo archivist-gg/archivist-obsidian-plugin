@@ -155,11 +155,11 @@ function renderStartingChoices(body: HTMLElement, ctx: ComponentRenderContext): 
 
   const classEntity = ctx.resolved.classes[0]?.entity ?? null;
   const classEquip = classEntity?.starting_equipment ?? [];
-  const bgSrc = ctx.resolved.background as { starting_equipment?: StartingEquipmentEntry[] } | null;
+  const bgSrc = ctx.resolved.background;
   // Surface degraded (old-shape / malformed) starting-equipment data with a
   // VISIBLE notice so the regression is not silently hidden. Reuses the amber
   // .pc-bwarn idiom (N1 treatment, no left-border accent).
-  if (hasDegradedEquipment(classEquip) || hasDegradedEquipment(bgSrc?.starting_equipment ?? [])) {
+  if (hasDegradedEquipment(classEquip) || hasDegradedEquipment(bgSrc?.equipment ?? [])) {
     const warn = body.createDiv({ cls: "pc-bwarn" });
     warn.createSpan({ cls: "pc-bwarn-c", text: "!" });
     warn.createSpan({
@@ -178,8 +178,8 @@ function renderStartingChoices(body: HTMLElement, ctx: ComponentRenderContext): 
     });
   }
 
-  const bg = ctx.resolved.background as { name?: string; starting_equipment?: StartingEquipmentEntry[] } | null;
-  const bgEquip = bg?.starting_equipment ?? [];
+  const bg = ctx.resolved.background;
+  const bgEquip = bg?.equipment ?? [];
   if (hasChoice(bgEquip)) {
     renderSectionRule(body, bg?.name ?? "Background", "Starting Equipment");
     renderSourceChoices(body, ctx, ledger, {
@@ -331,8 +331,8 @@ function resolveSelections(ctx: ComponentRenderContext): { entries: GrantedEntry
   const classEquip = ctx.resolved.classes[0]?.entity?.starting_equipment ?? [];
   consume(classEquip, "class", (key) => readClassChoice(ctx, key));
 
-  const bg = ctx.resolved.background as { starting_equipment?: StartingEquipmentEntry[] } | null;
-  consume(bg?.starting_equipment ?? [], "background", (key) => readOriginChoice(ctx, key));
+  const bg = ctx.resolved.background;
+  consume(bg?.equipment ?? [], "background", (key) => readOriginChoice(ctx, key));
 
   return { entries: all, totalGold };
 }

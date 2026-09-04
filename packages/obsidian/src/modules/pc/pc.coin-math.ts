@@ -28,6 +28,9 @@ export const MAX_COIN = 999_999;
 
 const CP_VALUE: Record<Coin, number> = { pp: 1000, gp: 100, ep: 50, sp: 10, cp: 1 };
 
+/** Copper per gold piece · the starting-equipment seeder's unit for contains_value (R4-G3b §9). */
+export const CP_PER_GP = CP_VALUE.gp;
+
 export type CurrencyLike = Partial<Record<Coin, number>> | undefined | null;
 
 /** Total wealth in integer copper; missing keys / absent object count as 0. */

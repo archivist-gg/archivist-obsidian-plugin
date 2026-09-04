@@ -1,5 +1,6 @@
 import type { EquipmentGrant } from "@archivist-gg/dnd5e/types/equipment-grant";
 import type { SlotKey } from "@archivist-gg/dnd5e/pc/pc.types";
+import { CP_PER_GP } from "../pc.coin-math";
 
 export interface GrantedEntry { slug: string; qty: number; equipped: boolean; slot: SlotKey | null; }
 
@@ -54,6 +55,9 @@ export function resolveGrants(
       if (picked) pushFull(picked);
       continue;
     }
+    // R4-G3b §9: coin INSIDE a granted container (the converter's `contains_value`, in COPPER). Seeded here, OUTSIDE
+    // pushBare, so an unresolved container still yields its coin. `worth_value` (the worth of a kept object) is never seeded.
+    gold += Math.floor((g.contains_value ?? 0) / CP_PER_GP);
     pushBare(g.item, g.qty ?? 1);
   }
   return { entries, gold };

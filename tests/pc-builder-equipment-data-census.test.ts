@@ -33,7 +33,10 @@ describe.skipIf(!present)("shipped-data census (R4-P5b G17)", () => {
     // A `- gold:` at 6-space indent sits directly under a `kind: fixed` grants
     // list; the 33 legitimate ones are nested inside `options:` at 10 spaces.
     // The single 6-space instance repo-wide is the SRD-5e Acolyte BACKGROUND,
-    // which the dead background limb (spec 7.1) keeps unreachable.
+    // which this filter excludes: it keeps only `/Classes/` paths. R4-G3b Task 10
+    // made the background limb live, so that grant is reachable now; on a FRESH
+    // bag `goldStep` rule 1 adopts it instead of depositing it, which R4-G3b §9.4
+    // states and deliberately does not assert.
     const offenders = entries
       .filter(([p, text]) => /[/\\]Classes[/\\]/.test(p) && /^ {6}- gold:/m.test(text))
       .map(([p]) => p);
