@@ -112,8 +112,12 @@ const SOURCE_LABEL: Record<SourceKey, string> = {
  *   `bonus-action`               → bonus
  *   `reaction`                   → reactions
  *   `free` / `special` / absent  → passive (Passive & Free Actions)
+ *
+ * Exported since R4-G3b §11 so the Passive tab's race block gates its trait
+ * tracker through this SAME map rather than a local copy of the vocabulary
+ * (invariant 5: one economy map).
  */
-function featureEconomy(action: ActionCost | null | undefined): EconomyKey {
+export function featureEconomy(action: ActionCost | null | undefined): EconomyKey {
   switch (action) {
     case "action":
       return "actions";

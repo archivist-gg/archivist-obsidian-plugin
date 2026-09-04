@@ -4,6 +4,7 @@ import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
 import { renderFirstResourceTracker } from "../actions/feature-rows";
+import { featureEconomy } from "../actions/action-model";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { RACE_STRUCTURAL_PSEUDO } from "@archivist-gg/dnd5e/race/race.structural";
 
@@ -126,15 +127,23 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
         traitRow.createDiv({ cls: "pc-cb-trait-n", text: t.name });
         // A trait carrying `resources[]` gets the SAME first-resource tracker the
         // feature rows use (§11): its uses are seeded into `state.feature_uses`
-        // and listed in the rest modal, but a COSTLESS race trait never reaches a
-        // feature row (the passive tab drops the `race` sub-group), so for that
-        // subset this host is the only place it can be spent. The gate here is
-        // `t.resources?.length`, not the routing cost, so a ROUTED carrier (the
-        // SRD Dragonborn's Breath Weapon) shows a tracker in BOTH the Actions tab
-        // and here on the same `feature_uses` id: consistent state, and a G3b/user
-        // choice whether to gate on the cost. Only the tracker's own host is added
-        // here, so a trait without resources renders exactly as before.
-        if (t.resources?.length) {
+        // and listed in the rest modal. R4-G3b §11 (user ruling 2026-09-03) narrows
+        // that to the COSTLESS subset, which is the subset that needs it: a costless
+        // race trait never reaches a feature row (the passive tab drops the `race`
+        // sub-group), so this host is the only place its uses can be spent, while a
+        // ROUTED carrier (the SRD Dragonborn's Breath Weapon) already has a
+        // first-class Actions-tab row whose tracker spends the same `feature_uses`
+        // id, and a second copy here was redundant.
+        //
+        // The gate reads the RAW registry trait, which spells the routing cost two
+        // ways: the converter writes `action`, the SRD bundle writes `action_cost`.
+        // The bundle carriers carry NO `action` key at all, so reading `action`
+        // alone would be blind to them and the nullish fallback is what reaches
+        // them. Routing goes through the ONE economy map (invariant 5), never a
+        // local copy of the vocabulary, so `free` / `special` / absent all read as
+        // passive. Only the tracker's own host is added here, so a trait without
+        // resources renders exactly as before.
+        if (t.resources?.length && featureEconomy(t.action ?? t.action_cost) === "passive") {
           const trackHost = traitRow.createDiv({ cls: "pc-cb-trait-track" });
           renderFirstResourceTracker(trackHost, t, ctx);
         }
