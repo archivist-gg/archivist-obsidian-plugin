@@ -207,6 +207,28 @@ describe("renderPrepareView", () => {
     const root2 = mountContainer(); renderPrepareView(root2, x);
     expect((root2.querySelector(".pc-spell-search") as HTMLInputElement).value).toBe("fire");   // RED FIRST
   });
+
+  it("an expanded drawer row survives the re-render too (spec §12.3)", () => {
+    // R4-G3b §12.3's second half: the expanded-row Set lives in the same bag as the filter
+    // state, and renderRow re-opens any row whose slug that Set still holds (add-drawer.ts
+    // `if (expanded.has(c.slug)) toggleExpand();`).
+    // RED FIRST before Task 8 fix 1: measured at f9c8e8ee with the `expanded` hoist reverted
+    // to a per-render `new Set<string>()` (the pre-Task-8 shape, which is exactly what mutant
+    // M-47b restores) the second render dropped the open block and this query returned null.
+    // The hoist itself shipped in f9c8e8ee; fix 1 adds the fixture that pins it.
+    const x = ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn(), addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() });
+    const root1 = mountContainer(); renderPrepareView(root1, x);
+    (root1.querySelector(".pc-spell-addbtn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const row1 = root1.querySelector(".pc-spell-add-table .pc-spell-add-row") as HTMLElement;
+    row1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root1.querySelector(".pc-spell-expand-row")).not.toBeNull();
+    const root2 = mountContainer(); renderPrepareView(root2, x);
+    expect(root2.querySelector(".pc-spell-expand-row")).not.toBeNull();   // RED FIRST
+    // and it comes back IN PLACE: the row is marked open and the block is its next sibling.
+    const row2 = root2.querySelector(".pc-spell-add-row") as HTMLElement;
+    expect(row2.classList.contains("pc-row-open")).toBe(true);
+    expect(row2.nextElementSibling?.className).toContain("pc-spell-expand-row");
+  });
 });
 
 describe("renderPrepareView — D1 spell-block persistence", () => {
