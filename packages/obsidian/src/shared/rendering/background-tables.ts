@@ -39,7 +39,12 @@ const cellText = (v: Cell): string => typeof v === "string" ? v
 
 /** `suggested_characteristics` (three shapes): numeric-keyed records → a table with the die DERIVED from the key count
  *  (converter records are contiguous 1..N); a non-numeric key (the bundle's `_open5e_prose`) → the joined markdown,
- *  CRLF-normalised; `null` → nothing. */
+ *  CRLF-normalised; `null` → nothing.
+ *
+ *  The table arm keeps the AUTHORED key as both the roll shown and the lookup: sorting the key strings numerically,
+ *  rather than round-tripping them through `Number`, means a key like `"01"` (numeric by the arm's own test, but not
+ *  what `String(Number(k))` gives back) still finds its cell instead of reading `undefined`. `keys` is a fresh array
+ *  from `Object.keys`, so sorting it in place touches nothing else. */
 export function renderSuggestedCharacteristics(parent: HTMLElement, sc: Characteristics, app?: App, component?: Component): void {
   if (!sc) return;
   for (const [key, label] of CHARACTERISTIC_LABELS) {
@@ -53,7 +58,7 @@ export function renderSuggestedCharacteristics(parent: HTMLElement, sc: Characte
       void renderMarkdownDescription(host, md, app, component).catch(paint(host));
       continue;
     }
-    const rows = keys.map(Number).sort((a, b) => a - b).map((n) => ({ roll: String(n), text: cellText(record[String(n)]) }));
+    const rows = keys.sort((a, b) => Number(a) - Number(b)).map((k) => ({ roll: k, text: cellText(record[k]) }));
     renderOne(parent, label, `d${rows.length}`, rows, app, component);
   }
 }

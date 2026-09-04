@@ -74,6 +74,25 @@ describe("renderSuggestedCharacteristics", () => {
     expect(Array.from(tables[1].querySelectorAll("tbody tr td:first-child")).map((t) => t.textContent).slice(0, 3)).toEqual(["1", "2", "3"]);
   });
 
+  it("the table arm reads the AUTHORED key: a non-canonical roll key renders instead of throwing", () => {
+    const c = mountContainer();
+    // "01" passes the /^\d+$/ table-arm test but is not the string `String(Number("01"))`
+    // produces, so the old builder looked up `record["1"]`, got undefined, and
+    // `cellText` threw on `.name`. Ordering is still NUMERIC: "01" (1) before "2"
+    // before "10". V8 enumerates this record as ["2", "10", "01"] · the two
+    // canonical integer indices first, the rest in insertion order · so the sort
+    // is doing real work here.
+    renderSuggestedCharacteristics(c, { bonds: { "01": "a", "2": "b", "10": "c" } });
+    // RED FIRST before the final wave (e1ef541): this case never reached an
+    // expect · `cellText(record["1"])` threw `TypeError: Cannot read properties
+    // of undefined (reading 'name')`.
+    expect(Array.from(c.querySelectorAll("tbody tr td:first-child")).map((t) => t.textContent))
+      .toEqual(["01", "2", "10"]);
+    expect(Array.from(c.querySelectorAll("tbody tr td:last-child")).map((t) => t.textContent))
+      .toEqual(["a", "b", "c"]);
+    expect(Array.from(c.querySelectorAll("th")).map((t) => t.textContent)).toEqual(["d3", "Bonds"]);
+  });
+
   it("the ideals composer: name. desc (alignment)", () => {
     // Bare spy, calls through (see above).
     const spy = vi.spyOn(MarkdownRenderer, "render");
