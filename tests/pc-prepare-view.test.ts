@@ -22,6 +22,7 @@ function ctx(spells: ResolvedSpell[], editState: unknown, preparation: "prepared
       spellLimits: [{ classSlug: "wizard", kind: "prepared", cantripsKnown: 5, preparedOrKnown: 8 }],
     } as never,
     services: { entities: REG } as never, app: {} as never, editState: editState as never,
+    builderUiState: new Map<string, unknown>(),
   };
 }
 
@@ -171,6 +172,40 @@ describe("renderPrepareView", () => {
     const root2 = mountContainer();
     renderPrepareView(root2, ctx([sp("Fire Bolt", 0, true)], { togglePrepared: vi.fn() }));
     expect([...root2.querySelectorAll(".pc-spell-name")].map((n) => n.textContent)).toContain("Fire Bolt");
+  });
+
+  it("the add-drawer survives a whole-sheet re-render (R4-G3b §12)", () => {
+    // R4-G3b §12.2.1: the open state is a flag in the per-file builderUiState bag, so the
+    // whole-sheet re-render that every editState mutation fires cannot close the drawer.
+    // RED FIRST before Task 8 (plugin 5775b45c): `adding` was a render-scoped closure local,
+    // so the second render came back on the prepared list and the marked query returned null
+    // ("expected null not to be null"). The root1 assertion below passed before the fix too:
+    // it is the control that pins the SECOND render as what changed, and it goes red itself
+    // if the renderAddDrawer call is fenced off, so this case cannot pass vacuously.
+    const x = ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn(), addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() });
+    const root1 = mountContainer();
+    renderPrepareView(root1, x);
+    (root1.querySelector(".pc-spell-addbtn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root1.querySelector(".pc-spell-adddrawer")).not.toBeNull();
+    const root2 = mountContainer();
+    renderPrepareView(root2, x);                                            // what handleChange does: a fresh render, the SAME ctx/bag
+    expect(root2.querySelector(".pc-spell-adddrawer")).not.toBeNull();     // RED FIRST
+    expect(root2.querySelector(".pc-spell-addbtn")?.textContent).toContain("Done");
+  });
+
+  it("the drawer's filter state survives the re-render too", () => {
+    // R4-G3b §12.2.2: `state` (and the expanded-row set) live in the same bag, and draw()
+    // writes the query back into the toolbar input the new render just built.
+    // RED FIRST before Task 8 (plugin 5775b45c): the second render carried no drawer at all,
+    // so this line threw "Cannot read properties of null (reading 'value')"; with only the
+    // open-state flag fixed and `state` still re-created per render it read "" (measured).
+    const x = ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn(), addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() });
+    const root1 = mountContainer(); renderPrepareView(root1, x);
+    (root1.querySelector(".pc-spell-addbtn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const search = root1.querySelector(".pc-spell-search") as HTMLInputElement;
+    search.value = "fire"; search.dispatchEvent(new Event("input", { bubbles: true }));
+    const root2 = mountContainer(); renderPrepareView(root2, x);
+    expect((root2.querySelector(".pc-spell-search") as HTMLInputElement).value).toBe("fire");   // RED FIRST
   });
 });
 

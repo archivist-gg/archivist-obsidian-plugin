@@ -19,11 +19,15 @@ const PAGE = 50;
 /**
  * Signature for the persisted shown-count. Keyed by every facet that changes the
  * candidate set (query + all-classes + sources/levels + the More-panel facets +
- * sort) so the count survives whole-sheet re-renders — the drawer is rebuilt with
- * a fresh `state`, but `ctx.builderUiState` persists — yet resets to PAGE the
- * moment the user changes a filter, the search text, or the sort. `moreOpen` is
- * excluded: opening the panel is not a filter. Namespaced `spellsadd.shown:` so
- * it can never collide with the inventory/browse shown-counts in the same bag.
+ * sort) so the count survives whole-sheet re-renders. Since R4-G3b §12 the drawer
+ * reads the SAME `state` object back out of `ctx.builderUiState`, so the key
+ * survives a re-render at whatever filter the user set; before that hoist `state`
+ * was re-created on every render, so a re-render fell back to the default-filter
+ * key and the count stored under the user's own filter was unreachable. It still
+ * resets to PAGE the moment the user changes a filter, the search text, or the
+ * sort. `moreOpen` is excluded: opening the panel is not a filter. Namespaced
+ * `spellsadd.shown:` so it can never collide with the inventory/browse
+ * shown-counts in the same bag.
  */
 function shownKey(f: FilterState): string {
   const set = (s: Set<unknown>): string => [...s].map(String).sort().join(",");
@@ -188,8 +192,16 @@ function renderMorePanel(host: HTMLElement, state: FilterState, draw: () => void
  *  multi-select filter toolbar. Built once; draw() rebuilds chips + table. */
 export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext): void {
   const drawer = parent.createDiv({ cls: "pc-spell-adddrawer" });
-  const state = defaultFilters();
-  const expanded = new Set<string>();
+  // R4-G3b §12: the filter state and the expanded-row set live in the per-file builderUiState bag (the
+  // decision-strip "the object itself lives in the bag" idiom), so a re-render keeps the search, facets, sort
+  // and open rows; this also makes shownKey's persisted count actually read back at the user's own filter (its
+  // key derives from a `state` that used to be re-created on every render). With no bag both stay
+  // render-scoped locals, exactly as they were.
+  const bag = ctx.builderUiState;
+  const state = (bag?.get("spellsadd.state") as FilterState | undefined) ?? defaultFilters();
+  bag?.set("spellsadd.state", state);
+  const expanded = (bag?.get("spellsadd.expanded") as Set<string> | undefined) ?? new Set<string>();
+  bag?.set("spellsadd.expanded", expanded);
 
   const classSlugs = ctx.derived.spellcastingClasses.map((c) => c.classSlug);
   const maxLevel = Math.max(
@@ -221,10 +233,9 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
   // the top of every draw() so it can never accumulate across filter changes.
   const loadMoreHost = drawer.createDiv({ cls: "pc-spell-add-loadmore-host" });
 
-  // Shown-count lives in the per-file builderUiState bag so it survives the
+  // Shown-count lives in the same per-file builderUiState bag, so it survives the
   // whole-sheet re-render that any spell edit fires; when the bag is absent we
   // fall back to a render-scoped local (resets each fresh render).
-  const bag = ctx.builderUiState;
   const local = { shown: PAGE };
   const getShown = (): number =>
     bag ? ((bag.get(shownKey(state)) as number | undefined) ?? PAGE) : local.shown;
@@ -237,6 +248,11 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     chipsHost.empty();
     tableHost.empty();
     loadMoreHost.empty();
+    // The toolbar input is built once per renderAddDrawer call, so a whole-sheet
+    // re-render hands `draw` a NEW empty box: write the (bag-held) query back into
+    // it unconditionally. Typing sets state.query from search.value first, so for
+    // the live input this assigns the identical string and never moves the caret.
+    search.value = state.query;
     allBtn.classList.toggle("active", state.showAll);
     chipGroup(chipsHost, "Source", SOURCES, state.sources, draw);
     chipGroup(chipsHost, "Level", levelItems(maxLevel, state.showAll), state.levels, draw);

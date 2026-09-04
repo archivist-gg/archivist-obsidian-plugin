@@ -73,12 +73,21 @@ export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext
   // not stacks on top). The button reflects the open state so a second click
   // returns to the prepared list.
   const body = root.createDiv({ cls: "pc-spell-prep-body" });
-  let adding = false;
+  // R4-G3b §12: the open state lives in the per-file builderUiState bag (the row-expand-state idiom), so the drawer
+  // survives the whole-sheet re-render every editState mutation fires (adding a spell used to close it).
+  const ADDING_KEY = "spellsprep.adding";
+  const isAdding = (): boolean => ctx.builderUiState?.get(ADDING_KEY) === true;
+  const setAdding = (v: boolean): void => {
+    const b = ctx.builderUiState;
+    if (!b) return;
+    if (v) b.set(ADDING_KEY, true);
+    else b.delete(ADDING_KEY);
+  };
 
   const syncAddBtn = () => {
     addBtn.empty();
-    addBtn.classList.toggle("open", adding);
-    addBtn.appendText(adding ? "✓ Done" : "+ Add Spells");
+    addBtn.classList.toggle("open", isAdding());
+    addBtn.appendText(isAdding() ? "✓ Done" : "+ Add Spells");
   };
 
   const renderPrepareList = (host: HTMLElement): void => {
@@ -151,12 +160,12 @@ export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext
 
   const renderBody = () => {
     body.empty();
-    if (adding) renderAddDrawer(body, ctx);
+    if (isAdding()) renderAddDrawer(body, ctx);
     else renderPrepareList(body);
   };
 
   addBtn.addEventListener("click", () => {
-    adding = !adding;
+    setAdding(!isAdding());
     syncAddBtn();
     renderBody();
   });
