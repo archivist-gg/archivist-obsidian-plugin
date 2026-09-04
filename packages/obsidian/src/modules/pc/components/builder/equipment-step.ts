@@ -10,7 +10,7 @@ import { InventoryList } from "../inventory/inventory-list";
 import { CurrencyStrip } from "../inventory/currency-strip";
 import { BrowseMode } from "../inventory/browse-mode";
 import { resolveGrants, type GrantedEntry, type SeedRegistry } from "../../builder/equipment-seed";
-import { goldStep, alreadySeeded, type GoldBaseline } from "../../builder/equipment-reconcile";
+import { goldStep, alreadySeeded, uncoveredByUntagged, type GoldBaseline } from "../../builder/equipment-reconcile";
 import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 type Mode = "starting" | "gold" | "empty";
@@ -50,12 +50,22 @@ function reconcileGold(ctx: ComponentRenderContext, g: number): void {
   if (step.landed !== 0) ctx.editState?.adjustCurrency({ gp: step.landed });
 }
 
-/** Seed the starting kit, unless the file already holds it with no builder
- *  provenance · the state `finishBuild` leaves behind, where an unguarded
- *  reconcile pushes a duplicate on every visit. */
+/** Seed the part of the starting kit the file does not already hold WITHOUT
+ *  builder provenance · the state `finishBuild` leaves behind, where seeding the
+ *  whole list pushes a duplicate of every untagged copy on every visit.
+ *
+ *  Two steps, and both are needed. `alreadySeeded` is the cheap common case (the
+ *  file holds the entire kit untagged and owns no tagged block): it returns
+ *  before any work. Otherwise `uncoveredByUntagged` subtracts, qty by qty, what
+ *  the file already holds, so a FINISHED character whose background grants a
+ *  pouch it never had receives the pouch alone, tagged, and the next render is a
+ *  no-op through `syncStartingEquipment`'s serialize guard. Its docblock states
+ *  the four consequences, including the one benign semantic change to R4-P5b's
+ *  replacement contract (a hand-added kit item is not seeded a second time). */
 function reconcileGear(ctx: ComponentRenderContext, entries: GrantedEntry[]): void {
-  if (alreadySeeded(entries, ctx.resolved.definition.equipment ?? [])) return;
-  ctx.editState?.syncStartingEquipment(entries);
+  const equipment = ctx.resolved.definition.equipment ?? [];
+  if (alreadySeeded(entries, equipment)) return;
+  ctx.editState?.syncStartingEquipment(uncoveredByUntagged(entries, equipment));
 }
 
 /** Cost of everything the Buy-with-Gold browser has added. Shared by the
@@ -80,8 +90,8 @@ function goldBuySpend(ctx: ComponentRenderContext): number {
  *  Abilities step tab idiom): Starting Equipment (option rows + nested category
  *  pickers, seeded live into the inventory), Buy with Gold, and Start Empty (a
  *  quiet note). The Starting mode resolves the chosen options' grants on every
- *  render; the step's single reconcile site then seeds the gear (unless the file
- *  already holds it untagged) and settles the wallet against a per-session
+ *  render; the step's single reconcile site then seeds the gear the file does
+ *  not already hold untagged and settles the wallet against a per-session
  *  baseline. */
 export function renderEquipmentStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const def = ctx.resolved.definition;

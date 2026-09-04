@@ -33,6 +33,10 @@ interface CtxOverrides {
   classes?: unknown[];
   pool?: RegisteredEntity[];
   background?: unknown;
+  /** What the FILE already holds. Default `[]` (the fresh-draft shape). The
+   *  finished-character shape is untagged entries · `finishBuild` strips every
+   *  `granted_by`. */
+  equipment?: unknown[];
 }
 
 function ctx(over: CtxOverrides = {}): ComponentRenderContext {
@@ -62,7 +66,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
   ];
   const definition = {
     name: "Test", class: over.classes !== undefined ? [] : [classDef],
-    background: over.background ?? null, equipment: [],
+    background: over.background ?? null, equipment: over.equipment ?? [],
     currency: { cp: 0, sp: 0, ep: 0, gp: over.gp ?? 0, pp: 0 },
     builder_equipment_mode: mode, origin_choices: over.originChoices ?? {},
   };
@@ -474,12 +478,15 @@ describe("R4-P5b · mode, clamp and residual behaviour", () => {
     expect(h.character.currency!.gp).toBe(345);
   });
 
-  // G16 · E5 pinned, plus the qty arm of the gear gate.
+  // G16 · the qty arm of the gear gate, and (since the R4-G3b final wave) the
+  // DISCHARGE of the R4-P5b E5 residual this case used to pin.
   // ⚠️ The untagged original must NOT cover the whole resolved multiset, or the
-  // gate correctly skips and the test measures G3's behaviour instead of E5's.
-  // Here the file holds leather but not the two daggers, so containment fails,
-  // the seed fires, and leather ends up duplicated · which IS E5.
-  it("G16: a re-pick on a reopened finished character adds the new kit beside the untagged original", () => {
+  // gate returns early and the test measures G3's behaviour instead. Here the
+  // file holds leather but not the two daggers, so containment fails and the
+  // step reconciles. Until the final wave it re-seeded the WHOLE list and
+  // leather ended up duplicated (E5); it now seeds only the uncovered daggers,
+  // so leather stays single and the seed is still visible as the tagged pair.
+  it("G16: a re-pick on a reopened finished character seeds only the gear it does not already hold", () => {
     const h = mountStep({
       mode: undefined,
       startingEquipment: [{ kind: "choice", options: [
@@ -491,18 +498,26 @@ describe("R4-P5b · mode, clamp and residual behaviour", () => {
     pick(h, "equipment-0", "option-0");
     h.render();
     const items = h.character.equipment.map((e) => e.item);
-    expect(items.filter((i) => i === "[[srd-5e_armor_leather]]")).toHaveLength(2);
-    expect(h.character.equipment.some((e) => e.granted_by === "builder:starting")).toBe(true);
+    // RED FIRST before the final wave (e1ef541): this read 2 · the untagged
+    // leather plus a `builder:starting` copy of the same item.
+    expect(items.filter((i) => i === "[[srd-5e_armor_leather]]")).toHaveLength(1);
+    expect(h.character.equipment.filter((e) => e.granted_by === "builder:starting"))
+      .toEqual([{ item: "[[srd-5e_weapon_dagger]]", equipped: false, granted_by: "builder:starting", qty: 2 }]);
   });
 
-  it("G16b: a hand-added single dagger does NOT suppress a dagger x2 seed", () => {
+  // ⚠️ The seed is the REMAINING qty (2 needed, 1 held untagged, so 1 seeded),
+  // which is why the assertion reads the written entry rather than its presence.
+  it("G16b: a hand-added single dagger does NOT suppress the rest of a dagger x2 seed", () => {
     const h = mountStep({
       mode: undefined,
       startingEquipment: [{ kind: "fixed", grants: [{ item: "dagger", qty: 2 }] }],
       equipment: [{ item: "[[srd-5e_weapon_dagger]]" }] as never,
     });
     h.render();
-    expect(h.character.equipment.some((e) => e.granted_by === "builder:starting")).toBe(true);
+    // RED FIRST before the final wave (e1ef541): the whole list was re-seeded, so
+    // the written entry carried `qty: 2` and the file held three daggers in all.
+    expect(h.character.equipment.filter((e) => e.granted_by === "builder:starting"))
+      .toEqual([{ item: "[[srd-5e_weapon_dagger]]", equipped: false, granted_by: "builder:starting" }]);
   });
 });
 
@@ -584,5 +599,85 @@ describe("renderEquipmentStep · a fixed entry with no grants (R4-G1a D5, G9)", 
     const h = mountStep({ mode: "starting", startingEquipment: [{ kind: "fixed" }] });
     expect(() => h.render()).not.toThrow();
     expect(h.character.equipment).toHaveLength(0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// R4-G3b FINAL WAVE · the finished-character kit is no longer re-kitted.
+//
+// The shape: `finishBuild` strips every `granted_by`, so the kit the builder
+// seeded reads as hand-managed gear. A background `fixed` grant (LIVE since Task
+// 10; 101 of 175 converter backgrounds carry a resolving one, `pouch` the
+// commonest) is a resolved entry the finished file has NEVER held, so the
+// multiset containment of `alreadySeeded` fails and the whole list used to be
+// pushed beside the untagged copies · one duplication of the entire class kit
+// per visit. The step now hands `syncStartingEquipment` only what the file does
+// not already hold untagged.
+// ─────────────────────────────────────────────────────────────────────────────
+describe("R4-G3b final wave · a finished character re-entering the Equipment step is not re-kitted", () => {
+  const POOL = [
+    entity("srd-2024_chain-mail", "Chain Mail", "armor", { category: "heavy" }),
+    entity("srd-2024_greatsword", "Greatsword", "weapon", { category: "martial-melee" }),
+    entity("srd-2024_pouch", "Pouch", "item"),
+  ];
+  /** An unconditional class kit (no pick needed) plus a background `fixed` pouch:
+   *  the two halves of the real defect. */
+  const KIT = [{ kind: "fixed", grants: [{ item: "chain-mail" }, { item: "greatsword" }] }];
+  const BACKGROUND = { name: "Acolyte", equipment: [{ kind: "fixed", grants: [{ item: "pouch" }] }] };
+  /** The finished-character shape: the class kit, untagged, exactly as
+   *  `finishBuild` leaves it. */
+  const FINISHED = [
+    { item: "[[srd-2024_chain-mail]]", equipped: true, slot: "armor" },
+    { item: "[[srd-2024_greatsword]]", equipped: false },
+  ];
+  const syncOf = (x: ComponentRenderContext) =>
+    (x.editState as unknown as { syncStartingEquipment: ReturnType<typeof vi.fn> }).syncStartingEquipment;
+
+  it("seeds ONLY the background pouch the file does not already hold, not the whole kit again", () => {
+    const c = mountContainer();
+    const x = ctx({ startingEquipment: KIT, background: BACKGROUND, pool: POOL, equipment: FINISHED });
+    renderEquipmentStep(c, x);
+    // RED FIRST before the final wave (e1ef541): `reconcileGear` passed the WHOLE
+    // resolved list, so this read all three entries (chain-mail, greatsword,
+    // pouch) and the two the file already held were pushed a second time.
+    expect(syncOf(x).mock.calls[0][0]).toEqual([
+      { slug: "srd-2024_pouch", qty: 1, equipped: false, slot: null },
+    ]);
+    expect(syncOf(x)).toHaveBeenCalledTimes(1);
+  });
+
+  it("the SECOND render, with that pouch now tagged, asks for the same single entry (the serialize guard then makes it a no-op)", () => {
+    const c = mountContainer();
+    // The entry `syncStartingEquipment` writes for the pouch, verbatim: `item`,
+    // `equipped: false`, `granted_by`; no `slot` (null) and no `qty` (1). The
+    // no-op guard serializes item/equipped/slot/qty, so an identical request
+    // returns before `onChange`.
+    const x = ctx({ startingEquipment: KIT, background: BACKGROUND, pool: POOL, equipment: [
+      ...FINISHED,
+      { item: "[[srd-2024_pouch]]", equipped: false, granted_by: "builder:starting" },
+    ] });
+    renderEquipmentStep(c, x);
+    // RED FIRST before the final wave (e1ef541): the tagged entry failed conjunct
+    // 1, the whole list was passed, and the replace-in-place wrote the class kit
+    // back as `builder:starting` beside the untagged copies · the duplication
+    // returning on the very next render.
+    expect(syncOf(x).mock.calls[0][0]).toEqual([
+      { slug: "srd-2024_pouch", qty: 1, equipped: false, slot: null },
+    ]);
+    expect(syncOf(x)).toHaveBeenCalledTimes(1);
+  });
+
+  it("CONTROL · a fresh draft (nothing in the file) still receives the FULL kit", () => {
+    const c = mountContainer();
+    const x = ctx({ startingEquipment: KIT, background: BACKGROUND, pool: POOL });
+    renderEquipmentStep(c, x);
+    // Unchanged by the final wave: with no untagged copies nothing is covered, so
+    // the subtraction returns the resolved list itself, in order.
+    expect(syncOf(x).mock.calls[0][0]).toEqual([
+      { slug: "srd-2024_chain-mail", qty: 1, equipped: true, slot: "armor" },
+      { slug: "srd-2024_greatsword", qty: 1, equipped: false, slot: null },
+      { slug: "srd-2024_pouch", qty: 1, equipped: false, slot: null },
+    ]);
+    expect(syncOf(x)).toHaveBeenCalledTimes(1);
   });
 });

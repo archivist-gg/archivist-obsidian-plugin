@@ -56,6 +56,23 @@ function wikilinkRef(item: string): string | null {
   return m ? m[1] : null;
 }
 
+/** The UNTAGGED multiset both gear reads share: the `[[…]]`-stripped reference of
+ *  every entry the file holds with NO `granted_by`, counted by qty (a missing or
+ *  sub-1 qty counts as one). Factored out so the gate and the subtraction below
+ *  can never key or count differently: a divergence would let the gate suppress a
+ *  seed the subtraction still emits, or the reverse. Free text (Volker's
+ *  `Traveler pack`) has no reference and is therefore never in the map. */
+function untaggedHave(equipment: EquipmentEntry[]): Map<string, number> {
+  const have = new Map<string, number>();
+  for (const e of equipment) {
+    if (e.granted_by) continue;
+    const ref = wikilinkRef(e.item);
+    if (!ref) continue;
+    have.set(ref, (have.get(ref) ?? 0) + Math.max(1, e.qty ?? 1));
+  }
+  return have;
+}
+
 /**
  * The gear gate: true when the builder should NOT re-seed. Both conjuncts:
  *
@@ -69,6 +86,10 @@ function wikilinkRef(item: string): string | null {
  * `[[…]]`-stripped reference expanded by qty: both sides carry the FULL edition
  * slug (`resolveGrants` pushes `r.fullSlug`; `syncStartingEquipment` writes
  * `[[${slug}]]`), so no bare-izing is applied to either side.
+ *
+ * It is the CHEAP COMMON CASE of the reconcile, not the whole rule: when it is
+ * false the step still subtracts what the file already holds, with
+ * `uncoveredByUntagged` below.
  */
 export function alreadySeeded(resolved: GrantedEntry[], equipment: EquipmentEntry[]): boolean {
   if (equipment.some((e) => e.granted_by === "builder:starting")) return false;
@@ -76,14 +97,47 @@ export function alreadySeeded(resolved: GrantedEntry[], equipment: EquipmentEntr
   const need = new Map<string, number>();
   for (const r of resolved) need.set(r.slug, (need.get(r.slug) ?? 0) + Math.max(1, r.qty));
 
-  const have = new Map<string, number>();
-  for (const e of equipment) {
-    if (e.granted_by) continue;
-    const ref = wikilinkRef(e.item);
-    if (!ref) continue;
-    have.set(ref, (have.get(ref) ?? 0) + Math.max(1, e.qty ?? 1));
-  }
-
+  const have = untaggedHave(equipment);
   for (const [ref, n] of need) if ((have.get(ref) ?? 0) < n) return false;
   return true;
+}
+
+/**
+ * The qty-aware multiset SUBTRACTION the step actually seeds: the resolved kit
+ * minus the copies the file already holds untagged, in resolved order. Each
+ * entry consumes `max(1, qty)` from its slug's remaining untagged count; a fully
+ * covered entry is dropped, a partly covered one is emitted with the REMAINING
+ * qty, an uncovered one is emitted UNCHANGED (the same object, so a fresh draft
+ * is seeded exactly what `resolveGrants` produced). Nothing is mutated: the
+ * running count lives in a local map.
+ *
+ * Four consequences, all intended:
+ *  1. a FRESH draft (no untagged gear) is seeded the full kit · unchanged;
+ *  2. a TAGGED draft with no untagged copies is replaced in place · unchanged
+ *     (nothing covers anything, so the subtraction is the identity);
+ *  3. a FINISHED character re-entering the step (`finishBuild` stripped every
+ *     `granted_by`) is seeded only what it does not already hold · in practice
+ *     the background `fixed` grant it never held, e.g. the Acolyte's pouch ·
+ *     and the next render is a no-op, because the tagged block it then holds
+ *     serializes equal to the same single entry (`syncStartingEquipment`);
+ *  4. a draft that hand-added a kit item untagged BEFORE the first seed receives
+ *     no second copy of it. That is a NAMED, benign semantic change to R4-P5b's
+ *     replacement contract (which re-seeded the whole list whenever containment
+ *     failed) and it is what discharges that phase's E5 duplication residual.
+ *
+ * A "finished-character signature" test instead of this subtraction would not
+ * hold: the second render sees the builder's own new tag, fails conjunct 1 of
+ * `alreadySeeded`, replaces with the full list, and the duplicate comes back.
+ */
+export function uncoveredByUntagged(resolved: GrantedEntry[], equipment: EquipmentEntry[]): GrantedEntry[] {
+  const have = untaggedHave(equipment);
+  const out: GrantedEntry[] = [];
+  for (const r of resolved) {
+    const want = Math.max(1, r.qty);
+    const covered = Math.min(want, have.get(r.slug) ?? 0);
+    if (covered > 0) have.set(r.slug, (have.get(r.slug) ?? 0) - covered);
+    if (covered === 0) out.push(r);
+    else if (covered < want) out.push({ ...r, qty: want - covered });
+  }
+  return out;
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { goldStep, alreadySeeded, type GoldBaseline } from "../packages/obsidian/src/modules/pc/builder/equipment-reconcile";
+import { goldStep, alreadySeeded, uncoveredByUntagged, type GoldBaseline } from "../packages/obsidian/src/modules/pc/builder/equipment-reconcile";
 import type { GrantedEntry } from "../packages/obsidian/src/modules/pc/builder/equipment-seed";
 import type { EquipmentEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -124,5 +124,67 @@ describe("alreadySeeded · the world-relative gear gate", () => {
 
   it("an empty resolved set is vacuously satisfied (the call would be a no-op anyway)", () => {
     expect(alreadySeeded([], [untagged("[[anything]]")])).toBe(true);
+  });
+});
+
+describe("uncoveredByUntagged · the qty-aware subtraction the step seeds (R4-G3b final wave)", () => {
+  const untagged = (item: string, qty?: number): EquipmentEntry =>
+    (qty === undefined ? { item } : { item, qty }) as EquipmentEntry;
+
+  it("FULL coverage returns nothing at all", () => {
+    // RED FIRST before the final wave (e1ef541): `uncoveredByUntagged` did not
+    // exist, so this file failed to load and every case in it errored before its
+    // first expect. The values below are what the helper must produce.
+    expect(uncoveredByUntagged(
+      [g("srd-5e_armor_leather"), g("srd-5e_weapon_dagger", 2)],
+      [untagged("[[srd-5e_armor_leather]]"), untagged("[[srd-5e_weapon_dagger]]", 2)],
+    )).toEqual([]);
+  });
+
+  it("PARTIAL qty coverage keeps the entry with only the REMAINING qty", () => {
+    expect(uncoveredByUntagged(
+      [g("srd-5e_weapon_javelin", 4)],
+      [untagged("[[srd-5e_weapon_javelin]]")],
+    )).toEqual([{ slug: "srd-5e_weapon_javelin", qty: 3, equipped: false, slot: null }]);
+  });
+
+  it("NO coverage returns the input, entry for entry and in order", () => {
+    const resolved = [g("srd-5e_armor_leather"), g("srd-5e_weapon_dagger", 2)];
+    const out = uncoveredByUntagged(resolved, []);
+    expect(out).toEqual(resolved);
+    // The uncovered entries are the resolved objects themselves, so a fresh
+    // draft is seeded byte-for-byte what `resolveGrants` produced.
+    expect(out[0]).toBe(resolved[0]);
+    expect(out[1]).toBe(resolved[1]);
+  });
+
+  it("only UNTAGGED copies cover: the builder's own tagged block never does", () => {
+    // Conjunct 1 of `alreadySeeded` has already failed here (a tagged entry
+    // exists), so this is the path that decides what the replacement writes: the
+    // builder's own copy must not cancel the grant that produced it.
+    const eq = [
+      { item: "[[srd-5e_armor_leather]]", granted_by: "builder:starting" },
+      untagged("[[srd-5e_weapon_dagger]]"),
+    ] as EquipmentEntry[];
+    expect(uncoveredByUntagged([g("srd-5e_armor_leather"), g("srd-5e_weapon_dagger")], eq))
+      .toEqual([{ slug: "srd-5e_armor_leather", qty: 1, equipped: false, slot: null }]);
+  });
+
+  it("counts multiplicity across separate untagged entries, and free text covers nothing", () => {
+    expect(uncoveredByUntagged(
+      [g("srd-5e_weapon_dagger", 3)],
+      [untagged("[[srd-5e_weapon_dagger]]"), untagged("[[srd-5e_weapon_dagger]]")],
+    )).toEqual([{ slug: "srd-5e_weapon_dagger", qty: 1, equipped: false, slot: null }]);
+    expect(uncoveredByUntagged([g("srd-5e_item_traveler-pack")], [untagged("Traveler pack")]))
+      .toEqual([g("srd-5e_item_traveler-pack")]);
+  });
+
+  it("two resolved entries on the same slug share the untagged pool, first come first served", () => {
+    // `resolveGrants` can push the same slug twice (two `{item}` grants), so the
+    // remaining count must carry across iterations rather than be re-read.
+    expect(uncoveredByUntagged(
+      [g("srd-5e_weapon_dagger"), g("srd-5e_weapon_dagger")],
+      [untagged("[[srd-5e_weapon_dagger]]")],
+    )).toEqual([{ slug: "srd-5e_weapon_dagger", qty: 1, equipped: false, slot: null }]);
   });
 });
