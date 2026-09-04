@@ -5,21 +5,7 @@ import { renderMarkdownDescription } from "../../../../shared/rendering/markdown
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
 import { renderFirstResourceTracker } from "../actions/feature-rows";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
-
-/**
- * The pseudo-traits surfaced as glance tiles (Size / Speed / Darkvision) and so
- * folded OUT of the trait rows, matched by lowercased trait name.
- *
- * This mirrors the builder's fold set *conceptually* but is deliberately a
- * NARROWER filter than `race-step.ts:120-123`: the builder ALSO drops
- * `!t.choices?.length`, moving decision-bearing traits into its decision strip.
- * The stateless Passive & Features tab has no strip, so copying that clause would
- * HIDE choice-bearing racial traits (Elf/Gnome "Lineage", "Keen Senses"). We fold
- * ONLY the three size/speed/darkvision pseudo-traits; a literal "Creature Type"
- * trait (Kalashtar) is not in the set and renders as a normal row (spec §3.2,
- * R1-F4/#7).
- */
-export const RACE_TILE_FOLD = new Set(["size", "speed", "darkvision"]);
+import { RACE_STRUCTURAL_PSEUDO } from "@archivist-gg/dnd5e/race/race.structural";
 
 const cap = (s: string): string => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
@@ -123,12 +109,16 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
       ...(race.speed?.walk != null ? [{ label: "Speed", value: String(race.speed.walk), small: "ft." }] : []),
       ...(darkvision ? [{ label: "Darkvision", value: String(darkvision), small: "ft." }] : []),
     ],
-    // Body: trait rows under a "Traits" rule — every trait that is NOT a
-    // size/speed/darkvision pseudo-trait, INCLUDING choice-bearing ones (which the
-    // stateless tab must not hide; the narrower RACE_TILE_FOLD keeps them). No
-    // decision strip / subrace row — those are builder-only.
+    // Body: trait rows under a "Traits" rule: every trait whose NAME is not in
+    // RACE_STRUCTURAL_PSEUDO (dnd5e `race/race.structural`: the size/speed/darkvision pseudo-traits
+    // already shown as tiles above; this file's own literal was retired into that shared set by
+    // R4-G3b Task 6, which also gave the resolver's additional_spells race gate a reader of it,
+    // keyed on select-inline CHOICE IDS rather than names). Choice-bearing traits are INCLUDED here
+    // (the stateless tab must not hide them): the builder's `renderTraits` filter is the wider one,
+    // dropping `!t.choices?.length` as well because it has a decision strip to move them into. No
+    // decision strip / subrace row: those are builder-only.
     body: (host) => {
-      const traits = (race.traits ?? []).filter((t) => !RACE_TILE_FOLD.has(t.name.toLowerCase()));
+      const traits = (race.traits ?? []).filter((t) => !RACE_STRUCTURAL_PSEUDO.has(t.name.toLowerCase()));
       if (!traits.length) return;
       renderSectionRule(host, "Traits", "from the species entry");
       for (const t of traits) {

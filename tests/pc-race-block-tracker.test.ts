@@ -16,7 +16,7 @@ const GIANT_ANCESTRY_ID = "goliath:giant-ancestry";
 /**
  * A Goliath-shaped race with exactly two traits: one carrying a `resources[]`
  * entry (the tracker's subject) and one carrying none (the byte-identity
- * control). Neither name is in `RACE_TILE_FOLD`, so both render as trait rows.
+ * control). Neither name is in `RACE_STRUCTURAL_PSEUDO`, so both render as trait rows.
  */
 const race = (): RaceEntity =>
   ({
