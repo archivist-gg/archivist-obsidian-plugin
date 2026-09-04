@@ -42,8 +42,9 @@ export function renderBackgroundTables(parent: HTMLElement, tables: BgTable[] | 
  *  "  SCAM  " are one key. */
 const normCell = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
-/** How many characters of the first row's `text` the row arm compares. Long enough that no two rows of a
- *  corpus table share the prefix, short enough to survive a trailing edit in either copy. */
+/** How many characters of the first row's `text` the row arm compares: a prefix rather than the whole text, so a
+ *  trailing edit in either copy still matches. 24 is the value MEASURED over the converter corpus, where the header
+ *  arm and this row arm agree on all 88 tables (R4-G3b Task 15). */
 const ROW_PREFIX = 24;
 
 /** Every markdown pipe line of a description as normalised cells. A pipe line is a trimmed line that opens

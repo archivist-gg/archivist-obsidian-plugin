@@ -236,7 +236,7 @@ describe("renderBackgroundBlock · tables + suggested characteristics (R4-G3b §
     suggested_characteristics: { bonds: { "1": "a" } },
   } as unknown as BackgroundEntity;
 
-  it("renders one table per `tables` entry plus one per numeric characteristics record", async () => {
+  it("renders one structured table per `tables` entry the description does not embed, plus one per numeric characteristics record", async () => {
     const root = mountContainer();
     root.appendChild(await renderBackgroundBlock(charlatan));
     await flush();
