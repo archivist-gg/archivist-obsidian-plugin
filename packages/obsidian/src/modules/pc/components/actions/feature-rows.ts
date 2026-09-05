@@ -111,11 +111,13 @@ export function renderFeatureRow(
     }
   }
 
-  // Right detail, in slot order: first resource tracker, then the spend control,
-  // then the feature's attack note. Compute the note ONCE: it renders in-row only
-  // when neither the tracker nor the control took the single detail slot; when one
-  // of them occupies it the note moves to the expand card below (Finding B: the
-  // detail is never dropped).
+  // Right detail, in order: first resource tracker, then the spend control, then the feature's
+  // attack note. The tracker and the control are INDEPENDENT (the tracker is keyed on
+  // `resources`, the control on `consumes`, R4-G4 §3.2.5) and can share the detail, which is how
+  // a feature that owns `resources[0]` while spending a FOREIGN id renders both side by side. The
+  // note is the one that yields: compute it ONCE and render it in-row only when NEITHER of the
+  // other two rendered; when either did, it moves to the expand card below (Finding B: the detail
+  // is never dropped).
   const detail = row.createDiv({ cls: "pc-feature-detail" });
   const hasTracker = renderFirstResourceTracker(detail, feature, ctx);
   const consumes = feature.consumes;
@@ -123,12 +125,16 @@ export function renderFeatureRow(
   const ownsIt = !!spendId && (feature.resources ?? []).some((r) => r.id === spendId);
   const fu = spendId ? ctx.resolved.state.feature_uses?.[spendId] : undefined;
   const trackerIsBoxes = !!fu && fu.max <= CHARGE_BOX_LIMIT && fu.max !== AT_WILL_MAX;
-  // Owner-and-spender (R4-G4 §3.2.5): a feature that owns the resource it spends renders NO
-  // control when a box click already spends exactly 1 (Rage); the control moves into the card
-  // when the spend is larger than 1 (Lay on Hands) or the tracker is the numeric widget, where
-  // no single click spends the right amount. A pure spender (Flurry of Blows) takes the slot.
+  const isAtWill = !!fu && fu.max === AT_WILL_MAX;
+  // Owner-and-spender (R4-G4 §3.2.5) across the THREE tracker widgets `renderChargeBoxes` can
+  // pick. BOXES: a click already spends exactly 1, so a feature that owns what it spends renders
+  // NO control at `amount === 1` (Rage) and renders it inside the card at `amount > 1`, where no
+  // single click spends the right count (Lay on Hands). NUMERIC (`max` above CHARGE_BOX_LIMIT):
+  // the card control, at every amount. AT WILL (`max === AT_WILL_MAX`): no control anywhere, because
+  // the widget renders the words "at will" and tracks no count for a spend to move. A pure spender
+  // (Flurry of Blows), which owns nothing, takes the row slot whatever the owner's widget is.
   const controlInSlot = !!spendId && !ownsIt;
-  const controlInCard = !!spendId && ownsIt && !(consumes.amount === 1 && trackerIsBoxes);
+  const controlInCard = !!spendId && ownsIt && !isAtWill && !(consumes.amount === 1 && trackerIsBoxes);
   let hasControl = false;
   if (controlInSlot && consumes) hasControl = renderSpendControl(detail, { consumes, ctx }) !== null;
   const attackNote = formatFeatureAttackNote(feature, ctx);

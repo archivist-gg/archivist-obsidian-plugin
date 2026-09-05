@@ -317,6 +317,20 @@ describe("renderFeatureRow · the spend control (R4-G4 §3.2.5)", () => {
     expect(rowByName(c, "Rage").querySelectorAll(".archivist-toggle-box").length).toBe(2);
   });
 
+  it("an AT-WILL owner-spender renders no control at all: there is nothing to spend down", () => {
+    // The third widget (R4-G4 §5): `max === AT_WILL_MAX` renders the words "at will" and no boxes,
+    // so no click spends anything and a Spend button would write into a count the tracker ignores.
+    const atWill = rf({ id: "rage", name: "Rage", consumes: { resource: "barbarian:rages", amount: 1 },
+      resources: [{ id: "barbarian:rages", name: "Rage", max_formula: "999", reset: "long-rest" }] });
+    const ctx = renderCtx([atWill], { featureUses: { "barbarian:rages": { used: 0, max: 999 } } });
+    (ctx.resolved as { resources?: unknown }).resources = resolveFeatureResources([atWill]);
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, ctx);
+    expect((rowByName(c, "Rage").nextElementSibling as HTMLElement).querySelector("button.pc-spend-control")).toBeNull();
+    expect(rowByName(c, "Rage").querySelector("button.pc-spend-control")).toBeNull();
+    expect(rowByName(c, "Rage").querySelector(".pc-charge-at-will")!.textContent).toBe("at will");
+  });
+
   it("Lay on Hands, the owner-and-spender case at amount > 1: the control renders INSIDE the card", () => {
     // Spec §3.3 (e)'s second fixture, the positive half of the rule the Rage case pins negatively:
     // the feature owns the resource, so the row keeps its box tracker, but one box click spends 1

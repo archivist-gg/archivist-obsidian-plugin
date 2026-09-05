@@ -1,19 +1,32 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { PoolTab } from "../packages/obsidian/src/modules/pc/components/pool-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
+import { __resetWarnOnceForTests } from "@archivist-gg/dnd5e/dnd/warn-once";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { ResolvedCharacter, ResolvedPool } from "@archivist-gg/dnd5e/pc/pc.types";
+
+/** The `spend control:` warnings this file's fixture provokes, captured instead of printed. */
+const swallowedSpendWarns: string[] = [];
 
 beforeAll(() => {
   installObsidianDomHelpers();
   // `basePool`'s baleful-glare consumes "seals" and `mkCtx` seeds no `feature_uses`, so every
   // render of it is an unowned spender and `renderSpendControl` emits its one `warnOnce`
-  // (R4-G4 §13, the designed behaviour, asserted in tests/pc-spend-control.test.ts). Silence it
-  // here so the suite's output stays clean under a reporter that shows console output for
-  // passing tests: vitest's default reporter hides it, `--disable-console-intercept` does not.
-  vi.spyOn(console, "warn").mockImplementation(() => {});
+  // (R4-G4 §13, the designed behaviour). Swallow ONLY that message, so the suite's output stays
+  // clean under a reporter that shows console output for passing tests (vitest's default reporter
+  // hides it, `--disable-console-intercept` does not) while any OTHER warning from this file, the
+  // seed's `resource-seed:` warns included, still reaches the console. The captured messages are
+  // asserted below, so the filter costs no kill power.
+  const realWarn = console.warn.bind(console);
+  vi.spyOn(console, "warn").mockImplementation((...args: unknown[]) => {
+    const first = typeof args[0] === "string" ? args[0] : "";
+    if (first.startsWith("spend control:")) { swallowedSpendWarns.push(first); return; }
+    realWarn(...args);
+  });
 });
+
+afterAll(() => vi.restoreAllMocks());
 
 function ofEntity(slug: string, extra: Record<string, unknown> = {}) {
   return {
@@ -33,6 +46,15 @@ function mkCtx(pool: ResolvedPool, editState: EditStub = {}, activeBuffs: string
     derived: {} as never, services: {} as never, app: {} as never,
     editState: editState as never,
   };
+}
+
+/** `mkCtx` plus the ownership of "seals": the seeded `feature_uses` key AND the index entry the
+ *  Cost label and the spend control read (R4-G4 §3.2.2 / §3.2.4). */
+function ownedCtx(pool: ResolvedPool): ComponentRenderContext {
+  const ctx = mkCtx(pool);
+  (ctx.resolved.state as { feature_uses?: unknown }).feature_uses = { seals: { used: 0, max: 3 } };
+  (ctx.resolved as { resources?: unknown }).resources = new Map([["seals", { id: "seals", name: "Seals", reset: "long-rest", maxFormula: "3", owner: { kind: "feature", featureId: "s", featureName: "Seals", source: { kind: "class", slug: "reaver", level: 1 } } }]]);
+  return ctx;
 }
 
 const basePool: ResolvedPool = {
@@ -114,10 +136,7 @@ describe("PoolTab — spell-like", () => {
   });
 
   it("R4-G4 §3: a row whose consumes.resource is OWNED renders the spend control; an unowned one renders none", () => {
-    const owned = { ...basePool };
-    const ctx = mkCtx(owned);
-    (ctx.resolved.state as { feature_uses?: unknown }).feature_uses = { seals: { used: 0, max: 3 } };
-    (ctx.resolved as { resources?: unknown }).resources = new Map([["seals", { id: "seals", name: "Seals", reset: "long-rest", maxFormula: "3", owner: { kind: "feature", featureId: "s", featureName: "Seals", source: { kind: "class", slug: "reaver", level: 1 } } }]]);
+    const ctx = ownedCtx({ ...basePool });
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, ctx);
     expect(el.querySelector("button.pc-spend-control")!.textContent).toBe("Spend 1 Seals");
@@ -126,6 +145,40 @@ describe("PoolTab — spell-like", () => {
     const el2 = mountContainer();
     new PoolTab("interdict-boons").render(el2, mkCtx(basePool));
     expect(el2.querySelector("button.pc-spend-control")).toBeNull();
+  });
+
+  it("R4-G4 §3.2.4: an UNSELECTED available row carries NO spend control, an owned selected one does", () => {
+    // The control is offered on KNOWN entries only: a maneuver the character has not picked is not
+    // spendable, so the button belongs to the selected row and to the granted row below, never to a
+    // bare candidate. (`renderBoonRow` is reached only with kind "selected" or "granted", so the
+    // Actions / Passive boon surface already had this property.)
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, ownedCtx({ ...basePool, selected: [] }));
+    expect(el.querySelector("button.pc-spend-control")).toBeNull();
+  });
+
+  it("R4-G4 §3.2.4: a GRANTED consuming entry carries the spend control", () => {
+    // `available` and `selected` are emptied so the ONLY consuming row on the tab is the granted
+    // one: with baleful-glare still available, a tab-wide query would find ITS button and pass
+    // vacuously.
+    const granted = { ...basePool, selected: [], available: [], grants: [
+      { slug: "axiomatic-seals", entity: ofEntity("axiomatic-seals", { consumes: { resource: "seals", amount: 1 } }) as never },
+    ] };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, ownedCtx(granted));
+    const row = Array.from(el.querySelectorAll<HTMLElement>(".pc-spell-prep-row")).find((r) => r.querySelector(".pc-spell-always"))!;
+    expect(row.querySelector("button.pc-spend-control")!.textContent).toBe("Spend 1 Seals");
+  });
+
+  it("R4-G4 §13: an UNOWNED consuming row renders no control and warns exactly once for that id", () => {
+    __resetWarnOnceForTests();
+    swallowedSpendWarns.length = 0;
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(basePool));
+    expect(swallowedSpendWarns).toEqual([
+      'spend control: "seals" is not an owned resource (cross-book or dangling); no control rendered',
+    ]);
+    expect(el.querySelector("button.pc-spend-control")).toBeNull();
   });
 
   it("clicking a name expands a plain-text description", () => {

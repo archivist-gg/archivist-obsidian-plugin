@@ -118,10 +118,13 @@ export class PoolTab implements SheetComponent {
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
     if (isRowExpanded(ctx, descKey)) openDesc(host, e);
 
-    // The shared spend control (R4-G4 §3.2.4; the pool tab is one of its three call
-    // sites, with the boon row and the feature row). An unowned id renders nothing and
-    // warns once (§13), so a cross-book row is unchanged.
-    if (e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
+    // The shared spend control (R4-G4 §3.2.4; the pool tab is one of its three call sites, with
+    // the boon row and the feature row) on the KNOWN entries only: this row when it is selected,
+    // and every `grantedRow` below. A bare candidate the character has not picked is not spendable,
+    // so it carries the Cost meta and no button. `renderBoonRow` is reached only with a `kind` of
+    // "selected" or "granted", so the Actions / Passive boon surface already had this property.
+    // An unowned id renders nothing and warns once (§13), so a cross-book row is unchanged.
+    if (opts.selected && e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
 
     if (opts.selected && e.activatable) {
       const actv = row.createEl("button", {
@@ -147,6 +150,9 @@ export class PoolTab implements SheetComponent {
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
     if (isRowExpanded(ctx, descKey)) openDesc(host, e);
+    // A granted entry is KNOWN, so it spends like a selected one (R4-G4 §3.2.4): the same control
+    // the blocks layout's `blockCard` and the boon row already render for granted entries.
+    if (e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
   }
 
   private renderBlocks(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {

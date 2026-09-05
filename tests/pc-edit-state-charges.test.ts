@@ -138,3 +138,38 @@ describe("CharacterEditState — charge mutations", () => {
     expect(c.state.feature_uses["missing"]).toBeUndefined();
   });
 });
+
+describe("CharacterEditState.spendFeatureUse (R4-G4 §3.2.4)", () => {
+  it("§17 row 2: spends the FULL consumes.amount, not one use", () => {
+    const c = baseChar();
+    c.state.feature_uses["lay-on-hands"] = { used: 0, max: 5 };
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.spendFeatureUse("lay-on-hands", 5);
+    expect(c.state.feature_uses["lay-on-hands"].used).toBe(5);
+  });
+
+  it("§3.3 (a): a single spend leaves used === 1", () => {
+    const c = baseChar();
+    c.state.feature_uses["fighter-2024:superiority-dice"] = { used: 0, max: 4 };
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.spendFeatureUse("fighter-2024:superiority-dice", 1);
+    expect(c.state.feature_uses["fighter-2024:superiority-dice"].used).toBe(1);
+  });
+
+  it("composes with the clamped primitive: a spend past max stops at max", () => {
+    const c = baseChar();
+    c.state.feature_uses["lay-on-hands"] = { used: 4, max: 5 };
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.spendFeatureUse("lay-on-hands", 3);
+    expect(c.state.feature_uses["lay-on-hands"].used).toBe(5);
+  });
+
+  it("an unseeded key is a no-op and never fires onChange", () => {
+    const c = baseChar();
+    let changes = 0;
+    const es = new CharacterEditState(c, {} as never, () => { changes += 1; });
+    es.spendFeatureUse("monk:ki", 1);
+    expect(c.state.feature_uses["monk:ki"]).toBeUndefined();
+    expect(changes).toBe(0);
+  });
+});
