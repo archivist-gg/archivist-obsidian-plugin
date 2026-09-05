@@ -243,7 +243,11 @@ export function renderCardResource(parent: HTMLElement, resource: Resource, ctx:
     limit: CHARGE_BOX_LIMIT,
     renderLarge: (host) => renderPointPool(host, {
       id, name: resource.name, used: fu.used, max: fu.max,
-      resetLabel: RESET_LABELS[resource.reset], onSet: (n) => ctx.editState?.setFeatureUse(id, n),
+      resetLabel: RESET_LABELS[resource.reset],
+      // The same `custom`-reset rule the boxes carry as `recoveryTitle` above, so a resource above
+      // CHARGE_BOX_LIMIT keeps its tooltip on the numeric path (T3 review M-5, closed at T5).
+      resetTitle: resource.reset === "custom" ? CUSTOM_RESET_TIP : undefined,
+      onSet: (n) => ctx.editState?.setFeatureUse(id, n),
     }),
   });
 }
@@ -277,7 +281,10 @@ export function renderFirstResourceTracker(detail: HTMLElement, feature: Feature
     limit: CHARGE_BOX_LIMIT,
     renderLarge: (host) => renderPointPool(host, {
       id: key, name: res0?.name ?? feature.name, used: fu.used, max: fu.max,
-      resetLabel: RESET_LABELS[reset], onSet: (n) => ctx.editState?.setFeatureUse(key, n),
+      resetLabel: RESET_LABELS[reset],
+      // As in `renderCardResource`: the `custom` tooltip follows the resource onto the numeric path.
+      resetTitle: reset === "custom" ? CUSTOM_RESET_TIP : undefined,
+      onSet: (n) => ctx.editState?.setFeatureUse(key, n),
     }),
   });
   return true;

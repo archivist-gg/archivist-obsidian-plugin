@@ -25,3 +25,8 @@
 /* dice-pool / point-pool tab head: the pool save-DC line (R4-G4 §11) and the owner widget. */
 .archivist-pc-sheet .pc-pool-head { display: flex; flex-wrap: wrap; gap: 0.6em 1.2em; align-items: center; margin-bottom: 0.5em; }
 .archivist-pc-sheet .pc-pool-dc { font-weight: 600; }
+/* The resource line supplies its own gap, as every precedent wrapper does (.pc-card-resource in
+   actions.css, .pc-spend): createSpan inserts no whitespace, so without this the name, the die and
+   the pips abut. The name matches its .pc-card-resource-name analogue. */
+.archivist-pc-sheet .pc-pool-head-resource { display: flex; align-items: center; gap: var(--pc-space-2); }
+.archivist-pc-sheet .pc-pool-head-name { font-weight: 700; }

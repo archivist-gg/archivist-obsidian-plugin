@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { PoolTab } from "../packages/obsidian/src/modules/pc/components/pool-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { __resetWarnOnceForTests } from "@archivist-gg/dnd5e/dnd/warn-once";
+import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { ResolvedCharacter, ResolvedPool } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -402,6 +403,12 @@ const dice = {
   owner: { kind: "feature", featureId: "cs", featureName: "Combat Superiority", source: { kind: "subclass", slug: "bm", level: 3 } },
 };
 
+/** Every element inside the head whose FULL text is the resource name. Only the leaf name spans can
+ *  match (an ancestor's text is always longer), so the count IS the number of times the head prints
+ *  the name: 1 is right, 2 is the doubled name of review I-2. */
+const nameSpans = (head: Element, name: string) =>
+  Array.from(head.querySelectorAll("*")).filter((e) => e.textContent === name);
+
 describe("PoolTab · dice-pool / point-pool heads (R4-G4 §4.2.6)", () => {
   it("RED FIRST: dice-pool renders 4 d8 boxes in the tab head", () => {
     const el = mountContainer();
@@ -442,7 +449,9 @@ describe("PoolTab · dice-pool / point-pool heads (R4-G4 §4.2.6)", () => {
     // `mkCtx` casts none (Gate 2 I-8); the same rule as `withOwner`, applied to the no-owner fixture too.
     (c.resolved as { classes?: unknown }).classes = [];
     new PoolTab("interdict-boons", "point-pool").render(el, c);
-    expect(el.querySelector(".pc-pool-head .pc-point-pool")).toBeNull();
+    // Neither a DC nor an owned resource, so the head is never created: no empty spacer div carrying
+    // the `.pc-pool-head` margin (review M-3).
+    expect(el.querySelector(".pc-pool-head")).toBeNull();
     expect(el.querySelectorAll(".pc-spell-prep-row").length).toBe(3);
   });
 
@@ -466,5 +475,45 @@ describe("PoolTab · dice-pool / point-pool heads (R4-G4 §4.2.6)", () => {
     const c = withOwner({ ...basePool, layout: "dice-pool", resource: "fighter-2024:superiority-dice" }, { used: 1, max: 4 }, dice);
     new PoolTab("interdict-boons", "dice-pool").render(el, c);
     expect(el.querySelector(".pc-pool-dc")).toBeNull();
+  });
+
+  // Review I-2: the head owns a name span AND `renderPointPool` writes its own, so wherever the
+  // numeric widget runs the head printed the name twice. The head keeps its span exactly where the
+  // widget does NOT run. The widget runs on the points shape, and on the dice shape when the boxes
+  // hand off to `renderLarge`, which is `max > CHARGE_BOX_LIMIT` AND not at will.
+  it("RED FIRST (I-2): the point-pool head prints the resource name ONCE", () => {
+    const el = mountContainer();
+    const points = { ...dice, id: "sorcerer:sorcery-points", name: "Sorcery Points", die: undefined };
+    const c = withOwner({ ...basePool, layout: "point-pool", resource: "sorcerer:sorcery-points" }, { used: 1, max: 3 }, points);
+    new PoolTab("interdict-boons", "point-pool").render(el, c);
+    const head = el.querySelector(".pc-pool-head")!;
+    expect(nameSpans(head, "Sorcery Points").length).toBe(1);
+    expect(head.querySelector(".pc-point-pool-name")!.textContent).toBe("Sorcery Points");
+    expect(head.querySelector(".pc-pool-head-name")).toBeNull();
+  });
+
+  it("RED FIRST (I-2): a dice head ABOVE CHARGE_BOX_LIMIT renders the numeric widget and prints the name ONCE", () => {
+    const el = mountContainer();
+    const c = withOwner({ ...basePool, layout: "dice-pool", resource: "fighter-2024:superiority-dice" }, { used: 2, max: 25 }, dice);
+    new PoolTab("interdict-boons", "dice-pool").render(el, c);
+    const head = el.querySelector(".pc-pool-head")!;
+    expect(nameSpans(head, "Superiority Dice").length).toBe(1);
+    expect(head.querySelector(".pc-point-pool-value")!.textContent).toBe("23 / 25");
+    expect(head.querySelectorAll(".archivist-toggle-box").length).toBe(0);
+    expect(head.querySelector(".pc-resource-die")!.textContent).toBe("d8");   // the die label is the head's, either way
+  });
+
+  it("an AT-WILL dice head keeps its own name span, because the numeric widget never runs there", () => {
+    // `AT_WILL_MAX` is ABOVE `CHARGE_BOX_LIMIT`, but `renderChargeBoxes` returns on `atWill` BEFORE it
+    // consults `renderLarge`, so no `renderPointPool` and therefore no second name. A guard written on
+    // the max alone would drop the head's span here and leave this head nameless.
+    const el = mountContainer();
+    const c = withOwner({ ...basePool, layout: "dice-pool", resource: "fighter-2024:superiority-dice" }, { used: 0, max: AT_WILL_MAX }, dice);
+    new PoolTab("interdict-boons", "dice-pool").render(el, c);
+    const head = el.querySelector(".pc-pool-head")!;
+    expect(nameSpans(head, "Superiority Dice").length).toBe(1);
+    expect(head.querySelector(".pc-pool-head-name")!.textContent).toBe("Superiority Dice");
+    expect(head.querySelector(".pc-charge-at-will")!.textContent).toBe("at will");
+    expect(head.querySelector(".pc-point-pool")).toBeNull();
   });
 });

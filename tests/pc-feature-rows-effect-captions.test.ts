@@ -287,6 +287,38 @@ describe("renderCardResource · the die level (R4-G4 §6.2.4)", () => {
     renderCardResource(host, bard.feature.resources![0], ctx);
     expect(host.querySelector(".pc-resource-die")!.textContent).toBe("d6");
   });
+
+  // R4-G4 T3 review M-5, closed at T5 review M-6: the `custom` recovery tooltip reaches the BOXES
+  // through `recoveryTitle`, but a resource above CHARGE_BOX_LIMIT hands off to `renderLarge`, and
+  // the two feature sites built their `renderPointPool` opts without `resetTitle`, so the tooltip was
+  // lost at exactly the two sites M-5 named. Both are pinned here.
+  it("RED FIRST: a custom-reset resource above CHARGE_BOX_LIMIT keeps its recovery tooltip on the numeric path (both feature sites)", async () => {
+    const { renderCardResource, renderFirstResourceTracker } =
+      await import("../packages/obsidian/src/modules/pc/components/actions/feature-rows");
+    const TIP = "Recovery is described in this feature's text";
+    const runes = rf({ id: "rune-carver", name: "Rune Carver", resources: [
+      { id: "rune:charges", name: "Rune Charges", max_formula: "25", reset: "custom" },
+    ] });
+    const ctx = renderCtx([runes], { featureUses: { "rune:charges": { used: 0, max: 25 } } });
+
+    const card = mountContainer();
+    renderCardResource(card, runes.feature.resources![0], ctx);
+    expect(card.querySelector(".pc-point-pool-reset")!.getAttribute("title")).toBe(TIP);
+    expect(card.querySelector(".pc-point-pool-reset")!.textContent).toBe("Special");
+
+    const row = mountContainer();
+    renderFirstResourceTracker(row, runes.feature, ctx);
+    expect(row.querySelector(".pc-point-pool-reset")!.getAttribute("title")).toBe(TIP);
+
+    // The control: a non-`custom` reset carries no tooltip, so the title is not unconditional.
+    const plain = rf({ id: "lay-on-hands", name: "Lay on Hands", resources: [
+      { id: "paladin:lay-on-hands", name: "Lay on Hands", max_formula: "25", reset: "long-rest" },
+    ] });
+    const plainCtx = renderCtx([plain], { featureUses: { "paladin:lay-on-hands": { used: 0, max: 25 } } });
+    const plainHost = mountContainer();
+    renderCardResource(plainHost, plain.feature.resources![0], plainCtx);
+    expect(plainHost.querySelector(".pc-point-pool-reset")!.getAttribute("title")).toBeNull();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────

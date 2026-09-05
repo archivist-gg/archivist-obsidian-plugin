@@ -247,7 +247,11 @@ type LayoutRenderer = (this: PoolTab, root: HTMLElement, pool: ResolvedPool, ctx
 /** The ONE layout → renderer registry (R4-G4 §4.2.6, invariant 3; the entity-presenter-dispatch
  *  pattern): an unknown key degrades to spell-like and never throws, which is what the fallback to
  *  this map's own `spell-like` entry buys `render`. The two hinted layouts are the spell-like list
- *  PLUS a tab-head widget for the pool's OWNED resource. */
+ *  PLUS a tab-head widget for the pool's OWNED resource; the other two render exactly as before.
+ *  A pool whose members carry an UNMAPPED hint never reaches the hinted entries at all: dnd5e's
+ *  `RENDERING_HINT_LAYOUT` maps two hints, so `derivePoolLayout` returns undefined for the three G5
+ *  families (pool-selection, granted-die-to-ally, stance) and `TabsContainer` falls through to
+ *  spell-like. A PHB 2024 Arcane Archer, whose members are pool-selection, is that case. */
 const LAYOUTS: ReadonlyMap<PoolLayout, LayoutRenderer> = new Map<PoolLayout, LayoutRenderer>([
   ["spell-like", function (root, pool, ctx) { this.renderSpellLike(root, pool, ctx); }],
   ["blocks", function (root, pool, ctx) { this.renderBlocks(root, pool, ctx); }],
@@ -260,27 +264,39 @@ const LAYOUTS: ReadonlyMap<PoolLayout, LayoutRenderer> = new Map<PoolLayout, Lay
  *  The DC line first, whenever `poolSaveDC` is non-null (a Four Elements Monk's tab prints it with no
  *  widget beside it). Then the widget, but ONLY when all three of `pool.resource`, its seeded
  *  `feature_uses` entry and its `resolved.resources` index entry exist: a hinted pool whose members
- *  consume nothing the character owns (Four Elements, and a PHB 2024 Arcane Archer) renders the list
- *  alone, and a fixture that casts a `ResolvedCharacter` with no index never throws (§4.2.6,
- *  confirmation r6 M-1).
+ *  consume nothing the character owns (Four Elements is the live witness) renders the list alone, and
+ *  a fixture that casts a `ResolvedCharacter` with no index never throws (§4.2.6, confirmation r6 M-1).
+ *  The head div itself is created on FIRST use, so a pool with neither a DC nor an owned resource
+ *  emits no empty spacer.
  *
  *  `dice` draws the boxes with the die face in effect at the OWNER's class level (`resourceLevelFor`,
- *  the spelling `renderSpendControl` and `renderCardResource` carry), the at-will sentinel and the
+ *  the same expression `renderSpendControl` carries; `renderCardResource` reaches the same derivation
+ *  through `feature-rows.ts`'s module-private `resourceLevel` helper), the at-will sentinel and the
  *  `CHARGE_BOX_LIMIT` ceiling; `points` goes straight to the numeric widget, which is exactly what the
- *  hint is load-bearing for (a point-pool below the box limit, §4.1). */
+ *  hint is load-bearing for (a point-pool below the box limit, §4.1).
+ *
+ *  THE NAME IS PRINTED ONCE. `renderPointPool` writes its own `.pc-point-pool-name`, so the head
+ *  writes `.pc-pool-head-name` only on the paths where that widget does NOT run: the points shape
+ *  always runs it, and the dice shape hands off to it through `renderLarge` whenever
+ *  `max > CHARGE_BOX_LIMIT`, EXCEPT at will, where `renderChargeBoxes` returns before it consults
+ *  `renderLarge` (`AT_WILL_MAX` is itself above the limit, so a guard on the max alone would leave an
+ *  at-will head nameless). */
 function renderPoolHead(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext, shape: "dice" | "points"): void {
-  const head = root.createDiv({ cls: "pc-pool-head" });
+  let head: HTMLElement | undefined;
+  const headEl = (): HTMLElement => (head ??= root.createDiv({ cls: "pc-pool-head" }));
   const dc = poolSaveDC(ctx.resolved, ctx.derived, pool);
-  if (dc !== null) head.createDiv({ cls: "pc-pool-dc", text: `${pool.label} save DC ${dc}` });
+  if (dc !== null) headEl().createDiv({ cls: "pc-pool-dc", text: `${pool.label} save DC ${dc}` });
   const id = pool.resource;
   const fu = id ? ctx.resolved.state.feature_uses?.[id] : undefined;
   const res = id ? ctx.resolved.resources?.get(id) : undefined;
   if (!id || !fu || !res) return;
   const resetLabel = RESET_LABELS[res.reset];
   const resetTitle = res.reset === "custom" ? CUSTOM_RESET_TIP : undefined;
+  const isAtWill = fu.max === AT_WILL_MAX;
+  const numeric = shape === "points" || (!isAtWill && fu.max > CHARGE_BOX_LIMIT);
   const pointOpts = { id, name: res.name, used: fu.used, max: fu.max, resetLabel, resetTitle, onSet: (n: number) => ctx.editState?.setFeatureUse(id, n) };
-  const line = head.createDiv({ cls: "pc-pool-head-resource" });
-  line.createSpan({ cls: "pc-pool-head-name", text: res.name });
+  const line = headEl().createDiv({ cls: "pc-pool-head-resource" });
+  if (!numeric) line.createSpan({ cls: "pc-pool-head-name", text: res.name });
   if (shape === "dice" && res.die) line.createSpan({ cls: "pc-resource-die", text: resolveScalingDie(res.die, resourceLevelFor(res.owner.source, ctx.resolved)) });
   if (shape === "dice") {
     renderChargeBoxes(line.createSpan({ cls: "pc-feature-track" }), {
@@ -288,7 +304,7 @@ function renderPoolHead(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRen
       recovery: { amount: String(fu.max), label: resetLabel },
       recoveryTitle: resetTitle,
       onSet: (n) => ctx.editState?.setFeatureUse(id, n),
-      atWill: fu.max === AT_WILL_MAX, limit: CHARGE_BOX_LIMIT,
+      atWill: isAtWill, limit: CHARGE_BOX_LIMIT,
       renderLarge: (parent) => renderPointPool(parent, pointOpts),
     });
   } else {
