@@ -5,7 +5,15 @@ import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-hel
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { ResolvedCharacter, ResolvedPool } from "@archivist-gg/dnd5e/pc/pc.types";
 
-beforeAll(() => installObsidianDomHelpers());
+beforeAll(() => {
+  installObsidianDomHelpers();
+  // `basePool`'s baleful-glare consumes "seals" and `mkCtx` seeds no `feature_uses`, so every
+  // render of it is an unowned spender and `renderSpendControl` emits its one `warnOnce`
+  // (R4-G4 §13, the designed behaviour, asserted in tests/pc-spend-control.test.ts). Silence it
+  // here so the suite's output stays clean under a reporter that shows console output for
+  // passing tests: vitest's default reporter hides it, `--disable-console-intercept` does not.
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+});
 
 function ofEntity(slug: string, extra: Record<string, unknown> = {}) {
   return {

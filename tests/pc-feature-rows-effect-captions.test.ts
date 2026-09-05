@@ -317,6 +317,22 @@ describe("renderFeatureRow · the spend control (R4-G4 §3.2.5)", () => {
     expect(rowByName(c, "Rage").querySelectorAll(".archivist-toggle-box").length).toBe(2);
   });
 
+  it("Lay on Hands, the owner-and-spender case at amount > 1: the control renders INSIDE the card", () => {
+    // Spec §3.3 (e)'s second fixture, the positive half of the rule the Rage case pins negatively:
+    // the feature owns the resource, so the row keeps its box tracker, but one box click spends 1
+    // and the cost is 5, so the control renders in the expand card instead of the row.
+    const loh = rf({ id: "lay-on-hands", name: "Lay on Hands", consumes: { resource: "paladin:lay-on-hands", amount: 5 },
+      resources: [{ id: "paladin:lay-on-hands", name: "Lay on Hands", max_formula: "5", reset: "long-rest" }] });
+    const ctx = renderCtx([loh], { featureUses: { "paladin:lay-on-hands": { used: 0, max: 5 } } });
+    (ctx.resolved as { resources?: unknown }).resources = resolveFeatureResources([loh]);
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, ctx);
+    const card = rowByName(c, "Lay on Hands").nextElementSibling as HTMLElement;
+    expect(card.querySelector("button.pc-spend-control")!.textContent).toBe("Spend 5 Lay on Hands");
+    expect(rowByName(c, "Lay on Hands").querySelector("button.pc-spend-control")).toBeNull();
+    expect(rowByName(c, "Lay on Hands").querySelectorAll(".archivist-toggle-box").length).toBe(5);
+  });
+
   it("a non-owner spender with an attack note: the control takes the slot and the note follows it into the card", () => {
     const psi = rf({ id: "psionic-strike", name: "Psionic Strike", consumes: { resource: "psi:energy-die", amount: 1 },
       attacks: [{ to_hit: "+5", damage: "1d8" }] });
