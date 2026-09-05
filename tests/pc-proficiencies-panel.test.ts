@@ -13,16 +13,28 @@ import type { ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 // assertion about provenance could ever be added to.
 // `choices` is deliberately ABSENT: the sheet no longer renders the "choose N"
 // placeholder at all (spec R4-P3b §9). Unspent picks are the builder's subject.
+/** A `vi.fn` rather than a bare arrow so ONE test can queue a different return
+ *  with `mockReturnValueOnce` (the all-empty aggregate that re-pins "None").
+ *  Every other test gets this default implementation. */
+const mockAggregate = vi.hoisted(() => vi.fn((): {
+  armor: object[]; weapons: object[]; tools: object[]; languages: object[];
+} => ({
+  armor: [{ value: "light", label: "Light", sources: ["Rogue"], origin: "grant" }],
+  weapons: [
+    { value: "hand-crossbows", label: "Hand Crossbows", sources: ["Rogue"], origin: "grant" },
+    { value: "rapiers", label: "Rapiers", sources: ["Rogue"], origin: "grant" },
+  ],
+  // R4-G4 §9.2: one expertise tool and one plain one. This mock is module-level
+  // and hoisted, so it reaches EVERY test in the file: the "None" pin that used
+  // to sit on Tools moved when this bucket stopped being empty.
+  tools: [
+    { value: "thieves'-tools", label: "Thieves' Tools", sources: ["Rogue"], origin: "grant", expertise: true },
+    { value: "herbalism-kit", label: "Herbalism Kit", sources: ["Hermit"], origin: "grant" },
+  ],
+  languages: [{ value: "common", label: "Common", sources: ["Human"], origin: "grant" }],
+})));
 vi.mock("@archivist-gg/dnd5e/pc/pc.proficiencies", () => ({
-  aggregateProficiencies: () => ({
-    armor: [{ value: "light", label: "Light", sources: ["Rogue"], origin: "grant" }],
-    weapons: [
-      { value: "hand-crossbows", label: "Hand Crossbows", sources: ["Rogue"], origin: "grant" },
-      { value: "rapiers", label: "Rapiers", sources: ["Rogue"], origin: "grant" },
-    ],
-    tools: [],
-    languages: [{ value: "common", label: "Common", sources: ["Human"], origin: "grant" }],
-  }),
+  aggregateProficiencies: mockAggregate,
 }));
 
 /** The modal is stubbed so this stays a PANEL test: what the panel owes is a
@@ -105,8 +117,23 @@ describe("ProficienciesPanel", () => {
 
     expect(valueFor(container, "Weapons")).toBe("Hand Crossbows, Rapiers");
     expect(valueFor(container, "Languages")).toBe("Common");
-    expect(valueFor(container, "Tools")).toBe("None");
+    // The MOVED PIN (R4-G4 T9): this read "None" until the hoisted mock's tools
+    // bucket gained the §9.2 fixture. "None" is still pinned, on Armor's own
+    // empty-bucket assertion below in the empty-buckets test.
+    expect(valueFor(container, "Tools")).toBe("Thieves' Tools, Herbalism Kit");
     expect(valueFor(container, "Armor")).toBe("Light");
+  });
+
+  it("renders 'None' for every bucket the aggregate leaves empty", () => {
+    // The tools pin above used to carry this word. It moved when the hoisted
+    // mock's tools bucket gained the §9.2 fixture, so the shipped "None" wording
+    // is re-pinned HERE, on an aggregate whose four buckets are all empty ·
+    // otherwise nothing in the file asserts it any more.
+    mockAggregate.mockReturnValueOnce({ armor: [], weapons: [], tools: [], languages: [] });
+    const container = render(ctx);
+    for (const label of ["Armor", "Weapons", "Tools", "Languages"]) {
+      expect(valueFor(container, label)).toBe("None");
+    }
   });
 
   it("renders no em-dash (U+2014) anywhere in the panel subtree", () => {
@@ -157,6 +184,20 @@ describe("ProficienciesPanel", () => {
       // Identity, not shape: the handler must close over the ctx it was drawn
       // with, which is what makes the modal repaint from the live character.
       expect(spy.open.every((c) => c.ctx === editCtx)).toBe(true);
+    });
+
+    it("R4-G4 §9.2: the tools line marks the expertise entry and leaves the plain one unmarked; the languages line is byte-unchanged", () => {
+      // `editCtx`, not `ctx`: `data-prof-domain` is only set on an editable row,
+      // so the brief's selector needs a sheet in edit mode. The marker itself is
+      // independent of edit mode · it rides the entry, not the row's handler.
+      const container = render(editCtx);
+      const spans = Array.from(container.querySelectorAll('[data-prof-domain="tools"] .pc-prof-val'));
+      expect(spans.map((s) => [s.textContent, s.classList.contains("expertise")]))
+        .toEqual([["Thieves' Tools", true], ["Herbalism Kit", false]]);
+      // The whole line still reads exactly as it did before the spans existed:
+      // the same labels, the same ", " separator, no stray whitespace.
+      expect(container.querySelector('[data-prof-domain="languages"] .pc-prof-vals')!.textContent).toBe("Common");
+      expect(valueFor(container, "Tools")).toBe("Thieves' Tools, Herbalism Kit");
     });
 
     it("leaves Armor and Weapons inert: no class, no domain attribute, no handler", () => {

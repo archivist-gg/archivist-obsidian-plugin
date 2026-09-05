@@ -8,11 +8,13 @@ import type { ComponentRenderContext } from "../component.types";
 /**
  * R4-G3a §4 · the row-local caption line.
  *
- * Four effect shapes carry information the sheet had nowhere to put: `heal` and `temp-hp` (their
- * amounts), `extra-action` (what extra action, and how many), and EVERY effect written on someone
- * other than the character. The first three fold nothing by design (invariant 5: a heal is a
- * caption, never an auto-write of `state.hp.*`); the fourth is refused by the engine's `subject`
- * guard (invariant 1) and so has no derived surface at all. Both were previously invisible.
+ * Six effect shapes carry information the sheet had nowhere to put: `heal` and `temp-hp` (their
+ * amounts), `extra-action` (what extra action, and how many), a CONDITIONAL `sense` or
+ * `proficiency` (R4-G4 §9.4), and EVERY effect written on someone other than the character. The
+ * first three fold nothing by design (invariant 5: a heal is a caption, never an auto-write of
+ * `state.hp.*`); the last is refused by the engine's `subject` guard (invariant 1) and so has no
+ * derived surface at all. The `sense` / `proficiency` pair is the one group that DOES fold: what is
+ * dropped there is only the QUALIFIER, so those two caption on `condition` and on nothing else.
  *
  * Every caller hands over its own RAW `effects` array, never `selfEffectsOf`: the non-self effects
  * are precisely the ones the fold drops, so filtering by the guard here would erase the case this
@@ -63,6 +65,12 @@ function restate(e: FeatureEffect): string {
     case "immune-condition": return `${e.condition}${e.while ? ` while ${e.while}` : ""}`;
     case "damage-bonus": return `${e.amount}${e.damage_type ? ` ${e.damage_type}` : ""}`;
     case "heal": case "temp-hp": return `${NOUN[e.kind]} ${e.amount}`;
+    // `type` + `range`, never `value`: that is the arm's own shape in dnd5e
+    // `types/feature-effect.ts`. `range` is REQUIRED by featureEffectSchema, so
+    // a shipped carrier always has a number here (measured: 100 of 100 in the
+    // converter corpus), and the default arm's "sense type=… range=…" field dump
+    // was the only thing a non-self sense could read as before.
+    case "sense": return `${e.type} ${e.range} ft.`;
     default: return `${e.kind} ${Object.entries(e).filter(([k]) => !["kind", "subject", "condition"].includes(k)).map(([k, v]) => `${k}=${String(v)}`).join(" ")}`;
   }
 }
@@ -74,6 +82,15 @@ function captionFor(e: FeatureEffect): string | undefined {
   // self and non-self paths cannot drift into two spellings of the same line.
   if (e.kind === "heal" || e.kind === "temp-hp") return restate(e);
   if (e.kind === "extra-action") return `+${e.count} ${costLabel(e.action_type)}`;
+  // R4-G4 §9.4: the two SELF-subject kinds that carried a condition and no
+  // caption. Both DO fold (a sense reaches the senses panel, a proficiency the
+  // proficiencies panel), but the qualifier is dropped there, so the row is the
+  // only place it can be read · which is why the `condition` is the gate: an
+  // unqualified one would be a duplicate of a panel row, not a rescued fact.
+  // `sense` delegates to `restate`, like the heal arm, so the self and non-self
+  // paths cannot drift into two spellings of the same line.
+  if (e.kind === "proficiency" && e.condition) return `${e.value} proficiency, ${plainText(e.condition)}`;
+  if (e.kind === "sense" && e.condition) return `${restate(e)}, ${plainText(e.condition)}`;
   return undefined;
 }
 
@@ -86,6 +103,10 @@ function captionFor(e: FeatureEffect): string | undefined {
  * QUALIFIER becomes the span's tooltip, plain-texted · the roll-modifier idiom. On the two kinds
  * where `condition` is the condition NAME it stays in the caption body and no tooltip is set:
  * hiding a name behind a hover is not a qualifier, it is a lost caption.
+ *
+ * The tooltip is also skipped when the caption BODY already prints the plain-texted condition,
+ * which is the R4-G4 §9.4 pair (`sense` / `proficiency`, whose captions read "…, <condition>"). Same
+ * rule, stated once instead of as a second kind list: a hover that repeats a visible line is noise.
  */
 export function renderEffectCaptions(
   host: HTMLElement,
@@ -98,6 +119,7 @@ export function renderEffectCaptions(
     if (!text) continue;
     line ??= host.createDiv({ cls: "pc-feature-effect-line" });
     const span = line.createSpan({ cls: "pc-feature-effect", text });
-    if (e.condition && !CONDITION_IS_NAME.has(e.kind)) setTooltip(span, plainText(e.condition));
+    const qualifier = e.condition && !CONDITION_IS_NAME.has(e.kind) ? plainText(e.condition) : "";
+    if (qualifier && !text.includes(qualifier)) setTooltip(span, qualifier);
   }
 }

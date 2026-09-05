@@ -396,3 +396,58 @@ describe("renderFeatureRow · the spend control (R4-G4 §3.2.5)", () => {
     expect(rowByName(c, "Psionic Strike").querySelector(".pc-feature-attack-note")).toBeNull();
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// R4-G4 §9.4 · the two SELF-subject kinds that carried a `condition` and no
+// caption. `sense` and `proficiency` are folded by the engine (a sense lands on
+// the senses panel, a proficiency on the proficiencies panel), but the QUALIFIER
+// on either is dropped there: the row is the only place it can be read.
+//
+// The `sense` arm's fields are `type` + `range` (dnd5e types/feature-effect.ts;
+// there is no `value` on that arm), and `range` is required by the schema, so
+// the caption always has a number to print.
+// ─────────────────────────────────────────────────────────────
+describe("R4-G4 §9.4 · proficiency and sense condition captions", () => {
+  it("R4-G4 §9.4: a SELF-subject sense effect and a SELF-subject proficiency effect each render a caption", () => {
+    const { row } = renderOne({
+      id: "x", name: "Umbral Sight", effects: [
+        { kind: "sense", type: "darkvision", range: 60, condition: "while in dim light" },
+        { kind: "proficiency", proficiency_type: "weapon", value: "longsword", condition: "while attuned" },
+      ] as FeatureEffect[],
+    });
+    expect(captions(row)).toEqual([
+      "darkvision 60 ft., while in dim light",
+      "longsword proficiency, while attuned",
+    ]);
+    // No tooltip on either: the qualifier is already IN the body, and this file's
+    // apply-condition test states the same rule from the other direction ·
+    // echoing a visible line into a hover repeats it.
+    for (const span of Array.from(row.querySelectorAll(".pc-feature-effect"))) {
+      expect(span.getAttribute("aria-label")).toBeNull();
+    }
+  });
+
+  it("R4-G4 §9.4: without a condition neither kind captions at all", () => {
+    // The condition IS the caption's reason to exist: both kinds already have a
+    // derived surface (the senses panel, the proficiencies panel), so an
+    // unqualified one would be a duplicate row, not a rescued fact.
+    const { row } = renderOne({
+      id: "y", name: "Plain Darkvision", effects: [
+        { kind: "sense", type: "darkvision", range: 60 },
+        { kind: "proficiency", proficiency_type: "weapon", value: "longsword" },
+      ] as FeatureEffect[],
+    });
+    expect(captions(row)).toEqual([]);
+  });
+
+  it("R4-G4 §9.4: a NON-self sense reads through the same restatement, not the field dump", () => {
+    // `restate`'s new arm serves both paths, so the non-self caption cannot drift
+    // into a second spelling of the same sentence.
+    const { row } = renderOne({
+      id: "z", name: "Granted Sight", effects: [
+        { kind: "sense", type: "blindsight", range: 10, subject: "ally" },
+      ] as FeatureEffect[],
+    });
+    expect(captions(row)).toEqual(["ally: blindsight 10 ft."]);
+  });
+});

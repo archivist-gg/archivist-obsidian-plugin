@@ -205,6 +205,31 @@
    unused and deliberately not shipped. */
 .archivist-pc-sheet .pc-prof-line.editable { cursor: pointer; }
 .archivist-pc-sheet .pc-prof-line.editable:hover .pc-prof-vals { text-decoration: underline dotted var(--pc-tan); }
+
+/* Tool expertise marker (R4-G4 §9.2) · one `.pc-prof-val` span per aggregate
+   entry, marked when the entry carries `expertise`.
+   The declarations are copied from the SKILL rows' emphasis block further down
+   in this file (`.pc-skill-row:has(.archivist-prof-toggle.proficient/.expertise)`):
+   crimson, 700, a dotted underline at the same 2px offset, and the same U+25CE
+   glyph ahead of the text. That block fires for proficient AND expertise on a
+   skill row · the pip's own `outline` in archivist-edit.css is what tells the two
+   apart there. On these lines every entry listed is already proficient, so the
+   emphasis is free to mean expertise and nothing else. */
+.archivist-pc-sheet .pc-prof-val.expertise {
+  color: var(--pc-crimson);
+  font-weight: 700;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.archivist-pc-sheet .pc-prof-val.expertise::before {
+  content: "\25CE";
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 0.85em;
+  color: var(--pc-crimson);
+  text-decoration: none;
+  vertical-align: baseline;
+}
 /* Tab content body — flat on parchment, no card/border. */
 .archivist-pc-sheet .pc-tab-body { padding: 0; background: transparent; border: none; border-radius: 0; }
 .archivist-pc-sheet .pc-tab-heading {

@@ -39,9 +39,16 @@ export class ProficienciesPanel implements SheetComponent {
         p.addEventListener("click", () => openProficiencyModal(ctx, domain));
       }
       p.createSpan({ cls: "pc-prof-key", text: `${label}: ` });
-      p.createSpan({
-        cls: "pc-prof-vals",
-        text: entries.length ? entries.map((e) => e.label).join(", ") : "None",
+      // One span PER ENTRY rather than one joined string, so an entry that
+      // carries `expertise` can be marked on its own (R4-G4 §9.2 · the flag
+      // rides the grant channel, `ProficiencyEntry.expertise`). The separator is
+      // appended as a bare text node between spans, so the line's `textContent`
+      // is byte-identical to the join it replaced.
+      const vals = p.createSpan({ cls: "pc-prof-vals" });
+      if (!entries.length) vals.setText("None");
+      entries.forEach((e, i) => {
+        if (i > 0) vals.appendText(", ");
+        vals.createSpan({ cls: `pc-prof-val${e.expertise ? " expertise" : ""}`, text: e.label });
       });
     };
     labelFor("Armor", agg.armor);
