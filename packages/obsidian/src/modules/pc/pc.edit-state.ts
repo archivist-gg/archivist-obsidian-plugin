@@ -39,6 +39,19 @@ function toRef(slug: string): string {
   return /^\[\[.+\]\]$/.test(s) ? s : `[[${s}]]`;
 }
 
+/** The EXISTING key of a tools tri record that folds to `slug` under `toProfSlug`, or
+ *  `undefined` when the record has none (R4-G4 §9.3, review I-2).
+ *
+ *  `overrides.tools.proficiency` is an OPEN key space, and the ENGINE normalises every key it
+ *  reads (`computeEffectiveProficiencies` runs `toProfSlug` on the key), so a hand-edited note
+ *  may spell one any way it likes and the tri still applies. Both writers below match through
+ *  here so they REPAIR the key that is already in the note instead of writing a second one
+ *  beside it: indexing by the slug alone left `addProficiency` nothing to clear (it then stacked
+ *  an inert `add[]` on top of a live `none`) and made `setToolProficiency` duplicate the key. */
+function triKeyFor(record: Record<string, ProficiencyTri>, slug: string): string | undefined {
+  return Object.keys(record).find((k) => toProfSlug(k) === slug);
+}
+
 /**
  * Centralized mutation surface for the PC sheet. Owned by `PCSheetView`;
  * re-built on every `setViewData`. Each mutation mutates `this.character`
@@ -814,10 +827,12 @@ export class CharacterEditState {
     if (!s) return;
     if (s.add?.length === 0) delete s.add;
     if (s.remove?.length === 0) delete s.remove;
-    // The tools tri is a THIRD leaf (R4-G4 §9.3). `in` is what narrows the
-    // `languages | tools` union here: only the tools member declares the key.
-    // `setToolProficiency` deletes an emptied record itself, so this reads it
-    // rather than emptying it.
+    // The tools tri is a THIRD leaf (R4-G4 §9.3), emptied here like its two siblings so a
+    // hand-authored `proficiency: {}` cannot keep the container alive where the pre-tri code
+    // deleted it (review M-3). `setToolProficiency` also runs its own emptiness delete; this is
+    // the arm that catches a record NO writer emptied. `in` is what narrows the
+    // `languages | tools` union: only the tools member declares the key.
+    if ("proficiency" in s && s.proficiency && Object.keys(s.proficiency).length === 0) delete s.proficiency;
     if (!s.add && !s.remove && !("proficiency" in s && s.proficiency)) delete this.character.overrides[domain];
   }
 
@@ -840,10 +855,15 @@ export class CharacterEditState {
     // candidate row's pip (which calls this method, unchanged) must CLEAR it. Without
     // this the pip would stack an `add[]` entry on top of a live `none`, the engine
     // would go on suppressing the value, and the note could never return to its
-    // original bytes. Narrowed by `in`, like pruneProfOverride: languages carry no tri.
-    if ("proficiency" in store && store.proficiency?.[slug] === "none") {
-      delete store.proficiency[slug];
-      if (Object.keys(store.proficiency).length === 0) delete store.proficiency;
+    // original bytes. Matched through `triKeyFor`, never by a direct index, so a
+    // hand-typed key is cleared too (review I-2). Narrowed by `in`, like
+    // pruneProfOverride: languages carry no tri.
+    if ("proficiency" in store && store.proficiency) {
+      const triKey = triKeyFor(store.proficiency, slug);
+      if (triKey !== undefined && store.proficiency[triKey] === "none") {
+        delete store.proficiency[triKey];
+        if (Object.keys(store.proficiency).length === 0) delete store.proficiency;
+      }
     }
     // Re-evaluate AFTER the removal, against the live overrides object. Evaluating
     // BEFORE would drop the value from remove[] AND push it to add[], so restoring a
@@ -891,11 +911,12 @@ export class CharacterEditState {
    *      expertise" arm is reachable only from a hand-edited note.
    *  Recorded as a known limitation, not redesigned. */
   setToolProficiency(value: string, tri: ProficiencyTri): void {
-    // The persisted key is `toProfSlug`'s output, apostrophe RETAINED: a hand-edited
-    // note writes `overrides: { tools: { proficiency: { "thieves'-tools": expertise } } }`.
+    // A key this writer CREATES is `toProfSlug`'s output, apostrophe RETAINED, so a note
+    // it wrote reads `overrides: { tools: { proficiency: { "thieves'-tools": expertise } } }`.
     // An ASCII apostrophe inside a YAML mapping key round-trips unquoted through
     // js-yaml, and the engine's own tool vocabulary keeps the apostrophe (dnd5e
-    // types/choice.ts), so no second normalisation is introduced here.
+    // types/choice.ts), so no second normalisation is introduced here. A key the note
+    // ALREADY carries is left in its own spelling · see `triKeyFor` below.
     const slug = toProfSlug(value);
     // NOT `this.ensureProfOverride("tools")`: its return is the `languages | tools`
     // union, on which `.proficiency` is a tsc error. The tools container is read
@@ -904,7 +925,12 @@ export class CharacterEditState {
     o.tools ??= {};
     const store = o.tools;
     store.proficiency ??= {};
-    if (tri === "proficient") delete store.proficiency[slug]; else store.proficiency[slug] = tri;
+    // Write to the key the note ALREADY carries when one folds to this slug, else to the slug
+    // itself: the engine reads every key through `toProfSlug`, so writing the slug beside a
+    // hand-typed spelling would leave TWO entries for one tool and the modal's cycle could never
+    // leave the pair behind (review I-2, probes E4 / E5). The spelling in the note is preserved.
+    const key = triKeyFor(store.proficiency, slug) ?? slug;
+    if (tri === "proficient") delete store.proficiency[key]; else store.proficiency[key] = tri;
     if (Object.keys(store.proficiency).length === 0) delete store.proficiency;
     this.pruneProfOverride("tools");
     this.onChange();

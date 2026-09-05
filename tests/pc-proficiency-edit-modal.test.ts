@@ -682,15 +682,17 @@ describe("R4-G4 §9.3 the tools tri control (UR1)", () => {
     // hit); the tri branch suppresses toProfSlug("runic-cipher"); no TOOL_GROUPS section
     // carries it, so the off-vocabulary section is the ONLY producer of that row.
     //
-    // The chip assertion is first by convention, but the KILL POWER is in the second: the
-    // chip is gone either way (the engine dropped it), and only the `suppressed()` extension
-    // can put the row back. Recorded as this task's one exception to first-expect-is-the-RED.
+    // THE ROW ASSERTION IS FIRST because that is where the kill power is (invariant 4,
+    // measured: mutating `suppressed()`'s `none` filter to `() => false` reds this line and
+    // nothing else in the file). The chip assertion below is a CONTROL: the ENGINE drops the
+    // chip, so it is green with or without the extension, and it is kept because "the row came
+    // back" only means something once "the chip left" is established in the same case.
     const { el } = openFor("tools", {
       classes: [{ entity: { name: "Cipherer", proficiencies: { tools: { fixed: ["Runic Cipher"] } } }, level: 1, choices: {} }],
       overrides: { tools: { proficiency: { "runic-cipher": "none" } } },
     });
-    expect(el.querySelector('.pc-prof-modal-chip[data-prof="Runic Cipher"]')).toBeNull();
     expect(el.querySelector('.pc-prof-modal-row[data-prof="runic-cipher"]')).not.toBeNull();
+    expect(el.querySelector('.pc-prof-modal-chip[data-prof="Runic Cipher"]')).toBeNull();
   });
 
   it("the languages domain renders NO tri control", () => {
