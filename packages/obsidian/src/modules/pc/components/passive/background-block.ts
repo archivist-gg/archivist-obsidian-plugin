@@ -42,37 +42,6 @@ function originFeatName(ref: string): string {
 }
 
 /**
- * Build-order-aware "see Feats" gate (spec §4.1, R3-M8). The origin feat only
- * renders as a Feats row once Task 3b wires it into the feat pipeline, so we do a
- * self-adjusting RUNTIME check rather than a hardcoded flag: is there a
- * feat-sourced resolved feature that matches this origin-feat ref? Match by the
- * bare tail slug (`srd-2024_savage-attacker` endsWith `_savage-attacker`), the
- * parenthetical-variant base slug (Magic Initiate (Cleric) → magic-initiate), or
- * the display name. Absent (today) → value renders as "<name>" in a labeled
- * Origin Feat row (a small-caps `.pc-cb-prop-l` "Origin Feat" label span + a
- * separate value span; the literal ": " is gone, supplied visually by layout);
- * present (post-3b) → value renders as "<name> · see Feats", with NO cross-task
- * edit.
- */
-function originFeatRendersAsRow(ctx: ComponentRenderContext, ref: string): boolean {
-  const slug = wikilinkTailSlug(ref);
-  const rawTail = ref.replace(/^\[\[/, "").replace(/\]\]$/, "").split("/").pop()?.trim() ?? "";
-  const base = rawTail.replace(/\s*\([^()]*\)\s*$/, "").trim();
-  const baseSlug = base && base !== rawTail ? wikilinkTailSlug(`[[${base}]]`) : "";
-  const name = (rawTail || slug).toLowerCase();
-  const matchesSlug = (s: string): boolean =>
-    !!s &&
-    (s === slug ||
-      s.endsWith(`_${slug}`) ||
-      (!!baseSlug && (s === baseSlug || s.endsWith(`_${baseSlug}`))));
-  return ctx.resolved.features.some(
-    (f) =>
-      f.source.kind === "feat" &&
-      (matchesSlug(f.source.slug) || f.feature.name.toLowerCase() === name),
-  );
-}
-
-/**
  * The read-only **Background** section on the Passive & Features tab (spec §4.1,
  * D2-3(i); Task 5). It reads `resolved.background` directly and REFERENCES the
  * grants already applied elsewhere (skills → Skills panel, tools → Proficiencies,
@@ -204,7 +173,14 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
       //    (Task 3b); before that it degrades to the name. ──
       if (bg.origin_feat) {
         const name = originFeatName(bg.origin_feat);
-        const seeFeats = originFeatRendersAsRow(ctx, bg.origin_feat);
+        // R4-G4 §8: the resolver stamps `originFeatSlug` on the resolved character OUTSIDE the
+        // feats de-dup guard in `PCResolver.resolve`, so the block asks whether THAT feat is in
+        // `resolved.features` instead of re-deriving the tail. The retired `originFeatRendersAsRow`
+        // matched on `endsWith("_" + baseSlug)` (and on the display name), which a DIFFERENT
+        // same-tailed feat also satisfied, so it could light the row for a feat this background
+        // never granted.
+        const stamped = ctx.resolved.originFeatSlug;
+        const seeFeats = !!stamped && ctx.resolved.features.some((f) => f.source.kind === "feat" && f.source.slug === stamped);
         prop(host, "Origin Feat", `${name}${seeFeats ? " · see Feats" : ""}`, "pc-bg-origin");
       }
 

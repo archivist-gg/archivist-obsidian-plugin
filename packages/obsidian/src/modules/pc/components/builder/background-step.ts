@@ -100,7 +100,7 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
         : null;
       const items = ledger?.origin.filter(isBackgroundStripItem) ?? [];
       // Shared lifted resolver (R2-m7): the SAME helper the resolver pipeline uses.
-      const ofeat = chosen ? resolveOriginFeat(ctx.services.entities, d.origin_feat ?? null) : null;
+      const ofeat = chosen ? resolveOriginFeat(ctx.services.entities, d.origin_feat ?? null, e.slug) : null;
       renderChronicleBlock(wrap, {
         name: e.name,
         sub: backgroundSub(d),
@@ -253,7 +253,13 @@ function renderEditionMixBanner(wrap: HTMLElement, ctx: ComponentRenderContext, 
 }
 
 /** Display name for the Origin Feat glance tile — the resolved feat name (or the
- *  parenthesized variant name), falling back to the bare slug. */
+ *  parenthesized variant name), falling back to the bare slug.
+ *
+ *  R4-G4 §8 FENCE: display-only and deliberately REGISTRY-FREE, so the seven-tier
+ *  cascade does not reach it and this helper is unchanged. Its surviving twin is
+ *  `originFeatName` in `components/passive/background-block.ts`. What R4-G4 retired
+ *  is the tail-MATCHING helper that lived beside that twin, `originFeatRendersAsRow`:
+ *  the block now reads the resolver's `originFeatSlug` stamp instead. */
 function originFeatDisplayName(ref: string): string {
   // Cheap display-only resolution that mirrors `resolveOriginFeat`'s naming but
   // never needs the registry: the tile shows the human-facing label only.
@@ -270,7 +276,7 @@ function originFeatDisplayName(ref: string): string {
  *  the sheet (R2-m7), extracting the ref from `e.data.origin_feat`. */
 function renderOriginFeatStripRow(host: HTMLElement, ctx: ComponentRenderContext, e: RegisteredEntity): void {
   const ref = (e.data as { origin_feat?: string | null }).origin_feat ?? null;
-  const r = resolveOriginFeat(ctx.services.entities, ref);
+  const r = resolveOriginFeat(ctx.services.entities, ref, e.slug);
   if (!r) return;
   renderStripInfoRow(host, { pill: "Feat", name: "Origin Feat", value: r.display });
 }

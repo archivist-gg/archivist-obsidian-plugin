@@ -335,9 +335,21 @@ describe("PassiveFeaturesTab", () => {
       expect(line.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Savage Attacker");
     });
 
+    it("R4-G4 §8: with NO stamped origin feat, a same-TAILED class-slot feat does not light 'see Feats' (the retired helper would have)", () => {
+      const c = mountContainer();
+      const classSlotAlert = { feature: { name: "Alert" }, source: { kind: "feat", slug: "players-handbook-2024_feat_alert" } } as never;
+      const ctx = renderCtx([classSlotAlert], { background: { ...bg2024, origin_feat: "[[SRD 2024/Feats/Alert]]" } as never });
+      new PassiveFeaturesTab().render(c, ctx);   // originFeatSlug UNSET: the resolver found no candidate
+      expect(bgBlock(c)!.querySelector(".pc-bg-origin span:not(.pc-cb-prop-l)")!.textContent).toBe("Alert");
+    });
+
     it("auto-upgrades to 'Origin Feat: <name> · see Feats' once a matching feat feature is present (post-3b)", () => {
       const c = mountContainer();
-      new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat, savageAttackerFeat], { background: bg2024 }));
+      const ctx = renderCtx([bgPlaceholderFeat, savageAttackerFeat], { background: bg2024 });
+      // R4-G4 §8: the block now reads the resolver's `originFeatSlug` stamp instead of re-deriving
+      // the tail, so the ctx carries the stamp the pipeline would have taken for this background.
+      (ctx.resolved as { originFeatSlug?: string }).originFeatSlug = "srd-2024_savage-attacker";
+      new PassiveFeaturesTab().render(c, ctx);
       const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
       expect(line.querySelector(".pc-cb-prop-l")!.textContent).toBe("Origin Feat");
       expect(line.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Savage Attacker · see Feats");
