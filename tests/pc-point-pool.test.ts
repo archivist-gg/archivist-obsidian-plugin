@@ -51,4 +51,17 @@ describe("renderPointPool (R4-G4 §5.2.1)", () => {
     expect(enter(25, 5, "40")).toHaveBeenLastCalledWith(0);    // entry clamps to 25 => nothing spent
     expect(enter(25, 5, "-3")).toHaveBeenLastCalledWith(25);   // entry clamps to 0 => everything spent
   });
+
+  // The `custom` recovery tooltip survives the NUMERIC path (R4-G4 T3 review M-5, taken at T5):
+  // `renderChargeBoxes` renders it as the caption's `title` through `recoveryTitle`, and a resource
+  // above CHARGE_BOX_LIMIT (or a point-pool head) reaches this widget instead, where the caption had
+  // no tooltip at all.
+  it("RED FIRST: resetTitle becomes the reset caption's title attribute", () => {
+    const root = mountContainer();
+    renderPointPool(root, { id: "z", name: "Z", used: 0, max: 4, resetLabel: "Special", resetTitle: "Recovery is described in this feature's text", onSet: () => {} });
+    expect(root.querySelector(".pc-point-pool-reset")!.getAttribute("title")).toBe("Recovery is described in this feature's text");
+    const bare = mountContainer();
+    renderPointPool(bare, { id: "z", name: "Z", used: 0, max: 4, resetLabel: "Special", onSet: () => {} });
+    expect(bare.querySelector(".pc-point-pool-reset")!.getAttribute("title")).toBeNull();
+  });
 });

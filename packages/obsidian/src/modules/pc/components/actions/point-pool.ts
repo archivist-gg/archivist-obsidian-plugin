@@ -7,14 +7,19 @@ export interface PointPoolOpts {
   max: number;
   /** Already a caption (the caller builds it from RESET_LABELS). */
   resetLabel?: string;
+  /** Optional `title` for that caption: the `custom` recovery tooltip `renderChargeBoxes` renders
+   *  through `recoveryTitle`, so a resource that reaches the numeric widget instead of the boxes
+   *  keeps it (R4-G4 T3 review M-5, taken at T5). */
+  resetTitle?: string;
   /** Receives the new USED count, clamped to [0, max] here; the edit-state clamps again. */
   onSet: (newUsed: number) => void;
 }
 
 /** The numeric pool widget (R4-G4 §5.2.1): "remaining / max <name>" with − / + steppers and a direct-entry
- *  field on the value. Its only callers today are the two feature sites above CHARGE_BOX_LIMIT,
- *  `renderCardResource` and `renderFirstResourceTracker`, which hand it in as `renderLarge`; T5's
- *  point-pool tab head is pending and joins them there. */
+ *  field on the value. Its callers are the two feature sites above CHARGE_BOX_LIMIT,
+ *  `renderCardResource` and `renderFirstResourceTracker`, which hand it in as `renderLarge`, and
+ *  T5's `renderPoolHead` (`components/pool-tab.ts`), which calls it directly for a `point-pool` tab
+ *  head and hands it in as `renderLarge` for a `dice-pool` one. */
 export function renderPointPool(host: HTMLElement, opts: PointPoolOpts): HTMLElement {
   const wrap = host.createDiv({ cls: "pc-point-pool" });
   const clamp = (n: number) => Math.max(0, Math.min(opts.max, Math.floor(n)));
@@ -23,7 +28,10 @@ export function renderPointPool(host: HTMLElement, opts: PointPoolOpts): HTMLEle
   const value = wrap.createSpan({ cls: "pc-point-pool-value", text: `${remaining()} / ${opts.max}` });
   const plus = wrap.createEl("button", { cls: "pc-point-pool-plus", text: "+", attr: { "aria-label": `Restore 1 ${opts.name}` } });
   wrap.createSpan({ cls: "pc-point-pool-name", text: opts.name });
-  if (opts.resetLabel) wrap.createSpan({ cls: "pc-point-pool-reset", text: opts.resetLabel });
+  if (opts.resetLabel) {
+    const cap = wrap.createSpan({ cls: "pc-point-pool-reset", text: opts.resetLabel });
+    if (opts.resetTitle) cap.setAttribute("title", opts.resetTitle);
+  }
   minus.addEventListener("click", (e) => { e.stopPropagation(); opts.onSet(clamp(opts.used + 1)); });
   plus.addEventListener("click", (e) => { e.stopPropagation(); opts.onSet(clamp(opts.used - 1)); });
   // Direct entry edits the REMAINING count; used = max − remaining.

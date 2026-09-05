@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { TabsContainer } from "../packages/obsidian/src/modules/pc/components/tabs-container";
 import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
+import { PoolTab } from "../packages/obsidian/src/modules/pc/components/pool-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { SheetComponent, ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
@@ -149,5 +150,22 @@ describe("TabsContainer", () => {
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
     expect(container.querySelector("#panel-pool-boons .pc-block.pc-boon-block")).not.toBeNull();
+  });
+  it("R4-G4 \u00a74.2.5: an authored layout beats the derived one, the derived one beats the default", () => {
+    const mk = (declared: string | undefined, derived: string | undefined) => ({
+      ...ctx, resolved: {
+        classes: [{ entity: { tabs: [{ id: "t", label: "T", renders: { pool: "p", ...(declared ? { layout: declared } : {}) } }] }, subclass: null }],
+        pools: [{ id: "p", label: "P", classIndex: 0, count: 1, anchorLevel: 2, selected: [], grants: [], available: [], ...(derived ? { layout: derived } : {}) }],
+        state: {},
+      } as never,
+    });
+    const spy = vi.spyOn(PoolTab.prototype, "render");
+    const authored = mountContainer(); new TabsContainer(mkRegistry()).render(authored, mk("blocks", "dice-pool"));
+    const derivedOnly = mountContainer(); new TabsContainer(mkRegistry()).render(derivedOnly, mk(undefined, "dice-pool"));
+    const neither = mountContainer(); new TabsContainer(mkRegistry()).render(neither, mk(undefined, undefined));
+    const layouts = spy.mock.instances.map((i) => (i as unknown as { layout: string }).layout);
+    expect(layouts).toEqual(["blocks", "dice-pool", "spell-like"]);
+    expect([authored, derivedOnly, neither].every((c) => c.querySelector("#panel-pool-t") !== null)).toBe(true);
+    spy.mockRestore();
   });
 });

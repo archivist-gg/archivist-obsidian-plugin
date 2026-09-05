@@ -46,7 +46,8 @@ export class TabsContainer implements SheetComponent {
     for (const decl of collectTabDecls(ctx.resolved)) {
       const pool = ctx.resolved?.pools?.find((p) => p.id === decl.renders.pool);
       if (!pool) continue;
-      const layout = decl.renders.layout ?? "spell-like";
+      // authored beats derived beats default (R4-G4 §4.2.5)
+      const layout = decl.renders.layout ?? pool.layout ?? "spell-like";
       tabs.push({ panelId: `panel-pool-${decl.id}`, label: decl.label, component: new PoolTab(decl.renders.pool, layout) });
     }
 

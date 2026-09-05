@@ -6,6 +6,12 @@ import type { PoolLayout } from "@archivist-gg/dnd5e/types/selection-pool";
 import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "./row-expand-state";
 import { renderSpendControl } from "./actions/spend-control";
+import { renderChargeBoxes, CHARGE_BOX_LIMIT } from "./actions/charge-boxes";
+import { renderPointPool } from "./actions/point-pool";
+import { RESET_LABELS, CUSTOM_RESET_TIP } from "./actions/reset-labels";
+import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
+import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
+import { resourceLevelFor, poolSaveDC } from "@archivist-gg/dnd5e/pc/pc.resources";
 
 const COST_LABELS: Record<string, string> = {
   action: "1 Action", "bonus-action": "1 Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
@@ -29,11 +35,13 @@ export class PoolTab implements SheetComponent {
       root.createDiv({ cls: "pc-empty-line", text: "No data for this pool." });
       return;
     }
-    if (this.layout === "blocks") this.renderBlocks(root, pool, ctx);
-    else this.renderSpellLike(root, pool, ctx);
+    const renderer = LAYOUTS.get(this.layout) ?? LAYOUTS.get("spell-like")!;
+    renderer.call(this, root, pool, ctx);
   }
 
-  private renderSpellLike(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
+  /** @internal Reached through the `LAYOUTS` registry below (and, for the two hinted layouts, after
+   *  `renderPoolHead`), never from outside this module. */
+  renderSpellLike(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
     const activeBuffs = ctx.resolved?.state?.active_buffs ?? [];
     renderActiveEffectsRail(root, activeItems(pool, activeBuffs, ctx));
     renderCounter(root, pool);
@@ -159,7 +167,8 @@ export class PoolTab implements SheetComponent {
     if (e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
   }
 
-  private renderBlocks(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
+  /** @internal Reached through the `LAYOUTS` registry below, never from outside this module. */
+  renderBlocks(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
     const activeBuffs = ctx.resolved?.state?.active_buffs ?? [];
     renderActiveEffectsRail(root, activeItems(pool, activeBuffs, ctx));
     renderCounter(root, pool);
@@ -230,6 +239,60 @@ export class PoolTab implements SheetComponent {
     if (e.passive) metaItem(meta, "Type", "Passive");
 
     if (e.description) section.createEl("p", { cls: "pc-block-description", text: e.description });
+  }
+}
+
+type LayoutRenderer = (this: PoolTab, root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext) => void;
+
+/** The ONE layout → renderer registry (R4-G4 §4.2.6, invariant 3; the entity-presenter-dispatch
+ *  pattern): an unknown key degrades to spell-like and never throws, which is what the fallback to
+ *  this map's own `spell-like` entry buys `render`. The two hinted layouts are the spell-like list
+ *  PLUS a tab-head widget for the pool's OWNED resource. */
+const LAYOUTS: ReadonlyMap<PoolLayout, LayoutRenderer> = new Map<PoolLayout, LayoutRenderer>([
+  ["spell-like", function (root, pool, ctx) { this.renderSpellLike(root, pool, ctx); }],
+  ["blocks", function (root, pool, ctx) { this.renderBlocks(root, pool, ctx); }],
+  ["dice-pool", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "dice"); this.renderSpellLike(root, pool, ctx); }],
+  ["point-pool", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "points"); this.renderSpellLike(root, pool, ctx); }],
+]);
+
+/** The tab-head owner widget plus the §11 pool save-DC line.
+ *
+ *  The DC line first, whenever `poolSaveDC` is non-null (a Four Elements Monk's tab prints it with no
+ *  widget beside it). Then the widget, but ONLY when all three of `pool.resource`, its seeded
+ *  `feature_uses` entry and its `resolved.resources` index entry exist: a hinted pool whose members
+ *  consume nothing the character owns (Four Elements, and a PHB 2024 Arcane Archer) renders the list
+ *  alone, and a fixture that casts a `ResolvedCharacter` with no index never throws (§4.2.6,
+ *  confirmation r6 M-1).
+ *
+ *  `dice` draws the boxes with the die face in effect at the OWNER's class level (`resourceLevelFor`,
+ *  the spelling `renderSpendControl` and `renderCardResource` carry), the at-will sentinel and the
+ *  `CHARGE_BOX_LIMIT` ceiling; `points` goes straight to the numeric widget, which is exactly what the
+ *  hint is load-bearing for (a point-pool below the box limit, §4.1). */
+function renderPoolHead(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext, shape: "dice" | "points"): void {
+  const head = root.createDiv({ cls: "pc-pool-head" });
+  const dc = poolSaveDC(ctx.resolved, ctx.derived, pool);
+  if (dc !== null) head.createDiv({ cls: "pc-pool-dc", text: `${pool.label} save DC ${dc}` });
+  const id = pool.resource;
+  const fu = id ? ctx.resolved.state.feature_uses?.[id] : undefined;
+  const res = id ? ctx.resolved.resources?.get(id) : undefined;
+  if (!id || !fu || !res) return;
+  const resetLabel = RESET_LABELS[res.reset];
+  const resetTitle = res.reset === "custom" ? CUSTOM_RESET_TIP : undefined;
+  const pointOpts = { id, name: res.name, used: fu.used, max: fu.max, resetLabel, resetTitle, onSet: (n: number) => ctx.editState?.setFeatureUse(id, n) };
+  const line = head.createDiv({ cls: "pc-pool-head-resource" });
+  line.createSpan({ cls: "pc-pool-head-name", text: res.name });
+  if (shape === "dice" && res.die) line.createSpan({ cls: "pc-resource-die", text: resolveScalingDie(res.die, resourceLevelFor(res.owner.source, ctx.resolved)) });
+  if (shape === "dice") {
+    renderChargeBoxes(line.createSpan({ cls: "pc-feature-track" }), {
+      used: fu.used, max: fu.max,
+      recovery: { amount: String(fu.max), label: resetLabel },
+      recoveryTitle: resetTitle,
+      onSet: (n) => ctx.editState?.setFeatureUse(id, n),
+      atWill: fu.max === AT_WILL_MAX, limit: CHARGE_BOX_LIMIT,
+      renderLarge: (parent) => renderPointPool(parent, pointOpts),
+    });
+  } else {
+    renderPointPool(line, pointOpts);
   }
 }
 

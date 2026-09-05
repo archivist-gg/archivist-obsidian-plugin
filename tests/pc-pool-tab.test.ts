@@ -380,3 +380,91 @@ describe("PoolTab — D1 pool-desc expand persistence", () => {
     expect(root2.querySelector(".pc-spell-prep-row-host .pc-spell-expand")).not.toBeNull();
   });
 });
+
+/** `mkCtx` plus everything the two HINTED layouts' tab head reads (R4-G4 §4.3's contract,
+ *  confirmation r6 M-1): the pool's OWNED resource id, its seeded `feature_uses` entry, the
+ *  `resolved.resources` index entry carrying `owner` and `die`, AND `resolved.classes` with the owning
+ *  class, because `resourceLevelFor` walks `resolved.classes` and `poolSaveDC` indexes
+ *  `classes[pool.classIndex]`: both THROW on an absent array and `mkCtx` casts `{ pools, state }` only.
+ *  `derived` carries the two fields `poolSaveDC` reads. */
+const withOwner = (pool: ResolvedPool, fu: { used: number; max: number }, res: object): ComponentRenderContext => {
+  const c = mkCtx(pool);
+  (c.resolved.state as { feature_uses?: unknown }).feature_uses = { [pool.resource!]: fu };
+  (c.resolved as { resources?: unknown }).resources = new Map([[pool.resource!, res]]);
+  (c.resolved as { classes?: unknown }).classes = [{ entity: { slug: "fighter" }, level: 3, subclass: { slug: "bm" } }];
+  (c as { derived: unknown }).derived = { proficiencyBonus: 2, mods: { str: 0, dex: 0, con: 0, int: 0, wis: 3, cha: 0 } };
+  return c;
+};
+
+const dice = {
+  id: "fighter-2024:superiority-dice", name: "Superiority Dice", reset: "short-rest", maxFormula: "4",
+  die: { base: "d8" },
+  owner: { kind: "feature", featureId: "cs", featureName: "Combat Superiority", source: { kind: "subclass", slug: "bm", level: 3 } },
+};
+
+describe("PoolTab · dice-pool / point-pool heads (R4-G4 §4.2.6)", () => {
+  it("RED FIRST: dice-pool renders 4 d8 boxes in the tab head", () => {
+    const el = mountContainer();
+    const c = withOwner({ ...basePool, layout: "dice-pool", resource: "fighter-2024:superiority-dice" }, { used: 1, max: 4 }, dice);
+    new PoolTab("interdict-boons", "dice-pool").render(el, c);
+    const head = el.querySelector(".pc-pool-head")!;
+    expect(head.querySelectorAll(".archivist-toggle-box").length).toBe(4);
+    expect(head.querySelector(".pc-resource-die")!.textContent).toBe("d8");
+    expect(head.querySelector(".pc-pool-head-name")!.textContent).toBe("Superiority Dice");
+    expect(head.querySelector(".pc-charge-recovery")!.textContent).toBe("/ Short Rest");
+    expect(el.querySelectorAll(".pc-spell-prep-row").length).toBe(3);   // the spell-like list still renders
+  });
+
+  it("RED FIRST: point-pool renders the numeric widget in the tab head", () => {
+    const el = mountContainer();
+    const points = { ...dice, id: "sorcerer:sorcery-points", name: "Sorcery Points", die: undefined };
+    const c = withOwner({ ...basePool, layout: "point-pool", resource: "sorcerer:sorcery-points" }, { used: 1, max: 3 }, points);
+    new PoolTab("interdict-boons", "point-pool").render(el, c);
+    expect(el.querySelector(".pc-pool-head .pc-point-pool-value")!.textContent).toBe("2 / 3");
+    expect(el.querySelector(".pc-pool-head .pc-resource-die")).toBeNull();
+  });
+
+  it("RED FIRST: the dice head's box click writes setFeatureUse for the pool's OWNED id", () => {
+    const setFeatureUse = vi.fn();
+    const el = mountContainer();
+    const c = withOwner({ ...basePool, layout: "dice-pool", resource: "fighter-2024:superiority-dice" }, { used: 1, max: 4 }, dice);
+    (c as { editState: unknown }).editState = { setFeatureUse };
+    new PoolTab("interdict-boons", "dice-pool").render(el, c);
+    const boxes = el.querySelectorAll<HTMLElement>(".pc-pool-head .archivist-toggle-box");
+    boxes[2].click();
+    expect(setFeatureUse).toHaveBeenCalledWith("fighter-2024:superiority-dice", 3);
+  });
+
+  it("a hinted layout with NO owned resource renders the list and no head widget (Four Elements)", () => {
+    const el = mountContainer();
+    const c = mkCtx({ ...basePool, layout: "point-pool" });
+    // §4.3's contract, the classes half: `poolSaveDC` indexes `resolved.classes[pool.classIndex]` and
+    // `mkCtx` casts none (Gate 2 I-8); the same rule as `withOwner`, applied to the no-owner fixture too.
+    (c.resolved as { classes?: unknown }).classes = [];
+    new PoolTab("interdict-boons", "point-pool").render(el, c);
+    expect(el.querySelector(".pc-pool-head .pc-point-pool")).toBeNull();
+    expect(el.querySelectorAll(".pc-spell-prep-row").length).toBe(3);
+  });
+
+  it("an UNKNOWN layout string renders spell-like and does not throw", () => {
+    const el = mountContainer();
+    expect(() => new PoolTab("interdict-boons", "nope" as never).render(el, mkCtx(basePool))).not.toThrow();
+    expect(el.querySelector(".pc-spell-counts")).not.toBeNull();
+  });
+
+  it("RED FIRST (§11): the head prints '<label> save DC 13' for a no-caster subclass carrying spellcasting.ability", () => {
+    const el = mountContainer();
+    const c = mkCtx({ ...basePool, layout: "point-pool" });
+    (c as { derived: unknown }).derived = { proficiencyBonus: 2, mods: { str: 0, dex: 0, con: 0, int: 0, wis: 3, cha: 0 } };
+    (c.resolved as { classes: unknown }).classes = [{ entity: { slug: "monk" }, level: 6, subclass: { slug: "fe", spellcasting: { ability: "wis" } } }];
+    new PoolTab("interdict-boons", "point-pool").render(el, c);
+    expect(el.querySelector(".pc-pool-dc")!.textContent).toBe("Interdict Boons save DC 13");
+  });
+
+  it("§11: a pool whose owning class has no subclass save ability prints NO DC line", () => {
+    const el = mountContainer();
+    const c = withOwner({ ...basePool, layout: "dice-pool", resource: "fighter-2024:superiority-dice" }, { used: 1, max: 4 }, dice);
+    new PoolTab("interdict-boons", "dice-pool").render(el, c);
+    expect(el.querySelector(".pc-pool-dc")).toBeNull();
+  });
+});
