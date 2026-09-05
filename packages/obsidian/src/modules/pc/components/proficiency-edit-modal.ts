@@ -3,6 +3,7 @@ import { type App } from "obsidian";
 import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { ComponentRenderContext } from "./component.types";
 import type { CharacterEditState } from "../pc.edit-state";
+import type { ProficiencyTri } from "@archivist-gg/dnd5e/pc/pc.types";
 import { aggregateProficiencies } from "@archivist-gg/dnd5e/pc/pc.proficiencies";
 import type { ProficiencyEntry } from "@archivist-gg/dnd5e/pc/pc.proficiencies";
 import { humanizeProficiency, toProfSlug } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
@@ -151,9 +152,18 @@ export class ProficiencyEditModal extends PaneCenteredModal {
 
   /** Currently-suppressed raw values. `CharacterEditState.character` is private,
    *  so the store is read through the resolved character, whose `definition` IS
-   *  the object the edit state mutates (spec §10). */
+   *  the object the edit state mutates (spec §10).
+   *
+   *  A `none` tri suppresses a tool exactly as `remove` does (R4-G4 §9.3), so its
+   *  keys join the union · that is what returns an OFF-VOCABULARY suppressed grant
+   *  to the candidate rows, the one case no TOOL_GROUPS section can produce.
+   *  Domain-narrowed because the `languages | tools` union has no `proficiency`,
+   *  and annotated because a bare `{}` is not indexable under `noImplicitAny`. */
   private suppressed(): string[] {
-    return this.ctx.resolved.definition.overrides?.[this.domain]?.remove ?? [];
+    const ov = this.ctx.resolved.definition.overrides;
+    const removed = ov?.[this.domain]?.remove ?? [];
+    const tri: Record<string, ProficiencyTri> = this.domain === "tools" ? (ov?.tools?.proficiency ?? {}) : {};
+    return [...removed, ...Object.keys(tri).filter((k) => tri[k] === "none")];
   }
 
   private copy(): DomainCopy {
@@ -273,6 +283,25 @@ export class ProficiencyEditModal extends PaneCenteredModal {
         attr: { "data-prof": entry.value },
       });
       chip.appendText(entry.label);
+      if (this.domain === "tools") {
+        // R4-G4 §9.3 (UR1). The chip's tri has only TWO rendered states, because these
+        // chips ARE the effective set: a `none` tool is not in it, so it has no chip and
+        // comes back through the candidate rows instead. The full cycle and the two
+        // shapes it takes are stated once, on `CharacterEditState.setToolProficiency`.
+        const tri: ProficiencyTri = entry.expertise ? "expertise" : "proficient";
+        const btn = chip.createEl("button", {
+          cls: `pc-prof-modal-tri ${tri}`,
+          // U+00D7 MULTIPLICATION SIGN, like the chip's own dismiss glyph.
+          text: tri === "expertise" ? "×2" : "×1",
+          attr: { "data-tri": tri, "aria-label": `${entry.label}: ${tri}` },
+        });
+        if (entry.expertise) chip.addClass("expertise");
+        btn.addEventListener("click", () => {
+          const next: ProficiencyTri = tri === "proficient" ? "expertise" : tri === "expertise" ? "none" : "proficient";
+          this.openedWith.setToolProficiency(entry.value, next);
+          this.refocusFilter();
+        });
+      }
       chip.createSpan({ cls: "pc-prof-modal-chip-src", text: sourceText(entry) });
       // U+00D7 MULTIPLICATION SIGN, matching every existing chip · not U+2715,
       // and emphatically not an em dash. EVERY chip carries it, granted included:

@@ -62,6 +62,31 @@
 }
 .pc-prof-modal-chip-x:hover { color: var(--pc-crimson); }
 
+/* R4-G4 §9.3 (UR1): the per-tool tri control. A <button> inside this modal, so the
+   selector carries `button` and the `display: inline-block; height: auto` pair for the
+   same reason `.pc-prof-modal-pip` below does · Obsidian forces a height on bare
+   buttons and the chip is an inline-flex row. Scoped under `.pc-prof-modal`, never
+   bare (the R3-P4 segmented-control lesson). */
+.pc-prof-modal button.pc-prof-modal-tri {
+  display: inline-block; height: auto;
+  margin-left: 0.3em; padding: 0 0.35em; line-height: 1;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  background-color: transparent; color: var(--pc-text-soft);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  cursor: pointer; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-tri.expertise { font-weight: 700; color: var(--pc-crimson); border-color: var(--pc-crimson); }
+.pc-prof-modal button.pc-prof-modal-tri:hover,
+.pc-prof-modal button.pc-prof-modal-tri:focus,
+.pc-prof-modal button.pc-prof-modal-tri:focus-visible,
+.pc-prof-modal button.pc-prof-modal-tri:active {
+  color: var(--pc-crimson); border-color: var(--pc-crimson); box-shadow: none;
+}
+/* The chip itself, when the tool carries expertise. Emphasis only · every chip on this
+   row is already proficient, so the treatment is free to mean expertise and nothing else
+   (the same reasoning the sheet panel's `.pc-prof-val.expertise` rule records). */
+.pc-prof-modal .pc-prof-modal-chip.expertise { border-color: var(--pc-crimson); }
+
 /* The two empty states. They share a dress but NOT a class: the next task and
    the live verification select by class, and one shared class would match both
    ambiguously. */

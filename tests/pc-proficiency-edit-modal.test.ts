@@ -153,9 +153,12 @@ const CRIMINAL_2024 = {
 };
 
 function makeEditState(): CharacterEditState {
+  // A fresh object per call, so no `vi.fn()` here needs a reset between tests
+  // (`vitest.config.ts` sets no `clearMocks` / `restoreMocks`).
   return {
     addProficiency: vi.fn(),
     removeProficiency: vi.fn(),
+    setToolProficiency: vi.fn(),
   } as unknown as CharacterEditState;
 }
 
@@ -617,6 +620,83 @@ describe("ProficiencyEditModal custom entry", () => {
 
     escape();
     expect(el.childElementCount).toBe(0);
+  });
+});
+
+describe("R4-G4 §9.3 the tools tri control (UR1)", () => {
+  // Both grant thieves' tools (ROGUE_2014 U+2019, CRIMINAL_2024 U+0027), so they fold
+  // to ONE chip · the pairing the "joins multiple sources" test above already pins.
+  const TOOLS = { classes: [ROGUE_2014], background: CRIMINAL_2024 };
+  // `data-prof` is `entry.value`, the slug WITH the apostrophe (types/choice.ts keeps it).
+  // `?.` deliberately: without the control the query is null, and a bare `!` would throw a
+  // TypeError before the first `expect` ran, turning a value diff into a crash.
+  const tri = (el: HTMLElement) =>
+    el.querySelector<HTMLButtonElement>(`.pc-prof-modal-chip[data-prof="thieves'-tools"] .pc-prof-modal-tri`);
+
+  // THE REACHABLE STATES (controller ruling at T10, spec §9.3). `setToolProficiency`
+  // persists `expertise` and `none` and writes the ABSENT key for `proficient`, so:
+  //   (1) on a PLAIN data grant the modal cycle is three-state · proficient -> expertise
+  //       -> none (the chip DISAPPEARS, because `computeEffectiveProficiencies` applies the
+  //       tri and these chips ARE its output) -> the candidate row's pip, whose
+  //       `addProficiency` clears the `none` -> proficient again;
+  //   (2) on a DATA-expertise tool (a 2014 Rogue 6's thieves' tools) the cycle is TWO-state
+  //       · expertise -> none -> the pip -> expertise. No modal click ever persists
+  //       `proficient` for it, so the engine's "proficient clears a data expertise" arm is
+  //       reachable only from a hand-edited note (dnd5e tests/pc-proficiency-effective.test.ts).
+  // Booked as a known limitation rather than redesigned.
+
+  it("RED FIRST: a granted tools chip carries a tri reading proficient; a click asks the edit state for expertise", () => {
+    const es = makeEditState();
+    const { el } = openFor("tools", TOOLS, es);
+    expect(tri(el)?.dataset.tri).toBe("proficient");
+    tri(el)!.click();
+    expect(es.setToolProficiency).toHaveBeenCalledWith(expect.stringMatching(/thieves/i), "expertise");
+  });
+
+  it("an expertise override reads expertise (chip class .expertise); the next click asks for none", () => {
+    const es = makeEditState();
+    const { el } = openFor("tools", { ...TOOLS, overrides: { tools: { proficiency: { "thieves'-tools": "expertise" } } } }, es);
+    expect(tri(el)?.dataset.tri).toBe("expertise");
+    expect(tri(el)!.closest(".pc-prof-modal-chip")!.classList.contains("expertise")).toBe(true);
+    tri(el)!.click();
+    expect(es.setToolProficiency).toHaveBeenCalledWith(expect.stringMatching(/thieves/i), "none");
+  });
+
+  it("a none override DROPS the chip and returns it to the candidate rows ONCE", () => {
+    // A CONTROL, green before and after this task's plugin change: the chip is dropped by
+    // the ENGINE (the tri is applied in computeEffectiveProficiencies, committed on the
+    // dnd5e side of this task) and the row is emitted by the TOOL_GROUPS section, which
+    // carries "thieves'-tools" in OTHER_TOOLS. What it pins is that the two mechanisms do
+    // not double up: `buildCandidates` claims a slug once through `seen`, so the suppressed
+    // union cannot emit a second row for a value a vocabulary section already produced.
+    const es = makeEditState();
+    const { el } = openFor("tools", { ...TOOLS, overrides: { tools: { proficiency: { "thieves'-tools": "none" } } } }, es);
+    expect(el.querySelector(`.pc-prof-modal-chip[data-prof="thieves'-tools"]`)).toBeNull();
+    expect(el.querySelectorAll(`.pc-prof-modal-row[data-prof="thieves'-tools"]`).length).toBe(1);
+  });
+
+  it("a none override on an OFF-vocabulary DATA grant returns it through suppressed()", () => {
+    // The discriminating fixture for the `suppressed()` extension: an off-vocabulary GRANT
+    // plus the tri (never an `add`, because `addProficiency`'s own clearance keeps `add` and
+    // `none` from coexisting). The entry's value is the RAW "Runic Cipher" (no vocabulary
+    // hit); the tri branch suppresses toProfSlug("runic-cipher"); no TOOL_GROUPS section
+    // carries it, so the off-vocabulary section is the ONLY producer of that row.
+    //
+    // The chip assertion is first by convention, but the KILL POWER is in the second: the
+    // chip is gone either way (the engine dropped it), and only the `suppressed()` extension
+    // can put the row back. Recorded as this task's one exception to first-expect-is-the-RED.
+    const { el } = openFor("tools", {
+      classes: [{ entity: { name: "Cipherer", proficiencies: { tools: { fixed: ["Runic Cipher"] } } }, level: 1, choices: {} }],
+      overrides: { tools: { proficiency: { "runic-cipher": "none" } } },
+    });
+    expect(el.querySelector('.pc-prof-modal-chip[data-prof="Runic Cipher"]')).toBeNull();
+    expect(el.querySelector('.pc-prof-modal-row[data-prof="runic-cipher"]')).not.toBeNull();
+  });
+
+  it("the languages domain renders NO tri control", () => {
+    // A CONTROL: §9.3's closing sentence. Languages get no tri at any layer.
+    const { el } = openFor("languages", { race: DWARF });
+    expect(el.querySelector(".pc-prof-modal-tri")).toBeNull();
   });
 });
 

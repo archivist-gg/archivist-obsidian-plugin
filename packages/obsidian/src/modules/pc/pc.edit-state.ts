@@ -1,6 +1,6 @@
 import type { Ability, SkillSlug } from "@archivist-gg/dnd5e";
 import type { EntityRegistry } from "@archivist-gg/core";
-import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ProficiencyTri, ResolvedCharacter, SlotKey } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { GrantedEntry } from "./builder/equipment-seed";
 import type { ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { characterToYaml } from "./pc.yaml-serializer";
@@ -814,7 +814,11 @@ export class CharacterEditState {
     if (!s) return;
     if (s.add?.length === 0) delete s.add;
     if (s.remove?.length === 0) delete s.remove;
-    if (!s.add && !s.remove) delete this.character.overrides[domain];
+    // The tools tri is a THIRD leaf (R4-G4 §9.3). `in` is what narrows the
+    // `languages | tools` union here: only the tools member declares the key.
+    // `setToolProficiency` deletes an emptied record itself, so this reads it
+    // rather than emptying it.
+    if (!s.add && !s.remove && !("proficiency" in s && s.proficiency)) delete this.character.overrides[domain];
   }
 
   /** Ask the ENGINE whether the value is currently effective. Reads
@@ -832,6 +836,15 @@ export class CharacterEditState {
     const slug = toProfSlug(value);
     const store = this.ensureProfOverride(domain);
     if (store.remove) store.remove = store.remove.filter((v) => toProfSlug(v) !== slug);
+    // R4-G4 §9.3 (UR1): a `none` tri suppresses exactly as `remove` does, so the
+    // candidate row's pip (which calls this method, unchanged) must CLEAR it. Without
+    // this the pip would stack an `add[]` entry on top of a live `none`, the engine
+    // would go on suppressing the value, and the note could never return to its
+    // original bytes. Narrowed by `in`, like pruneProfOverride: languages carry no tri.
+    if ("proficiency" in store && store.proficiency?.[slug] === "none") {
+      delete store.proficiency[slug];
+      if (Object.keys(store.proficiency).length === 0) delete store.proficiency;
+    }
     // Re-evaluate AFTER the removal, against the live overrides object. Evaluating
     // BEFORE would drop the value from remove[] AND push it to add[], so restoring a
     // suppressed grant would leave `{add:["dwarvish"]}` instead of returning the note
@@ -858,6 +871,42 @@ export class CharacterEditState {
       if (!store.remove.some((v) => toProfSlug(v) === slug)) store.remove.push(value);
     }
     this.pruneProfOverride(domain);
+    this.onChange();
+  }
+
+  /** R4-G4 §9.3 (UR1): the per-tool manual tri. `expertise` and `none` persist;
+   *  `proficient` is the DATA default and deletes the key, so a note that never
+   *  disagreed with its grants stays byte-identical (a manual-add tool keeps its
+   *  place through `add`). Prunes like the add / remove pair.
+   *
+   *  THE REACHABLE STATES, because the persistence rule and the modal cycle are not
+   *  the same thing:
+   *    - on a PLAIN data grant the modal cycles three ways · proficient -> expertise
+   *      -> none, at which point the chip DISAPPEARS (the engine applies the tri and
+   *      the modal's chips ARE `computeEffectiveProficiencies`' output), and the
+   *      candidate row's pip calls `addProficiency`, which clears the `none`;
+   *    - on a DATA-EXPERTISE tool (a 2014 Rogue 6's thieves' tools) the cycle is TWO
+   *      ways · expertise -> none -> the pip -> expertise. No modal click ever
+   *      persists `proficient` there, so the engine's "proficient clears a data
+   *      expertise" arm is reachable only from a hand-edited note.
+   *  Recorded as a known limitation, not redesigned. */
+  setToolProficiency(value: string, tri: ProficiencyTri): void {
+    // The persisted key is `toProfSlug`'s output, apostrophe RETAINED: a hand-edited
+    // note writes `overrides: { tools: { proficiency: { "thieves'-tools": expertise } } }`.
+    // An ASCII apostrophe inside a YAML mapping key round-trips unquoted through
+    // js-yaml, and the engine's own tool vocabulary keeps the apostrophe (dnd5e
+    // types/choice.ts), so no second normalisation is introduced here.
+    const slug = toProfSlug(value);
+    // NOT `this.ensureProfOverride("tools")`: its return is the `languages | tools`
+    // union, on which `.proficiency` is a tsc error. The tools container is read
+    // directly, with the same `??=` narrowing the helper uses.
+    const o = this.character.overrides;
+    o.tools ??= {};
+    const store = o.tools;
+    store.proficiency ??= {};
+    if (tri === "proficient") delete store.proficiency[slug]; else store.proficiency[slug] = tri;
+    if (Object.keys(store.proficiency).length === 0) delete store.proficiency;
+    this.pruneProfOverride("tools");
     this.onChange();
   }
 
