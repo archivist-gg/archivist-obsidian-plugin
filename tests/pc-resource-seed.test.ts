@@ -213,3 +213,50 @@ describe("R4-G4 §6.2.5 · the OWNER's class level, the warned continue", () => 
     expect(r.state.feature_uses["fiend-patron:dark-ones-own-luck"].max).toBe(1);
   });
 });
+
+/** The `resolved` helper above builds a features-only cast, so a POOL-owned entry has to be attached
+ *  by hand: `resolveResourceIndex`'s pool walk is what fills this map in production, and the seed's
+ *  second walk (R4-G4 §12) is the ONLY route by which a pick's `uses.max` becomes a `feature_uses`
+ *  key. Without these two cases the block has zero kill power (review I-1). */
+const withIndex = (r: ResolvedCharacter, entries: Array<[string, object]>): ResolvedCharacter => {
+  (r as { resources?: unknown }).resources = new Map(entries);
+  return r;
+};
+const poolRes = (id: string, maxFormula: string, slug: string) => ({
+  id, name: id, reset: "long-rest", maxFormula,
+  owner: { kind: "pool", poolId: "invocations", poolLabel: "Eldritch Invocations", source: { kind: "class", slug, level: 1 } },
+});
+const cha3 = () => derived({ mods: { str: 1, dex: 2, con: 3, int: 0, wis: 1, cha: 3 } } as never);
+
+describe("seedFeatureUses · the POOL-owned walk (R4-G4 §12)", () => {
+  it("RED FIRST (m34b): a pool-owned index entry seeds feature_uses from the pick's own uses.max", () => {
+    // Bond of the Talisman is a real TCE invocation whose `uses.max` is prose; `{cha_mod}` stands in
+    // for the parseable shape the walk indexes, bound at the OWNING class's level through
+    // `resourceBindings`. cha_mod 3 → max 3, and `used` starts at 0.
+    const r = withIndex(
+      resolved([], 5, [{ entity: { slug: "warlock" }, level: 5 }]),
+      [["hb_talisman", poolRes("hb_talisman", "{cha_mod}", "warlock")]],
+    );
+    seedFeatureUses(r, cha3());
+    expect(r.state.feature_uses["hb_talisman"]).toEqual({ used: 0, max: 3 });
+  });
+
+  it("merges max-of-maxes ACROSS the two walks, in both directions", () => {
+    // The seed's `computed` record is shared by the features walk and the pool walk, so the same id
+    // reached by both keeps the LARGER max whichever walk saw it first. Constructed, not corpus:
+    // `resolveResourceIndex` gives a colliding id to the FEATURE half, so a real index never carries
+    // a pool-owned entry under a feature-declared id (review M-7). What is pinned here is the seed's
+    // merge arithmetic, which a "last write wins" or a "skip if present" would each break one way.
+    const feat = (max: string) => ({ feature: { name: "Runes", resources: [{ id: "collide", name: "Runes", max_formula: max, reset: "short-rest" }] },
+      source: { kind: "class", slug: "fighter", level: 3 } });
+    const poolWins = withIndex(resolved([feat("1")], 5, [{ entity: { slug: "fighter" }, level: 5 }]),
+      [["collide", poolRes("collide", "{cha_mod}", "fighter")]]);
+    seedFeatureUses(poolWins, cha3());
+    expect(poolWins.state.feature_uses["collide"]).toEqual({ used: 0, max: 3 });   // pool 3 > feature 1
+
+    const featureWins = withIndex(resolved([feat("4")], 5, [{ entity: { slug: "fighter" }, level: 5 }]),
+      [["collide", poolRes("collide", "{cha_mod}", "fighter")]]);
+    seedFeatureUses(featureWins, cha3());
+    expect(featureWins.state.feature_uses["collide"]).toEqual({ used: 0, max: 4 });   // feature 4 > pool 3
+  });
+});

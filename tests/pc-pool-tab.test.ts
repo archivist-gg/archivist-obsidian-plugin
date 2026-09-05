@@ -4,6 +4,7 @@ import { PoolTab } from "../packages/obsidian/src/modules/pc/components/pool-tab
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { __resetWarnOnceForTests } from "@archivist-gg/dnd5e/dnd/warn-once";
 import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
+import { CUSTOM_RESET_TIP } from "../packages/obsidian/src/modules/pc/components/actions/reset-labels";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { ResolvedCharacter, ResolvedPool } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -591,5 +592,37 @@ describe("PoolTab · the picks' own uses (R4-G4 §12)", () => {
     new PoolTab("interdict-boons").render(el, mkCtx(usesPool));
     expect(el.querySelector(".pc-pick-track")).toBeNull();
     expect(el.querySelectorAll(".pc-spell-prep-row").length).toBe(2);
+  });
+});
+
+describe("PoolTab · the picks' own uses, the two guards and the custom tooltip (R4-G4 §12)", () => {
+  it("RED FIRST (M-2): a `custom` reset carries the same tooltip every sibling tracker attaches", () => {
+    const el = mountContainer();
+    const c = pickCtx(usesPool);
+    (c.resolved.resources as Map<string, object>).set("tce_cloud-rune", pickRes("tce_cloud-rune", "custom"));
+    new PoolTab("interdict-boons").render(el, c);
+    const cap = pickRow(el, false).querySelector(".pc-pick-track .pc-charge-recovery")!;
+    expect(cap.getAttribute("title")).toBe(CUSTOM_RESET_TIP);
+    expect(cap.textContent).toBe("/ Special");
+  });
+
+  it("M-3: a DESELECTED candidate with a STALE seeded key renders no tracker (the `!res` guard alone)", () => {
+    // Measured, not assumed: `seedFeatureUses` never prunes (its own comment says stale ids from
+    // no-longer-owned features are left untouched) and `renderSpellLike` renders every `available`
+    // candidate, so a dropped pick can keep a `feature_uses` key. The index carries only
+    // selected ∪ grants, so the candidate has no entry and `!res` returns before a box is drawn.
+    // This is the ONLY case that isolates that guard: a prose pick fails `!fu` first, having never
+    // been seeded at all.
+    const withCandidate: ResolvedPool = { ...usesPool, available: [...usesPool.available,
+      { slug: "hb_dropped", entity: ofEntity("hb_dropped", { uses: { max: 1, recharge: "long-rest" } }) as never }] };
+    const c = pickCtx(withCandidate);
+    (c.resolved.state.feature_uses as Record<string, object>)["hb_dropped"] = { used: 1, max: 1 };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, c);
+    const row = Array.from(el.querySelectorAll<HTMLElement>(".pc-spell-prep-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === "hb_dropped")!;
+    expect(row.querySelector(".pc-pick-track")).toBeNull();
+    // and the SELECTED pick beside it still has one, so the assertion above is not vacuous
+    expect(pickRow(el, false).querySelectorAll(".pc-pick-track .archivist-toggle-box").length).toBe(1);
   });
 });

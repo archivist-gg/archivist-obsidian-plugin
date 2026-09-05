@@ -144,3 +144,48 @@ describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
     expect(row.querySelector(".pc-feature-badge .pc-cost-badge.cost-action")).toBeTruthy();
   });
 });
+
+describe("ActionsTab · a boon's OWN uses (R4-G4 §12)", () => {
+  /** Cloud Rune is a real TCE carrier (`rune`, `max: 1`, `short-rest`); the max 2 is this fixture's,
+   *  so the box count cannot be satisfied by an off-by-one. The boon ALSO consumes a resource, which
+   *  is what lets the slot's ORDER be asserted: `renderBoonRow` renders the tracker before the spend
+   *  control (review I-2; the placement §12.2 fixes and nothing else pinned). */
+  const owned = () => {
+    const ctx = renderCtx([pool({ selected: [entry("tce_cloud-rune", {
+      name: "Cloud Rune", action_cost: "reaction",
+      uses: { max: 2, recharge: "short-rest" },
+      consumes: { resource: "fighter-2024:superiority-dice", amount: 1 },
+    })] })], { editState: { spendFeatureUse: () => {}, setFeatureUse: () => {} } });
+    (ctx.resolved.state as { feature_uses: unknown }).feature_uses = {
+      "tce_cloud-rune": { used: 1, max: 2 },
+      "fighter-2024:superiority-dice": { used: 0, max: 4 },
+    };
+    (ctx.resolved as { resources?: unknown }).resources = new Map([
+      ["tce_cloud-rune", { id: "tce_cloud-rune", name: "Cloud Rune", reset: "short-rest", maxFormula: "1",
+        owner: { kind: "pool", poolId: "interdict-boons", poolLabel: "Interdict Boons", source: { kind: "class", slug: "fighter", level: 3 } } }],
+      ["fighter-2024:superiority-dice", { id: "fighter-2024:superiority-dice", name: "Superiority Dice", reset: "short-rest", maxFormula: "4",
+        owner: { kind: "feature", featureId: "cs", featureName: "Combat Superiority", source: { kind: "subclass", slug: "bm", level: 3 } } }],
+    ]);
+    return ctx;
+  };
+
+  it("RED FIRST: the boon row's detail slot carries the pick's tracker, spent to its used count", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, owned());
+    const detail = boonRowByName(c, "Cloud Rune").querySelector<HTMLElement>(".pc-feature-detail")!;
+    expect(detail.querySelectorAll(".pc-pick-track .archivist-toggle-box").length).toBe(2);
+    expect(detail.querySelectorAll(".pc-pick-track .archivist-toggle-box-checked").length).toBe(1);
+    expect(detail.querySelector(".pc-pick-track .pc-charge-recovery")!.textContent).toBe("/ Short Rest");
+  });
+
+  it("the tracker precedes the spend control inside the detail slot", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, owned());
+    const detail = boonRowByName(c, "Cloud Rune").querySelector<HTMLElement>(".pc-feature-detail")!;
+    const kids = Array.from(detail.children);
+    const track = kids.findIndex((n) => n.classList.contains("pc-pick-track"));
+    const spend = kids.findIndex((n) => n.classList.contains("pc-spend"));
+    expect(track).toBeGreaterThanOrEqual(0);
+    expect(spend).toBeGreaterThan(track);
+  });
+});
