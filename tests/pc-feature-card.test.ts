@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { type App } from "obsidian";
 import {
   renderFeatureCard,
@@ -102,6 +102,12 @@ describe("renderRecoveryAction · the spent hint (R4-G3a Task 5)", () => {
   // (`fu.used >= fu.max`). `ctx` is untouched on that branch, so the fixture
   // passes a stub. The resource MUST author a `recovery[]` entry and an `id` or
   // the whole action area is skipped.
+  //
+  // R4-G4 §7.2.3 (the THIRD moved pin): the entry carries `restores: "spell-slots"`
+  // EXPLICITLY (invariant 12: kind gates the arm before flavour, so this is what keeps
+  // the Wizard fixture on the slot picker), and its `name` is the shipped carrier's
+  // "Recover spell slots" because the picker's head now renders `rec.name` rather than
+  // a literal. The head assertion below did not move.
   const spentCard = (reset: ResetTrigger): HTMLElement => {
     const root = mountContainer();
     renderFeatureCard(root, {
@@ -111,7 +117,7 @@ describe("renderRecoveryAction · the spent hint (R4-G3a Task 5)", () => {
       recovery: {
         resource: {
           id: "wizard:arcane-recovery", name: "Arcane Recovery", max_formula: "1",
-          reset, recovery: [{ id: "wizard:arcane-recovery:rec", name: "Recover slots", amount: "1", reset }],
+          reset, recovery: [{ id: "wizard:arcane-recovery:rec", name: "Recover spell slots", amount: "1", reset, restores: "spell-slots" }],
         },
         source: { kind: "class", slug: "wizard", level: 1 },
         ctx: {} as never,
@@ -140,6 +146,64 @@ describe("renderRecoveryAction · the spent hint (R4-G3a Task 5)", () => {
     // this file had "Dusk" all along, so this pins that the merge kept the right one.
     expect(spentCard("dusk").querySelector(".pc-recover-hint")?.textContent)
       .toBe("Already used · recharges on a Dusk.");
+  });
+});
+
+describe("renderRecoveryAction · the two arms, by KIND then FLAVOUR (R4-G4 §7.3)", () => {
+  // The card is reached through the PUBLIC render path (`renderFeatureCard` calls
+  // `renderRecoveryAction` whenever `opts.recovery` is present). `ctx.resolved` carries a
+  // `state` because the slot arm reads `state.spell_slots`; `editState` is the double the
+  // uses arm calls.
+  const card = (resource: object, fu: { used: number; max: number }, editState: object = {}) => {
+    const root = mountContainer();
+    renderFeatureCard(root, {
+      title: "x", app: {} as App, feature: { name: "x", description: "x" },
+      recovery: {
+        resource: resource as never,
+        source: { kind: "class", slug: "c", level: 1 },
+        ctx: {
+          resolved: { state: { spell_slots: {}, feature_uses: {} }, classes: [], totalLevel: 3 },
+          derived: { proficiencyBonus: 2, mods: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 } },
+          editState,
+        } as never,
+        fu,
+      },
+    });
+    return root;
+  };
+
+  it("RED FIRST: a rest-flavour uses entry (Second Wind) renders NO 'Recover spell slots' and NO button", () => {
+    const root = card({ id: "f:sw", name: "Second Wind", max_formula: "2", reset: "long-rest",
+      recovery: [{ id: "r", name: "short-rest", amount: 1, reset: "short-rest" }] }, { used: 1, max: 2 });
+    // m19's RED FIRST: under the mutant the uses arm renders "Regain 1 Second Wind".
+    expect(root.textContent).not.toContain("Regain");
+    expect(root.textContent).not.toContain("Recover spell slots");
+    expect(root.querySelector("button")).toBeNull();
+  });
+
+  it("RED FIRST: a manual uses entry (TCE Psi Warrior) renders 'Regain 1 Psionic Energy Die' with the bonus-action badge and the reset caption, and clicks through", () => {
+    const regain = vi.fn();
+    const root = card({ id: "f:pd", name: "Psionic Energy Die", max_formula: "2 * prof", reset: "long-rest",
+      recovery: [{ id: "r", name: "short-rest", amount: 1, reset: "short-rest", action: "bonus-action" }] }, { used: 2, max: 4 }, { regainFeatureUses: regain });
+    const btn = root.querySelector<HTMLButtonElement>("button.pc-regain")!;
+    expect(btn.textContent).toBe("Regain 1 Psionic Energy Die");
+    // `renderCostBadge` prints the SHARED `ACTION_COST_LABEL` string, which is "Bonus".
+    expect(root.querySelector(".pc-regain-cost")!.textContent).toBe("Bonus");
+    expect(root.querySelector(".pc-regain-reset")!.textContent).toBe("Short Rest");
+    btn.click();
+    expect(regain).toHaveBeenCalledWith("f:pd", 1);
+  });
+
+  it("'all' + custom restores everything and is a MANUAL OVERRIDE (said so); disabled at used 0; prose renders no button", () => {
+    const root = card({ id: "f:x", name: "Power Surge", max_formula: "1", reset: "long-rest",
+      recovery: [{ id: "r", name: "custom", amount: "all", reset: "custom" }] }, { used: 1, max: 1 }, { regainFeatureUses: vi.fn() });
+    expect(root.querySelector("button.pc-regain")!.textContent).toBe("Regain all Power Surge");
+    expect(root.querySelector(".pc-regain-note")!.textContent).toContain("manual override");
+    const idle = card({ id: "f:y", name: "Y", max_formula: "1", reset: "long-rest", recovery: [{ id: "r", name: "custom", amount: 1, reset: "custom" }] }, { used: 0, max: 1 });
+    expect(idle.querySelector<HTMLButtonElement>("button.pc-regain")!.disabled).toBe(true);
+    const prose = card({ id: "f:z", name: "Arcane Ward", max_formula: "1", reset: "long-rest", recovery: [{ id: "r", name: "custom", amount: "twice the spell's level", reset: "custom" }] }, { used: 1, max: 1 });
+    expect(prose.querySelector("button.pc-regain")).toBeNull();
+    expect(prose.querySelector(".pc-regain-note")!.textContent).toContain("twice the spell's level");
   });
 });
 

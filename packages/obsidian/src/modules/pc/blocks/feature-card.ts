@@ -1,8 +1,9 @@
 import type { ComponentRenderContext } from "../components/component.types";
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import type { FeatureSource } from "@archivist-gg/dnd5e/pc/pc.types";
-import type { Resource } from "@archivist-gg/dnd5e/types/resource";
+import type { Resource, ResourceRecovery } from "@archivist-gg/dnd5e/types/resource";
 import { resourceBindings } from "@archivist-gg/dnd5e/pc/pc.resource-seed";
+import { resolveRecovery } from "@archivist-gg/dnd5e/pc/pc.resources";
 import { evaluateMaxFormula } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import { type App } from "obsidian";
 import { createIconProperty } from "../../../shared/rendering/renderer-utils";
@@ -10,7 +11,8 @@ import { renderMarkdownDescription } from "../../../shared/rendering/markdown-de
 import { plainText } from "../../../shared/rendering/plain-text";
 // R4-G3a §8.2 (3): the reset-label twin that used to live here is retired onto
 // the single `ResetTrigger`-keyed table shared with the row trackers.
-import { RESET_LABELS } from "../components/actions/reset-labels";
+import { RESET_LABELS, CUSTOM_RESET_TIP } from "../components/actions/reset-labels";
+import { renderCostBadge } from "../components/actions/cost-badge";
 
 /**
  * Shared feature/resource block-card renderer.
@@ -43,8 +45,9 @@ export interface FeatureCardChosen {
   description?: string;
 }
 
-/** Recovery-action context (Arcane Recovery). Present only for resource-keyed
- *  cards whose resource authors a `recovery`. */
+/** Recovery-action context. Present only for resource-keyed cards whose resource
+ *  authors a `recovery`; since R4-G4 §7 that is every recovery carrier, not only the
+ *  Wizard's Arcane Recovery, and `renderRecoveryAction` picks the arm from the entry. */
 export interface FeatureCardRecovery {
   resource: Resource;
   source: FeatureSource;
@@ -160,7 +163,8 @@ export function renderFeatureCard(parent: HTMLElement, opts: FeatureCardOptions)
     }
   }
 
-  // Recovery action (Arcane Recovery) — the only ACTION in the block.
+  // Recovery action: the only ACTION in the block. Which arm it renders (or none at all)
+  // is `renderRecoveryAction`'s decision, from the entry's kind and flavour (R4-G4 §7).
   if (opts.recovery) {
     renderRecoveryAction(block, opts.recovery.resource, opts.recovery.source, opts.recovery.ctx, opts.recovery.fu);
   }
@@ -174,12 +178,21 @@ export function sourceBadgeText(edition: string | undefined): string | null {
 }
 
 /**
- * The recovery action, rendered directly inside the resource's info block (no
- * toggle button). One row per spell level 1..5 that currently has expended
- * slots, each showing one ✗ pip per expended slot. Unticking a pip selects it
- * for recovery (within the level-total budget); over-budget pips are dimmed and
- * not selectable. Recover calls `useRecovery(id, picks)` and is disabled until
- * at least one pip is selected.
+ * The recovery action, rendered directly inside the resource's info block (no toggle
+ * button), in TWO arms picked from the entry's resolved KIND first and FLAVOUR second
+ * (R4-G4 §7.2, invariant 12; `resolveRecovery` in dnd5e's `pc/pc.resources.ts` is the one
+ * router, so nothing here matches on the entry's `name`).
+ *
+ * A `uses` entry of REST flavour renders NOTHING: the rest modal restores it (Rage, Second
+ * Wind, Channel Divinity), through the partial category `computeRestPlan` now emits. A `uses` entry of MANUAL flavour (it carries an `action`, or it resets on `custom`)
+ * takes {@link renderUsesRecovery}, the "Regain N" button. A `spell-slots` entry takes the
+ * slot picker below whatever its `action` / `reset` say.
+ *
+ * The picker: one row per spell level 1..5 that currently has expended slots, each showing
+ * one ✗ pip per expended slot. Unticking a pip selects it for recovery (within the
+ * level-total budget); over-budget pips are dimmed and not selectable. Recover calls
+ * `useRecovery(id, picks)` and is disabled until at least one pip is selected. Its header is
+ * the entry's own `name`.
  *
  * When the recovery resource's own use is already spent (`fu.used >= fu.max`),
  * the interactive picker is suppressed: we render only the header and a muted
@@ -187,15 +200,25 @@ export function sourceBadgeText(edition: string | undefined): string | null {
  * would be a silent no-op, so we don't offer it.)
  */
 export function renderRecoveryAction(block: HTMLElement, resource: Resource, source: FeatureSource, ctx: ComponentRenderContext, fu?: { used: number; max: number }): void {
-  const rec = resource.recovery?.[0];
+  const rec = resource.recovery?.[0];   // the card reads ONE entry (R4-G4 §7.1); the rest plan walks them all
   const id = resource.id;
   if (!rec || !id) return;
+  const { kind, flavour } = resolveRecovery(rec);   // KIND first, FLAVOUR second (invariant 12)
+  if (kind === "uses") {
+    if (flavour === "rest") return;   // restored by the rest modal (Rage, Second Wind, Channel Divinity, …): nothing to click
+    renderUsesRecovery(block, resource, rec, fu, ctx);
+    return;
+  }
 
+  // kind === "spell-slots": the slot picker, headed by the entry's OWN name. Both shipped
+  // carriers, the bundle Wizard's two Arcane Recovery rows (SRD 5e and SRD 2024, measured
+  // 2026-09-05), name that entry "Recover spell slots", so the literal that used to live here
+  // was an unreachable fallback, and an unreachable fallback is a false document: Gate 0 Q5.
   // The action area always renders so the recover option is visible in the
   // block whatever the slot state — only the body below the header varies.
   const actions = block.createDiv({ cls: "pc-resource-actions" });
   const head = actions.createDiv({ cls: "pc-recover-head" });
-  head.createSpan({ cls: "pc-recover-title", text: "Recover spell slots" });
+  head.createSpan({ cls: "pc-recover-title", text: rec.name });
 
   // Use already spent → show a spent hint instead of an interactive picker.
   if (fu && fu.used >= fu.max) {
@@ -281,6 +304,25 @@ export function renderRecoveryAction(block: HTMLElement, resource: Resource, sou
   });
 
   refresh();
+}
+
+/** The manual "Regain N" arm (R4-G4 §7.2.3): one button, the `action` cost badge, the entry's `reset` as a caption
+ *  (the ACTION's recharge, no cooldown tracked: G8), disabled at `used === 0`; a prose amount renders as a caption
+ *  and no button; a `custom` reset is a MANUAL OVERRIDE the design chooses (Gate 0 I10), and says so. */
+function renderUsesRecovery(block: HTMLElement, resource: Resource, rec: ResourceRecovery, fu: { used: number; max: number } | undefined, ctx: ComponentRenderContext): void {
+  const actions = block.createDiv({ cls: "pc-resource-actions pc-regain-actions" });
+  const amount = rec.amount === "all" ? "all" : typeof rec.amount === "number" ? rec.amount : Number(rec.amount);
+  if (amount !== "all" && !Number.isFinite(amount)) {
+    actions.createDiv({ cls: "pc-regain-note", text: `Regain ${String(rec.amount)} ${resource.name} (described in this feature's text).` });
+    return;
+  }
+  const row = actions.createDiv({ cls: "pc-regain-row" });
+  const btn = row.createEl("button", { cls: "pc-regain", text: `Regain ${amount === "all" ? "all" : amount} ${resource.name}` });
+  btn.disabled = !fu || fu.used === 0;
+  if (rec.action) renderCostBadge(row.createSpan({ cls: "pc-regain-cost" }), rec.action);
+  row.createSpan({ cls: "pc-regain-reset", text: RESET_LABELS[rec.reset], attr: rec.reset === "custom" ? { title: CUSTOM_RESET_TIP } : {} });
+  if (rec.reset === "custom" && !rec.action) actions.createDiv({ cls: "pc-regain-note", text: "The rules restore this on a condition described in the feature's text; this button is a manual override." });
+  btn.addEventListener("click", (e) => { e.stopPropagation(); ctx.editState?.regainFeatureUses(resource.id, amount); });
 }
 
 /** Feature source → italic subtitle label ("Battle Master 3", "Background:

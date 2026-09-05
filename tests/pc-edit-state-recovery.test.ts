@@ -47,3 +47,18 @@ describe("CharacterEditState — useRecovery", () => {
     expect(c.state.feature_uses["wizard:arcane-recovery"].used).toBe(1);
   });
 });
+
+describe("CharacterEditState · regainFeatureUses (R4-G4 §7.2.3)", () => {
+  it("RED FIRST: regains N uses, clamped at 0; 'all' regains everything", () => {
+    const c = wizard();
+    c.state.feature_uses = { "p:die": { used: 3, max: 4 } };
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.regainFeatureUses("p:die", 1);
+    expect(c.state.feature_uses["p:die"].used).toBe(2);
+    es.regainFeatureUses("p:die", 5);
+    expect(c.state.feature_uses["p:die"].used).toBe(0);
+    c.state.feature_uses["p:die"].used = 4;
+    es.regainFeatureUses("p:die", "all");
+    expect(c.state.feature_uses["p:die"].used).toBe(0);
+  });
+});

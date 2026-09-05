@@ -62,7 +62,9 @@ export function applyRestResets(
     if (cat.id.startsWith("feature:")) {
       const key = cat.id.slice("feature:".length);
       const fu = character.state.feature_uses?.[key];
-      if (fu) fu.used = 0;
+      if (!fu) continue;
+      // R4-G4 §7.2.2: a partial recovery category regains N uses (or all); the own reset regains to 0.
+      fu.used = cat.restore === undefined || cat.restore === "all" ? 0 : Math.max(0, fu.used - cat.restore);
       continue;
     }
 

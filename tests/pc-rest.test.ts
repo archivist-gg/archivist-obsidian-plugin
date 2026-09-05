@@ -1,6 +1,7 @@
 // tests/pc-rest.test.ts
 import { describe, it, expect } from "vitest";
 import { computeRestPlan } from "@archivist-gg/dnd5e/pc/pc.rest";
+import type { RestPlan } from "@archivist-gg/dnd5e/pc/pc.rest";
 import { applyRestResets } from "../packages/obsidian/src/modules/pc/pc.rest";
 import {
   FIGHTER_5_CLERIC_3, WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED,
@@ -388,5 +389,22 @@ describe("applyRestResets — short rest + edge cases", () => {
     c.state.hit_dice = {};
     const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "short");
     expect(plan.hdAvailable).toEqual([]);
+  });
+});
+
+describe("applyRestResets · the PARTIAL restore (R4-G4 §7.2.2)", () => {
+  it("R4-G4 §7.2.2: a category carrying `restore: 1` regains ONE use, not all (RED first)", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.feature_uses = { "b:rage": { used: 2, max: 3 } };
+    const plan: RestPlan = {
+      type: "short",
+      categories: [{ id: "feature:b:rage", label: "Rage", preview: "1 of 2 used restored", restore: 1 }],
+      hdAvailable: [],
+    };
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses["b:rage"].used).toBe(1);
+    const all: RestPlan = { ...plan, categories: [{ ...plan.categories[0], restore: "all" }] };
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), all, new Set());
+    expect(c.state.feature_uses["b:rage"].used).toBe(0);
   });
 });

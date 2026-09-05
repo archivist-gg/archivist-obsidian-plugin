@@ -1250,6 +1250,15 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** The manual "Regain N" arm (R4-G4 §7.2.3): regain `amount` uses of an owned resource, or all. No cooldown is
+   *  tracked (the entry's own `reset` is the ACTION's recharge, rendered as a caption; G8). */
+  regainFeatureUses(resourceId: string, amount: number | "all"): void {
+    const fu = this.character.state.feature_uses?.[resourceId];
+    if (!fu) return;
+    fu.used = amount === "all" ? 0 : Math.max(0, fu.used - Math.max(1, Math.floor(amount)));
+    this.onChange();
+  }
+
   expendPactSlot(): void {
     const pact = this.getContext().derived.pactMagic;
     if (!pact) return;
