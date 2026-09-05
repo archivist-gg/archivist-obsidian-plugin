@@ -5,6 +5,7 @@ import { renderCostBadge } from "./cost-badge";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderSpendControl } from "./spend-control";
 import { renderEffectCaptions } from "./effect-captions";
+import { renderPickTracker } from "./pick-tracker";
 
 /**
  * A single Interdict Boon row on the consolidated Actions tab (spec §3.6 / #1b).
@@ -28,9 +29,11 @@ import { renderEffectCaptions } from "./effect-captions";
  *   - Detail = the provenance/state marker: an **Active** toggle (activatable
  *     selected · `pc-pool-active`, wired to `editState.toggleActiveBuff(slug)`,
  *     the same control the pool tab uses) / a quiet `pc-boon-status` "granted"
- *     marker (granted) / nothing (plain selected), followed by the shared spend
- *     control (R4-G4 §3.2.4) when the boon consumes a resource the character
- *     owns. Both can share the slot: a boon has no tracker of its own.
+ *     marker (granted) / nothing (plain selected), then the boon's OWN `uses`
+ *     tracker when it carries one (R4-G4 §12: `renderPickTracker`, the same
+ *     component the two pool-tab rows call), then the shared spend control
+ *     (R4-G4 §3.2.4) when the boon consumes a resource the character owns. All
+ *     three can share the slot.
  * Clicking a row (outside the Active toggle) expands the shared
  * `.archivist-item-block` card with the boon's description.
  */
@@ -74,7 +77,8 @@ export function renderBoonRow(
   // Right detail: an Active toggle for an activatable selected boon (the pool
   // tab's `pc-pool-active` button, wired to the same `toggleActiveBuff` action);
   // a quiet "granted" provenance marker for a granted boon; nothing for a plain
-  // selected boon. The spend control follows whichever of those rendered.
+  // selected boon. The `uses` tracker and then the spend control follow whichever
+  // of those rendered.
   const detail = row.createDiv({ cls: "pc-feature-detail" });
   if (activatable) {
     const active = (ctx.resolved.state.active_buffs ?? []).includes(entry.slug);
@@ -91,6 +95,9 @@ export function renderBoonRow(
     // families) — a granted boon is auto-on; a plain selected boon shows none.
     detail.createDiv({ cls: "pc-boon-status", text: "granted" });
   }
+  // The boon's OWN `uses` tracker (R4-G4 §12), before the spend control: a boon that both
+  // tracks its own uses and spends a pool resource reads left to right as track, then spend.
+  renderPickTracker(detail, entry, ctx);
   // The shared spend control (R4-G4 §3.2.4). An unowned id renders nothing and warns
   // once (§13), so a cross-book boon row is byte-identical to today's.
   if (e.consumes?.resource) renderSpendControl(detail, { consumes: e.consumes, ctx });

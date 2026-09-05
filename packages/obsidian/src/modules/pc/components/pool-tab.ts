@@ -8,6 +8,7 @@ import { rowExpandKey, isRowExpanded, setRowExpanded } from "./row-expand-state"
 import { renderSpendControl } from "./actions/spend-control";
 import { renderChargeBoxes, CHARGE_BOX_LIMIT } from "./actions/charge-boxes";
 import { renderPointPool } from "./actions/point-pool";
+import { renderPickTracker } from "./actions/pick-tracker";
 import { RESET_LABELS, CUSTOM_RESET_TIP } from "./actions/reset-labels";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
@@ -120,6 +121,8 @@ export class PoolTab implements SheetComponent {
 
     const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
     nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
+    // The pick's OWN `uses` tracker (R4-G4 §12), for a pick that carries one and has been seeded.
+    renderPickTracker(nameWrap, entry, ctx);
     const sub = metaSub(e, ctx);
     if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
@@ -157,6 +160,8 @@ export class PoolTab implements SheetComponent {
     const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
     nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
     nameWrap.createSpan({ cls: "pc-spell-always", text: "granted" });
+    // A granted pick tracks its own `uses` exactly like a selected one (R4-G4 §12).
+    renderPickTracker(nameWrap, entry, ctx);
     const sub = metaSub(e, ctx);
     if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);

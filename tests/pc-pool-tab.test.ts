@@ -517,3 +517,79 @@ describe("PoolTab · dice-pool / point-pool heads (R4-G4 §4.2.6)", () => {
     expect(head.querySelector(".pc-point-pool")).toBeNull();
   });
 });
+
+/** A pool whose picks carry their OWN `uses` (R4-G4 §12): one selected, one granted. Neither
+ *  `consumes` anything, so no spend control and no `spend control:` warn is in play in this block.
+ *  Cloud Rune and Undying Servitude are real measured carriers (a TCE rune at `max: 1` /
+ *  `short-rest`, a TCE invocation at `long-rest`); the max 2 here is the fixture's, for a two-box row. */
+const usesPool: ResolvedPool = {
+  ...basePool,
+  selected: [{ slug: "tce_cloud-rune", entity: ofEntity("tce_cloud-rune", { uses: { max: 1, recharge: "short-rest" } }) as never }],
+  available: [{ slug: "tce_cloud-rune", entity: ofEntity("tce_cloud-rune", { uses: { max: 1, recharge: "short-rest" } }) as never }],
+  grants: [{ slug: "tce_undying-servitude", entity: ofEntity("tce_undying-servitude", { uses: { max: 2, recharge: "long-rest" } }) as never }],
+};
+
+const pickRes = (id: string, reset: string) => ({
+  id, name: id, reset, maxFormula: "1",
+  owner: { kind: "pool", poolId: "interdict-boons", poolLabel: "Interdict Boons", source: { kind: "class", slug: "reaver", level: 2 } },
+});
+
+/** `mkCtx` plus the TWO things `renderPickTracker` reads: the seeded `feature_uses` entry and the
+ *  index entry the pool walk adds. `classes` is NOT needed here: the tracker reads the entry's
+ *  `reset` and never calls `resourceLevelFor`. */
+const pickCtx = (pool: ResolvedPool): ComponentRenderContext => {
+  const c = mkCtx(pool);
+  (c.resolved.state as { feature_uses?: unknown }).feature_uses = {
+    "tce_cloud-rune": { used: 0, max: 1 },
+    "tce_undying-servitude": { used: 1, max: 2 },
+  };
+  (c.resolved as { resources?: unknown }).resources = new Map([
+    ["tce_cloud-rune", pickRes("tce_cloud-rune", "short-rest")],
+    ["tce_undying-servitude", pickRes("tce_undying-servitude", "long-rest")],
+  ]);
+  return c;
+};
+
+const pickRow = (el: HTMLElement, granted: boolean) =>
+  Array.from(el.querySelectorAll<HTMLElement>(".pc-spell-prep-row"))
+    .find((r) => Boolean(r.querySelector(".pc-spell-always")) === granted)!;
+
+describe("PoolTab · the picks' own uses (R4-G4 §12)", () => {
+  it("RED FIRST: a selected pick with its own `uses` renders a 1-box tracker in its row", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, pickCtx(usesPool));
+    const row = pickRow(el, false);
+    expect(row.querySelectorAll(".pc-pick-track .archivist-toggle-box").length).toBe(1);
+    expect(row.querySelector(".pc-pick-track .pc-charge-recovery")!.textContent).toBe("/ Short Rest");
+    // none spent: the box is unchecked (and the row's own SELECT box is outside `.pc-pick-track`)
+    expect(row.querySelectorAll(".pc-pick-track .archivist-toggle-box-checked").length).toBe(0);
+  });
+
+  it("a GRANTED pick's tracker renders in the granted row, checked to its used count", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, pickCtx(usesPool));
+    const row = pickRow(el, true);
+    expect(row.querySelectorAll(".pc-pick-track .archivist-toggle-box").length).toBe(2);
+    expect(row.querySelectorAll(".pc-pick-track .archivist-toggle-box-checked").length).toBe(1);
+    expect(row.querySelector(".pc-pick-track .pc-charge-recovery")!.textContent).toBe("/ Long Rest");
+  });
+
+  it("clicking a box writes the new used count through editState.setFeatureUse", () => {
+    const calls: Array<[string, number]> = [];
+    const c = pickCtx(usesPool);
+    (c as { editState: unknown }).editState = { setFeatureUse: (id: string, n: number) => calls.push([id, n]) };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, c);
+    pickRow(el, false).querySelector<HTMLElement>(".pc-pick-track .archivist-toggle-box")!.click();
+    expect(calls).toEqual([["tce_cloud-rune", 1]]);
+  });
+
+  it("a pick carrying `uses` with NO seeded entry and NO index entry renders no tracker", () => {
+    // The pre-G4 shape every cast fixture still has: `mkCtx` sets neither `feature_uses` nor
+    // `resources`, so the guard returns before any box is drawn.
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(usesPool));
+    expect(el.querySelector(".pc-pick-track")).toBeNull();
+    expect(el.querySelectorAll(".pc-spell-prep-row").length).toBe(2);
+  });
+});

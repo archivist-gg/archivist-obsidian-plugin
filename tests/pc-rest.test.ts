@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { computeRestPlan } from "@archivist-gg/dnd5e/pc/pc.rest";
 import type { RestPlan } from "@archivist-gg/dnd5e/pc/pc.rest";
+import type { Character, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 import { applyRestResets } from "../packages/obsidian/src/modules/pc/pc.rest";
 import {
   FIGHTER_5_CLERIC_3, WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED,
@@ -426,5 +427,48 @@ describe("applyRestResets · the PARTIAL restore (R4-G4 §7.2.2)", () => {
     const all: RestPlan = { ...plan, categories: [{ ...plan.categories[0], restore: "all" }] };
     applyRestResets(c, fakeResolved(c), fakeDerived(c), all, new Set());
     expect(c.state.feature_uses["b:rage"].used).toBe(0);
+  });
+});
+
+describe("computeRestPlan · a pool pick's own uses (R4-G4 §12)", () => {
+  // A real measured carrier: TCE's Cloud Rune is a Rune Knight pick with `uses {max: 1, recharge:
+  // short-rest}` (one of the 6 runes among the 35 corpus-wide `uses` carriers). It never enters
+  // `resolved.features`, so only the §12 pool walk can give it a rest category.
+  const CLOUD_RUNE = { slug: "tce_cloud-rune", name: "Cloud Rune", uses: { max: 1, recharge: "short-rest" } };
+
+  /** `fakeResolved` carries no `pools` and casts `entity: null` on every class, and the §12 walk skips a
+   *  pool whose class has no slug, so this fixture supplies both. The index is DERIVED inside
+   *  `computeRestPlan`, so nothing here sets `resources`. */
+  const withRunePool = (c: Character) => ({
+    ...(fakeResolved(c) as object),
+    classes: [
+      { entity: { slug: "fighter" }, level: 5, subclass: { slug: "rune-knight" } },
+      { entity: { slug: "cleric" }, level: 3, subclass: null },
+    ],
+    pools: [{
+      id: "runes", label: "Runes", classIndex: 0, count: 2, anchorLevel: 3,
+      selected: [{ slug: CLOUD_RUNE.slug, entity: CLOUD_RUNE }], available: [], grants: [],
+    }],
+  }) as unknown as ResolvedCharacter;
+
+  const spentRune = () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    c.state.feature_uses = { [CLOUD_RUNE.slug]: { used: 1, max: 1 } };
+    return c;
+  };
+
+  it("RED FIRST: a spent pick whose `uses.recharge` is short-rest is listed by the SHORT rest plan", () => {
+    const c = spentRune();
+    const plan = computeRestPlan(c, withRunePool(c), fakeDerived(c), null, "short");
+    expect(plan.categories.find((cat) => cat.id === "feature:tce_cloud-rune"))
+      .toMatchObject({ label: "Cloud Rune", preview: "1/1 restored" });
+  });
+
+  it("applyRestResets restores it to unspent", () => {
+    const c = spentRune();
+    const resolved = withRunePool(c);
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses![CLOUD_RUNE.slug]).toEqual({ used: 0, max: 1 });
   });
 });
