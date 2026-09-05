@@ -183,10 +183,13 @@ export function sourceBadgeText(edition: string | undefined): string | null {
  * (R4-G4 §7.2, invariant 12; `resolveRecovery` in dnd5e's `pc/pc.resources.ts` is the one
  * router, so nothing here matches on the entry's `name`).
  *
- * A `uses` entry of REST flavour renders NOTHING: the rest modal restores it (Rage, Second
- * Wind, Channel Divinity), through the partial category `computeRestPlan` now emits. A `uses` entry of MANUAL flavour (it carries an `action`, or it resets on `custom`)
- * takes {@link renderUsesRecovery}, the "Regain N" button. A `spell-slots` entry takes the
- * slot picker below whatever its `action` / `reset` say.
+ * A `uses` entry of REST flavour renders NOTHING: the rest modal restores it, through the partial
+ * category `computeRestPlan` now emits (Rage, Second Wind) OR through the resource's own `reset`
+ * when that already fires at the rest, in which case `pushPartialRecoveries`'s guard suppresses the
+ * partial so the row is not listed twice (the PHB 2014 Cleric's Channel Divinity, this task's own
+ * double-list fixture). A `uses` entry of MANUAL flavour (it carries an `action`, or it resets on
+ * `custom`) takes {@link renderUsesRecovery}, the "Regain N" button. A `spell-slots` entry takes
+ * the slot picker below whatever its `action` / `reset` say.
  *
  * The picker: one row per spell level 1..5 that currently has expended slots, each showing
  * one ✗ pip per expended slot. Unticking a pip selects it for recovery (within the
@@ -307,13 +310,21 @@ export function renderRecoveryAction(block: HTMLElement, resource: Resource, sou
 }
 
 /** The manual "Regain N" arm (R4-G4 §7.2.3): one button, the `action` cost badge, the entry's `reset` as a caption
- *  (the ACTION's recharge, no cooldown tracked: G8), disabled at `used === 0`; a prose amount renders as a caption
- *  and no button; a `custom` reset is a MANUAL OVERRIDE the design chooses (Gate 0 I10), and says so. */
+ *  (the ACTION's recharge, no cooldown tracked: G8), disabled at `used === 0`; a `custom` reset is a MANUAL OVERRIDE
+ *  the design chooses (Gate 0 I10), and says so.
+ *
+ *  A PROSE `amount` returns EARLY with that sentence ALONE as the caption, which makes it the one arm that renders
+ *  neither the cost badge nor the reset caption. Deliberate, not an oversight (review I-1): every shipped prose amount
+ *  is a whole SENTENCE that already names its own trigger, so wrapping it in "Regain <prose> <name> (described in this
+ *  feature's text)" read as nonsense on every carrier. Measured 2026-09-05 by walking every `recovery:` block of every
+ *  note in the converter corpus AND the bundle: 37 entries, 35 carrying an `amount`, of which THREE are prose (both
+ *  "School of Abjuration" notes' Arcane Ward and the 2024 Abjurer's Arcane Ward Hit Points), and NONE of the three
+ *  carries an `action`, so the skipped badge drops nothing that ships. */
 function renderUsesRecovery(block: HTMLElement, resource: Resource, rec: ResourceRecovery, fu: { used: number; max: number } | undefined, ctx: ComponentRenderContext): void {
   const actions = block.createDiv({ cls: "pc-resource-actions pc-regain-actions" });
   const amount = rec.amount === "all" ? "all" : typeof rec.amount === "number" ? rec.amount : Number(rec.amount);
   if (amount !== "all" && !Number.isFinite(amount)) {
-    actions.createDiv({ cls: "pc-regain-note", text: `Regain ${String(rec.amount)} ${resource.name} (described in this feature's text).` });
+    actions.createDiv({ cls: "pc-regain-note", text: String(rec.amount) });
     return;
   }
   const row = actions.createDiv({ cls: "pc-regain-row" });

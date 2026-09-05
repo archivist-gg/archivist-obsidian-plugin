@@ -154,7 +154,7 @@ describe("renderRecoveryAction · the two arms, by KIND then FLAVOUR (R4-G4 §7.
   // `renderRecoveryAction` whenever `opts.recovery` is present). `ctx.resolved` carries a
   // `state` because the slot arm reads `state.spell_slots`; `editState` is the double the
   // uses arm calls.
-  const card = (resource: object, fu: { used: number; max: number }, editState: object = {}) => {
+  const card = (resource: object, fu?: { used: number; max: number }, editState: object | null = {}) => {
     const root = mountContainer();
     renderFeatureCard(root, {
       title: "x", app: {} as App, feature: { name: "x", description: "x" },
@@ -194,16 +194,62 @@ describe("renderRecoveryAction · the two arms, by KIND then FLAVOUR (R4-G4 §7.
     expect(regain).toHaveBeenCalledWith("f:pd", 1);
   });
 
-  it("'all' + custom restores everything and is a MANUAL OVERRIDE (said so); disabled at used 0; prose renders no button", () => {
+  it("'all' + custom restores everything and is a MANUAL OVERRIDE (said so); disabled at used 0", () => {
     const root = card({ id: "f:x", name: "Power Surge", max_formula: "1", reset: "long-rest",
       recovery: [{ id: "r", name: "custom", amount: "all", reset: "custom" }] }, { used: 1, max: 1 }, { regainFeatureUses: vi.fn() });
     expect(root.querySelector("button.pc-regain")!.textContent).toBe("Regain all Power Surge");
     expect(root.querySelector(".pc-regain-note")!.textContent).toContain("manual override");
     const idle = card({ id: "f:y", name: "Y", max_formula: "1", reset: "long-rest", recovery: [{ id: "r", name: "custom", amount: 1, reset: "custom" }] }, { used: 0, max: 1 });
     expect(idle.querySelector<HTMLButtonElement>("button.pc-regain")!.disabled).toBe(true);
-    const prose = card({ id: "f:z", name: "Arcane Ward", max_formula: "1", reset: "long-rest", recovery: [{ id: "r", name: "custom", amount: "twice the spell's level", reset: "custom" }] }, { used: 1, max: 1 });
+  });
+
+  // Review I-1. The shipped prose `amount`s are whole SENTENCES, so the old
+  // "Regain <prose> <name> (described in this feature's text)." template read
+  // "Regain Whenever you cast ... the spell. Arcane Ward (described in this feature's text)."
+  // Measured 2026-09-05 by walking every `recovery:` block of every note in the converter corpus
+  // AND the bundle: 37 recovery entries, 35 with an `amount`, of which THREE are prose, all three
+  // Arcane Ward (the PHB 2024 Abjurer's "Arcane Ward Hit Points" and both PHB 2014
+  // "School of Abjuration" notes' "Arcane Ward"), and NONE of the three carries an `action`.
+  // WARD is the School of Abjuration sentence copied verbatim, so the fixture is the shipped shape
+  // rather than the short phrase that hid this (fixture monoculture, the R4-P5 lesson).
+  const WARD = "Whenever you cast an abjuration spell of 1st level or higher, the ward regains a number of hit points equal to twice the level of the spell.";
+
+  it("RED FIRST: a PROSE amount renders the sentence ALONE: no Regain template, no name, no button, and (the one arm that skips them) no badge and no reset caption", () => {
+    const prose = card({ id: "f:z", name: "Arcane Ward", max_formula: "1", reset: "long-rest",
+      recovery: [{ id: "r", name: "custom", amount: WARD, reset: "custom" }] }, { used: 1, max: 1 });
+    expect(prose.querySelector(".pc-regain-note")!.textContent).toBe(WARD);
     expect(prose.querySelector("button.pc-regain")).toBeNull();
-    expect(prose.querySelector(".pc-regain-note")!.textContent).toContain("twice the spell's level");
+    expect(prose.querySelector(".pc-regain-cost")).toBeNull();
+    expect(prose.querySelector(".pc-regain-reset")).toBeNull();
+  });
+
+  // Review M-6 · the moved pin's force. `spentCard`'s entry name now EQUALS the retired literal, so
+  // `text: rec.name` and a hardcoded "Recover spell slots" are indistinguishable there. This fixture
+  // gives the entry a DIFFERENT name, which is what mutant m19b kills. GREEN on arrival (a pin, not
+  // a TDD red): its kill power is the mutant, recorded in evidence/g4-t7-m19b.txt.
+  it("the slot picker's head renders the ENTRY's own name, not the retired literal", () => {
+    const root = card({ id: "w:ar", name: "Arcane Recovery", max_formula: "1", reset: "long-rest",
+      recovery: [{ id: "r", name: "Recover arcane slots", amount: "1", reset: "long-rest", restores: "spell-slots" }] }, { used: 0, max: 1 });
+    expect(root.querySelector(".pc-recover-title")!.textContent).toBe("Recover arcane slots");
+  });
+
+  // Review M-9 · the two untested edges of the uses arm. GREEN on arrival (pins of the shipped
+  // guards). The click case listens for jsdom's window `error` event because jsdom SWALLOWS a
+  // listener throw (the R4-G1a memo), so `.not.toThrow()` around `.click()` would be vacuous; the
+  // kill power of this form was measured by removing the `?.` from `ctx.editState?.regainFeatureUses`
+  // and watching it red.
+  it("an UNSEEDED resource disables the Regain button; a null editState makes the click a no-op, not an error", () => {
+    const unseeded = card({ id: "f:u", name: "U", max_formula: "1", reset: "long-rest",
+      recovery: [{ id: "r", name: "custom", amount: 1, reset: "custom" }] }, undefined, null);
+    expect(unseeded.querySelector<HTMLButtonElement>("button.pc-regain")!.disabled).toBe(true);
+    const nulled = card({ id: "f:v", name: "V", max_formula: "1", reset: "long-rest",
+      recovery: [{ id: "r", name: "custom", amount: 1, reset: "custom" }] }, { used: 1, max: 1 }, null);
+    const errs: string[] = [];
+    const onErr = (e: ErrorEvent) => { errs.push(String(e.error ?? e.message)); e.preventDefault(); };
+    window.addEventListener("error", onErr);
+    nulled.querySelector<HTMLButtonElement>("button.pc-regain")!.click();
+    window.removeEventListener("error", onErr);
+    expect(errs).toEqual([]);
   });
 });
 

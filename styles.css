@@ -7581,6 +7581,20 @@ body.theme-light .archivist-tag-atk:hover {
   font-size: 0.85em;
   opacity: 0.8;
 }
+/* The reset caption takes `.pc-spend-caption`'s values verbatim: it is the same kind of thing beside
+   the same kind of button, and without a rule it rendered at body size next to the pill (review M-4).
+   `.pc-regain-cost` is only the badge's HOST, so it positions and does not restyle: `.pc-cost-badge`
+   carries its own size, weight and colour, and every other badge host in the plugin
+   (`.pc-feature-badge` on feature and boon rows, the item and weapon table cells) leaves the pill
+   alone, so the caption's `opacity` is deliberately NOT copied onto it. */
+.archivist-pc-sheet .pc-regain-reset {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+.archivist-pc-sheet .pc-regain-cost {
+  display: inline-flex;
+  align-items: center;
+}
 
 
 /* ============================================

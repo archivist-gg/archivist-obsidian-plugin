@@ -349,7 +349,12 @@ describe("applyRestResets — short rest + edge cases", () => {
     expect(c.state.feature_uses.rage.used).toBe(3);
   });
 
-  it("is idempotent — applying twice equals applying once", () => {
+  // R4-G4 review I-2: the name used to claim idempotency of `applyRestResets` without qualification.
+  // A category carrying `restore: N` is non-idempotent BY CONSTRUCTION (a second apply subtracts
+  // again), unlike `hd-regain`, which captures `targetUsed` at plan time for exactly this reason.
+  // Nothing on the sheet double-applies: `CharacterEditState.shortRest` / `longRest` compute the plan
+  // and apply it once. The sibling `it()` below pins the non-idempotency instead of implying it.
+  it("is idempotent for the OWN-RESET categories: applying twice equals applying once", () => {
     const a = clone(WIZARD_5_WOUNDED);
     const b = clone(WIZARD_5_WOUNDED);
     const plan = computeRestPlan(a, fakeResolved(a), fakeDerived(a), null, "long");
@@ -357,6 +362,21 @@ describe("applyRestResets — short rest + edge cases", () => {
     applyRestResets(b, fakeResolved(b), fakeDerived(b), plan, new Set());
     applyRestResets(b, fakeResolved(b), fakeDerived(b), plan, new Set()); // twice
     expect(a.state).toEqual(b.state);
+  });
+
+  it("a `restore: N` partial category is NOT idempotent: a second apply subtracts again, clamped at 0", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.feature_uses = { "b:rage": { used: 3, max: 3 } };
+    const plan: RestPlan = {
+      type: "short",
+      categories: [{ id: "feature:b:rage", label: "Rage", preview: "1 of 3 used restored", restore: 1 }],
+      hdAvailable: [],
+    };
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses["b:rage"].used).toBe(1);   // 3 - 2, not the 2 a single apply leaves
+    for (let i = 0; i < 5; i++) applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses["b:rage"].used).toBe(0);   // clamped, never negative
   });
 
   it("optouts referencing a missing category id are ignored", () => {
