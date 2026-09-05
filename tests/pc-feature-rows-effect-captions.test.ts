@@ -47,6 +47,7 @@ const pool = (over: Partial<ResolvedPool> = {}): ResolvedPool =>
 interface RenderOpts {
   featureUses?: Record<string, { used: number; max: number }>;
   classes?: object[];
+  totalLevel?: number;
   editState?: object | null;
   actionsDisabled?: boolean;
   pools?: ResolvedPool[];
@@ -60,7 +61,7 @@ function renderCtx(features: ResolvedFeature[], opts: RenderOpts = {}): Componen
     resolved: {
       definition: { equipment: [], edition: "2014" },
       race: opts.race ?? null, classes: opts.classes ?? [], background: opts.background ?? null, feats: [],
-      totalLevel: 5, features, pools: opts.pools ?? [],
+      totalLevel: opts.totalLevel ?? 5, features, pools: opts.pools ?? [],
       state: { feature_uses: opts.featureUses ?? {}, active_buffs: opts.activeBuffs ?? [] },
     } as unknown as ResolvedCharacter,
     derived: {
@@ -262,5 +263,27 @@ describe("renderEffectCaptions", () => {
     // line is absent because boons bypass `renderFeatureRow` entirely.
     expect(Array.from(root.querySelectorAll(".pc-boon-row")).length).toBe(1);
     expect(root.querySelector(".pc-feature-effect-line")).toBeNull();
+  });
+});
+
+// The die label is not a caption, so it gets its own describe rather than reading
+// as "renderEffectCaptions > …" (the brief wrote the `it` at describe-body indent
+// and named no host describe; §17 row 37 names only the FILE).
+describe("renderCardResource · the die level (R4-G4 §6.2.4)", () => {
+  it("R4-G4 §6.2.4: the card's die label scales at the OWNER's class level (Bard 4 / Fighter 6 reads d6, not d10)", async () => {
+    const { resolveFeatureResources } = await import("@archivist-gg/dnd5e/pc/pc.resources");
+    const { renderCardResource } = await import("../packages/obsidian/src/modules/pc/components/actions/feature-rows");
+    const bard = rf({ id: "bardic-inspiration", name: "Bardic Inspiration", resources: [{ id: "bard:bardic-inspiration", name: "Bardic Inspiration",
+      max_formula: "{cha_mod}", die: { base: "d6", scaling: { "5": "d8", "10": "d10" } }, reset: "short-rest" }] },
+      { source: { kind: "class", slug: "bard", level: 1 } } as Partial<ResolvedFeature>);
+    const ctx = renderCtx([bard], { classes: [{ entity: { slug: "bard" }, level: 4 }, { entity: { slug: "fighter" }, level: 6 }],
+      featureUses: { "bard:bardic-inspiration": { used: 0, max: 3 } }, totalLevel: 10 });
+    (ctx.resolved as { resources?: unknown }).resources = resolveFeatureResources([bard]);
+    // §17 row 37's fixture contract: the index entry's owner is the Bard class AND classes[] carries { slug: "bard", level: 4 }
+    // (resourceLevelFor finds the class BY SLUG); totalLevel 10 is the mutant's own value. renderCardResource is EXPORTED
+    // (feature-rows.ts:187) and called directly, so resources[0] is fine here; through the row a die must sit at resources[1..N].
+    const host = mountContainer();
+    renderCardResource(host, bard.feature.resources![0], ctx);
+    expect(host.querySelector(".pc-resource-die")!.textContent).toBe("d6");
   });
 });

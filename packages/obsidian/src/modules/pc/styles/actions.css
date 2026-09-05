@@ -41,6 +41,27 @@
   color: var(--pc-text-soft);
 }
 
+/* ---------- Point pool + the at-will sentinel (R4-G4 §5.2) ----------
+ * Above CHARGE_BOX_LIMIT points the feature sites render "remaining / max <name>"
+ * with steppers instead of a box row; `max === AT_WILL_MAX` renders "at will".
+ * The steppers carry the Obsidian forced-height override every sheet <button>
+ * needs (display:inline-block + height:auto). */
+.archivist-pc-sheet .pc-point-pool {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+.archivist-pc-sheet .pc-point-pool-minus,
+.archivist-pc-sheet .pc-point-pool-plus {
+  display: inline-block;
+  height: auto;
+  padding: 0 0.45em;
+}
+.archivist-pc-sheet .pc-charge-at-will {
+  font-variant: small-caps;
+  opacity: 0.8;
+}
+
 /* ---------- Row-expand (Weapons/Items/Features) ----------
    No redundant container around the block: the expand shows just the
    spell/item card (which already carries its own parchment + shadow) and

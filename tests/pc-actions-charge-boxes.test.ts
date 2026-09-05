@@ -116,3 +116,34 @@ describe("renderChargeBoxes", () => {
     expect(root.querySelector(".pc-charge-recovery")?.getAttribute("title")).toBeNull();
   });
 });
+
+describe("R4-G4 §5.2.2 · the ceiling and the at-will sentinel", () => {
+  it("RED FIRST: max 25 with a renderLarge routes to it and draws no boxes", () => {
+    const root = mountContainer();
+    const large = vi.fn((parent: HTMLElement) => parent.createDiv({ cls: "large-stub" }));
+    renderChargeBoxes(root, { used: 0, max: 25, renderLarge: large });
+    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(0);
+    expect(large).toHaveBeenCalledTimes(1);
+  });
+
+  it("max 12 (the boundary) still draws 12 boxes", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 12, renderLarge: (p) => p.createDiv({ cls: "large-stub" }) });
+    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(12);
+  });
+
+  it("RED FIRST: atWill renders the text and no boxes, even with a renderLarge", () => {
+    const root = mountContainer();
+    const large = vi.fn((parent: HTMLElement) => parent.createDiv({ cls: "large-stub" }));
+    renderChargeBoxes(root, { used: 0, max: 999, atWill: true, renderLarge: large });
+    expect(root.querySelector(".pc-charge-at-will")!.textContent).toBe("at will");
+    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(0);
+    expect(large).not.toHaveBeenCalled();
+  });
+
+  it("without a renderLarge the boxes are drawn whatever the max (the spell-slot / item / race sites)", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 20 });
+    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(20);
+  });
+});

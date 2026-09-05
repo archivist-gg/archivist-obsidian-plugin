@@ -145,6 +145,25 @@ describe("ActionsTab — grouped structure", () => {
     expect(expand.querySelector(".pc-feature-card-attack")?.textContent).toContain("d10");
   });
 
+  it("R4-G4 §6.2.4: the card attack note's scaling die reads at the OWNER's class level (Bard 4 / Fighter 6 reads d6, not d10)", async () => {
+    const { resolveFeatureResources } = await import("@archivist-gg/dnd5e/pc/pc.resources");
+    const bard = rf({
+      name: "Bardic Strike", action: "action",
+      resources: [{ id: "bard:bardic-inspiration", name: "Bardic Inspiration", max_formula: "{cha_mod}",
+        die: { base: "d6", scaling: { "5": "d8", "10": "d10" } }, reset: "short-rest" }],
+      attacks: [{ name: "Strike", to_hit: "+5" }],   // no static damage: the scaling die is the damage
+    }, { source: { kind: "class", slug: "bard", level: 1 } } as Partial<ResolvedFeature>);
+    const ctx = renderCtx([bard], {
+      classes: [{ entity: { slug: "bard" }, level: 4 }, { entity: { slug: "fighter" }, level: 6 }], totalLevel: 10,
+      featureUses: { "bard:bardic-inspiration": { used: 0, max: 3 } },
+    });
+    (ctx.resolved as { resources?: unknown }).resources = resolveFeatureResources([bard]);   // row 38's contract: entry + class by slug + totalLevel 10
+    const c = mountContainer();
+    new ActionsTab().render(c, ctx);
+    const expand = rowByName(c, "Bardic Strike").nextElementSibling as HTMLElement;
+    expect(expand.querySelector(".pc-feature-card-attack")?.textContent).toBe("Attack: +5 · d6");   // RED today: d10
+  });
+
   it("renders a feature's attack hit/damage in-row (no separate feature-attacks table)", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([

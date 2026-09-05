@@ -3,11 +3,14 @@ import type { ResolvedCharacter, ResolvedFeature } from "@archivist-gg/dnd5e/pc/
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { renderCostBadge } from "./cost-badge";
-import { renderChargeBoxes } from "./charge-boxes";
+import { renderChargeBoxes, CHARGE_BOX_LIMIT } from "./charge-boxes";
+import { renderPointPool } from "./point-pool";
 import { renderEffectCaptions } from "./effect-captions";
 import { RESET_LABELS, CUSTOM_RESET_TIP } from "./reset-labels";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
+import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
+import { resourceLevelFor } from "@archivist-gg/dnd5e/pc/pc.resources";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 
 /**
@@ -111,7 +114,7 @@ export function renderFeatureRow(
   // expand card below (Finding B — the detail is never dropped).
   const detail = row.createDiv({ cls: "pc-feature-detail" });
   const hasTracker = renderFirstResourceTracker(detail, feature, ctx);
-  const attackNote = formatFeatureAttackNote(feature, ctx.resolved.totalLevel);
+  const attackNote = formatFeatureAttackNote(feature, ctx);
   if (!hasTracker && attackNote) {
     detail.createSpan({ cls: "pc-feature-attack-note", text: attackNote });
   }
@@ -183,14 +186,23 @@ export function renderFeatureRow(
   });
 }
 
-/** An additional resource tracker (resources[1..N]) rendered inside the card. */
+/** The level a resource's die and count scale against: the OWNER's class level when the index knows the
+ *  owner (R4-G4 §6.2.4), else the total level (a resource with no index entry has no owner; fixtures cast
+ *  a ResolvedCharacter without `resources`). */
+function resourceLevel(id: string | undefined, ctx: ComponentRenderContext): number {
+  const owner = id ? ctx.resolved.resources?.get(id)?.owner : undefined;
+  return owner ? resourceLevelFor(owner.source, ctx.resolved) : ctx.resolved.totalLevel;
+}
+
+/** A resource tracker rendered inside the card: the primary's resources[1..N] (`:162`) and every
+ *  resource of a merged secondary (`:166`). */
 export function renderCardResource(parent: HTMLElement, resource: Resource, ctx: ComponentRenderContext): void {
   const id = resource.id;
   const fu = id ? ctx.resolved.state.feature_uses?.[id] : undefined;
   if (!id || !fu) return;
   const line = parent.createDiv({ cls: "pc-card-resource" });
   line.createSpan({ cls: "pc-card-resource-name", text: resource.name });
-  if (resource.die) line.createSpan({ cls: "pc-resource-die", text: resolveScalingDie(resource.die, ctx.resolved.totalLevel) });
+  if (resource.die) line.createSpan({ cls: "pc-resource-die", text: resolveScalingDie(resource.die, resourceLevel(resource.id, ctx)) });
   const track = line.createSpan({ cls: "pc-feature-track" });
   renderChargeBoxes(track, {
     used: fu.used,
@@ -199,6 +211,12 @@ export function renderCardResource(parent: HTMLElement, resource: Resource, ctx:
     recoveryTitle: resource.reset === "custom" ? CUSTOM_RESET_TIP : undefined,
     onExpend: () => ctx.editState?.expendFeatureUse(id),
     onRestore: () => ctx.editState?.restoreFeatureUse(id),
+    atWill: fu.max === AT_WILL_MAX,
+    limit: CHARGE_BOX_LIMIT,
+    renderLarge: (parent) => renderPointPool(parent, {
+      id, name: resource.name, used: fu.used, max: fu.max,
+      resetLabel: RESET_LABELS[resource.reset], onSet: (n) => ctx.editState?.setFeatureUse(id, n),
+    }),
   });
 }
 
@@ -227,6 +245,12 @@ export function renderFirstResourceTracker(detail: HTMLElement, feature: Feature
     recoveryTitle: reset === "custom" ? CUSTOM_RESET_TIP : undefined,
     onExpend: () => ctx.editState?.expendFeatureUse(key),
     onRestore: () => ctx.editState?.restoreFeatureUse(key),
+    atWill: fu.max === AT_WILL_MAX,
+    limit: CHARGE_BOX_LIMIT,
+    renderLarge: (parent) => renderPointPool(parent, {
+      id: key, name: res0?.name ?? feature.name, used: fu.used, max: fu.max,
+      resetLabel: RESET_LABELS[reset], onSet: (n) => ctx.editState?.setFeatureUse(key, n),
+    }),
   });
   return true;
 }
@@ -236,17 +260,18 @@ export function renderFirstResourceTracker(detail: HTMLElement, feature: Feature
  * `collectFeatureAttacks` logic, including the scaling-die-from-resource
  * fallback: a feature that owns a scaling die surfaces it as the damage for any
  * attack that omits its own static `damage` (static damage always wins; the die
- * is resolved at totalLevel to match the resource tracker). Homebrew authors the
+ * is resolved at the OWNER's class level through `resourceLevel`, matching the
+ * tracker the seed sizes at that level: R4-G4 §6.2.4). Homebrew authors the
  * loose `{ name?, to_hit?, damage? }` attack shape, read via cast as the old
  * surface did.
  */
-function formatFeatureAttackNote(feature: Feature, totalLevel: number): string | undefined {
+function formatFeatureAttackNote(feature: Feature, ctx: ComponentRenderContext): string | undefined {
   const attacks = (feature as unknown as {
     attacks?: Array<{ name?: string; to_hit?: string; damage?: string }>;
   }).attacks;
   if (!attacks?.length) return undefined;
   const dieRes = (feature.resources ?? []).find((r) => r.die);
-  const scalingDie = dieRes?.die ? resolveScalingDie(dieRes.die, totalLevel) : undefined;
+  const scalingDie = dieRes?.die ? resolveScalingDie(dieRes.die, resourceLevel(dieRes.id, ctx)) : undefined;
   const lines: string[] = [];
   for (const a of attacks) {
     const seg: string[] = [];

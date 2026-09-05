@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { seedFeatureUses } from "../packages/obsidian/src/modules/pc/pc.resource-seed";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -30,7 +30,7 @@ describe("seedFeatureUses", () => {
     expect(r.state.feature_uses["fighter:second-wind"]).toEqual({ used: 0, max: 1 });
   });
 
-  it("applies scales_at at the character's total level", () => {
+  it("applies scales_at at the OWNER's class level (this fixture's class and total levels coincide)", () => {
     const r = resolved(
       [{ feature: { name: "Rage", resources: [{ id: "barbarian:rage", name: "Rage", max_formula: "2", scales_at: [{ level: 3, max: "3" }, { level: 6, max: "4" }], reset: "long-rest" }] }, source: { kind: "class", slug: "barbarian", level: 1 } }],
       6,
@@ -168,5 +168,48 @@ describe("seedFeatureUses — column() from the (sub)class table", () => {
     } as unknown as ResolvedCharacter;
     seedFeatureUses(r, derived());
     expect(r.state.feature_uses["x"].max).toBe(0);
+  });
+});
+
+describe("R4-G4 §6.2.5 · the OWNER's class level, the warned continue", () => {
+  const rage = (slug: string) => ({ feature: { name: "Rage", resources: [{ id: "barbarian:rage", name: "Rage", max_formula: "2",
+    scales_at: [{ level: 3, max: "3" }, { level: 6, max: "4" }, { level: 12, max: "5" }], reset: "long-rest" }] },
+    source: { kind: "class", slug, level: 1 } });
+
+  it("RED FIRST: a Barbarian 5 / Fighter 5 seeds Rage at the CLASS level (3), not the total level (4)", () => {
+    const r = resolved([rage("barbarian")], 10, [{ entity: { slug: "barbarian" }, level: 5 }, { entity: { slug: "fighter" }, level: 5 }]);
+    seedFeatureUses(r, derived());
+    expect(r.state.feature_uses["barbarian:rage"].max).toBe(3);
+  });
+
+  it("RED FIRST: the PHB 2024 Bard's Bardic Inspiration (die-string steps) seeds the base COUNT instead of vanishing", () => {
+    const bard = { feature: { name: "Bardic Inspiration", resources: [{ id: "bard:bardic-die", name: "Bardic Inspiration", max_formula: "{cha_mod}",
+      scales_at: [{ level: 5, max: "1d8" }, { level: 10, max: "1d10" }, { level: 15, max: "1d12" }], reset: "long-rest" }] },
+      source: { kind: "class", slug: "bard", level: 1 } };
+    const r = resolved([bard], 5, [{ entity: { slug: "bard" }, level: 5 }]);
+    seedFeatureUses(r, derived());
+    expect(r.state.feature_uses["bard:bardic-die"]).toEqual({ used: 0, max: 4 });   // cha_mod 4
+  });
+
+  it("RED FIRST: an unparseable base (Sneak Attack 1d6) is warned ONCE and left un-seeded, not swallowed", async () => {
+    const { __resetWarnOnceForTests } = await import("@archivist-gg/dnd5e/dnd/warn-once");
+    __resetWarnOnceForTests();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sneak = { feature: { name: "Sneak Attack", resources: [{ id: "rogue:sneak-attack", name: "Sneak Attack", max_formula: "1d6", reset: "turn" }] },
+      source: { kind: "class", slug: "rogue", level: 1 } };
+    const r = resolved([sneak, sneak], 5, [{ entity: { slug: "rogue" }, level: 5 }]);
+    seedFeatureUses(r, derived());
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0].join(" ")).toContain("rogue:sneak-attack");
+    expect(r.state.feature_uses["rogue:sneak-attack"]).toBeUndefined();
+    warn.mockRestore();
+  });
+
+  it("min-1 data reads 1 at a +0 modifier (the clamp lives in DATA, the reader floor stays 0)", () => {
+    const luck = { feature: { name: "Dark One's Own Luck", resources: [{ id: "fiend-patron:dark-ones-own-luck", name: "Dark One's Own Luck", max_formula: "max(1, {cha_mod})", reset: "short-rest" }] },
+      source: { kind: "subclass", slug: "fiend", level: 1 } };
+    const r = resolved([luck], 3, [{ entity: { slug: "warlock" }, level: 3, subclass: { slug: "fiend" } }]);
+    seedFeatureUses(r, derived({ mods: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 } } as never));
+    expect(r.state.feature_uses["fiend-patron:dark-ones-own-luck"].max).toBe(1);
   });
 });

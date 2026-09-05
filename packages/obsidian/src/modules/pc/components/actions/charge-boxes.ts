@@ -1,3 +1,8 @@
+/** A PRESENTATIONAL constant (renderer-side, not game vocabulary: Gate 0 Q3): above this many points
+ *  the feature sites switch to the numeric widget; the spell-slot, item and race sites never pass a
+ *  `renderLarge` and keep drawing boxes. */
+export const CHARGE_BOX_LIMIT = 12;
+
 export interface ChargeBoxesOpts {
   used: number;
   max: number;
@@ -29,6 +34,12 @@ export interface ChargeBoxesOpts {
    */
   onExpend?: () => void;
   onRestore?: () => void;
+  /** Boxes above this count route to `renderLarge` (default CHARGE_BOX_LIMIT). */
+  limit?: number;
+  /** The `max === AT_WILL_MAX` case: render the text "at will" and no boxes. Checked FIRST. */
+  atWill?: boolean;
+  /** The fallback the caller supplies for `max > limit` (the feature sites pass renderPointPool). */
+  renderLarge?: (parent: HTMLElement, opts: ChargeBoxesOpts) => HTMLElement;
 }
 
 const RESET_LABEL: Record<"dawn" | "short" | "long" | "special", string> = {
@@ -41,6 +52,12 @@ const RESET_LABEL: Record<"dawn" | "short" | "long" | "special", string> = {
 const CHECKED = "archivist-toggle-box-checked";
 
 export function renderChargeBoxes(parent: HTMLElement, opts: ChargeBoxesOpts): HTMLElement {
+  if (opts.atWill) {
+    const wrap = parent.createDiv({ cls: "pc-charge-boxes pc-charge-boxes-at-will" });
+    wrap.createSpan({ cls: "pc-charge-at-will", text: "at will" });
+    return wrap;
+  }
+  if (opts.renderLarge && opts.max > (opts.limit ?? CHARGE_BOX_LIMIT)) return opts.renderLarge(parent, opts);
   const wrap = parent.createDiv({ cls: "pc-charge-boxes" });
   const boxRow = wrap.createDiv({ cls: "archivist-toggle-box-row" });
   const boxes: HTMLElement[] = [];
