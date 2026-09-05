@@ -248,10 +248,15 @@ type LayoutRenderer = (this: PoolTab, root: HTMLElement, pool: ResolvedPool, ctx
  *  pattern): an unknown key degrades to spell-like and never throws, which is what the fallback to
  *  this map's own `spell-like` entry buys `render`. The two hinted layouts are the spell-like list
  *  PLUS a tab-head widget for the pool's OWNED resource; the other two render exactly as before.
- *  A pool whose members carry an UNMAPPED hint never reaches the hinted entries at all: dnd5e's
+ *  A pool whose members carry an UNMAPPED hint never reaches the hinted entries BY DERIVATION: dnd5e's
  *  `RENDERING_HINT_LAYOUT` maps two hints, so `derivePoolLayout` returns undefined for the three G5
  *  families (pool-selection, granted-die-to-ally, stance) and `TabsContainer` falls through to
- *  spell-like. A PHB 2024 Arcane Archer, whose members are pool-selection, is that case. */
+ *  spell-like absent an authored layout. An AUTHORED `TabDecl.renders.layout` still can reach them: it
+ *  is the same four-member union and it OUTRANKS the derived value (§4.2.5). No shipped document
+ *  authors one (measured 2026-09-05, read-only: zero `.md` files under the pristine bundle and the
+ *  converter corpus name a tab `layout`, and the bundle index carries no `"layout"` key; spec §4.1
+ *  measures the same as undefined on all 23 `TabDecl`s), so on both corpora a PHB 2024 Arcane Archer,
+ *  whose members carry the `pool-selection` hint, renders spell-like. */
 const LAYOUTS: ReadonlyMap<PoolLayout, LayoutRenderer> = new Map<PoolLayout, LayoutRenderer>([
   ["spell-like", function (root, pool, ctx) { this.renderSpellLike(root, pool, ctx); }],
   ["blocks", function (root, pool, ctx) { this.renderBlocks(root, pool, ctx); }],
@@ -265,7 +270,9 @@ const LAYOUTS: ReadonlyMap<PoolLayout, LayoutRenderer> = new Map<PoolLayout, Lay
  *  widget beside it). Then the widget, but ONLY when all three of `pool.resource`, its seeded
  *  `feature_uses` entry and its `resolved.resources` index entry exist: a hinted pool whose members
  *  consume nothing the character owns (Four Elements is the live witness) renders the list alone, and
- *  a fixture that casts a `ResolvedCharacter` with no index never throws (§4.2.6, confirmation r6 M-1).
+ *  a fixture that casts a `ResolvedCharacter` with no index reads `undefined` through the optional chain
+ *  instead of throwing (§4.2.6, confirmation r6 M-1; `state` and `classes` are required and are read
+ *  unguarded here, as they are in `renderSpendControl` and `renderCardResource`).
  *  The head div itself is created on FIRST use, so a pool with neither a DC nor an owned resource
  *  emits no empty spacer.
  *
