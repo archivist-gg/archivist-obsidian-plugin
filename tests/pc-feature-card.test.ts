@@ -203,14 +203,15 @@ describe("renderRecoveryAction · the two arms, by KIND then FLAVOUR (R4-G4 §7.
     expect(idle.querySelector<HTMLButtonElement>("button.pc-regain")!.disabled).toBe(true);
   });
 
-  // Review I-1. The shipped prose `amount`s are whole SENTENCES, so the old
-  // "Regain <prose> <name> (described in this feature's text)." template read
+  // Review I-1. The old "Regain <prose> <name> (described in this feature's text)." template read
   // "Regain Whenever you cast ... the spell. Arcane Ward (described in this feature's text)."
-  // Measured 2026-09-05 by walking every `recovery:` block of every note in the converter corpus
-  // AND the bundle: 37 recovery entries, 35 with an `amount`, of which THREE are prose, all three
-  // Arcane Ward (the PHB 2024 Abjurer's "Arcane Ward Hit Points" and both PHB 2014
-  // "School of Abjuration" notes' "Arcane Ward"), and NONE of the three carries an `action`.
-  // WARD is the School of Abjuration sentence copied verbatim, so the fixture is the shipped shape
+  // Measured 2026-09-05 by walking every `recovery:` block of every NOTE (`.md`) in the converter
+  // corpus and the bundle: 35 recovery entries (33 converter, 2 bundle), ALL 35 with an `amount`,
+  // 5 distinct values, THREE of them prose, all three Arcane Ward, and NONE with an `action`. The
+  // three do NOT share a shape: both PHB 2014 "School of Abjuration" notes carry a whole sentence
+  // with its own trigger, while the PHB 2024 Abjurer's "Arcane Ward Hit Points" carries a lowercase
+  // fragment with no trigger and no terminal period (a converter-side data shape, booked to G7).
+  // WARD is the School of Abjuration sentence copied verbatim, so the fixture is a shipped shape
   // rather than the short phrase that hid this (fixture monoculture, the R4-P5 lesson).
   const WARD = "Whenever you cast an abjuration spell of 1st level or higher, the ward regains a number of hit points equal to twice the level of the spell.";
 

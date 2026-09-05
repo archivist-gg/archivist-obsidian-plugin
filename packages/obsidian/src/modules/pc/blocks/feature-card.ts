@@ -313,13 +313,17 @@ export function renderRecoveryAction(block: HTMLElement, resource: Resource, sou
  *  (the ACTION's recharge, no cooldown tracked: G8), disabled at `used === 0`; a `custom` reset is a MANUAL OVERRIDE
  *  the design chooses (Gate 0 I10), and says so.
  *
- *  A PROSE `amount` returns EARLY with that sentence ALONE as the caption, which makes it the one arm that renders
- *  neither the cost badge nor the reset caption. Deliberate, not an oversight (review I-1): every shipped prose amount
- *  is a whole SENTENCE that already names its own trigger, so wrapping it in "Regain <prose> <name> (described in this
- *  feature's text)" read as nonsense on every carrier. Measured 2026-09-05 by walking every `recovery:` block of every
- *  note in the converter corpus AND the bundle: 37 entries, 35 carrying an `amount`, of which THREE are prose (both
- *  "School of Abjuration" notes' Arcane Ward and the 2024 Abjurer's Arcane Ward Hit Points), and NONE of the three
- *  carries an `action`, so the skipped badge drops nothing that ships. */
+ *  A PROSE `amount` returns EARLY with that text ALONE as the caption, which makes it the one arm that renders neither
+ *  the cost badge nor the reset caption. Deliberate, not an oversight (review I-1): a prose amount carries its own
+ *  wording, so wrapping it in "Regain <prose> <name> (described in this feature's text)" read as nonsense on every
+ *  carrier. Measured 2026-09-05 by walking every `recovery:` block of every NOTE (`.md`) in the converter corpus and
+ *  the bundle: 35 entries (33 converter, 2 bundle), ALL 35 carrying an `amount`, 5 distinct values, THREE of them
+ *  prose. All three are Arcane Ward and NONE carries an `action`, so the skipped badge drops nothing that ships. Their
+ *  SHAPES differ and this arm renders each VERBATIM: both "School of Abjuration" notes carry a whole sentence with its
+ *  own trigger ("Whenever you cast an abjuration spell of 1st level or higher, …", capitalised, full stop), while the
+ *  2024 Abjurer's "Arcane Ward Hit Points" carries a lowercase FRAGMENT with no trigger and no terminal period ("the
+ *  ward regains a number of Hit Points equal to twice the level of the spell slot"), which therefore reaches the sheet
+ *  as a bare fragment: a converter-side data shape, booked to G7, not something this renderer repairs. */
 function renderUsesRecovery(block: HTMLElement, resource: Resource, rec: ResourceRecovery, fu: { used: number; max: number } | undefined, ctx: ComponentRenderContext): void {
   const actions = block.createDiv({ cls: "pc-resource-actions pc-regain-actions" });
   const amount = rec.amount === "all" ? "all" : typeof rec.amount === "number" ? rec.amount : Number(rec.amount);
