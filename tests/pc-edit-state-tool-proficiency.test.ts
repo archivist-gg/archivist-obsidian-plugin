@@ -80,7 +80,7 @@ describe("CharacterEditState.setToolProficiency (R4-G4 §9.3, UR1)", () => {
     expect(char.overrides.tools).toBeUndefined();
   });
 
-  it("RED FIRST: setToolProficiency REPAIRS a hand-typed key instead of adding a second one beside it", () => {
+  it("RED FIRST: setToolProficiency WRITES THROUGH a hand-typed key, keeping its own spelling, instead of adding a second one beside it", () => {
     // Review I-2 / probes E4-E5, the same root cause's second face. The engine honours the
     // hand-typed key, so the chip renders `expertise`; a writer that wrote by slug added a
     // SECOND key and the tool was stuck on an expertise <-> none cycle it could never leave,

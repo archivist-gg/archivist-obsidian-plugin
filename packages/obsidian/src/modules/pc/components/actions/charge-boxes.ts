@@ -3,8 +3,10 @@
  *  site (`renderItemRow`) call `renderChargeBoxes` directly, pass none of `limit` / `atWill` /
  *  `renderLarge`, and keep drawing boxes. The race block does NOT: it rides
  *  `renderFirstResourceTracker`, so it receives all three opts like any other feature tracker. That is
- *  harmless by the spec's measurement (R4-G4 §5.1: 228 race resource declarations, all `prof` or small
- *  literals, none 999, none above 12), so no race trait reaches either new branch today. */
+ *  harmless by the spec's measurement (R4-G4 §5.1: 228 race resource declarations, re-measured
+ *  2026-09-06 across the converter corpus (222) and the bundle (6) as all `1` (x149), `prof` (x78)
+ *  or a bare ability modifier (`con_mod`, x1), none 999, none above 12), so no race trait reaches
+ *  either new branch today (review M-5: "all `prof` or small literals" missed the one `con_mod`). */
 export const CHARGE_BOX_LIMIT = 12;
 
 export interface ChargeBoxesOpts {

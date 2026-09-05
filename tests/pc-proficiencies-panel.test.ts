@@ -112,7 +112,7 @@ function click(el: HTMLElement): void {
 }
 
 describe("ProficienciesPanel", () => {
-  it("renders items comma-joined and 'None' for empty buckets, with no choice placeholder", () => {
+  it("renders items comma-joined, with no choice placeholder", () => {
     const container = render(ctx);
 
     expect(valueFor(container, "Weapons")).toBe("Hand Crossbows, Rapiers");

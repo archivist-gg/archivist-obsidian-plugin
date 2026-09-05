@@ -207,7 +207,8 @@ describe("renderRecoveryAction · the two arms, by KIND then FLAVOUR (R4-G4 §7.
   // "Regain Whenever you cast ... the spell. Arcane Ward (described in this feature's text)."
   // Measured 2026-09-05 by walking every `recovery:` block of every NOTE (`.md`) in the converter
   // corpus and the bundle: 35 recovery entries (33 converter, 2 bundle), ALL 35 with an `amount`,
-  // 5 distinct values, THREE of them prose, all three Arcane Ward, and NONE with an `action`. The
+  // 5 distinct values, THREE of the ENTRIES prose (counted over the entries, not the values:
+  // review M-19), all three Arcane Ward, and NONE with an `action`. The
   // three do NOT share a shape: both PHB 2014 "School of Abjuration" notes carry a whole sentence
   // with its own trigger, while the PHB 2024 Abjurer's "Arcane Ward Hit Points" carries a lowercase
   // fragment with no trigger and no terminal period (a converter-side data shape, booked to G7).

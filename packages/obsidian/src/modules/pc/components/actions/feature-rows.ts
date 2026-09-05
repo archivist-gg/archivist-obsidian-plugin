@@ -125,7 +125,15 @@ export function renderFeatureRow(
   const spendId = consumes?.resource;
   const ownsIt = !!spendId && (feature.resources ?? []).some((r) => r.id === spendId);
   const fu = spendId ? ctx.resolved.state.feature_uses?.[spendId] : undefined;
-  const trackerIsBoxes = !!fu && fu.max <= CHARGE_BOX_LIMIT && fu.max !== AT_WILL_MAX;
+  // The former `&& fu.max !== AT_WILL_MAX` clause is DROPPED (review M-6). It cannot change the
+  // result while `AT_WILL_MAX` (999, dnd5e dnd/resource-formula.ts) is above `CHARGE_BOX_LIMIT`
+  // (12, ./charge-boxes.ts): the sentinel already fails `fu.max <= CHARGE_BOX_LIMIT` on its own,
+  // and THAT INEQUALITY is the invariant the drop depends on. Were either constant to move so the
+  // sentinel fitted under the limit, an at-will resource would read `trackerIsBoxes === true` here
+  // and still change nothing, because this flag's ONE consumer is `controlInCard` below, which is
+  // independently gated `!isAtWill`. The boxes-versus-"at will" WIDGET choice is
+  // `renderChargeBoxes`' own `atWill` opt, never this flag.
+  const trackerIsBoxes = !!fu && fu.max <= CHARGE_BOX_LIMIT;
   const isAtWill = !!fu && fu.max === AT_WILL_MAX;
   // Owner-and-spender (R4-G4 §3.2.5) across the THREE tracker widgets `renderChargeBoxes` can
   // pick. BOXES: a click already spends exactly 1, so a feature that owns what it spends renders
@@ -224,9 +232,10 @@ function resourceLevel(id: string | undefined, ctx: ComponentRenderContext): num
   return owner ? resourceLevelFor(owner.source, ctx.resolved) : ctx.resolved.totalLevel;
 }
 
-/** A resource tracker rendered inside the card. `renderFeatureRow` calls it twice over its expand
- *  card: once for each of the primary's `(feature.resources ?? []).slice(1)`, and once for every
- *  resource of each merged secondary in `secondaries`. */
+/** A resource tracker rendered inside the card. `renderFeatureRow` calls it from TWO loops over
+ *  its expand card: one over the primary's `(feature.resources ?? []).slice(1)`, and one over every
+ *  resource of each merged secondary in `secondaries` · so the call COUNT is the size of those two
+ *  sets, not two (review M-10). */
 export function renderCardResource(parent: HTMLElement, resource: Resource, ctx: ComponentRenderContext): void {
   const id = resource.id;
   const fu = id ? ctx.resolved.state.feature_uses?.[id] : undefined;

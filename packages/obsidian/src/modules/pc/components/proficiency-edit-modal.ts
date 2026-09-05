@@ -297,7 +297,10 @@ export class ProficiencyEditModal extends PaneCenteredModal {
         });
         if (entry.expertise) chip.addClass("expertise");
         btn.addEventListener("click", () => {
-          const next: ProficiencyTri = tri === "proficient" ? "expertise" : tri === "expertise" ? "none" : "proficient";
+          // TWO arms, not three: `tri` is assigned `entry.expertise ? "expertise" : "proficient"`
+          // above, so a `tri === "expertise" ? "none" : "proficient"` tail could never take its
+          // second branch (review M-7). A `none` tool has no chip here at all.
+          const next: ProficiencyTri = tri === "proficient" ? "expertise" : "none";
           this.openedWith.setToolProficiency(entry.value, next);
           this.refocusFilter();
         });

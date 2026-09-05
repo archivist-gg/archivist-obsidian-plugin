@@ -511,20 +511,25 @@ describe("PassiveFeaturesTab", () => {
       expect(headings(c)).not.toContain("Interdict Boons");
     });
 
-    it("files a passive boon under Passive & Free Actions → Boons", () => {
+    it("files a passive boon under Passive & Free Actions, its sub-group head reading the pool's own label", () => {
+      // Review I-1: the old name said "→ Boons", which this fixture never renders · the `pool()`
+      // builder's label is "Interdict Boons", and the head reads it. Asserted, not just renamed.
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ selected: [entry("stoic", { name: "Boon of Endurance", passive: true, description: "Always on." })] })],
       }));
+      expect(subGroupTitles(c)).toContain("Interdict Boons");
       expect(economyForBoon(c, "Boon of Endurance")).toBe("Passive & Free Actions");
       expect(headings(c)).not.toContain("Interdict Boons");
     });
 
-    it("files a granted boon (no action_cost) under Passive → Boons", () => {
+    it("files a granted boon (no action_cost) under Passive, its sub-group head reading the pool's own label", () => {
+      // Review I-1, the granted half of the pair above: same rename, same added assertion.
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ grants: [entry("sight", { name: "Boon of Sight", description: "See in the dark." })] })],
       }));
+      expect(subGroupTitles(c)).toContain("Interdict Boons");
       expect(boonNames(c)).toEqual(["Boon of Sight"]);
       expect(economyForBoon(c, "Boon of Sight")).toBe("Passive & Free Actions");
     });

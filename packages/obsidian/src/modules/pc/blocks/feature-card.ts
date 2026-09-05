@@ -317,8 +317,9 @@ export function renderRecoveryAction(block: HTMLElement, resource: Resource, sou
  *  the cost badge nor the reset caption. Deliberate, not an oversight (review I-1): a prose amount carries its own
  *  wording, so wrapping it in "Regain <prose> <name> (described in this feature's text)" read as nonsense on every
  *  carrier. Measured 2026-09-05 by walking every `recovery:` block of every NOTE (`.md`) in the converter corpus and
- *  the bundle: 35 entries (33 converter, 2 bundle), ALL 35 carrying an `amount`, 5 distinct values, THREE of them
- *  prose. All three are Arcane Ward and NONE carries an `action`, so the skipped badge drops nothing that ships. Their
+ *  the bundle: 35 entries (33 converter, 2 bundle), ALL 35 carrying an `amount`, 5 distinct values, THREE of the
+ *  ENTRIES prose (review M-19: counted over the entries, not over the five values). All three are Arcane Ward and
+ *  NONE carries an `action`, so the skipped badge drops nothing that ships. Their
  *  SHAPES differ and this arm renders each VERBATIM: both "School of Abjuration" notes carry a whole sentence with its
  *  own trigger ("Whenever you cast an abjuration spell of 1st level or higher, …", capitalised, full stop), while the
  *  2024 Abjurer's "Arcane Ward Hit Points" carries a lowercase FRAGMENT with no trigger and no terminal period ("the

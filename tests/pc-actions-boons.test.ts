@@ -121,6 +121,21 @@ describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
     expect(titles).toContain("Eldritch Invocations · Pact Boon");
   });
 
+  it("RED FIRST (R4-G4 §10, UR3): a boons sub-group whose entries carry NO pool label falls back to the shipped 'Boons' literal", () => {
+    // The ONE path to `SOURCE_LABEL.boons` in `buildActionModel`, and nothing pinned it until now:
+    // every other assertion on the literal in this file is the NEGATIVE in the pool-label test
+    // above (review I-1). It is REACHABLE on real data, not a synthetic case: the sheet resolves
+    // RAW entities (invariant 1) and the codec that enforces `label: z.string().min(1)` runs on
+    // the note path only, so a pool whose label is empty or absent arrives with `poolLabel` falsy,
+    // the distinct-label join collapses to "", and the fallback supplies the head.
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([pool({ id: "unlabelled", label: "", selected: [entry("surge", { name: "Surge", action_cost: "action" })] })]));
+    const titles = Array.from(c.querySelectorAll(".pc-actions-section-head .pc-actions-section-title")).map((n) => n.textContent);
+    expect(titles).toContain("Boons");
+    // The sub-group is not empty: the head above belongs to a rendered boon.
+    expect(boonRowByName(c, "Surge")).toBeTruthy();
+  });
+
   it("RED FIRST: a boon row with a heal effect renders the G3a caption; the row no longer repeats the pool label", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([pool({ label: "Metamagic", selected: [entry("mend", { name: "Mend", action_cost: "action", effects: [{ kind: "heal", amount: "1d8" }] })] })]));

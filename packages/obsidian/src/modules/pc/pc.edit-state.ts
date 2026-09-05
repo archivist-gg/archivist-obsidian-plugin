@@ -45,8 +45,10 @@ function toRef(slug: string): string {
  *  `overrides.tools.proficiency` is an OPEN key space, and the ENGINE normalises every key it
  *  reads (`computeEffectiveProficiencies` runs `toProfSlug` on the key), so a hand-edited note
  *  may spell one any way it likes and the tri still applies. Both writers below match through
- *  here so they REPAIR the key that is already in the note instead of writing a second one
- *  beside it: indexing by the slug alone left `addProficiency` nothing to clear (it then stacked
+ *  here so they WRITE THROUGH the key that is already in the note, keeping its own spelling,
+ *  instead of writing a second one beside it (review M-4: nothing here re-spells a key, so
+ *  "repair" never meant "normalise"): indexing by the slug alone left `addProficiency` nothing
+ *  to clear (it then stacked
  *  an inert `add[]` on top of a live `none`) and made `setToolProficiency` duplicate the key. */
 function triKeyFor(record: Record<string, ProficiencyTri>, slug: string): string | undefined {
   return Object.keys(record).find((k) => toProfSlug(k) === slug);
@@ -1326,7 +1328,9 @@ export class CharacterEditState {
   }
 
   /** The manual "Regain N" arm (R4-G4 §7.2.3): regain `amount` uses of an owned resource, or all. No cooldown is
-   *  tracked (the entry's own `reset` is the ACTION's recharge, rendered as a caption; G8). */
+   *  tracked (the entry's own `reset` is the ACTION's recharge, rendered as a caption; G8). The amount is floored at
+   *  1 and `used` clamped at 0 (`Math.max(0, fu.used - Math.max(1, Math.floor(amount)))`), the mirror of
+   *  `spendFeatureUse`'s floor, so a malformed `recovery.amount` can never SPEND a use here (review M-15). */
   regainFeatureUses(resourceId: string, amount: number | "all"): void {
     const fu = this.character.state.feature_uses?.[resourceId];
     if (!fu) return;
