@@ -488,14 +488,14 @@ describe("PassiveFeaturesTab", () => {
 
   // ── Relocated boon cases (from pc-actions-boons.test.ts) ────────────────────
   describe("relocated boon rows", () => {
-    it("files a free boon under Passive & Free Actions → Boons (NOT under an 'Interdict Boons' head)", () => {
+    it("files a free boon under Passive & Free Actions → its pool's own label (R4-G4 §10 REVERSED the 'NOT under an Interdict Boons head' decision under UR3; the FILING is unchanged)", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ selected: [entry("wrath", { name: "Boon of Wrath", action_cost: "free", description: "Deal extra damage." })] })],
       }));
       expect(boonNames(c)).toEqual(["Boon of Wrath"]);
       expect(economyForBoon(c, "Boon of Wrath")).toBe("Passive & Free Actions");
-      expect(subGroupTitles(c)).toContain("Boons");
+      expect(subGroupTitles(c)).toContain("Interdict Boons");
       expect(headings(c)).not.toContain("Interdict Boons");
     });
 

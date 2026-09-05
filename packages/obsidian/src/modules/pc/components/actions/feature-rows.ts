@@ -91,8 +91,9 @@ export function renderFeatureRow(
   // effect imposed on someone else. It hangs off the NAME cell, not the detail
   // slot: that slot is single-occupancy and the resource tracker wins it on
   // exactly the flagship bearers (Second Wind, Action Surge), which are the rows
-  // a caption matters most on. Boon rows do not come through here by design.
-  renderEffectCaptions(nameCell, rf, ctx);
+  // a caption matters most on. Boon rows do not come through here; since R4-G4 §10
+  // `renderBoonRow` makes the same call into its OWN name cell.
+  renderEffectCaptions(nameCell, rf.feature.effects ?? [], ctx);
   if (feature.activatable && feature.id) {
     const buffId = feature.id;
     const buffWrap = nameCell.createDiv({ cls: "pc-action-buff" });

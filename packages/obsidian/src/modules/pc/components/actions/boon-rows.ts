@@ -4,6 +4,7 @@ import { renderFeatureCard, sourceBadgeText } from "../../blocks/feature-card";
 import { renderCostBadge } from "./cost-badge";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderSpendControl } from "./spend-control";
+import { renderEffectCaptions } from "./effect-captions";
 
 /**
  * A single Interdict Boon row on the consolidated Actions tab (spec §3.6 / #1b).
@@ -21,6 +22,9 @@ import { renderSpendControl } from "./spend-control";
  *     tag), mirroring the feature-row badge rule. The section can't supply this:
  *     `boonEconomy` collapses free→passive, so a granted Free boon must key its
  *     FREE pill (and its non-dimming) off the raw `action_cost`, not the bucket.
+ *   - Name = the boon's name, followed by the R4-G3a caption line for its own
+ *     `effects` (heal / temp-hp / extra-action / every effect imposed on someone
+ *     else), the same `renderEffectCaptions` line the feature rows carry.
  *   - Detail = the provenance/state marker: an **Active** toggle (activatable
  *     selected · `pc-pool-active`, wired to `editState.toggleActiveBuff(slug)`,
  *     the same control the pool tab uses) / a quiet `pc-boon-status` "granted"
@@ -58,10 +62,14 @@ export function renderBoonRow(
   const isAction = cost === "action" || cost === "bonus-action" || cost === "reaction";
   if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
 
-  // Name cell: name + the pool label as the source/type sub-label.
+  // Name cell: the name, then the R4-G3a caption line (R4-G4 §10 made `renderBoonRow`
+  // the second caller of `renderEffectCaptions`, reading the boon's OWN `effects`). The
+  // pool label is no longer repeated here as a sub-line: `buildActionModel` now labels
+  // the sub-group HEAD from it (UR3), and the expand card below still carries it through
+  // the `poolLabel` parameter this function keeps.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
   nameCell.createDiv({ cls: "pc-action-row-name", text: e.name });
-  nameCell.createDiv({ cls: "pc-action-row-sub", text: poolLabel });
+  renderEffectCaptions(nameCell, e.effects ?? [], ctx);
 
   // Right detail: an Active toggle for an activatable selected boon (the pool
   // tab's `pc-pool-active` button, wired to the same `toggleActiveBuff` action);

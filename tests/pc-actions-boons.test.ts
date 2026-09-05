@@ -10,9 +10,10 @@ import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-f
 beforeAll(() => installObsidianDomHelpers());
 
 // ─────────────────────────────────────────────────────────────
-// Fixtures — a ResolvedCharacter carrying selection pools (§3.6). Boons no
-// longer render under a pool-label heading; they file into the economy×source
-// grid model as "boons" sub-groups (Passive/Actions/… ← entity.action_cost).
+// Fixtures: a ResolvedCharacter carrying selection pools (§3.6). Boons file
+// into the economy×source grid model as "boons" sub-groups (Passive/Actions/…
+// ← entity.action_cost); since R4-G4 §10 the sub-group HEAD reads the pool
+// labels it holds (UR3).
 // ─────────────────────────────────────────────────────────────
 const entry = (slug: string, entity: Partial<OptionalFeatureEntity> = {}): ResolvedPoolEntry =>
   ({ slug, entity: { slug, name: slug, description: "", edition: "2014", source: "", feature_type: "boon", prerequisites: [], available_to: [], effects: [], ...entity } }) as unknown as ResolvedPoolEntry;
@@ -98,6 +99,40 @@ describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
     expect(btn.textContent).toBe("Spend 1 Superiority Dice (d8)");
     btn.click();
     expect(spend).toHaveBeenCalledWith("fighter-2024:superiority-dice", 1);
+  });
+
+  it("RED FIRST (R4-G4 §10, UR3): the boon sub-group head reads the pool's own label, not 'Boons'", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([pool({ id: "metamagic", label: "Metamagic", selected: [entry("twinned", { name: "Twinned Spell", action_cost: "action" })] })]));
+    const titles = Array.from(c.querySelectorAll(".pc-actions-section-head .pc-actions-section-title")).map((n) => n.textContent);
+    expect(titles).toContain("Metamagic");
+    expect(titles).not.toContain("Boons");
+  });
+
+  it("two pools in one economy join their labels in pool order", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([
+      pool({ id: "invocations", label: "Eldritch Invocations", selected: [entry("agonizing", { name: "Agonizing Blast", action_cost: "action" })] }),
+      pool({ id: "pact-boon", label: "Pact Boon", selected: [entry("blade", { name: "Pact of the Blade", action_cost: "action" })] }),
+    ]));
+    const titles = Array.from(c.querySelectorAll(".pc-actions-section-head .pc-actions-section-title")).map((n) => n.textContent);
+    // `buildActionModel` walks `resolved.pools` in order and `mergeFeatureEntries` only
+    // reorders `feature` entries, so the entry order IS the pool order.
+    expect(titles).toContain("Eldritch Invocations · Pact Boon");
+  });
+
+  it("RED FIRST: a boon row with a heal effect renders the G3a caption; the row no longer repeats the pool label", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([pool({ label: "Metamagic", selected: [entry("mend", { name: "Mend", action_cost: "action", effects: [{ kind: "heal", amount: "1d8" }] })] })]));
+    const row = boonRowByName(c, "Mend");
+    // Measured wording: `effect-captions.ts` NOUN.heal = "Heals", rendered by `restate`.
+    expect(row.querySelector(".pc-feature-effect")?.textContent).toBe("Heals 1d8");
+    expect(row.querySelector(".pc-action-row-sub")).toBeNull();
+    // The expanded card still names the pool (`renderBoonRow` keeps the `poolLabel`
+    // parameter and passes it as the card's `sourceLabel`, which `renderFeatureCard`
+    // renders into `.archivist-item-subtitle`).
+    row.click();
+    expect(c.querySelector(".pc-action-expand:not([hidden]) .archivist-item-subtitle")?.textContent).toBe("Metamagic");
   });
 
   it("keeps the 4-child badge layout on the Actions tab (D3 is passive-only)", () => {

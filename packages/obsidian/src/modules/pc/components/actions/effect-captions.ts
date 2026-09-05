@@ -1,4 +1,3 @@
-import type { ResolvedFeature } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { FeatureEffect } from "@archivist-gg/dnd5e/types/feature-effect";
 import { ROLL_MODE_WORD, ROLL_NOUN } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { costLabel } from "../../../../shared/rendering/action-cost-label";
@@ -15,8 +14,9 @@ import type { ComponentRenderContext } from "../component.types";
  * caption, never an auto-write of `state.hp.*`); the fourth is refused by the engine's `subject`
  * guard (invariant 1) and so has no derived surface at all. Both were previously invisible.
  *
- * This reads `rf.feature.effects` RAW, not `selfEffectsOf`: the non-self effects are precisely the
- * ones the fold drops, so filtering by the guard here would erase the case this exists for.
+ * Every caller hands over its own RAW `effects` array, never `selfEffectsOf`: the non-self effects
+ * are precisely the ones the fold drops, so filtering by the guard here would erase the case this
+ * exists for.
  *
  * `amount` is ECHOED VERBATIM, never evaluated (§4.2.2). The measured amounts are English prose
  * ("1d10 + your fighter level"), and `evaluateMaxFormula` has no dice production and rejects
@@ -78,15 +78,22 @@ function captionFor(e: FeatureEffect): string | undefined {
 }
 
 /**
- * Append the caption line to `host` (the feature row's NAME cell), one span per captioned effect.
+ * Append the caption line to `host` (a row's NAME cell), one span per captioned effect.
+ * TWO callers, each passing its own raw array (R4-G4 §10): `renderFeatureRow` (`feature-rows.ts`)
+ * passes `rf.feature.effects`, `renderBoonRow` (`boon-rows.ts`) passes `entry.entity.effects`. The
+ * parameter is the ARRAY rather than the carrier because those two carriers share no supertype.
  * The line is created lazily, so a feature with no captioned effect adds no empty div. A `condition`
  * QUALIFIER becomes the span's tooltip, plain-texted · the roll-modifier idiom. On the two kinds
  * where `condition` is the condition NAME it stays in the caption body and no tooltip is set:
  * hiding a name behind a hover is not a qualifier, it is a lost caption.
  */
-export function renderEffectCaptions(host: HTMLElement, rf: ResolvedFeature, _ctx: ComponentRenderContext): void {
+export function renderEffectCaptions(
+  host: HTMLElement,
+  effects: ReadonlyArray<FeatureEffect>,
+  _ctx: ComponentRenderContext,
+): void {
   let line: HTMLElement | null = null;
-  for (const e of rf.feature.effects ?? []) {
+  for (const e of effects) {
     const text = captionFor(e);
     if (!text) continue;
     line ??= host.createDiv({ cls: "pc-feature-effect-line" });

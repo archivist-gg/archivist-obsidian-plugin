@@ -23,9 +23,10 @@ beforeAll(() => installObsidianDomHelpers());
 // ─────────────────────────────────────────────────────────────
 // R4-G3a §4 · the row-local caption line.
 //
-// `renderEffectCaptions` hangs off `renderFeatureRow`, so the mount is the
-// PASSIVE tab: it renders the very same `renderFeatureRow` and is the one
-// working mount precedent in this suite (tests/pc-passive-features-tab.test.ts).
+// `renderEffectCaptions` hangs off `renderFeatureRow` AND (since R4-G4 §10)
+// `renderBoonRow`, so the mount is the PASSIVE tab: it renders the very same
+// `renderFeatureRow` and is the one working mount precedent in this suite
+// (tests/pc-passive-features-tab.test.ts).
 // The ctx builder below is that file's reconciled `renderCtx` (its `rf` /
 // `entry` / `pool` helpers and the `resolved` + `derived` shape), copied so this
 // file stands alone.
@@ -255,15 +256,16 @@ describe("renderEffectCaptions", () => {
     expect(row.querySelector(".pc-feature-effect-line")).toBeNull();
   });
 
-  it("renders NO caption on a boon row (the named exclusion)", () => {
+  it("renders the caption on a boon row too (R4-G4 §10 REVERSED the named exclusion)", () => {
     const root = mountContainer();
     new PassiveFeaturesTab().render(root, renderCtx([], {
       pools: [pool({ selected: [entry("x", { effects: [{ kind: "heal", amount: "5" }] })] })],
     }));
-    // The boon row rendered and carries a caption-bearing effect · the caption
-    // line is absent because boons bypass `renderFeatureRow` entirely.
+    // Boons still bypass `renderFeatureRow`; since R4-G4 §10 `renderBoonRow` makes the
+    // SAME `renderEffectCaptions` call into its own name cell, so the caption is there.
+    expect(root.querySelector(".pc-boon-row .pc-feature-effect")?.textContent).toBe("Heals 5");
     expect(Array.from(root.querySelectorAll(".pc-boon-row")).length).toBe(1);
-    expect(root.querySelector(".pc-feature-effect-line")).toBeNull();
+    expect(root.querySelector(".pc-boon-row .pc-action-namecell > .pc-feature-effect-line")).toBeTruthy();
   });
 });
 
