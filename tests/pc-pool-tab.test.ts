@@ -264,6 +264,17 @@ describe("PoolTab — blocks layout", () => {
     expect(el.querySelector(".pc-boon-block .pc-block-description")?.textContent).toContain("desc-");
   });
 
+  it("R4-G4 §3.2.4: the blocks layout withholds the control from an UNPICKED candidate and keeps it on a picked one", () => {
+    // The known-entries rule is a property of the CONTROL, not of a layout: `blockCard` renders the
+    // available candidates as well as the picks, so it needs the same gate `row()` carries.
+    const el = mountContainer();
+    new PoolTab("interdict-boons", "blocks").render(el, ownedCtx({ ...basePool, selected: [], grants: [] }));
+    expect(el.querySelector("button.pc-spend-control")).toBeNull();
+    const el2 = mountContainer();
+    new PoolTab("interdict-boons", "blocks").render(el2, ownedCtx(basePool));
+    expect(el2.querySelector("button.pc-spend-control")!.textContent).toBe("Spend 1 Seals");
+  });
+
   it("blocks layout keeps the toggle box and the active-effects rail", () => {
     const actPool: ResolvedPool = {
       ...basePool, count: 2,

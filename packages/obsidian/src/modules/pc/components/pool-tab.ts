@@ -118,12 +118,16 @@ export class PoolTab implements SheetComponent {
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
     if (isRowExpanded(ctx, descKey)) openDesc(host, e);
 
-    // The shared spend control (R4-G4 §3.2.4; the pool tab is one of its three call sites, with
-    // the boon row and the feature row) on the KNOWN entries only: this row when it is selected,
-    // and every `grantedRow` below. A bare candidate the character has not picked is not spendable,
-    // so it carries the Cost meta and no button. `renderBoonRow` is reached only with a `kind` of
-    // "selected" or "granted", so the Actions / Passive boon surface already had this property.
-    // An unowned id renders nothing and warns once (§13), so a cross-book row is unchanged.
+    // The shared spend control (R4-G4 §3.2.4). Measured 2026-09-05 with
+    // `grep -rn "renderSpendControl(" packages/obsidian/src`: six call EXPRESSIONS across three
+    // calling FILES, three of them on this tab. All three render on the KNOWN entries only: this
+    // row when its entry is SELECTED, `grantedRow` unconditionally because it is reached only over
+    // `pool.grants`, and `blockCard` when its entry is granted OR selected, because `renderBlocks`
+    // sends that method every available candidate as well. A bare candidate the character has not
+    // picked is not spendable, so it carries the Cost meta and no button. `renderBoonRow` is
+    // reached only with a `kind` of "selected" or "granted", so the Actions / Passive boon surface
+    // already had this property. An unowned id renders nothing and warns once (§13), so a
+    // cross-book row is unchanged.
     if (opts.selected && e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
 
     if (opts.selected && e.activatable) {
@@ -212,9 +216,11 @@ export class PoolTab implements SheetComponent {
       });
       actv.addEventListener("click", () => ctx.editState?.toggleActiveBuff(entry.slug));
     }
-    // The same control on the blocks layout, hosted by the card's control strip
-    // instead of the row.
-    if (e.consumes?.resource) renderSpendControl(controls, { consumes: e.consumes, ctx });
+    // The same control on the blocks layout, hosted by the card's control strip instead of the
+    // row, under the same KNOWN-entries gate: `renderBlocks` calls this method for every
+    // `pool.available` candidate as well as for the stranded picks and the grants, so a card
+    // needs its own `granted || selected` test exactly as `row()` needs `selected`.
+    if ((opts.granted || opts.selected) && e.consumes?.resource) renderSpendControl(controls, { consumes: e.consumes, ctx });
 
     const meta = section.createDiv({ cls: "pc-block-meta" });
     const lvl = levelPrereqMax(e);
