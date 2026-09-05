@@ -1167,6 +1167,16 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Spend `amount` uses of an owned resource (R4-G4 §3.2.4): the clamped primitive, no new store.
+   *  A no-op on an unseeded key, so the spend control and this method agree on ownership; the amount
+   *  is floored at 1 so a malformed `consumes.amount` can never restore a use. */
+  spendFeatureUse(featureKey: string, amount: number): void {
+    const fu = this.character.state.feature_uses?.[featureKey];
+    if (!fu) return;
+    eq.setFeatureUse(this.character, featureKey, fu.used + Math.max(1, Math.floor(amount)));
+    this.onChange();
+  }
+
   setAttunementLimitOverride(n: number): void {
     if (!Number.isFinite(n)) return;
     this.character.overrides.attunement_limit = Math.max(0, Math.floor(n));

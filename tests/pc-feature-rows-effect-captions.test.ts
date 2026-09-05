@@ -4,6 +4,7 @@ import { PassiveFeaturesTab } from "../packages/obsidian/src/modules/pc/componen
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import { recalc } from "@archivist-gg/dnd5e/pc/pc.recalc";
+import { resolveFeatureResources } from "@archivist-gg/dnd5e/pc/pc.resources";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type {
   ResolvedCharacter,
@@ -285,5 +286,49 @@ describe("renderCardResource · the die level (R4-G4 §6.2.4)", () => {
     const host = mountContainer();
     renderCardResource(host, bard.feature.resources![0], ctx);
     expect(host.querySelector(".pc-resource-die")!.textContent).toBe("d6");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// R4-G4 §3.2.5 · the spend control in the row's single detail slot, and the
+// owner-and-spender rule that keeps a box tracker from double-rendering it.
+// ─────────────────────────────────────────────────────────────
+describe("renderFeatureRow · the spend control (R4-G4 §3.2.5)", () => {
+  it("R4-G4 §3.2.5: a pure spender (Flurry of Blows) carries the control in the slot", () => {
+    const flurry = rf({ id: "flurry", name: "Flurry of Blows", consumes: { resource: "monk:ki", amount: 1 } });
+    const ctx = renderCtx([flurry], { featureUses: { "monk:ki": { used: 0, max: 5 } } });
+    (ctx.resolved as { resources?: unknown }).resources = new Map([["monk:ki", { id: "monk:ki", name: "Ki", reset: "short-rest", maxFormula: "5", owner: { kind: "feature", featureId: "ki", featureName: "Ki", source: { kind: "class", slug: "monk", level: 2 } } }]]);
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, ctx);
+    expect(rowByName(c, "Flurry of Blows").querySelector("button.pc-spend-control")!.textContent).toBe("Spend 1 Ki");
+  });
+
+  it("Rage, the owner-and-spender case: the control is in neither the card nor the row", () => {
+    const rage = rf({ id: "rage", name: "Rage", consumes: { resource: "barbarian:rages", amount: 1 },
+      resources: [{ id: "barbarian:rages", name: "Rage", max_formula: "2", reset: "long-rest" }] });
+    const ctx = renderCtx([rage], { featureUses: { "barbarian:rages": { used: 0, max: 2 } } });
+    (ctx.resolved as { resources?: unknown }).resources = resolveFeatureResources([rage]);
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, ctx);
+    // m3's RED FIRST (Gate 2 I-1 / confirmation r1 I-5): the card is the row's next SIBLING (`.pc-action-expand`), not a
+    // descendant, so a row-scoped query cannot see a control the mutant moves into the card. The card read is assertion ONE.
+    expect((rowByName(c, "Rage").nextElementSibling as HTMLElement).querySelector("button.pc-spend-control")).toBeNull();
+    expect(rowByName(c, "Rage").querySelector("button.pc-spend-control")).toBeNull();
+    expect(rowByName(c, "Rage").querySelectorAll(".archivist-toggle-box").length).toBe(2);
+  });
+
+  it("a non-owner spender with an attack note: the control takes the slot and the note follows it into the card", () => {
+    const psi = rf({ id: "psionic-strike", name: "Psionic Strike", consumes: { resource: "psi:energy-die", amount: 1 },
+      attacks: [{ to_hit: "+5", damage: "1d8" }] });
+    const ctx = renderCtx([psi], { featureUses: { "psi:energy-die": { used: 0, max: 4 } } });
+    (ctx.resolved as { resources?: unknown }).resources = new Map([["psi:energy-die", { id: "psi:energy-die", name: "Psionic Energy Die", reset: "long-rest", maxFormula: "4", owner: { kind: "feature", featureId: "pp", featureName: "Psionic Power", source: { kind: "subclass", slug: "psi-warrior", level: 3 } } }]]);
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, ctx);
+    // The slot is single-occupancy: before R4-G4 the note held it and a control could not exist; now the
+    // control holds it and the note is NOT dropped, it lands in the expand card (the Finding B route).
+    const card = rowByName(c, "Psionic Strike").nextElementSibling as HTMLElement;
+    expect(card.querySelector(".pc-feature-card-attack")!.textContent).toBe("Attack: +5 · 1d8");
+    expect(rowByName(c, "Psionic Strike").querySelector("button.pc-spend-control")!.textContent).toBe("Spend 1 Psionic Energy Die");
+    expect(rowByName(c, "Psionic Strike").querySelector(".pc-feature-attack-note")).toBeNull();
   });
 });

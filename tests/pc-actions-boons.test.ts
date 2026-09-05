@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { ActionsTab } from "../packages/obsidian/src/modules/pc/components/actions-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
@@ -85,6 +85,19 @@ describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([]));
     expect(boonRows(c)).toEqual([]);
+  });
+
+  it("R4-G4 §3: a selected boon that consumes an OWNED resource carries the spend control; clicking spends 1", () => {
+    const c = mountContainer();
+    const spend = vi.fn();
+    const ctx = renderCtx([pool({ selected: [entry("parry", { name: "Parry", action_cost: "reaction", consumes: { resource: "fighter-2024:superiority-dice", amount: 1 } })] })], { editState: { spendFeatureUse: spend } });
+    (ctx.resolved.state as { feature_uses: unknown }).feature_uses = { "fighter-2024:superiority-dice": { used: 0, max: 4 } };
+    (ctx.resolved as { resources?: unknown }).resources = new Map([["fighter-2024:superiority-dice", { id: "fighter-2024:superiority-dice", name: "Superiority Dice", reset: "short-rest", maxFormula: "4", die: { base: "d8" }, owner: { kind: "feature", featureId: "cs", featureName: "Combat Superiority", source: { kind: "subclass", slug: "bm", level: 3 } } }]]);
+    new ActionsTab().render(c, ctx);
+    const btn = boonRowByName(c, "Parry").querySelector<HTMLButtonElement>("button.pc-spend-control")!;
+    expect(btn.textContent).toBe("Spend 1 Superiority Dice (d8)");
+    btn.click();
+    expect(spend).toHaveBeenCalledWith("fighter-2024:superiority-dice", 1);
   });
 
   it("keeps the 4-child badge layout on the Actions tab (D3 is passive-only)", () => {

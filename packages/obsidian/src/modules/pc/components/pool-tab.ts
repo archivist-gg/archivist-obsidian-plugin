@@ -5,6 +5,7 @@ import { levelPrereqMax } from "@archivist-gg/dnd5e/pc/pc.pools";
 import type { PoolLayout } from "@archivist-gg/dnd5e/types/selection-pool";
 import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "./row-expand-state";
+import { renderSpendControl } from "./actions/spend-control";
 
 const COST_LABELS: Record<string, string> = {
   action: "1 Action", "bonus-action": "1 Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
@@ -111,11 +112,16 @@ export class PoolTab implements SheetComponent {
 
     const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
     nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
-    const sub = metaSub(e);
+    const sub = metaSub(e, ctx);
     if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
     if (isRowExpanded(ctx, descKey)) openDesc(host, e);
+
+    // The shared spend control (R4-G4 §3.2.4; the pool tab is one of its three call
+    // sites, with the boon row and the feature row). An unowned id renders nothing and
+    // warns once (§13), so a cross-book row is unchanged.
+    if (e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
 
     if (opts.selected && e.activatable) {
       const actv = row.createEl("button", {
@@ -136,7 +142,7 @@ export class PoolTab implements SheetComponent {
     const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
     nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
     nameWrap.createSpan({ cls: "pc-spell-always", text: "granted" });
-    const sub = metaSub(e);
+    const sub = metaSub(e, ctx);
     if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
@@ -200,16 +206,15 @@ export class PoolTab implements SheetComponent {
       });
       actv.addEventListener("click", () => ctx.editState?.toggleActiveBuff(entry.slug));
     }
+    // The same control on the blocks layout, hosted by the card's control strip
+    // instead of the row.
+    if (e.consumes?.resource) renderSpendControl(controls, { consumes: e.consumes, ctx });
 
     const meta = section.createDiv({ cls: "pc-block-meta" });
     const lvl = levelPrereqMax(e);
     metaItem(meta, "Level", lvl ? String(lvl) : "—");
     if (e.action_cost) metaItem(meta, "Cost", COST_LABELS[e.action_cost] ?? e.action_cost);
-    if (e.consumes?.amount) {
-      const word = e.consumes.resource ?? e.consumes.column ?? "resource";
-      const display = e.consumes.amount === 1 ? word.replace(/s$/, "") : word;
-      metaItem(meta, "Cost", `${e.consumes.amount} ${display.charAt(0).toUpperCase()}${display.slice(1)}`);
-    }
+    if (e.consumes?.amount) metaItem(meta, "Cost", consumeCost(e.consumes, ctx));
     if (e.passive) metaItem(meta, "Type", "Passive");
 
     if (e.description) section.createEl("p", { cls: "pc-block-description", text: e.description });
@@ -243,17 +248,24 @@ function renderCounter(parent: HTMLElement, pool: ResolvedPool): void {
 }
 
 /** Italic meta sub-line: "Passive", action cost, and consume cost. */
-function metaSub(e: OptionalFeatureEntity): string {
+function metaSub(e: OptionalFeatureEntity, ctx: ComponentRenderContext): string {
   const parts: string[] = [];
   if (e.passive) parts.push("Passive");
   if (e.action_cost) parts.push(COST_LABELS[e.action_cost] ?? e.action_cost);
-  if (e.consumes?.amount) {
-    const word = e.consumes.resource ?? e.consumes.column ?? "resource";
-    const display = e.consumes.amount === 1 ? word.replace(/s$/, "") : word;
-    const label = `${display.charAt(0).toUpperCase()}${display.slice(1)}`;
-    parts.push(`${e.consumes.amount} ${label}`);
-  }
+  if (e.consumes?.amount) parts.push(consumeCost(e.consumes, ctx));
   return parts.join(" · ");
+}
+
+/** The "Cost" text for a `consumes` link, shared by the row sub-line and the block card's meta
+ *  (R4-G4 §3.2.4). The resource's NAME from `resolved.resources` when the character owns it, else
+ *  the raw id: never singularized and never capitalized, because the old
+ *  `.replace(/s$/, "")` + capitalize pair was game-vocabulary logic living in a renderer
+ *  (invariant 3), and it printed "1 Fighter-2024:superiority-dice" on a Parry row. A `column` or
+ *  absent link keeps the literal it always had. */
+function consumeCost(consumes: NonNullable<OptionalFeatureEntity["consumes"]>, ctx: ComponentRenderContext): string {
+  const id = consumes.resource ?? consumes.column ?? "resource";
+  const name = consumes.resource ? (ctx.resolved.resources?.get(consumes.resource)?.name ?? id) : id;
+  return `${consumes.amount} ${name}`;
 }
 
 /** One crimson-labelled meta item inside a pc-block-meta row. */

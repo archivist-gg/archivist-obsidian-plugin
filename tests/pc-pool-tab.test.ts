@@ -99,7 +99,25 @@ describe("PoolTab — spell-like", () => {
   it("shows the consume cost in the row's meta sub-line", () => {
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, mkCtx(basePool));
-    expect(el.textContent).toContain("1 Seal");
+    // R4-G4: the raw id when the character owns no such resource; the singularized
+    // "Seal" was renderer-side game vocabulary (invariant 3). The owned half of this
+    // read is pinned by the spend-control test below.
+    expect(el.textContent).toContain("1 seals");
+  });
+
+  it("R4-G4 §3: a row whose consumes.resource is OWNED renders the spend control; an unowned one renders none", () => {
+    const owned = { ...basePool };
+    const ctx = mkCtx(owned);
+    (ctx.resolved.state as { feature_uses?: unknown }).feature_uses = { seals: { used: 0, max: 3 } };
+    (ctx.resolved as { resources?: unknown }).resources = new Map([["seals", { id: "seals", name: "Seals", reset: "long-rest", maxFormula: "3", owner: { kind: "feature", featureId: "s", featureName: "Seals", source: { kind: "class", slug: "reaver", level: 1 } } }]]);
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, ctx);
+    expect(el.querySelector("button.pc-spend-control")!.textContent).toBe("Spend 1 Seals");
+    // The OTHER half of the same index read: the Cost meta prints the index NAME, not the raw id.
+    expect(el.querySelector(".pc-spell-sub")!.textContent).toContain("1 Seals");
+    const el2 = mountContainer();
+    new PoolTab("interdict-boons").render(el2, mkCtx(basePool));
+    expect(el2.querySelector("button.pc-spend-control")).toBeNull();
   });
 
   it("clicking a name expands a plain-text description", () => {

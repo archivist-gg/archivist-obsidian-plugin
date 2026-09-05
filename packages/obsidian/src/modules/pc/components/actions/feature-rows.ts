@@ -6,6 +6,7 @@ import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes, CHARGE_BOX_LIMIT } from "./charge-boxes";
 import { renderPointPool } from "./point-pool";
 import { renderEffectCaptions } from "./effect-captions";
+import { renderSpendControl } from "./spend-control";
 import { RESET_LABELS, CUSTOM_RESET_TIP } from "./reset-labels";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
@@ -16,9 +17,11 @@ import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state
 /**
  * One unified feature/passive row:
  *   [cost badge (empty on the Passive tab)] · [name (+ source sub-label) · right detail · caret]
- * Right detail is the FIRST resource tracker, else the feature's attack note.
- * Extra resources render inside the expand card; when a tracker occupies the
- * single in-row slot the attack note moves to that card too (Finding B). Click
+ * Right detail is the FIRST resource tracker, else the R4-G4 §3.2.5 spend
+ * control, else the feature's attack note.
+ * Extra resources render inside the expand card; when a tracker or a control
+ * occupies the single in-row slot the attack note moves to that card too
+ * (Finding B). Click
  * (outside the tracker / buff toggle) reveals the shared `.archivist-item-block` card.
  *
  * `merged` (spec §2 / D2-1): same-parent subclass features collapsed onto this
@@ -108,14 +111,28 @@ export function renderFeatureRow(
     }
   }
 
-  // Right detail — first resource tracker, else the feature's attack note.
-  // Compute the note ONCE: it renders in-row only when no tracker took the
-  // single detail slot; when a tracker occupies the slot the note moves to the
-  // expand card below (Finding B — the detail is never dropped).
+  // Right detail, in slot order: first resource tracker, then the spend control,
+  // then the feature's attack note. Compute the note ONCE: it renders in-row only
+  // when neither the tracker nor the control took the single detail slot; when one
+  // of them occupies it the note moves to the expand card below (Finding B: the
+  // detail is never dropped).
   const detail = row.createDiv({ cls: "pc-feature-detail" });
   const hasTracker = renderFirstResourceTracker(detail, feature, ctx);
+  const consumes = feature.consumes;
+  const spendId = consumes?.resource;
+  const ownsIt = !!spendId && (feature.resources ?? []).some((r) => r.id === spendId);
+  const fu = spendId ? ctx.resolved.state.feature_uses?.[spendId] : undefined;
+  const trackerIsBoxes = !!fu && fu.max <= CHARGE_BOX_LIMIT && fu.max !== AT_WILL_MAX;
+  // Owner-and-spender (R4-G4 §3.2.5): a feature that owns the resource it spends renders NO
+  // control when a box click already spends exactly 1 (Rage); the control moves into the card
+  // when the spend is larger than 1 (Lay on Hands) or the tracker is the numeric widget, where
+  // no single click spends the right amount. A pure spender (Flurry of Blows) takes the slot.
+  const controlInSlot = !!spendId && !ownsIt;
+  const controlInCard = !!spendId && ownsIt && !(consumes.amount === 1 && trackerIsBoxes);
+  let hasControl = false;
+  if (controlInSlot && consumes) hasControl = renderSpendControl(detail, { consumes, ctx }) !== null;
   const attackNote = formatFeatureAttackNote(feature, ctx);
-  if (!hasTracker && attackNote) {
+  if (!hasTracker && !hasControl && attackNote) {
     detail.createSpan({ cls: "pc-feature-attack-note", text: attackNote });
   }
 
@@ -168,9 +185,13 @@ export function renderFeatureRow(
   for (const m of secondaries) {
     for (const res of m.feature.resources ?? []) renderCardResource(inner, res, ctx);
   }
-  // Finding B: when a tracker occupied the single in-row detail slot, the
-  // feature's attack note lands here in the expand card instead of being lost.
-  if (hasTracker && attackNote) {
+  // The owner-and-spender control (R4-G4 §3.2.5): the row kept its tracker, so the
+  // spend lands here beside the card's other resource lines.
+  if (controlInCard && consumes) renderSpendControl(inner, { consumes, ctx });
+  // Finding B: when a tracker OR a spend control occupied the single in-row detail
+  // slot, the feature's attack note lands here in the expand card instead of being
+  // lost.
+  if ((hasTracker || hasControl) && attackNote) {
     inner.createDiv({ cls: "pc-feature-card-attack", text: `Attack: ${attackNote}` });
   }
 

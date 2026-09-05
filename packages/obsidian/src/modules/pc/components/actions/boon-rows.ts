@@ -3,6 +3,7 @@ import type { ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { renderFeatureCard, sourceBadgeText } from "../../blocks/feature-card";
 import { renderCostBadge } from "./cost-badge";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
+import { renderSpendControl } from "./spend-control";
 
 /**
  * A single Interdict Boon row on the consolidated Actions tab (spec §3.6 / #1b).
@@ -21,9 +22,11 @@ import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state
  *     `boonEconomy` collapses free→passive, so a granted Free boon must key its
  *     FREE pill (and its non-dimming) off the raw `action_cost`, not the bucket.
  *   - Detail = the provenance/state marker: an **Active** toggle (activatable
- *     selected — `pc-pool-active`, wired to `editState.toggleActiveBuff(slug)`,
+ *     selected · `pc-pool-active`, wired to `editState.toggleActiveBuff(slug)`,
  *     the same control the pool tab uses) / a quiet `pc-boon-status` "granted"
- *     marker (granted) / nothing (plain selected).
+ *     marker (granted) / nothing (plain selected), followed by the shared spend
+ *     control (R4-G4 §3.2.4) when the boon consumes a resource the character
+ *     owns. Both can share the slot: a boon has no tracker of its own.
  * Clicking a row (outside the Active toggle) expands the shared
  * `.archivist-item-block` card with the boon's description.
  */
@@ -60,10 +63,10 @@ export function renderBoonRow(
   nameCell.createDiv({ cls: "pc-action-row-name", text: e.name });
   nameCell.createDiv({ cls: "pc-action-row-sub", text: poolLabel });
 
-  // Right detail — Active toggle for an activatable selected boon (the pool
+  // Right detail: an Active toggle for an activatable selected boon (the pool
   // tab's `pc-pool-active` button, wired to the same `toggleActiveBuff` action);
   // a quiet "granted" provenance marker for a granted boon; nothing for a plain
-  // selected boon.
+  // selected boon. The spend control follows whichever of those rendered.
   const detail = row.createDiv({ cls: "pc-feature-detail" });
   if (activatable) {
     const active = (ctx.resolved.state.active_buffs ?? []).includes(entry.slug);
@@ -80,6 +83,9 @@ export function renderBoonRow(
     // families) — a granted boon is auto-on; a plain selected boon shows none.
     detail.createDiv({ cls: "pc-boon-status", text: "granted" });
   }
+  // The shared spend control (R4-G4 §3.2.4). An unowned id renders nothing and warns
+  // once (§13), so a cross-book boon row is byte-identical to today's.
+  if (e.consumes?.resource) renderSpendControl(detail, { consumes: e.consumes, ctx });
 
   row.createDiv({ cls: "pc-action-caret", text: "›" });
 
