@@ -118,10 +118,24 @@ describe("ProficienciesPanel", () => {
     expect(valueFor(container, "Weapons")).toBe("Hand Crossbows, Rapiers");
     expect(valueFor(container, "Languages")).toBe("Common");
     // The MOVED PIN (R4-G4 T9): this read "None" until the hoisted mock's tools
-    // bucket gained the §9.2 fixture. "None" is still pinned, on Armor's own
-    // empty-bucket assertion below in the empty-buckets test.
+    // bucket gained the §9.2 fixture. "None" is re-pinned below, in the
+    // all-empty test, on all four lines.
     expect(valueFor(container, "Tools")).toBe("Thieves' Tools, Herbalism Kit");
     expect(valueFor(container, "Armor")).toBe("Light");
+  });
+
+  it("R4-G4 §9.2: the expertise marker lands OUTSIDE edit mode too", () => {
+    // The edit-mode test below reaches the tools line through
+    // `[data-prof-domain="tools"]`, an attribute the panel only sets on an
+    // editable row · so it cannot say anything about the state the sheet spends
+    // most of its life in. The class rides the ENTRY, not the row handler, and
+    // this is the assertion that says so (review M-4).
+    // `Array.from`, never a spread: this file's `lib` has no DOM.Iterable.
+    const container = render(ctx);
+    const spans = Array.from(lineFor(container, "Tools").querySelectorAll(".pc-prof-val"));
+    expect(spans.map((s) => [s.textContent, s.classList.contains("expertise")]))
+      .toEqual([["Thieves' Tools", true], ["Herbalism Kit", false]]);
+    expect(container.querySelectorAll(".pc-prof-line.editable")).toHaveLength(0);
   });
 
   it("renders 'None' for every bucket the aggregate leaves empty", () => {

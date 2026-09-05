@@ -107,6 +107,13 @@ function captionFor(e: FeatureEffect): string | undefined {
  * The tooltip is also skipped when the caption BODY already prints the plain-texted condition,
  * which is the R4-G4 §9.4 pair (`sense` / `proficiency`, whose captions read "…, <condition>"). Same
  * rule, stated once instead of as a second kind list: a hover that repeats a visible line is noise.
+ * That skip is a SUBSTRING test standing in for the exact predicate, which is "a self-subject `sense`
+ * or `proficiency` caption" · the two conditions `captionFor` itself gates those arms on. The two
+ * agree on everything shipped: simulated over the whole converter corpus, the old rule sets 111
+ * tooltips and this one sets 70, the 41 suppressed are exactly the §9.4 pair (29 sense + 12
+ * proficiency) and NO pre-existing caption loses a hover. They can diverge in principle · a short
+ * qualifier that is also a substring of its own body would drop silently · so if a future arm prints
+ * a field that can equal its `condition`, swap the substring for the predicate.
  */
 export function renderEffectCaptions(
   host: HTMLElement,
