@@ -12,7 +12,9 @@ export interface PointPoolOpts {
 }
 
 /** The numeric pool widget (R4-G4 §5.2.1): "remaining / max <name>" with − / + steppers and a direct-entry
- *  field on the value. Used by the point-pool tab head and by the feature sites above CHARGE_BOX_LIMIT. */
+ *  field on the value. Its only callers today are the two feature sites above CHARGE_BOX_LIMIT,
+ *  `renderCardResource` and `renderFirstResourceTracker`, which hand it in as `renderLarge`; T5's
+ *  point-pool tab head is pending and joins them there. */
 export function renderPointPool(host: HTMLElement, opts: PointPoolOpts): HTMLElement {
   const wrap = host.createDiv({ cls: "pc-point-pool" });
   const clamp = (n: number) => Math.max(0, Math.min(opts.max, Math.floor(n)));

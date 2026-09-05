@@ -152,7 +152,7 @@ describe("ActionsTab — grouped structure", () => {
       resources: [{ id: "bard:bardic-inspiration", name: "Bardic Inspiration", max_formula: "{cha_mod}",
         die: { base: "d6", scaling: { "5": "d8", "10": "d10" } }, reset: "short-rest" }],
       attacks: [{ name: "Strike", to_hit: "+5" }],   // no static damage: the scaling die is the damage
-    }, { source: { kind: "class", slug: "bard", level: 1 } } as Partial<ResolvedFeature>);
+    }, { source: { kind: "class", slug: "bard", level: 1 } });
     const ctx = renderCtx([bard], {
       classes: [{ entity: { slug: "bard" }, level: 4 }, { entity: { slug: "fighter" }, level: 6 }], totalLevel: 10,
       featureUses: { "bard:bardic-inspiration": { used: 0, max: 3 } },

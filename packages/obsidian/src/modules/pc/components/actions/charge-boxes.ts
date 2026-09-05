@@ -1,6 +1,10 @@
 /** A PRESENTATIONAL constant (renderer-side, not game vocabulary: Gate 0 Q3): above this many points
- *  the feature sites switch to the numeric widget; the spell-slot, item and race sites never pass a
- *  `renderLarge` and keep drawing boxes. */
+ *  the feature sites switch to the numeric widget. The spell-slot site (`renderCastView`) and the item
+ *  site (`renderItemRow`) call `renderChargeBoxes` directly, pass none of `limit` / `atWill` /
+ *  `renderLarge`, and keep drawing boxes. The race block does NOT: it rides
+ *  `renderFirstResourceTracker`, so it receives all three opts like any other feature tracker. That is
+ *  harmless by the spec's measurement (R4-G4 §5.1: 228 race resource declarations, all `prof` or small
+ *  literals, none 999, none above 12), so no race trait reaches either new branch today. */
 export const CHARGE_BOX_LIMIT = 12;
 
 export interface ChargeBoxesOpts {

@@ -275,13 +275,13 @@ describe("renderCardResource · the die level (R4-G4 §6.2.4)", () => {
     const { renderCardResource } = await import("../packages/obsidian/src/modules/pc/components/actions/feature-rows");
     const bard = rf({ id: "bardic-inspiration", name: "Bardic Inspiration", resources: [{ id: "bard:bardic-inspiration", name: "Bardic Inspiration",
       max_formula: "{cha_mod}", die: { base: "d6", scaling: { "5": "d8", "10": "d10" } }, reset: "short-rest" }] },
-      { source: { kind: "class", slug: "bard", level: 1 } } as Partial<ResolvedFeature>);
+      { source: { kind: "class", slug: "bard", level: 1 } });
     const ctx = renderCtx([bard], { classes: [{ entity: { slug: "bard" }, level: 4 }, { entity: { slug: "fighter" }, level: 6 }],
       featureUses: { "bard:bardic-inspiration": { used: 0, max: 3 } }, totalLevel: 10 });
     (ctx.resolved as { resources?: unknown }).resources = resolveFeatureResources([bard]);
     // §17 row 37's fixture contract: the index entry's owner is the Bard class AND classes[] carries { slug: "bard", level: 4 }
     // (resourceLevelFor finds the class BY SLUG); totalLevel 10 is the mutant's own value. renderCardResource is EXPORTED
-    // (feature-rows.ts:187) and called directly, so resources[0] is fine here; through the row a die must sit at resources[1..N].
+    // and called directly, so resources[0] is fine here; through the row a die must sit at resources[1..N].
     const host = mountContainer();
     renderCardResource(host, bard.feature.resources![0], ctx);
     expect(host.querySelector(".pc-resource-die")!.textContent).toBe("d6");

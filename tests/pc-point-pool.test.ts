@@ -30,4 +30,25 @@ describe("renderPointPool (R4-G4 §5.2.1)", () => {
     full.querySelector<HTMLElement>(".pc-point-pool-minus")!.click();
     expect(onSet2).toHaveBeenLastCalledWith(3);  // clamped: never above max
   });
+
+  // Spec §5.3 names "entry" beside the two steppers. The field shows REMAINING, so the value the
+  // user types is inverted before it reaches the caller: used = max - entered. `makeInlineInput`
+  // clamps the typed number to the [min, max] it was handed FIRST, then renderPointPool's own
+  // clamp floors the inversion, so both ends are covered. Enter is the explicit-commit path
+  // (`makeInlineInput`'s keydown handler); a blur only commits when the raw value differs.
+  it("RED FIRST: direct entry writes max - entered, clamped at both ends (m12b)", () => {
+    const enter = (max: number, used: number, typed: string) => {
+      const root = mountContainer();
+      const onSet = vi.fn();
+      renderPointPool(root, { id: "paladin:lay-on-hands", name: "Lay on Hands", used, max, onSet });
+      root.querySelector<HTMLElement>(".pc-point-pool-value")!.click();
+      const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
+      input.value = typed;
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+      return onSet;
+    };
+    expect(enter(25, 5, "10")).toHaveBeenLastCalledWith(15);   // 10 remaining left => 15 spent
+    expect(enter(25, 5, "40")).toHaveBeenLastCalledWith(0);    // entry clamps to 25 => nothing spent
+    expect(enter(25, 5, "-3")).toHaveBeenLastCalledWith(25);   // entry clamps to 0 => everything spent
+  });
 });

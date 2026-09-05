@@ -194,8 +194,9 @@ function resourceLevel(id: string | undefined, ctx: ComponentRenderContext): num
   return owner ? resourceLevelFor(owner.source, ctx.resolved) : ctx.resolved.totalLevel;
 }
 
-/** A resource tracker rendered inside the card: the primary's resources[1..N] (`:162`) and every
- *  resource of a merged secondary (`:166`). */
+/** A resource tracker rendered inside the card. `renderFeatureRow` calls it twice over its expand
+ *  card: once for each of the primary's `(feature.resources ?? []).slice(1)`, and once for every
+ *  resource of each merged secondary in `secondaries`. */
 export function renderCardResource(parent: HTMLElement, resource: Resource, ctx: ComponentRenderContext): void {
   const id = resource.id;
   const fu = id ? ctx.resolved.state.feature_uses?.[id] : undefined;
@@ -213,7 +214,7 @@ export function renderCardResource(parent: HTMLElement, resource: Resource, ctx:
     onRestore: () => ctx.editState?.restoreFeatureUse(id),
     atWill: fu.max === AT_WILL_MAX,
     limit: CHARGE_BOX_LIMIT,
-    renderLarge: (parent) => renderPointPool(parent, {
+    renderLarge: (host) => renderPointPool(host, {
       id, name: resource.name, used: fu.used, max: fu.max,
       resetLabel: RESET_LABELS[resource.reset], onSet: (n) => ctx.editState?.setFeatureUse(id, n),
     }),
@@ -247,7 +248,7 @@ export function renderFirstResourceTracker(detail: HTMLElement, feature: Feature
     onRestore: () => ctx.editState?.restoreFeatureUse(key),
     atWill: fu.max === AT_WILL_MAX,
     limit: CHARGE_BOX_LIMIT,
-    renderLarge: (parent) => renderPointPool(parent, {
+    renderLarge: (host) => renderPointPool(host, {
       id: key, name: res0?.name ?? feature.name, used: fu.used, max: fu.max,
       resetLabel: RESET_LABELS[reset], onSet: (n) => ctx.editState?.setFeatureUse(key, n),
     }),
