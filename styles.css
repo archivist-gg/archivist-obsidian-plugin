@@ -7574,15 +7574,48 @@ body.theme-light .archivist-tag-atk:hover {
    `expend_condition` captions, rendered on pool rows, boon rows and feature rows.
    Scoped to the sheet like every other rule in this partial. The explicit
    display/height pair is the Obsidian forced-button-height workaround the
-   passive-tab pass measured: a bare <button> inherits a fixed height. */
+   passive-tab pass measured: a bare <button> inherits a fixed height.
+
+   NARROW WIDTHS (R4-G4 Task 15 rider, the Task 14 live finding F-1). `renderSpendControl` writes a
+   label as long as "Spend 1 Superiority Dice (d8)" and a button does not wrap its label, so under
+   the flex default `min-width: auto` BOTH the wrapper and the button floor at that intrinsic width
+   and the control pushes itself, and on a pool row the Activate button beside it, out of the sheet.
+   Measured on `R4G4 BattleMaster3 S` with cdp-verify at window widths 1200 / 768 / 400
+   (`.pc-content` 832 / 400 / 296 px): the Actions tab overflowed by 56 px then 125 px with
+   `div.pc-spend` named as the culprit, Passive & Features by 6 px then, at 400, by 5 px on
+   `div.pc-spend` while `button.pc-spend-control` stuck out by 76 px, and the Maneuvers pool tab by
+   82 px with `button.pc-pool-active` pushed out. 1200 was clean on all three.
+
+   That Passive pair at 400 is the reading this fix follows: the BUTTON is the floor everywhere,
+   because it never wraps, and the WRAPPER is an additional floor only where its own cell cannot
+   shrink either, which is the Actions row. So the button gets `min-width: 0` with a wrapping
+   `white-space` (and `overflow-wrap`, since the resource NAME inside the label is data and may be
+   one long token), and the wrapper gets `min-width: 0`, `max-width: 100%` and `flex-wrap: wrap` so
+   the `free_uses` / `expend_condition` captions fall under the button instead of beside it.
+
+   The chain is the SAME at every width, measured across the partials: neither the
+   `@container pc-content (max-width: 499px)` block in this file and in blocks.css nor the
+   `@container pc-sheet (max-width: 499px)` block restyles `.pc-action-row`, `.pc-feature-detail` or
+   `.pc-spell-prep-row`, so the wide-tier grid and flex chain is what the narrow widths lay out.
+   jsdom computes no layout and applies no stylesheet, so no unit test can hold this: the witness is
+   the live cdp-verify sweep with `--check-overflow --check-overlap`, recorded in the Task 15
+   report. */
 .archivist-pc-sheet .pc-spend {
   display: inline-flex;
   gap: 0.4em;
   align-items: baseline;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-spend-control {
   display: inline-block;
   height: auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
 }
 .archivist-pc-sheet .pc-spend-caption {
   font-size: 0.85em;
