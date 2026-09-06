@@ -1329,8 +1329,9 @@ export class CharacterEditState {
 
   /** The manual "Regain N" arm (R4-G4 §7.2.3): regain `amount` uses of an owned resource, or all. No cooldown is
    *  tracked (the entry's own `reset` is the ACTION's recharge, rendered as a caption; G8). The amount is floored at
-   *  1 and `used` clamped at 0 (`Math.max(0, fu.used - Math.max(1, Math.floor(amount)))`), the mirror of
-   *  `spendFeatureUse`'s floor, so a malformed `recovery.amount` can never SPEND a use here (review M-15). */
+   *  1 and truncated before it is subtracted, and `used` is clamped at 0 · the mirror of `spendFeatureUse`'s own
+   *  floor, so a malformed `recovery.amount` can never SPEND a use here (review M-15). Described, never quoted:
+   *  reproducing the subtraction verbatim made the recorded mutant pattern over it match twice (review C-2). */
   regainFeatureUses(resourceId: string, amount: number | "all"): void {
     const fu = this.character.state.feature_uses?.[resourceId];
     if (!fu) return;
