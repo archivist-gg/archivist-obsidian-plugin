@@ -6,6 +6,7 @@ import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state
 import { renderSpendControl } from "./spend-control";
 import { renderEffectCaptions } from "./effect-captions";
 import { renderPickTracker } from "./pick-tracker";
+import { renderAffordanceCaption, renderControlGroup } from "./entry-affordance";
 
 /**
  * A single Interdict Boon row on the consolidated Actions tab (spec §3.6 / #1b).
@@ -25,15 +26,19 @@ import { renderPickTracker } from "./pick-tracker";
  *     FREE pill (and its non-dimming) off the raw `action_cost`, not the bucket.
  *   - Name = the boon's name, followed by the R4-G3a caption line for its own
  *     `effects` (heal / temp-hp / extra-action / every effect imposed on someone
- *     else), the same `renderEffectCaptions` line the feature rows carry.
- *   - Detail = the provenance/state marker: an **Active** toggle (activatable
- *     selected · `pc-pool-active`, wired to `editState.toggleActiveBuff(slug)`,
- *     the same control the pool tab uses) / a quiet `pc-boon-status` "granted"
- *     marker (granted) / nothing (plain selected), then the boon's OWN `uses`
- *     tracker when it carries one (R4-G4 §12: `renderPickTracker`, the same
- *     component the two pool-tab rows call), then the shared spend control
- *     (R4-G4 §3.2.4) when the boon consumes a resource the character owns. All
- *     three can share the slot.
+ *     else), the same `renderEffectCaptions` line the feature rows carry, and then
+ *     the R4-G5 §4.2.2 (a) affordance caption: the granted-die recipient, which
+ *     renders on four of the 43 maneuvers and on nothing else today.
+ *   - Detail = two arms since R4-G5 §4.2.2 (b). GRANTED: the quiet `pc-boon-status`
+ *     "granted" marker, then the boon's OWN `uses` tracker (R4-G4 §12:
+ *     `renderPickTracker`, the same component the two pool-tab rows call), both
+ *     DIRECT children of the slot, because a granted boon is auto-on and takes no
+ *     toggle. SELECTED: one `.pc-buff-group` (`renderControlGroup`) holding the
+ *     **Active** toggle (activatable only · `pc-pool-active`, wired to
+ *     `editState.toggleActiveBuff(slug)`, the same control the pool tab uses) and
+ *     then that same tracker; a selected boon with neither renders no group at all.
+ *     Either arm is followed by the shared spend control (R4-G4 §3.2.4) when the
+ *     boon consumes a resource the character owns, as a SIBLING of the group.
  * Clicking a row (outside the Active toggle) expands the shared
  * `.archivist-item-block` card with the boon's description.
  */
@@ -46,7 +51,6 @@ export function renderBoonRow(
   passive = false,
 ): void {
   const e = entry.entity;
-  const activatable = kind === "selected" && !!e.activatable;
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row pc-boon-row" });
 
@@ -74,32 +78,28 @@ export function renderBoonRow(
   nameCell.createDiv({ cls: "pc-action-row-name", text: e.name });
   renderEffectCaptions(nameCell, e.effects ?? [], ctx);
 
-  // Right detail: an Active toggle for an activatable selected boon (the pool
-  // tab's `pc-pool-active` button, wired to the same `toggleActiveBuff` action);
-  // a quiet "granted" provenance marker for a granted boon; nothing for a plain
-  // selected boon. The `uses` tracker and then the spend control follow whichever
-  // of those rendered.
-  const detail = row.createDiv({ cls: "pc-feature-detail" });
-  if (activatable) {
-    const active = (ctx.resolved.state.active_buffs ?? []).includes(entry.slug);
-    const btn = detail.createEl("button", {
-      cls: `pc-pool-active${active ? " on" : ""}`,
-      text: active ? "Active" : "Activate",
-    });
-    btn.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      ctx.editState?.toggleActiveBuff(entry.slug);
-    });
-  } else if (kind === "granted") {
-    // Quiet provenance marker (distinct from the economy-pill and meta-chip
-    // families) — a granted boon is auto-on; a plain selected boon shows none.
-    detail.createDiv({ cls: "pc-boon-status", text: "granted" });
-  }
-  // The boon's OWN `uses` tracker (R4-G4 §12), before the spend control: a boon that both
-  // tracks its own uses and spends a pool resource reads left to right as track, then spend.
-  renderPickTracker(detail, entry, ctx);
-  // The shared spend control (R4-G4 §3.2.4). An unowned id renders nothing and warns
+  // R4-G5 §4.2.2 (a): the granted-die recipient, beside the effect captions in the same cell (the
+  // caption family's shipped home). It renders on four of the 43 maneuvers and on nothing else today.
+  renderAffordanceCaption(nameCell, entry, ctx);
+
+  // Right detail, in two arms (R4-G5 §4.2.2 b): a GRANTED boon keeps its quiet provenance marker and
+  // its own `uses` tracker as DIRECT children of the slot; a SELECTED boon puts its Active toggle and
+  // that tracker in ONE `.pc-buff-group`. The shared spend control (R4-G4 §3.2.4) is created last at
+  // both, as a SIBLING of the group and never a child of it: an unowned id renders nothing and warns
   // once (§13), so a cross-book boon row is byte-identical to today's.
+  const detail = row.createDiv({ cls: "pc-feature-detail" });
+  if (kind === "granted") {
+    // Quiet provenance marker (distinct from the economy-pill and meta-chip families): a granted boon
+    // is auto-on, so it takes no toggle and therefore no group · its tracker stays a DIRECT child of
+    // the detail slot, after the marker and before the spend control, exactly where it has been.
+    detail.createDiv({ cls: "pc-boon-status", text: "granted" });
+    renderPickTracker(detail, entry, ctx);
+  } else {
+    // R4-G5 §4.2.2 (b): a SELECTED boon's Active toggle and its own `uses` tracker in one group,
+    // toggle-then-tracker as this row has always read them. A plain selected boon with neither renders
+    // no group at all (the thunk).
+    renderControlGroup(detail, entry, ctx, { selected: true, order: "toggle-first" });
+  }
   if (e.consumes?.resource) renderSpendControl(detail, { consumes: e.consumes, ctx });
 
   row.createDiv({ cls: "pc-action-caret", text: "›" });

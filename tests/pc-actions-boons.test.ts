@@ -184,6 +184,27 @@ describe("ActionsTab · a boon's OWN uses (R4-G4 §12)", () => {
     return ctx;
   };
 
+  /** `owned()` with the Active toggle in play. Cloud Rune IS `activatable` in the corpus; the shipped
+   *  `owned()` fixture omits the flag, and a group holding only a tracker cannot pin the ORDER. */
+  const ownedActivatable = () => {
+    const ctx = owned();
+    const e = ctx.resolved.pools![0].selected[0].entity as { activatable?: boolean };
+    e.activatable = true;
+    return ctx;
+  };
+
+  /** `owned()` with the same entry GRANTED instead of selected: the granted arm renders the "granted"
+   *  marker and the tracker as direct children of the detail slot, never a group. A CONSTRUCTION: no
+   *  shipped `pool_grants` entry carries `uses` (measured, both of the install's two are Elemental
+   *  Attunement). */
+  const grantedOwned = () => {
+    const ctx = owned();
+    const p = ctx.resolved.pools![0];
+    p.grants = p.selected;
+    p.selected = [];
+    return ctx;
+  };
+
   it("RED FIRST: the boon row's detail slot carries the pick's tracker, spent to its used count", () => {
     const c = mountContainer();
     new ActionsTab().render(c, owned());
@@ -193,14 +214,35 @@ describe("ActionsTab · a boon's OWN uses (R4-G4 §12)", () => {
     expect(detail.querySelector(".pc-pick-track .pc-charge-recovery")!.textContent).toBe("/ Short Rest");
   });
 
-  it("the tracker precedes the spend control inside the detail slot", () => {
+  it("R4-G5 §4.2.2 (b): the boon row's group precedes the spend control, and holds the toggle then the tracker", () => {
     const c = mountContainer();
-    new ActionsTab().render(c, owned());
+    new ActionsTab().render(c, ownedActivatable());
     const detail = boonRowByName(c, "Cloud Rune").querySelector<HTMLElement>(".pc-feature-detail")!;
+    const group = detail.querySelector<HTMLElement>(".pc-buff-group")!;
+    // assertion ONE, and row 15's RED: the group's index in the detail slot is less than the spend
+    // control's. It is FIRST because invariant 4 requires the RED assertion to be the first `expect`
+    // in its `it()`, and t5-m15 (which moves the group AFTER the spend control) leaves the group's
+    // CONTENTS unchanged, so only this comparison reds under it. ONE `it()` is kept: the two
+    // assertions are two properties of one placement and t5-m44's boon-row control stays green either way.
     const kids = Array.from(detail.children);
-    const track = kids.findIndex((n) => n.classList.contains("pc-pick-track"));
-    const spend = kids.findIndex((n) => n.classList.contains("pc-spend"));
-    expect(track).toBeGreaterThanOrEqual(0);
-    expect(spend).toBeGreaterThan(track);
+    expect(kids.findIndex((n) => n.classList.contains("pc-buff-group")))
+      .toBeLessThan(kids.findIndex((n) => n.classList.contains("pc-spend")));
+    // assertion TWO: the tracker is a child of the GROUP (not of the detail slot), in the boon row's
+    // shipped toggle-then-tracker order (t5-m44's RED lives on the POOL row's mirror of this)
+    expect(Array.from(group.children).map((n) => n.className))
+      .toEqual(["pc-pool-active", "pc-feature-track pc-pick-track"]);
+  });
+
+  it("R4-G5 §4.2.2 (b): a GRANTED boon row keeps its tracker as a direct child of the detail slot, outside any group", () => {
+    // A PRESENCE assertion, named in §13's "Named NON-mutants" line: it carries no mutant row of its
+    // own. A construction, too: no shipped `pool_grants` entry carries `uses` (measured, both of the
+    // install's two are Elemental Attunement). It guards the split of `renderBoonRow`'s single
+    // unconditional `renderPickTracker` call into a granted arm and a group.
+    const c = mountContainer();
+    new ActionsTab().render(c, grantedOwned());
+    const detail = boonRowByName(c, "Cloud Rune").querySelector<HTMLElement>(".pc-feature-detail")!;
+    expect(Array.from(detail.children).map((n) => n.className))
+      .toEqual(["pc-boon-status", "pc-feature-track pc-pick-track", "pc-spend"]);
+    expect(detail.querySelector(".pc-buff-group")).toBeNull();
   });
 });

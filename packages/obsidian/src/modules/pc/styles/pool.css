@@ -32,3 +32,10 @@
    inline-flex / 0.4em / baseline · review M-11.) */
 .archivist-pc-sheet .pc-pool-head-resource { display: flex; align-items: center; gap: var(--pc-space-2); }
 .archivist-pc-sheet .pc-pool-head-name { font-weight: 700; }
+
+/* The Active toggle and the pick's own uses tracker as ONE cluster on a pool row and a boon row
+   (R4-G5 §4.2.2 b). Sheet-scoped like every rule in this partial. It WRAPS and may shrink, while
+   `.pc-pool-active` inside it keeps its own `white-space: nowrap; flex-shrink: 0`, so the pair falls to
+   a second line together instead of the button being pushed out of the row (the shape the T15 rider
+   measured at 400 px). */
+.archivist-pc-sheet .pc-buff-group { display: inline-flex; align-items: center; gap: 0.35rem; min-width: 0; flex-wrap: wrap; }

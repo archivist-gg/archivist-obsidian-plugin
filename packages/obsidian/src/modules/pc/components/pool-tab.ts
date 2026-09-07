@@ -10,6 +10,7 @@ import { renderSpendControl } from "./actions/spend-control";
 import { CHARGE_BOX_LIMIT } from "./actions/charge-boxes";
 import { renderPointPool } from "./actions/point-pool";
 import { renderPickTracker } from "./actions/pick-tracker";
+import { renderAffordanceCaption, renderControlGroup } from "./actions/entry-affordance";
 import { renderResourceTracker } from "./actions/resource-tracker";
 import { RESET_LABELS, CUSTOM_RESET_TIP } from "./actions/reset-labels";
 import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
@@ -85,7 +86,6 @@ export class PoolTab implements SheetComponent {
         this.row(list, entry, {
           selected: selectedSlugs.has(entry.slug),
           atCap,
-          active: activeBuffs.includes(entry.slug),
         }, pool, ctx);
       }
     }
@@ -98,7 +98,6 @@ export class PoolTab implements SheetComponent {
         this.row(list, entry, {
           selected: true,
           atCap,
-          active: activeBuffs.includes(entry.slug),
         }, pool, ctx);
       }
     }
@@ -113,7 +112,7 @@ export class PoolTab implements SheetComponent {
   private row(
     parent: HTMLElement,
     entry: ResolvedPoolEntry,
-    opts: { selected: boolean; atCap: boolean; active: boolean },
+    opts: { selected: boolean; atCap: boolean },
     pool: ResolvedPool,
     ctx: ComponentRenderContext,
   ): void {
@@ -136,10 +135,9 @@ export class PoolTab implements SheetComponent {
 
     const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
     nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
-    // The pick's OWN `uses` tracker (R4-G4 §12), for a pick that carries one and has been seeded.
-    renderPickTracker(nameWrap, entry, ctx);
     const sub = metaSub(e, ctx);
     if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
+    renderAffordanceCaption(nameWrap, entry, ctx);
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
     if (isRowExpanded(ctx, descKey)) openDesc(host, e);
@@ -153,19 +151,14 @@ export class PoolTab implements SheetComponent {
     // picked is not spendable, so it carries the Cost meta and no button. `renderBoonRow` is
     // reached only with a `kind` of "selected" or "granted", so the Actions / Passive boon surface
     // already had this property. An unowned id renders nothing and warns once (§13), so a
-    // cross-book row is unchanged.
-    if (opts.selected && e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
+    // cross-book row is unchanged. R4-G5 §4.2.2 (b) gave it ONE new sibling here and on the boon
+    // row: the `.pc-buff-group` created immediately before it, never a parent of it.
 
-    if (opts.selected && e.activatable) {
-      const actv = row.createEl("button", {
-        cls: `pc-pool-active${opts.active ? " on" : ""}`,
-        text: opts.active ? "Active" : "Activate",
-      });
-      actv.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        ctx.editState?.toggleActiveBuff(entry.slug);
-      });
-    }
+    // R4-G5 §4.2.2 (b): the pick's own tracker (which MOVES out of `.pc-spell-namewrap`) and its Active
+    // toggle (which MOVES from the row's end) in ONE group, created BEFORE the spend control so the
+    // group is the sibling that precedes it. Tracker-then-toggle: this row's shipped relative order.
+    renderControlGroup(row, entry, ctx, { selected: opts.selected, order: "tracker-first" });
+    if (opts.selected && e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
   }
 
   private grantedRow(parent: HTMLElement, entry: ResolvedPoolEntry, pool: ResolvedPool, ctx: ComponentRenderContext): void {
@@ -179,6 +172,7 @@ export class PoolTab implements SheetComponent {
     renderPickTracker(nameWrap, entry, ctx);
     const sub = metaSub(e, ctx);
     if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
+    renderAffordanceCaption(nameWrap, entry, ctx);
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
     if (isRowExpanded(ctx, descKey)) openDesc(host, e);
@@ -257,6 +251,10 @@ export class PoolTab implements SheetComponent {
     if (e.action_cost) metaItem(meta, "Cost", COST_LABELS[e.action_cost] ?? e.action_cost);
     if (e.consumes?.amount) metaItem(meta, "Cost", consumeCost(e.consumes, ctx));
     if (e.passive) metaItem(meta, "Type", "Passive");
+
+    // R4-G5 §4.2.2 (a): the caption is a line of its own under the card's meta row, not a meta item:
+    // `.pc-block-meta` holds `.pc-meta-line` pairs and this is a sentence, not a label / value pair.
+    renderAffordanceCaption(section, entry, ctx);
 
     if (e.description) section.createEl("p", { cls: "pc-block-description", text: e.description });
   }

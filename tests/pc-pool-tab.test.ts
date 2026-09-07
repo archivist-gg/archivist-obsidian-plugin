@@ -289,6 +289,41 @@ describe("PoolTab — blocks layout", () => {
     expect(el.querySelector(".pc-boon-block .archivist-toggle-box")).not.toBeNull();
     expect(el.querySelector(".pc-ae-tile .pc-ae-name")?.textContent).toBe("majesty");
   });
+
+  it("R4-G5 §4.2.2 (a): a block card carries the ally caption and NO tracker (a presence assertion, no mutant row)", () => {
+    // Spec §4.5 and §13's "Named NON-mutants" line both name this case. It carries NO MUTANT, but it IS a
+    // test and it RUNS (Gate 2 I3: filing it under "run nothing" conflated "carries no mutant" with
+    // "carries no test"). It guards the two halves of Step B7 (d): `blockCard` GAINS the caption and gains
+    // NO tracker. BOTH halves are non-vacuous by construction:
+    //   * the caption half needs a die, and the shipped `ownedCtx` "seals" entry declares none
+    //     (`renderAffordanceCaption` returns early without one), so the case gives it `die: { base: "d8" }`;
+    //   * the tracker half needs an entry that WOULD draw one, so the case seeds `feature_uses["cs-block"]`
+    //     AND its own index entry, exactly what `renderPickTracker` reads. It draws none because
+    //     `blockCard` never calls it.
+    // `classes` is LOAD-BEARING here and nowhere else in this file today: `renderAffordanceCaption` reaches
+    // `resourceLevelFor`, which does `resolved.classes.find(...)` UNGUARDED, and `mkCtx` casts
+    // `{ pools, state }` only. T7 Step 4b adds the key to the builder for the same reason; this case sets it
+    // locally because T5 lands first.
+    const csEntry = { slug: "cs-block", entity: ofEntity("cs-block", {
+      rendering_hint: "granted-die-to-ally", uses: { max: 1, recharge: "short-rest" },
+      consumes: { resource: "seals", amount: 1 },
+    }) as never };
+    const p = { ...basePool, selected: [csEntry], available: [csEntry], grants: [] } as unknown as ResolvedPool;
+    const c = ownedCtx(p);
+    (c.resolved as { classes?: unknown }).classes = [{ entity: { slug: "reaver" }, level: 2 }];
+    (c.resolved.state.feature_uses as Record<string, object>)["cs-block"] = { used: 0, max: 1 };
+    // No cast: `ResourceIndex` is a ReadonlyMap, so `.get(...)` needs none and the shipped
+    // `as Map<string, object>` spelling is only ever for `.set`. A `Map<string, { die?: unknown }>`
+    // assertion here is a TS2352 (`unknown` does not overlap `ResourceDie`), which the per-file tsc
+    // instrument reads as a NEW error line.
+    c.resolved.resources.get("seals")!.die = { base: "d8" };
+    (c.resolved.resources as Map<string, object>).set("cs-block", pickRes("cs-block", "short-rest"));
+    const el = mountContainer();
+    new PoolTab("interdict-boons", "blocks").render(el, c);
+    const card = el.querySelector<HTMLElement>(".pc-boon-block")!;
+    expect(card.querySelector(".pc-affordance-caption")!.textContent).toBe("1 d8 to an ally");
+    expect(card.querySelector(".pc-pick-track")).toBeNull();
+  });
 });
 
 describe("PoolTab — stranded selected picks (prereq now unmet)", () => {
@@ -624,6 +659,83 @@ describe("PoolTab · the picks' own uses, the two guards and the custom tooltip 
     expect(row.querySelector(".pc-pick-track")).toBeNull();
     // and the SELECTED pick beside it still has one, so the assertion above is not vacuous
     expect(pickRow(el, false).querySelectorAll(".pc-pick-track .archivist-toggle-box").length).toBe(1);
+  });
+});
+
+describe("PoolTab · the control group (R4-G5 §4.2.2 b)", () => {
+  const rowByName = (el: HTMLElement, name: string): HTMLElement =>
+    Array.from(el.querySelectorAll<HTMLElement>(".pc-spell-prep-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === name)!;
+
+  /** A selected, activatable pick that BOTH tracks its own uses and spends a pool resource: the only
+   *  shape on which the group's contents AND its position relative to the spend control are both
+   *  observable. Cloud Rune is the measured carrier of the `uses` half. */
+  const groupPool: ResolvedPool = {
+    ...basePool, count: 2,
+    selected: [{ slug: "tce_cloud-rune", entity: ofEntity("tce_cloud-rune", {
+      activatable: true, uses: { max: 1, recharge: "short-rest" },
+      consumes: { resource: "seals", amount: 1 },
+    }) as never }],
+    available: [{ slug: "tce_cloud-rune", entity: ofEntity("tce_cloud-rune", {
+      activatable: true, uses: { max: 1, recharge: "short-rest" },
+      consumes: { resource: "seals", amount: 1 },
+    }) as never },
+    { slug: "hell-mage", entity: ofEntity("hell-mage") as never }],
+    // `activatable: true` on the GRANT is a CONSTRUCTION (neither of the two shipped `pool_grants`
+    // entries carries it, both Elemental Attunement). It is what gives row 17's mutant its kill power at
+    // the FIRST expect: without it, adding `renderControlGroup` to `grantedRow` renders no toggle and the
+    // mutant survives the very assertion the spec names.
+    grants: [{ slug: "tce_undying-servitude", entity: ofEntity("tce_undying-servitude", {
+      activatable: true, uses: { max: 2, recharge: "long-rest" } }) as never }],
+  };
+  const groupCtx = (): ComponentRenderContext => {
+    const c = ownedCtx(groupPool);                       // seeds "seals" + its index entry
+    (c.resolved.state.feature_uses as Record<string, object>)["tce_cloud-rune"] = { used: 0, max: 1 };
+    (c.resolved.state.feature_uses as Record<string, object>)["tce_undying-servitude"] = { used: 1, max: 2 };
+    (c.resolved.resources as Map<string, object>).set("tce_cloud-rune", pickRes("tce_cloud-rune", "short-rest"));
+    (c.resolved.resources as Map<string, object>).set("tce_undying-servitude", pickRes("tce_undying-servitude", "long-rest"));
+    return c;
+  };
+
+  it("RED FIRST (row 16): the group sits BEFORE the spend control and holds the tracker, which is no longer in the namewrap", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, groupCtx());
+    const row = rowByName(el, "tce_cloud-rune");
+    const kids = Array.from(row.children);
+    expect(kids.findIndex((n) => n.classList.contains("pc-buff-group")))
+      .toBeLessThan(kids.findIndex((n) => n.classList.contains("pc-spend")));
+    expect(row.querySelector(".pc-spell-namewrap .pc-pick-track")).toBeNull();
+    expect(row.querySelector(".pc-buff-group .pc-pick-track")).not.toBeNull();
+  });
+
+  it("RED FIRST (row 44): inside the pool row's group the TRACKER precedes the toggle (the mirror of the boon row's order)", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, groupCtx());
+    const group = rowByName(el, "tce_cloud-rune").querySelector<HTMLElement>(".pc-buff-group")!;
+    expect(Array.from(group.children).map((n) => n.className))
+      .toEqual(["pc-feature-track pc-pick-track", "pc-pool-active"]);
+  });
+
+  it("RED FIRST (row 17): a GRANTED row has NO toggle and keeps its tracker in the namewrap", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, groupCtx());
+    const row = rowByName(el, "tce_undying-servitude");
+    expect(row.querySelector(".pc-pool-active")).toBeNull();
+    expect(row.querySelector(".pc-spell-namewrap .pc-pick-track")).not.toBeNull();
+    expect(row.querySelector(".pc-buff-group")).toBeNull();
+  });
+
+  it("RED FIRST (row 43): an UNSELECTED candidate emits NO `.pc-buff-group` and keeps its two flex items", () => {
+    // The candidate is never selected, so it has NO seeded `feature_uses` key (the live seed writes none
+    // either) and `renderPickTracker` returns at `!fu`, with `!res` behind it because
+    // `resolveResourceIndex` walks `selected` and `grants` only. The fixture needs no `uses` at all.
+    // jsdom computes no layout, so the "two flex items and one 8 px gap" of §14 row 10 is asserted here
+    // as the CHILD COUNT and lives as a width witness in the live task.
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, groupCtx());
+    const row = rowByName(el, "hell-mage");
+    expect(row.querySelector(".pc-buff-group")).toBeNull();
+    expect(row.children.length).toBe(2);   // the select box + the namewrap
   });
 });
 

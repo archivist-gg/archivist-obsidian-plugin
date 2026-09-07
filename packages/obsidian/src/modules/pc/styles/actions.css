@@ -458,6 +458,14 @@
   opacity: 0.8;
 }
 
+/* The granted-die recipient caption (R4-G5 §4.2.2 a). It takes `.pc-spend-caption`'s values verbatim:
+   it is the same kind of quiet line beside the same kind of control, and the `.pc-regain-reset`
+   verbatim-values precedent above is the same decision. */
+.archivist-pc-sheet .pc-affordance-caption {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
 /* The manual "Regain N" recovery arm (R4-G4 §7.2.3): the button, its cost badge and
    the entry's reset caption on one row, with the manual-override / prose note under it.
    Scoped to the sheet like every other rule in this partial; the explicit display/height

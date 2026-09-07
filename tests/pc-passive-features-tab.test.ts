@@ -777,3 +777,63 @@ describe("PassiveFeaturesTab · the background block's fixed-entry Equipment tex
     expect(bgBlock(c)!.textContent).not.toContain("Equipment");
   });
 });
+
+describe("PassiveFeaturesTab · the active-effects rail (R4-G5 §4.4.1)", () => {
+  const rageFeat = rf({ id: "rage", name: "Rage", activatable: true, duration: { amount: 1, unit: "minute" } });
+
+  it("lists an active class feature by `feature.id` with an End control that clears it", () => {
+    const toggleActiveBuff = vi.fn();
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([rageFeat], { activeBuffs: ["rage"], editState: { toggleActiveBuff } }));
+    expect(c.querySelector(".pc-ae-tile .pc-ae-name")!.textContent).toBe("Rage");
+    c.querySelector<HTMLElement>(".pc-ae-tile .pc-ae-end")!.click();
+    expect(toggleActiveBuff).toHaveBeenCalledWith("rage");
+  });
+
+  it("RED FIRST (row 21): an active POOL ENTRY gets a tile too (the second keyspace: entry slugs, not feature ids)", () => {
+    const c = mountContainer();
+    const p = pool({ selected: [entry("tce_frost-rune", { name: "Frost Rune", activatable: true })] });
+    new PassiveFeaturesTab().render(c, renderCtx([], { pools: [p], activeBuffs: ["tce_frost-rune"] }));
+    expect(c.querySelector(".pc-ae-tile .pc-ae-name")!.textContent).toBe("Frost Rune");
+  });
+
+  it("RED FIRST (row 38): a buff stored under the OTHER edition's twin still shows ONE tile (the bare-slug match)", () => {
+    const c = mountContainer();
+    const p = pool({ selected: [entry("phb2014_optional-feature_frost-rune", { name: "Frost Rune", activatable: true })] });
+    new PassiveFeaturesTab().render(c, renderCtx([], {
+      pools: [p], activeBuffs: ["phb2024_optional-feature_frost-rune"],
+    }));
+    expect(c.querySelectorAll(".pc-ae-tile").length).toBe(1);
+    expect(c.querySelector(".pc-ae-tile .pc-ae-name")!.textContent).toBe("Frost Rune");
+  });
+
+  it("RED FIRST: the rail renders ABOVE the empty-state line on a character with no passive rows", () => {
+    // The buff must reach the rail WITHOUT producing a passive row, or the early return never fires:
+    // a COSTED activatable feature files under the Actions tab, so the passive sections are empty here
+    // while the rail still has its tile. FIXTURE-ONLY (spec §4.5, row 45): 0 activatable AND costed
+    // class features ship on either corpus (a cost-less feature or pool entry would file into the
+    // Passive sections and fill them). The RED assertion is FIRST (invariant 4); the control follows.
+    const smite = rf({ id: "smite", name: "Smite", action: "action", activatable: true });
+    const withRail = mountContainer();
+    new PassiveFeaturesTab().render(withRail, renderCtx([smite], { activeBuffs: ["smite"] }));
+    const kids = Array.from(withRail.querySelector(".pc-tab-body")!.children).map((n) => n.className);
+    expect(kids[0]).toContain("pc-ae-rail");                       // RED FIRST (row 45: the rail before the early return)
+    expect(kids[1]).toContain("pc-empty-line");
+    const bare = mountContainer();
+    new PassiveFeaturesTab().render(bare, renderCtx([smite], { activeBuffs: [] }));
+    expect(bare.querySelector(".pc-empty-line")!.textContent).toBe("(No passive or free actions.)");
+    expect(bare.querySelector(".pc-ae-rail")).toBeNull();          // no buff, no rail (the control)
+  });
+
+  it("an unmatched buff id renders no tile and warns once", async () => {
+    const { __resetWarnOnceForTests } = await import("@archivist-gg/dnd5e/dnd/warn-once");
+    __resetWarnOnceForTests();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([], { pools: [], activeBuffs: ["ghost", "ghost"] }));
+    expect(c.querySelector(".pc-ae-tile")).toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0].join(" ")).toContain("ghost");
+    warn.mockRestore();
+  });
+});
