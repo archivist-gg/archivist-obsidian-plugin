@@ -12,9 +12,10 @@ export interface ActiveEffectItem {
 }
 
 /** Generic "currently active" rail: one framed pc-panel tile per item, each with
- *  an end (✕) control. Renders nothing when there are no items. Reused by the
- *  Spells tab (concentration) and pool tabs (active boons) — it knows nothing
- *  about either domain. */
+ *  an end (✕) control. Renders nothing when there are no items. Reused by THREE
+ *  consuming surfaces: the Spells tab (concentration), the pool tabs (active boons)
+ *  and the Passive tab (active class-feature buffs and pool entries, R4-G5 §4.4.1) ·
+ *  it knows nothing about any of those domains. */
 export function renderActiveEffectsRail(parent: HTMLElement, items: ActiveEffectItem[]): void {
   if (items.length === 0) return;
   const rail = parent.createDiv({ cls: "pc-ae-rail" });

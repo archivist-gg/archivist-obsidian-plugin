@@ -53,12 +53,13 @@ export interface ResourceTrackerOpts {
  * and the `renderPointPool` fallback. It replaces the tails of `renderCardResource` and
  * `renderFirstResourceTracker` (`./feature-rows`), `renderPickTracker` (`./pick-tracker`) and
  * `renderPoolHead`'s DICE branch (`../pool-tab`), which differed in the SIX axes `ResourceTrackerOpts`
- * carries, one opt each: the `feature_uses` id, the display name, the `ResetTrigger` source, the writer
- * shape (`onSet` at the pick and pool-head tails, the `onExpend` / `onRestore` pair at the two feature
- * tails), the track's extra class (`pc-pick-track`, the pick tail alone) and the die face with the level
- * it resolves at (`renderCardResource` and `renderPoolHead` printed one; `renderPickTracker` and
- * `renderFirstResourceTracker` did not, and R4-G5 §4.3.1 is exactly the decision to give the second of
- * those two a face).
+ * spreads over NINE opts (four axes are one opt; the die face travels with its `level`, and the writer
+ * axis is `onSet` OR the `onExpend` / `onRestore` pair): the `feature_uses` id, the display name, the
+ * `ResetTrigger` source, the writer shape (`onSet` at the pick and pool-head tails, the `onExpend` /
+ * `onRestore` pair at the two feature tails), the track's extra class (`pc-pick-track`, the pick tail
+ * alone) and the die face with the level it resolves at (`renderCardResource` and `renderPoolHead`
+ * printed one; `renderPickTracker` and `renderFirstResourceTracker` did not, and R4-G5 §4.3.1 is
+ * exactly the decision to give the second of those two a face).
  *
  * It does NOT reach the other three `renderChargeBoxes` callers: `items-table.ts` speaks the persisted
  * ITEM charge vocabulary (`{amount, reset: "dawn"|"short"|"long"|"special"}` and `setItemCharges`), and

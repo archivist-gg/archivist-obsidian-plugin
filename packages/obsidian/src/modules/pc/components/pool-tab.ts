@@ -296,11 +296,12 @@ const LAYOUTS: ReadonlyMap<PoolLayout, LayoutRenderer> = new Map<PoolLayout, Lay
  *
  *  The DC line first, whenever `poolSaveDC` is non-null (a Four Elements Monk's tab prints it with no
  *  widget beside it). Then the widget, but ONLY when all three of `pool.resource`, its seeded
- *  `feature_uses` entry and its `resolved.resources` index entry exist: a hinted pool whose members
- *  consume nothing the character owns (Four Elements is the live witness) renders the list alone, and
- *  a fixture that casts a `ResolvedCharacter` with no index reads `undefined` through the optional chain
- *  instead of throwing (§4.2.6, confirmation r6 M-1; `state` and `classes` are required and are read
- *  unguarded here, as they are in `renderSpendControl` and `renderCardResource`).
+ *  `feature_uses` entry and its `resolved.resources` index entry exist: a pool whose members consume
+ *  nothing the character owns renders NO widget (Four Elements is the live witness: its tab prints the
+ *  DC line and then the list), and a fixture that casts a `ResolvedCharacter` with no index reads
+ *  `undefined` through the optional chain instead of throwing (§4.2.6, confirmation r6 M-1; `state` and
+ *  `classes` are required and are read unguarded here, as they are in `renderSpendControl` and
+ *  `renderCardResource`).
  *  The head div itself is created on FIRST use, so a pool with neither a DC nor an owned resource
  *  emits no empty spacer.
  *
