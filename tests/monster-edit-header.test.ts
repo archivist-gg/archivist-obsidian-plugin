@@ -43,6 +43,10 @@ describe("renderHeader on a structured monster (R4-G6 §9)", () => {
     const crSelect = host.querySelector("select") as HTMLSelectElement;
     expect(crSelect.value).toBe("11");
     expect(crSelect.selectedIndex).toBe(14);   // ALL_CR_VALUES.indexOf("11")
+    // The XP text comes from dnd5e's `formatXP` now that the editor's `toLocaleString` twin is retired. GREEN at its
+    // first run: the two agree under an en locale, so its kill power is over a dropped or broken re-export, not over
+    // the locale divergence that motivated the retirement.
+    expect(host.querySelector(".archivist-auto-value")?.textContent).toBe("7,200");
   });
 
   it("the combat editor shows the numeric part of an object speed (tsc-invisible reads)", () => {
