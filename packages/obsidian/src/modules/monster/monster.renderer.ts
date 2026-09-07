@@ -197,13 +197,11 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
   // 1. Header
   const header = el("div", { cls: "stat-block-header", parent: contentTarget });
   el("div", { cls: "monster-name", text: monster.name, parent: header });
-  // `size_note`, `level` and `alignment_prefix` reach the renderer only after the `Monster` interface widens
-  // in dnd5e; until then they are read through this local widening (Gate 2 I-8).
-  const wide = monster as Monster & { size_note?: string; level?: number; alignment_prefix?: string };
-  const typeText = [formatSize(monster.size, wide.size_note), formatType(monster.type, wide.level)]
+  // `size_note`, `level` and `alignment_prefix` are declared on `Monster` since R4-G6 Task 4: read directly.
+  const typeText = [formatSize(monster.size, monster.size_note), formatType(monster.type, monster.level)]
     .filter(Boolean)
     .join(" ");
-  const alignmentText = formatAlignment(monster.alignment, wide.alignment_prefix);
+  const alignmentText = formatAlignment(monster.alignment, monster.alignment_prefix);
   const fullType = alignmentText ? `${typeText}, ${alignmentText}` : typeText;
   el("p", { cls: "monster-type", text: fullType, parent: header });
 
