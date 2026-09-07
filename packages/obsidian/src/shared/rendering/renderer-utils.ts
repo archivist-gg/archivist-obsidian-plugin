@@ -356,12 +356,14 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
       // keep an anchor), this one is fail-OPEN by design, because any note name is a legal target. The probe
       // drops what a URL parser ignores before the test: whitespace and control characters, which it strips
       // leading and, for tab / newline, anywhere ("<space>javascript:alert(1)" resolves as "javascript:alert(1)").
-      // A protocol-relative target ("//host" or the backslash form) carries no scheme, so it is named outright.
+      // A protocol-relative target carries no scheme, so the guard names it by SHAPE: any two-character prefix made
+      // of slashes or backslashes, which covers "//", "\\", "/\" and "\/" together (WHATWG treats "\" as "/"
+      // under a special-scheme base). No legitimate vault path starts with two of those, so this is a narrowing.
       const target = match[1];
       const last = target.split("/").pop() ?? "";
       const alias = match[2] !== undefined && match[2].length > 0 ? match[2] : (last.length > 0 ? last : target);
       const probe = target.replace(/[\s\p{Cc}]/gu, "");
-      if (/^[a-z][a-z0-9+.-]*:/i.test(probe) || probe.startsWith("//") || probe.startsWith("\\\\")) {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(probe) || /[/\\]{2}/.test(probe.slice(0, 2))) {
         parent.appendChild(doc.createTextNode(alias));
       } else {
         const a = doc.createElement("a");

@@ -76,6 +76,14 @@ describe("appendMarkdownText wikilinks", () => {
     expect(unc.querySelectorAll("a").length).toBe(0);
     expect(unc.textContent).toBe("x");
   });
+  it("the mixed slash / backslash permutations render as text: the guard tests the two-character prefix, not two literals", () => {
+    const fwdBack = render("[[/\\evil.example|x]]");
+    expect(fwdBack.querySelectorAll("a").length).toBe(0);
+    expect(fwdBack.textContent).toBe("x");
+    const backFwd = render("[[\\/evil.example|x]]");
+    expect(backFwd.querySelectorAll("a").length).toBe(0);
+    expect(backFwd.textContent).toBe("x");
+  });
   it("a markdown link beside a wikilink: both render", () => {
     const host = render("[t](https://e.x) and [[a|b]]");
     expect(host.querySelectorAll("a").length).toBe(2);
