@@ -11,6 +11,8 @@ import {
   CONDITIONS,
 } from "@archivist-gg/dnd5e/dnd/constants";
 import { passivePerception } from "@archivist-gg/dnd5e/dnd/math";
+import { alignmentWords, crString, formatType, qualifierStrings, sizeWord } from "@archivist-gg/dnd5e/monster/monster.format";
+import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import { createSearchableTagSelect } from "../../../shared/edit/searchable-tag-select";
 import { createCollapsible } from "../../../shared/edit/collapsible";
 import { type DomRefs, formatXP, getAbilityScore } from "./types";
@@ -37,14 +39,14 @@ export function renderHeader(block: HTMLElement, state: MonsterEditState): void 
   for (const sz of ALL_SIZES) {
     const opt = sizeSelect.createEl("option", { text: sz });
     opt.value = sz.toLowerCase();
-    if (sz.toLowerCase() === (m.size ?? "medium").toLowerCase()) opt.selected = true;
+    if (sz.toLowerCase() === sizeWord(m.size)) opt.selected = true;
   }
   sizeSelect.addEventListener("change", () => state.updateField("size", sizeSelect.value));
 
   // Type input
   const typeInput = typeLine.createEl("input", { cls: "archivist-edit-input" });
   typeInput.type = "text";
-  typeInput.value = m.type ? m.type.charAt(0).toUpperCase() + m.type.slice(1) : "";
+  typeInput.value = formatType(m.type);
   typeInput.placeholder = "Type";
   typeInput.addEventListener("input", () => state.updateField("type", typeInput.value));
 
@@ -54,7 +56,7 @@ export function renderHeader(block: HTMLElement, state: MonsterEditState): void 
     const opt = alignEthical.createEl("option", { text: a });
     opt.value = a.toLowerCase();
   }
-  selectByAlignment(alignEthical, m.alignment, "ethical");
+  selectByAlignment(alignEthical, alignmentWords(m.alignment) || undefined, "ethical");
   alignEthical.addEventListener("change", () => updateAlignment());
 
   const alignMoral = typeLine.createEl("select", { cls: "archivist-edit-select" });
@@ -62,7 +64,7 @@ export function renderHeader(block: HTMLElement, state: MonsterEditState): void 
     const opt = alignMoral.createEl("option", { text: a });
     opt.value = a.toLowerCase();
   }
-  selectByAlignment(alignMoral, m.alignment, "moral");
+  selectByAlignment(alignMoral, alignmentWords(m.alignment) || undefined, "moral");
   alignMoral.addEventListener("change", () => updateAlignment());
 
   function updateAlignment() {
@@ -98,10 +100,10 @@ export function renderDamageAndConditions(
   }
 
   const collapseFields: CollapseField[] = [
-    { title: "Damage Vulnerabilities", presets: damagePresets, selected: [...(m.damage_vulnerabilities ?? [])], field: "damage_vulnerabilities", placeholder: "Search damage types..." },
-    { title: "Damage Resistances", presets: damagePresets, selected: [...(m.damage_resistances ?? [])], field: "damage_resistances", placeholder: "Search damage types..." },
-    { title: "Damage Immunities", presets: damagePresets, selected: [...(m.damage_immunities ?? [])], field: "damage_immunities", placeholder: "Search damage types..." },
-    { title: "Condition Immunities", presets: CONDITIONS, selected: [...(m.condition_immunities ?? [])], field: "condition_immunities", placeholder: "Search conditions..." },
+    { title: "Damage Vulnerabilities", presets: damagePresets, selected: qualifierStrings(m.damage_vulnerabilities), field: "damage_vulnerabilities", placeholder: "Search damage types..." },
+    { title: "Damage Resistances", presets: damagePresets, selected: qualifierStrings(m.damage_resistances), field: "damage_resistances", placeholder: "Search damage types..." },
+    { title: "Damage Immunities", presets: damagePresets, selected: qualifierStrings(m.damage_immunities), field: "damage_immunities", placeholder: "Search damage types..." },
+    { title: "Condition Immunities", presets: CONDITIONS, selected: qualifierStrings(m.condition_immunities), field: "condition_immunities", placeholder: "Search conditions..." },
   ];
 
   for (const cf of collapseFields) {
@@ -124,12 +126,17 @@ export function renderDamageAndConditions(
       presets: cf.presets,
       selected: cf.selected,
       onChange: (values) => {
-        state.updateField(cf.field, values);
+        state.updateField(cf.field, mergeQualifierSelection(m[cf.field as keyof Monster] as unknown[] | null | undefined, values));
         countEl.textContent = `(${values.length})`;
       },
       placeholder: cf.placeholder,
     });
   }
+}
+
+/** The structured qualifier entries are MERGED back in front of the selected strings, never dropped (spec §9). */
+export function mergeQualifierSelection(authored: unknown[] | null | undefined, selected: string[]): unknown[] {
+  return [...(authored ?? []).filter((q) => typeof q !== "string"), ...selected];
 }
 
 /**
@@ -247,7 +254,7 @@ export function renderLanguagesAndCR(
   for (const cr of ALL_CR_VALUES) {
     const opt = crSelect.createEl("option", { text: cr });
     opt.value = cr;
-    if (cr === (m.cr ?? "0")) opt.selected = true;
+    if (cr === (crString(m.cr) ?? "0")) opt.selected = true;
   }
   crSelect.addEventListener("change", () => {
     state.updateField("cr", crSelect.value);

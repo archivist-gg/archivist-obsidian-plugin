@@ -10,28 +10,20 @@ import {
 } from "../../shared/rendering/renderer-utils";
 import type { FormulaContext } from "@archivist-gg/dnd5e";
 import { proficiencyBonusFromCR } from "@archivist-gg/dnd5e/dnd/math";
-
-function capitalizeWords(str: string): string {
-  return str.replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatSpeed(speed: Monster["speed"]): string {
-  if (!speed) return "0 ft.";
-  return Object.entries(speed)
-    .filter(([_, v]) => v)
-    .map(([type, value]) => `${capitalizeWords(type)} ${value} ft.`)
-    .join(", ");
-}
-
-function formatAC(monster: Monster): string {
-  if (!monster.ac || monster.ac.length === 0) return "10";
-  const primary = monster.ac[0];
-  let result = String(primary.ac);
-  if (primary.from && primary.from.length > 0) {
-    result += ` (${primary.from.map((f) => capitalizeWords(f)).join(", ")})`;
-  }
-  return result;
-}
+// R4-G6 §6 / §8.1: size, type, alignment, cr, ac, hp, speed and the qualifier lists are DECODED at read time by
+// the dnd5e formatters, never by a local helper here. `capitalizeWords` is the same historical helper this file
+// used to define, now imported so the saves / skills / languages lines keep their byte-identical casing.
+import {
+  capitalizeWords,
+  crString,
+  formatAC,
+  formatAlignment,
+  formatHP,
+  formatQualifiers,
+  formatSize,
+  formatSpeed,
+  formatType,
+} from "@archivist-gg/dnd5e/monster/monster.format";
 
 function renderAttackLine(
   parent: HTMLElement,
@@ -194,7 +186,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
 
   // Build formula resolution context for inline tags (e.g. `atk:DEX` -> `+4`)
   const monsterCtx: FormulaContext | undefined = monster.abilities
-    ? { abilities: monster.abilities, proficiencyBonus: proficiencyBonusFromCR(monster.cr ?? "0") }
+    ? { abilities: monster.abilities, proficiencyBonus: proficiencyBonusFromCR(crString(monster.cr) ?? "0") }
     : undefined;
 
   // In two-column mode, all content goes inside a flow container with column-count: 2
@@ -205,39 +197,45 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
   // 1. Header
   const header = el("div", { cls: "stat-block-header", parent: contentTarget });
   el("div", { cls: "monster-name", text: monster.name, parent: header });
-  const typeText = [
-    monster.size ? capitalizeWords(monster.size) : "",
-    monster.type ? capitalizeWords(monster.type) : "",
-  ]
+  // `size_note`, `level` and `alignment_prefix` reach the renderer only after the `Monster` interface widens
+  // in dnd5e; until then they are read through this local widening (Gate 2 I-8).
+  const wide = monster as Monster & { size_note?: string; level?: number; alignment_prefix?: string };
+  const typeText = [formatSize(monster.size, wide.size_note), formatType(monster.type, wide.level)]
     .filter(Boolean)
     .join(" ");
-  const fullType = monster.alignment
-    ? `${typeText}, ${capitalizeWords(monster.alignment)}`
-    : typeText;
+  const alignmentText = formatAlignment(monster.alignment, wide.alignment_prefix);
+  const fullType = alignmentText ? `${typeText}, ${alignmentText}` : typeText;
   el("p", { cls: "monster-type", text: fullType, parent: header });
 
   // 2. SVG Bar
   createSvgBar(contentTarget);
 
+  // A property VALUE goes through `renderTextWithInlineTags` ONLY when it carries a wikilink or a backtick tag
+  // (spec §8.1's routing SCOPE): routing every value rich would send plain markdown emphasis through
+  // `appendMarkdownText`, which turns the SRD's `15 with _mage armor_` into an `<em>`.
+  const NEEDS_RICH = /\[\[|`/;
+  const propertyLine = (parent: HTMLElement, label: string, value: string, isLast?: boolean) => {
+    if (NEEDS_RICH.test(value)) createRichPropertyLine(parent, label, (v) => renderTextWithInlineTags(value, v, true, monsterCtx), isLast);
+    else createPropertyLine(parent, label, value, isLast);
+  };
+  const richLine = (label: string, value: string) => { propertyLine(secondaryProps, label, value); hasSecondary = true; };
+
   // 3. Core properties (AC, HP, Speed)
   const coreProps = el("div", { cls: "property-block", parent: contentTarget });
-  createPropertyLine(coreProps, "Armor Class", formatAC(monster));
+  propertyLine(coreProps, "Armor Class", formatAC(monster.ac));
   createRichPropertyLine(coreProps, "Hit Points", (valueEl) => {
-    if (!monster.hp) {
-      valueEl.textContent = "0";
-      return;
-    }
+    // BOTH halves go through the inline-tag pipeline: an `hp.special` can carry a backtick tag, and
+    // decorateProseDice inside convert5eToolsTags turns "19d12+133" into a dice pill.
+    const hp = formatHP(monster.hp);
     const doc = valueEl.ownerDocument ?? activeDocument;
-    valueEl.appendChild(doc.createTextNode(String(monster.hp.average)));
-    if (monster.hp.formula) {
+    renderTextWithInlineTags(hp.text, valueEl, true, monsterCtx);
+    if (hp.formula) {
       valueEl.appendChild(doc.createTextNode(" ("));
-      // Run the formula through the inline-tag pipeline; decorateProseDice
-      // inside convert5eToolsTags turns "19d12+133" into a dice pill.
-      renderTextWithInlineTags(monster.hp.formula, valueEl, true, monsterCtx);
+      renderTextWithInlineTags(hp.formula, valueEl, true, monsterCtx);
       valueEl.appendChild(doc.createTextNode(")"));
     }
   });
-  createPropertyLine(coreProps, "Speed", formatSpeed(monster.speed), true);
+  propertyLine(coreProps, "Speed", formatSpeed(monster.speed), true);
 
   // 4. SVG Bar
   createSvgBar(contentTarget);
@@ -289,58 +287,36 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
     const savesStr = Object.entries(monster.saves)
       .map(([k, v]) => `${capitalizeWords(k)} ${formatModifier(v as number)}`)
       .join(", ");
-    createPropertyLine(secondaryProps, "Saving Throws", savesStr);
-    hasSecondary = true;
+    richLine("Saving Throws", savesStr);
   }
 
   if (monster.skills && Object.keys(monster.skills).length > 0) {
     const skillsStr = Object.entries(monster.skills)
       .map(([k, v]) => `${capitalizeWords(k)} ${formatModifier(v)}`)
       .join(", ");
-    createPropertyLine(secondaryProps, "Skills", skillsStr);
-    hasSecondary = true;
+    richLine("Skills", skillsStr);
   }
 
   if (
     monster.damage_vulnerabilities &&
     monster.damage_vulnerabilities.length > 0
   ) {
-    createPropertyLine(
-      secondaryProps,
-      "Damage Vulnerabilities",
-      monster.damage_vulnerabilities.map(capitalizeWords).join(", "),
-    );
-    hasSecondary = true;
+    richLine("Damage Vulnerabilities", formatQualifiers(monster.damage_vulnerabilities).join(", "));
   }
 
   if (monster.damage_resistances && monster.damage_resistances.length > 0) {
-    createPropertyLine(
-      secondaryProps,
-      "Damage Resistances",
-      monster.damage_resistances.map(capitalizeWords).join(", "),
-    );
-    hasSecondary = true;
+    richLine("Damage Resistances", formatQualifiers(monster.damage_resistances).join(", "));
   }
 
   if (monster.damage_immunities && monster.damage_immunities.length > 0) {
-    createPropertyLine(
-      secondaryProps,
-      "Damage Immunities",
-      monster.damage_immunities.map(capitalizeWords).join(", "),
-    );
-    hasSecondary = true;
+    richLine("Damage Immunities", formatQualifiers(monster.damage_immunities).join(", "));
   }
 
   if (
     monster.condition_immunities &&
     monster.condition_immunities.length > 0
   ) {
-    createPropertyLine(
-      secondaryProps,
-      "Condition Immunities",
-      monster.condition_immunities.map(capitalizeWords).join(", "),
-    );
-    hasSecondary = true;
+    richLine("Condition Immunities", formatQualifiers(monster.condition_immunities).join(", "));
   }
 
   if (monster.senses && monster.senses.length > 0) {
@@ -348,29 +324,19 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
     if (monster.passive_perception) {
       sensesStr += `, passive Perception ${monster.passive_perception}`;
     }
-    createPropertyLine(secondaryProps, "Senses", sensesStr);
-    hasSecondary = true;
+    richLine("Senses", sensesStr);
   } else if (monster.passive_perception) {
-    createPropertyLine(
-      secondaryProps,
-      "Senses",
-      `passive Perception ${monster.passive_perception}`,
-    );
-    hasSecondary = true;
+    richLine("Senses", `passive Perception ${monster.passive_perception}`);
   }
 
   if (monster.languages && monster.languages.length > 0) {
-    createPropertyLine(
-      secondaryProps,
-      "Languages",
-      monster.languages.map(capitalizeWords).join(", "),
-    );
-    hasSecondary = true;
+    richLine("Languages", monster.languages.map(capitalizeWords).join(", "));
   }
 
-  if (monster.cr) {
-    createPropertyLine(secondaryProps, "Challenge", monster.cr);
-    hasSecondary = true;
+  // T3 keeps the BARE cr text; the XP / PB clause of spec §8.1 arrives at T7a with `challengeLine`.
+  const crText = crString(monster.cr);
+  if (crText !== undefined) {
+    richLine("Challenge", crText);
   }
 
   // 8. SVG Bar (only if secondary props exist)

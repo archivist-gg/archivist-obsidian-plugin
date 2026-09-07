@@ -12,6 +12,7 @@ import {
   parseHitDiceFormula,
   hitDiceSizeFromCreatureSize,
 } from "@archivist-gg/dnd5e/dnd/math";
+import { crString, sizeWord } from "@archivist-gg/dnd5e/monster/monster.format";
 import { editableToYaml } from "./monster.yaml-serializer";
 
 // -----------------------------------------------------------------------------
@@ -36,7 +37,9 @@ export interface EditableMonster extends Monster {
  * parsing senses, and detecting active sections.
  */
 export function monsterToEditable(monster: Monster): EditableMonster {
-  const cr = monster.cr ?? "0";
+  // The LOOKUP key only: the editable's `cr` FIELD keeps the authored value through the `...monster` spread, so
+  // an object `cr` (its `xp_lair` / `lair` / `coven` / `xp` leaves) round-trips unchanged on save.
+  const cr = crString(monster.cr) ?? "0";
   const profBonus = proficiencyBonusFromCR(cr);
   const abilities = monster.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
 
@@ -287,9 +290,9 @@ export function recalculate(monster: EditableMonster, changedField: string): Edi
 
   // CR change -> update proficiency bonus and XP
   if (changedField === "cr") {
-    result.proficiencyBonus = proficiencyBonusFromCR(result.cr ?? "0");
+    result.proficiencyBonus = proficiencyBonusFromCR(crString(result.cr) ?? "0");
     if (!result.overrides.has("xp")) {
-      result.xp = crToXP(result.cr ?? "0");
+      result.xp = crToXP(crString(result.cr) ?? "0");
     }
   }
   const profBonus = result.proficiencyBonus;
@@ -298,7 +301,7 @@ export function recalculate(monster: EditableMonster, changedField: string): Edi
   if (changedField === "size" && result.hp?.formula) {
     const parsed = parseHitDiceFormula(result.hp.formula);
     if (parsed) {
-      const newSize = hitDiceSizeFromCreatureSize(result.size ?? "medium");
+      const newSize = hitDiceSizeFromCreatureSize(sizeWord(result.size));
       result.hp = { ...result.hp, formula: `${parsed.count}d${newSize}` };
     }
   }

@@ -2,6 +2,7 @@ import { setIcon } from "obsidian";
 import type { MonsterEditState } from "../monster.edit-state";
 import { createSpinButtons } from "../../../shared/edit/spin-buttons";
 import { wireOverride } from "../../../shared/edit/override-system";
+import { speedNumber } from "@archivist-gg/dnd5e/monster/monster.format";
 import type { DomRefs } from "./types";
 
 /**
@@ -78,7 +79,9 @@ export function renderCombat(
   const walkWrap = speedLine.createDiv({ cls: "archivist-num-wrap" });
   const walkInput = walkWrap.createEl("input", { cls: "archivist-num-in" });
   walkInput.type = "number";
-  walkInput.value = String(m.speed?.walk ?? 30);
+  // Today's `?? 30` default is kept, but keyed on an ABSENT `walk`: an object `walk` must show its NUMBER, since
+  // `String({number: 30})` blanks a `type="number"` input and the first keystroke would then save a 0.
+  walkInput.value = String(m.speed?.walk === undefined ? 30 : speedNumber(m.speed, "walk"));
   walkInput.addEventListener("input", () => {
     const speed = { ...state.current.speed, walk: parseInt(walkInput.value) || 0 };
     state.updateField("speed", speed);
@@ -108,7 +111,7 @@ export function renderCombat(
     const numWrap = row.createDiv({ cls: "archivist-num-wrap" });
     const numInput = numWrap.createEl("input", { cls: "archivist-num-in" });
     numInput.type = "number";
-    numInput.value = String(m.speed?.[key] ?? 0);
+    numInput.value = String(speedNumber(m.speed, key));
     numInput.addEventListener("input", () => {
       const speed = { ...state.current.speed, [key]: parseInt(numInput.value) || 0 };
       state.updateField("speed", speed);
@@ -182,7 +185,7 @@ export function renderCombat(
 
   // Pre-populate existing non-zero speeds
   for (const key of extraModeKeys) {
-    if ((m.speed?.[key] ?? 0) > 0) {
+    if (speedNumber(m.speed, key) > 0) {
       addSpeedMode(key);
     }
   }
