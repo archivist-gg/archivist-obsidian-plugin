@@ -187,4 +187,13 @@ describe("converter monsters render every modelled key (R4-G6 §12.5)", () => {
       expect(render(rel, 2).querySelector(".archivist-monster-two-col-flow"), rel).not.toBeNull();
     }
   });
+  it("thumbnail and image render as markdown-filled embeds (spec §8.1 images, row 40)", async () => {
+    const m = { name: "X", image: "[[a.png]]", thumbnail: "b.png", abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 } } as unknown as Monster;
+    const b = renderMonsterBlock(m, 1);
+    await new Promise((r) => setTimeout(r, 0));                                  // the fills are async (Gate 2 B-5)
+    const portrait = b.querySelector('[data-fill="markdown"].archivist-monster-portrait');
+    expect(portrait?.textContent).toContain("![[a.png]]");                       // the jsdom mock renders markdown as TEXT
+    const token = b.querySelector('[data-fill="markdown"].archivist-monster-token');
+    expect(token?.textContent).toContain("![[b.png]]");
+  });
 });

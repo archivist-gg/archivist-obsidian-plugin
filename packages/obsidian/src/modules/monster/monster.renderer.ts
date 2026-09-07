@@ -9,6 +9,7 @@ import {
   createPropertyLine,
   renderTextWithInlineTags,
 } from "../../shared/rendering/renderer-utils";
+import { imageEmbeds } from "../../shared/rendering/image-embeds";
 import type { FormulaContext } from "@archivist-gg/dnd5e";
 import { proficiencyBonusFromCR } from "@archivist-gg/dnd5e/dnd/math";
 // R4-G6 §6 / §8.1: size, type, alignment, cr, ac, hp, speed and the qualifier lists are DECODED at read time by
@@ -210,6 +211,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: 
   const alignmentText = formatAlignment(monster.alignment, monster.alignment_prefix);
   const fullType = alignmentText ? `${typeText}, ${alignmentText}` : typeText;
   el("p", { cls: "monster-type", text: fullType, parent: header });
+  if (monster.thumbnail) fillMarkdown(el("div", { cls: "archivist-monster-token", parent: header }), imageEmbeds(monster.thumbnail).join("\n"), app);
 
   // 2. SVG Bar
   createSvgBar(contentTarget);
@@ -462,6 +464,8 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: 
       renderSection(content, tab);
     }
   }
+
+  if (monster.image) fillMarkdown(el("div", { cls: "archivist-monster-portrait", parent: block }), imageEmbeds(monster.image).join("\n\n"), app);
 
   return wrapper;
 }

@@ -7,6 +7,7 @@ import type {
 import type { ConditionEntity } from "@archivist-gg/dnd5e/condition/condition.types";
 import { el, sourceBadgeText } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
+import { imageEmbeds } from "../../shared/rendering/image-embeds";
 
 /**
  * The `condition` presenter (spec §6). A condition doc carries no modelled
@@ -24,21 +25,6 @@ import { renderMarkdownDescription } from "../../shared/rendering/markdown-descr
 
 function appOf(ctx: RenderContext): App | undefined {
   return (ctx.plugin as { app?: App } | undefined)?.app;
-}
-
-/** Markdown embeds for the `image` field, which is one wikilink or an array of
- *  them (`imageField`, dnd5e `schemas/entity-extras-schema`). A bare path is
- *  wrapped; an already-embedded value is left alone. Obsidian resolves the
- *  vault path — this module never touches the filesystem. */
-function imageEmbeds(image: ConditionEntity["image"]): string[] {
-  const values = image === undefined ? [] : Array.isArray(image) ? image : [image];
-  return values
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0)
-    .map((value) => {
-      if (value.startsWith("![[")) return value;
-      return value.startsWith("[[") ? `!${value}` : `![[${value}]]`;
-    });
 }
 
 /** Fire-and-forget markdown fill into an already-attached node (the race module

@@ -253,6 +253,18 @@
   -webkit-column-break-inside: avoid;
 }
 
+/* R4-G6: the markdown-filled sections (lair / regional / variants) flow like the native ones; every arm scoped */
+.archivist-monster-two-col-flow table,
+.archivist-monster-two-col-flow blockquote,
+.archivist-monster-two-col-flow ul {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+}
+.archivist-monster-block .archivist-monster-token { float: right; max-width: 6em; margin: 0 0 0.4em 0.6em; }
+.archivist-monster-block .archivist-monster-token img { max-width: 100%; height: auto; }
+.archivist-monster-block .archivist-monster-portrait { margin-top: 0.6em; }
+.archivist-monster-block .archivist-monster-portrait img { max-width: 100%; height: auto; }
+
 /* SVG bars need special handling in column flow */
 .archivist-monster-two-col-flow .stat-block-bar {
   break-inside: avoid;
