@@ -56,8 +56,8 @@ export class PoolTab implements SheetComponent {
     renderer.call(this, root, pool, ctx);
   }
 
-  /** @internal Reached through the `LAYOUTS` registry below (and, for the two hinted layouts, after
-   *  `renderPoolHead`), never from outside this module. */
+  /** @internal Reached through the `LAYOUTS` registry below, after `renderPoolHead`, from every entry
+   *  that names it (R4-G5 §5.2 gave the head to all four), never from outside this module. */
   renderSpellLike(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
     const activeBuffs = ctx.resolved?.state?.active_buffs ?? [];
     renderActiveEffectsRail(root, activeItems(pool, activeBuffs, ctx));
@@ -264,8 +264,18 @@ type LayoutRenderer = (this: PoolTab, root: HTMLElement, pool: ResolvedPool, ctx
 
 /** The ONE layout → renderer registry (R4-G4 §4.2.6, invariant 3; the entity-presenter-dispatch
  *  pattern): an unknown key degrades to spell-like and never throws, which is what the fallback to
- *  this map's own `spell-like` entry buys `render`. The two hinted layouts are the spell-like list
- *  PLUS a tab-head widget for the pool's OWNED resource; the other two render exactly as before.
+ *  this map's own `spell-like` entry buys `render`. EVERY entry calls `renderPoolHead` (R4-G5 §5.2),
+ *  whose own three-way guard (`pool.resource`, its seeded `feature_uses` entry, its `resolved.resources`
+ *  index entry) decides whether the WIDGET is drawn: an unhinted pool that OWNS a resource gets the
+ *  widget, and one that owns none draws no widget. Only `point-pool` passes the `points`
+ *  shape, because the head's own `numeric` computation already routes a large `dice` head to the numeric
+ *  widget without being told. CONSEQUENCE, stated: the §11 pool save-DC line, which the head prints
+ *  BEFORE the resource gate, now reaches the spell-like and blocks layouts too whenever a DC resolves.
+ *  MEASURED 2026-09-07 on the 13-book install, three read-only scripts over the converted corpus: ZERO
+ *  shipped pools gain a DC line, because the only DC-shaped pool owner, Way of the Four Elements,
+ *  already derives `point-pool`; and the whole shipped widget delta is ONE head, the XGE Arcane Archer
+ *  (5e)'s Arcane Shot Uses (2 boxes, "/ Short Rest", no die), the only unhinted pool whose members
+ *  consume a resource the owner declares.
  *  A pool whose members carry an UNMAPPED hint never reaches the hinted entries BY DERIVATION: dnd5e's
  *  `RENDERING_HINT_LAYOUT` maps two hints, so `derivePoolLayout` returns undefined for the three G5
  *  families (pool-selection, granted-die-to-ally, stance) and `TabsContainer` falls through to
@@ -276,8 +286,8 @@ type LayoutRenderer = (this: PoolTab, root: HTMLElement, pool: ResolvedPool, ctx
  *  measures the same as undefined on all 23 `TabDecl`s), so on both corpora a PHB 2024 Arcane Archer,
  *  whose members carry the `pool-selection` hint, renders spell-like. */
 const LAYOUTS: ReadonlyMap<PoolLayout, LayoutRenderer> = new Map<PoolLayout, LayoutRenderer>([
-  ["spell-like", function (root, pool, ctx) { this.renderSpellLike(root, pool, ctx); }],
-  ["blocks", function (root, pool, ctx) { this.renderBlocks(root, pool, ctx); }],
+  ["spell-like", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "dice"); this.renderSpellLike(root, pool, ctx); }],
+  ["blocks", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "dice"); this.renderBlocks(root, pool, ctx); }],
   ["dice-pool", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "dice"); this.renderSpellLike(root, pool, ctx); }],
   ["point-pool", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "points"); this.renderSpellLike(root, pool, ctx); }],
 ]);

@@ -44,7 +44,7 @@ type EditStub = Partial<{
 
 function mkCtx(pool: ResolvedPool, editState: EditStub = {}, activeBuffs: string[] = []): ComponentRenderContext {
   return {
-    resolved: { pools: [pool], state: { active_buffs: activeBuffs } } as unknown as ResolvedCharacter,
+    resolved: { pools: [pool], classes: [], state: { active_buffs: activeBuffs } } as unknown as ResolvedCharacter,
     derived: {} as never, services: {} as never, app: {} as never,
     editState: editState as never,
   };
@@ -786,5 +786,58 @@ describe("PoolTab · hidden compendiums (R4-G5 §3.2.2)", () => {
     const names = Array.from(el.querySelectorAll(".pc-spell-name")).map((n) => n.textContent);
     expect(names).toContain("baleful-glare");
     expect(names.length).toBe(3);
+  });
+});
+
+// ── R4-G5 §5 · the head on RESOLVED data, on every layout (§13 row 25) ──
+// The function already guards itself three ways (`pool.resource`, its seeded `feature_uses` entry, its
+// index entry) and already decides its own widget from `numeric`, so the gate is the GUARD and the
+// change is four map entries. MEASURED shipped effect (see the task's evidence file): exactly one head
+// appears that did not before, the XGE Arcane Archer (5e)'s Arcane Shot Uses, and no pool gains a DC
+// line, because the only DC-shaped pool owner on the install already derives `point-pool`.
+describe("PoolTab · the head on every layout (R4-G5 §5)", () => {
+  const arcane = {
+    id: "fighter:arcane-shot-uses", name: "Arcane Shot Uses", reset: "short-rest", maxFormula: "2",
+    owner: { kind: "feature", featureId: "as", featureName: "Arcane Shot",
+             source: { kind: "subclass", slug: "aa", level: 3 } },
+  };
+
+  it("RED FIRST (row 25): a SPELL-LIKE pool with an owned resource renders the head", () => {
+    const el = mountContainer();
+    const c = withOwner({ ...basePool, resource: "fighter:arcane-shot-uses" }, { used: 0, max: 2 }, arcane);
+    new PoolTab("interdict-boons").render(el, c);       // the DEFAULT layout: no hint, no authored value
+    const head = el.querySelector(".pc-pool-head")!;
+    expect(head.querySelectorAll(".archivist-toggle-box").length).toBe(2);
+    expect(head.querySelector(".pc-pool-head-name")!.textContent).toBe("Arcane Shot Uses");
+    expect(head.querySelector(".pc-charge-recovery")!.textContent).toBe("/ Short Rest");
+    expect(head.querySelector(".pc-resource-die")).toBeNull();   // this resource declares none
+    expect(el.querySelectorAll(".pc-spell-prep-row").length).toBe(3);   // the list still renders below
+  });
+
+  it("row 25: the BLOCKS layout gets the head too (every `LAYOUTS` entry, not just the hinted two)", () => {
+    const el = mountContainer();
+    const c = withOwner({ ...basePool, resource: "fighter:arcane-shot-uses" }, { used: 1, max: 2 }, arcane);
+    new PoolTab("interdict-boons", "blocks").render(el, c);
+    expect(el.querySelector(".pc-pool-head")!.querySelectorAll(".archivist-toggle-box").length).toBe(2);
+    expect(el.querySelectorAll(".pc-boon-block").length).toBeGreaterThan(0);
+  });
+
+  it("a spell-like pool with NO `resource` renders NO head (the shipped guard IS the gate)", () => {
+    const el = mountContainer();
+    const c = mkCtx(basePool);
+    (c.resolved as { classes?: unknown }).classes = [];   // `poolSaveDC` indexes classes[pool.classIndex]
+    new PoolTab("interdict-boons").render(el, c);
+    expect(el.querySelector(".pc-pool-head")).toBeNull();
+    expect(el.querySelectorAll(".pc-spell-prep-row").length).toBe(3);
+  });
+
+  it("FIXTURE-ONLY (§5.3): the DC line now reaches a SPELL-LIKE pool when one resolves (measured: zero shipped pools do)", () => {
+    const el = mountContainer();
+    const c = mkCtx(basePool);
+    (c as { derived: unknown }).derived = { proficiencyBonus: 2, mods: { str: 0, dex: 0, con: 0, int: 0, wis: 3, cha: 0 } };
+    (c.resolved as { classes: unknown }).classes =
+      [{ entity: { slug: "monk" }, level: 6, subclass: { slug: "fe", spellcasting: { ability: "wis" } } }];
+    new PoolTab("interdict-boons").render(el, c);
+    expect(el.querySelector(".pc-pool-dc")!.textContent).toBe("Interdict Boons save DC 13");
   });
 });

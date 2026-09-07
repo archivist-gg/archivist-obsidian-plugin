@@ -8318,7 +8318,9 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-boon-block .pc-block-head .pc-block-title { border-bottom: none; padding-bottom: 0; margin: 0; flex: 1; min-width: 0; }
 .archivist-pc-sheet .pc-boon-block .pc-block-controls { display: flex; align-items: center; gap: var(--pc-space-2); flex-shrink: 0; }
 
-/* dice-pool / point-pool tab head: the pool save-DC line (R4-G4 §11) and the owner widget. */
+/* The tab head on EVERY pool layout (R4-G5 §5.2, not the two hinted ones alone): the pool save-DC
+   line (R4-G4 §11) and the owner widget. The div is created on first use, so a pool with neither is
+   still headless and these rules match nothing. */
 .archivist-pc-sheet .pc-pool-head { display: flex; flex-wrap: wrap; gap: 0.6em 1.2em; align-items: center; margin-bottom: 0.5em; }
 .archivist-pc-sheet .pc-pool-dc { font-weight: 600; }
 /* The resource line supplies its own gap, as the ONE wrapper these three declarations are copied
