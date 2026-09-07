@@ -31,10 +31,14 @@ export function renderPickTracker(host: HTMLElement, entry: ResolvedPoolEntry, c
   if (!fu || !res) return;
   renderResourceTracker(host, ctx, {
     id: entry.slug, name: res.name, reset: res.reset, trackClass: "pc-pick-track",
-    // A pool pick's index entry is built by `resolveResourceIndex`'s pool arm, which stamps no `die`
-    // (measured: `{id, name, reset, maxFormula, owner}`), so this ternary never fires on shipped data
-    // and `resourceLevelFor` is never reached from here · which is what keeps the pick fixtures, whose
-    // cast `ResolvedCharacter` carries no `classes`, from throwing.
+    // No POOL-BUILT entry carries `die`: `resolveResourceIndex`'s pool arm stamps
+    // `{id, name, reset, maxFormula, owner}` and nothing else (measured, dnd5e `pc.resources.ts`).
+    // A pick slug that COLLIDES with a feature-declared resource id is the other case: that arm skips
+    // it (`if (!uses || out.has(entry.slug)) continue;`), the FEATURE's entry survives in the index,
+    // and a feature entry can carry `die` · then the face renders here at the owner's level, which is
+    // what §4.3.2 prescribes. So the ternary is live, not decorative; it is simply negative on every
+    // pick the pool arm builds, which is why the pick fixtures, whose cast `ResolvedCharacter` carries
+    // no `classes`, never reach `resourceLevelFor` and never throw.
     die: res.die,
     level: res.die ? resourceLevelFor(res.owner.source, ctx.resolved) : undefined,
     onSet: (n) => ctx.editState?.setFeatureUse(entry.slug, n),

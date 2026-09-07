@@ -10,17 +10,27 @@ export interface ResourceTrackerOpts {
   /** The `feature_uses` key AND the numeric widget's id. */
   id: string;
   /** Display name for the numeric widget's own `.pc-point-pool-name`. This function NEVER prints a
-   *  name span of its own: three of its four callers already print one in their own vocabulary
-   *  (`.pc-card-resource-name`, `.pc-pool-head-name`) or deliberately print none. */
+   *  name span of its own, which is the operative rule: the four callers split TWO and TWO. TWO print
+   *  one themselves, each in its own vocabulary · `renderCardResource` (`.pc-card-resource-name`,
+   *  always) and `renderPoolHead` (`.pc-pool-head-name`, on its `!numeric` paths only, so that the
+   *  name is printed exactly once when `renderPointPool` takes over). TWO deliberately print none ·
+   *  `renderFirstResourceTracker` and `renderPickTracker`, because every row that hosts them already
+   *  names the thing elsewhere in the row (the feature row's `.pc-action-row-name`, the race block's
+   *  trait row, the pool / granted / boon rows' own name cells). `name` still travels for both, since
+   *  the numeric widget prints it if the max clears `CHARGE_BOX_LIMIT`. */
   name: string;
   reset: ResetTrigger;
   /** When present, the die face is printed on the HOST, BEFORE the track (the shipped sibling order
    *  at `renderCardResource` and `renderPoolHead`), resolved at `level`. */
   die?: ResourceDie;
-  /** The level `die` is resolved at: the OWNER's class level (R4-G4 §6.2.4). Callers pass it inside
-   *  the same ternary that decides `die`, so `resourceLevelFor` is never called for a die-less
-   *  resource · which matters, because it walks `resolved.classes` unguarded and several fixtures
-   *  cast a `ResolvedCharacter` without one. */
+  /** The level `die` is resolved at: the OWNER's class level (R4-G4 §6.2.4). All FOUR shipped callers
+   *  pass it inside the same ternary that decides `die`, so the two are always supplied together and
+   *  `resourceLevelFor` is never called for a die-less resource · which matters, because it walks
+   *  `resolved.classes` unguarded and several fixtures cast a `ResolvedCharacter` without one.
+   *  A `die` supplied WITHOUT a `level` therefore reaches no shipped path; it degrades to the
+   *  character's TOTAL level, which for a multiclass owner is the wrong face (mutant t4-m19b measures
+   *  exactly that: a Bard 5 / Fighter 5 reads the total-10 face `d10` instead of `d8`). The pairing is
+   *  the caller's contract, not something this signature can enforce. */
   level?: number;
   /** Extra class on the `.pc-feature-track` wrapper (the pick site adds `pc-pick-track`). */
   trackClass?: string;
@@ -42,8 +52,13 @@ export interface ResourceTrackerOpts {
  * `RESET_LABELS` caption, the `custom` tooltip, the at-will sentinel, the `CHARGE_BOX_LIMIT` ceiling
  * and the `renderPointPool` fallback. It replaces the tails of `renderCardResource` and
  * `renderFirstResourceTracker` (`./feature-rows`), `renderPickTracker` (`./pick-tracker`) and
- * `renderPoolHead`'s DICE branch (`../pool-tab`), which differed in exactly four axes: the id, the
- * display name, the `ResetTrigger` source and the writer.
+ * `renderPoolHead`'s DICE branch (`../pool-tab`), which differed in the SIX axes `ResourceTrackerOpts`
+ * carries, one opt each: the `feature_uses` id, the display name, the `ResetTrigger` source, the writer
+ * shape (`onSet` at the pick and pool-head tails, the `onExpend` / `onRestore` pair at the two feature
+ * tails), the track's extra class (`pc-pick-track`, the pick tail alone) and the die face with the level
+ * it resolves at (`renderCardResource` and `renderPoolHead` printed one; `renderPickTracker` and
+ * `renderFirstResourceTracker` did not, and R4-G5 §4.3.1 is exactly the decision to give the second of
+ * those two a face).
  *
  * It does NOT reach the other three `renderChargeBoxes` callers: `items-table.ts` speaks the persisted
  * ITEM charge vocabulary (`{amount, reset: "dawn"|"short"|"long"|"special"}` and `setItemCharges`), and
