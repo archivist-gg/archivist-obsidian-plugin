@@ -3,11 +3,10 @@ import type { ResolvedCharacter, ResolvedFeature } from "@archivist-gg/dnd5e/pc/
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { renderCostBadge } from "./cost-badge";
-import { renderChargeBoxes, CHARGE_BOX_LIMIT } from "./charge-boxes";
-import { renderPointPool } from "./point-pool";
+import { CHARGE_BOX_LIMIT } from "./charge-boxes";
+import { renderResourceTracker } from "./resource-tracker";
 import { renderEffectCaptions } from "./effect-captions";
 import { renderSpendControl } from "./spend-control";
-import { RESET_LABELS, CUSTOM_RESET_TIP } from "./reset-labels";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
@@ -242,25 +241,11 @@ export function renderCardResource(parent: HTMLElement, resource: Resource, ctx:
   if (!id || !fu) return;
   const line = parent.createDiv({ cls: "pc-card-resource" });
   line.createSpan({ cls: "pc-card-resource-name", text: resource.name });
-  if (resource.die) line.createSpan({ cls: "pc-resource-die", text: resolveScalingDie(resource.die, resourceLevel(resource.id, ctx)) });
-  const track = line.createSpan({ cls: "pc-feature-track" });
-  renderChargeBoxes(track, {
-    used: fu.used,
-    max: fu.max,
-    recovery: { amount: String(fu.max), label: RESET_LABELS[resource.reset] },
-    recoveryTitle: resource.reset === "custom" ? CUSTOM_RESET_TIP : undefined,
+  renderResourceTracker(line, ctx, {
+    id, name: resource.name, reset: resource.reset,
+    die: resource.die, level: resource.die ? resourceLevel(resource.id, ctx) : undefined,
     onExpend: () => ctx.editState?.expendFeatureUse(id),
     onRestore: () => ctx.editState?.restoreFeatureUse(id),
-    atWill: fu.max === AT_WILL_MAX,
-    limit: CHARGE_BOX_LIMIT,
-    renderLarge: (host) => renderPointPool(host, {
-      id, name: resource.name, used: fu.used, max: fu.max,
-      resetLabel: RESET_LABELS[resource.reset],
-      // The same `custom`-reset rule the boxes carry as `recoveryTitle` above, so a resource above
-      // CHARGE_BOX_LIMIT keeps its tooltip on the numeric path (T3 review M-5, closed at T5).
-      resetTitle: resource.reset === "custom" ? CUSTOM_RESET_TIP : undefined,
-      onSet: (n) => ctx.editState?.setFeatureUse(id, n),
-    }),
   });
 }
 
@@ -278,28 +263,19 @@ export function renderCardResource(parent: HTMLElement, resource: Resource, ctx:
 export function renderFirstResourceTracker(detail: HTMLElement, feature: Feature, ctx: ComponentRenderContext): boolean {
   const res0 = feature.resources?.[0];
   const key = res0?.id ?? feature.id;
-  const fu = key ? ctx.resolved.state.feature_uses?.[key] : undefined;
-  if (!fu || !key) return false;
-  const reset = res0?.reset ?? "long-rest";
-  const track = detail.createSpan({ cls: "pc-feature-track" });
-  renderChargeBoxes(track, {
-    used: fu.used,
-    max: fu.max,
-    recovery: { amount: String(fu.max), label: RESET_LABELS[reset] },
-    recoveryTitle: reset === "custom" ? CUSTOM_RESET_TIP : undefined,
+  if (!key) return false;
+  return renderResourceTracker(detail, ctx, {
+    id: key,
+    name: res0?.name ?? feature.name,
+    reset: res0?.reset ?? "long-rest",
+    // R4-G5 §4.3.1, the ONE delta on the class feature row: the owner's die, which this site never
+    // read, so a Bard's own Bardic Inspiration row showed boxes and no face while the card and the
+    // pool head both printed it. The level is resolved INSIDE the ternary (see ResourceTrackerOpts).
+    die: res0?.die,
+    level: res0?.die ? resourceLevel(res0.id, ctx) : undefined,
     onExpend: () => ctx.editState?.expendFeatureUse(key),
     onRestore: () => ctx.editState?.restoreFeatureUse(key),
-    atWill: fu.max === AT_WILL_MAX,
-    limit: CHARGE_BOX_LIMIT,
-    renderLarge: (host) => renderPointPool(host, {
-      id: key, name: res0?.name ?? feature.name, used: fu.used, max: fu.max,
-      resetLabel: RESET_LABELS[reset],
-      // As in `renderCardResource`: the `custom` tooltip follows the resource onto the numeric path.
-      resetTitle: reset === "custom" ? CUSTOM_RESET_TIP : undefined,
-      onSet: (n) => ctx.editState?.setFeatureUse(key, n),
-    }),
   });
-  return true;
 }
 
 /**

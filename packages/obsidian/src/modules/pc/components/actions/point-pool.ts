@@ -16,14 +16,16 @@ export interface PointPoolOpts {
 }
 
 /** The numeric pool widget (R4-G4 §5.2.1): "remaining / max <name>" with − / + steppers and a direct-entry
- *  field on the value. Measured 2026-09-05 with `grep -rn "renderPointPool(" packages/obsidian/src`:
- *  FIVE call expressions besides this declaration, living in FOUR calling functions. The two feature
- *  sites `renderCardResource` and `renderFirstResourceTracker` (`components/actions/feature-rows.ts`)
- *  and T7b's `renderPickTracker` (`components/actions/pick-tracker.ts`, the pool row / granted row /
- *  boon row tracker of a pick's own `uses`) each hand it in as `renderLarge` for a max above
- *  CHARGE_BOX_LIMIT; T5's `renderPoolHead` (`components/pool-tab.ts`) both calls it directly for a
- *  `point-pool` tab head and hands it in as `renderLarge` for a `dice-pool` one, which is why the
- *  expressions outnumber the functions by one. */
+ *  field on the value. RE-MEASURED 2026-09-07, after R4-G5 §4.3.2 folded the four tracker tails into one
+ *  helper, with `grep -rn "renderPointPool(" packages/obsidian/src` (four hits: this declaration, the
+ *  grep recipe spelled inside this docblock, and two call expressions): TWO call expressions besides
+ *  this declaration, living in TWO calling functions. `renderResourceTracker`
+ *  (`components/actions/resource-tracker.ts`) hands it
+ *  in as `renderLarge` for a max above CHARGE_BOX_LIMIT, once for all four tracker sites it serves
+ *  (`renderCardResource` and `renderFirstResourceTracker` in `components/actions/feature-rows.ts`,
+ *  `renderPickTracker` in `components/actions/pick-tracker.ts`, and `renderPoolHead`'s dice shape);
+ *  `renderPoolHead` (`components/pool-tab.ts`) still calls it DIRECTLY for a `point-pool` tab head,
+ *  which is the one path that never goes through the helper. */
 export function renderPointPool(host: HTMLElement, opts: PointPoolOpts): HTMLElement {
   const wrap = host.createDiv({ cls: "pc-point-pool" });
   const clamp = (n: number) => Math.max(0, Math.min(opts.max, Math.floor(n)));

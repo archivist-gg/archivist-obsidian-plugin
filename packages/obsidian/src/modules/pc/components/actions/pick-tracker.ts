@@ -1,16 +1,17 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
-import { renderChargeBoxes, CHARGE_BOX_LIMIT } from "./charge-boxes";
-import { renderPointPool } from "./point-pool";
-import { RESET_LABELS, CUSTOM_RESET_TIP } from "./reset-labels";
-import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
+import { renderResourceTracker } from "./resource-tracker";
+import { resourceLevelFor } from "@archivist-gg/dnd5e/pc/pc.resources";
 
 /**
  * The pick's OWN tracker (R4-G4 §12): `feature_uses[entry.slug]`, seeded by `seedFeatureUses` from
- * the `uses.max` the pool walk in `resolveResourceIndex` put into the resource index, drawn with the
- * T3 charge-box opts (the at-will sentinel checked first, then the `CHARGE_BOX_LIMIT` ceiling into
- * `renderPointPool`). An optional feature's `uses` never enters `resolved.features`, so this is the
- * only tracker a pick can have.
+ * the `uses.max` the pool walk in `resolveResourceIndex` put into the resource index, drawn by
+ * `renderResourceTracker` (`./resource-tracker`, R4-G5 §4.3.2), which owns the widget choice this
+ * file used to spell out: the at-will sentinel first, then the `CHARGE_BOX_LIMIT` ceiling into
+ * `renderPointPool`, plus the `RESET_LABELS` caption and the `custom` tooltip. What stays this file's
+ * own is the resource-index lookup, the two guards below, the `pc-pick-track` class it passes as
+ * `trackClass` and the atomic `setFeatureUse` writer. An optional feature's `uses` never enters
+ * `resolved.features`, so this is the only tracker a pick can have.
  *
  * It lives in its OWN module rather than inside `pool-tab.ts` (the controller's T7b ruling) because
  * it has TWO callers that must not import each other: `PoolTab`'s `row` and `grantedRow`
@@ -28,21 +29,14 @@ export function renderPickTracker(host: HTMLElement, entry: ResolvedPoolEntry, c
   const fu = ctx.resolved.state.feature_uses?.[entry.slug];
   const res = ctx.resolved.resources?.get(entry.slug);
   if (!fu || !res) return;
-  renderChargeBoxes(host.createSpan({ cls: "pc-feature-track pc-pick-track" }), {
-    used: fu.used,
-    max: fu.max,
-    recovery: { amount: String(fu.max), label: RESET_LABELS[res.reset] },
-    // The `custom` cadence is prose on the feature itself, so the caption says only "Special" and the
-    // tooltip points at that prose: the pairing every sibling tracker carries (review M-2).
-    recoveryTitle: res.reset === "custom" ? CUSTOM_RESET_TIP : undefined,
+  renderResourceTracker(host, ctx, {
+    id: entry.slug, name: res.name, reset: res.reset, trackClass: "pc-pick-track",
+    // A pool pick's index entry is built by `resolveResourceIndex`'s pool arm, which stamps no `die`
+    // (measured: `{id, name, reset, maxFormula, owner}`), so this ternary never fires on shipped data
+    // and `resourceLevelFor` is never reached from here · which is what keeps the pick fixtures, whose
+    // cast `ResolvedCharacter` carries no `classes`, from throwing.
+    die: res.die,
+    level: res.die ? resourceLevelFor(res.owner.source, ctx.resolved) : undefined,
     onSet: (n) => ctx.editState?.setFeatureUse(entry.slug, n),
-    atWill: fu.max === AT_WILL_MAX,
-    limit: CHARGE_BOX_LIMIT,
-    renderLarge: (parent) => renderPointPool(parent, {
-      id: entry.slug, name: res.name, used: fu.used, max: fu.max,
-      resetLabel: RESET_LABELS[res.reset],
-      resetTitle: res.reset === "custom" ? CUSTOM_RESET_TIP : undefined,
-      onSet: (n) => ctx.editState?.setFeatureUse(entry.slug, n),
-    }),
   });
 }

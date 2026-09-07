@@ -1,8 +1,14 @@
 /** A PRESENTATIONAL constant (renderer-side, not game vocabulary: Gate 0 Q3): above this many points
- *  the feature sites switch to the numeric widget. The spell-slot site (`renderCastView`) and the item
- *  site (`renderItemRow`) call `renderChargeBoxes` directly, pass none of `limit` / `atWill` /
- *  `renderLarge`, and keep drawing boxes. The race block does NOT: it rides
- *  `renderFirstResourceTracker`, so it receives all three opts like any other feature tracker. That is
+ *  the feature sites switch to the numeric widget. RE-MEASURED 2026-09-07 with
+ *  `grep -rn "renderChargeBoxes(" packages/obsidian/src`, after R4-G5 §4.3.2 folded the four tracker
+ *  tails into one helper: FOUR call expressions besides this declaration. `renderResourceTracker`
+ *  (`components/actions/resource-tracker.ts`) is the ONE that passes `limit` / `atWill` /
+ *  `renderLarge`, and every feature-resource tracker now reaches the boxes through it
+ *  (`renderCardResource` and `renderFirstResourceTracker`, `renderPickTracker`, and `renderPoolHead`'s
+ *  dice shape). The spell-slot site (`renderCastView`, twice) and the item site (`renderItemRow`) still
+ *  call `renderChargeBoxes` directly, pass none of the three, and keep drawing boxes. The race block
+ *  does NOT: it rides `renderFirstResourceTracker` into the helper, so it receives all three opts like
+ *  any other feature tracker. That is
  *  harmless by the spec's measurement (R4-G4 §5.1: 228 race resource declarations, re-measured
  *  2026-09-06 across the converter corpus (222) and the bundle (6) as all `1` (x149), `prof` (x78)
  *  or a bare ability modifier (`con_mod`, x1), none 999, none above 12), so no race trait reaches

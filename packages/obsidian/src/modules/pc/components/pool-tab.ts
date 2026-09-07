@@ -7,11 +7,11 @@ import type { PoolLayout } from "@archivist-gg/dnd5e/types/selection-pool";
 import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "./row-expand-state";
 import { renderSpendControl } from "./actions/spend-control";
-import { renderChargeBoxes, CHARGE_BOX_LIMIT } from "./actions/charge-boxes";
+import { CHARGE_BOX_LIMIT } from "./actions/charge-boxes";
 import { renderPointPool } from "./actions/point-pool";
 import { renderPickTracker } from "./actions/pick-tracker";
+import { renderResourceTracker } from "./actions/resource-tracker";
 import { RESET_LABELS, CUSTOM_RESET_TIP } from "./actions/reset-labels";
-import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import { resourceLevelFor, poolSaveDC } from "@archivist-gg/dnd5e/pc/pc.resources";
 
@@ -296,15 +296,17 @@ const LAYOUTS: ReadonlyMap<PoolLayout, LayoutRenderer> = new Map<PoolLayout, Lay
  *  The head div itself is created on FIRST use, so a pool with neither a DC nor an owned resource
  *  emits no empty spacer.
  *
- *  `dice` draws the boxes with the die face in effect at the OWNER's class level (`resourceLevelFor`,
- *  the same expression `renderSpendControl` carries; `renderCardResource` reaches the same derivation
- *  through `feature-rows.ts`'s module-private `resourceLevel` helper), the at-will sentinel and the
- *  `CHARGE_BOX_LIMIT` ceiling; `points` goes straight to the numeric widget, which is exactly what the
- *  hint is load-bearing for (a point-pool below the box limit, §4.1).
+ *  `dice` hands off to `renderResourceTracker` (`./actions/resource-tracker`, R4-G5 §4.3.2), which
+ *  since the extraction owns the die span, the at-will sentinel, the `CHARGE_BOX_LIMIT` ceiling and
+ *  the recovery caption for all four tracker sites. The head still computes the LEVEL that die is
+ *  resolved at, the OWNER's class level (`resourceLevelFor`, the same expression `renderSpendControl`
+ *  carries; `renderCardResource` reaches the same derivation through `feature-rows.ts`'s
+ *  module-private `resourceLevel` helper). `points` goes straight to the numeric widget, which is
+ *  exactly what the hint is load-bearing for (a point-pool below the box limit, §4.1).
  *
  *  THE NAME IS PRINTED ONCE. `renderPointPool` writes its own `.pc-point-pool-name`, so the head
  *  writes `.pc-pool-head-name` only on the paths where that widget does NOT run: the points shape
- *  always runs it, and the dice shape hands off to it through `renderLarge` whenever
+ *  always runs it, and the dice shape's helper hands off to it through `renderLarge` whenever
  *  `max > CHARGE_BOX_LIMIT`, EXCEPT at will, where `renderChargeBoxes` returns before it consults
  *  `renderLarge` (`AT_WILL_MAX` is itself above the limit, so a guard on the max alone would leave an
  *  at-will head nameless). */
@@ -324,15 +326,11 @@ function renderPoolHead(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRen
   const pointOpts = { id, name: res.name, used: fu.used, max: fu.max, resetLabel, resetTitle, onSet: (n: number) => ctx.editState?.setFeatureUse(id, n) };
   const line = headEl().createDiv({ cls: "pc-pool-head-resource" });
   if (!numeric) line.createSpan({ cls: "pc-pool-head-name", text: res.name });
-  if (shape === "dice" && res.die) line.createSpan({ cls: "pc-resource-die", text: resolveScalingDie(res.die, resourceLevelFor(res.owner.source, ctx.resolved)) });
   if (shape === "dice") {
-    renderChargeBoxes(line.createSpan({ cls: "pc-feature-track" }), {
-      used: fu.used, max: fu.max,
-      recovery: { amount: String(fu.max), label: resetLabel },
-      recoveryTitle: resetTitle,
+    renderResourceTracker(line, ctx, {
+      id, name: res.name, reset: res.reset,
+      die: res.die, level: res.die ? resourceLevelFor(res.owner.source, ctx.resolved) : undefined,
       onSet: (n) => ctx.editState?.setFeatureUse(id, n),
-      atWill: isAtWill, limit: CHARGE_BOX_LIMIT,
-      renderLarge: (parent) => renderPointPool(parent, pointOpts),
     });
   } else {
     renderPointPool(line, pointOpts);

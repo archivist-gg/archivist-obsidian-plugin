@@ -451,3 +451,58 @@ describe("R4-G4 §9.4 · proficiency and sense condition captions", () => {
     expect(captions(row)).toEqual(["ally: blindsight 10 ft."]);
   });
 });
+
+// ── R4-G5 §4.3.1 · the ONE delta on the class feature row: the owner's die (§13 rows 19, 20) ──
+// MEASURED at the base (research B §3.1): `renderFirstResourceTracker` never read `resource.die`, so a
+// Bard 5's own Bardic Inspiration row showed three boxes and no die, while the SAME die was printed by
+// `renderCardResource` and by `renderPoolHead`. Nothing else about the row moves: the activatable
+// toggle and its duration caption stay in `.pc-action-namecell` (the Rage case below is the control).
+describe("the owner-row die (R4-G5 §4.3.1)", () => {
+  const bardicDie = (base: string, at5: string) => ({
+    id: "bardic-inspiration", name: "Bardic Inspiration",
+    resources: [{
+      id: "bard:bardic-inspiration", name: "Bardic Inspiration", max_formula: "{cha_mod}",
+      die: { base, scaling: { "5": at5, "10": "d10" } }, reset: "long-rest",
+    }],
+  });
+  const bardRow = (base: string, at5: string): HTMLElement => {
+    const bard = rf(bardicDie(base, at5), { source: { kind: "class", slug: "bard", level: 1 } });
+    const ctx = renderCtx([bard], {
+      // The OWNER's class level is 5 and the TOTAL is 10, so a reader that used `totalLevel` would
+      // print the 10-step face instead: the fixture separates them on purpose.
+      classes: [{ entity: { slug: "bard" }, level: 5 }, { entity: { slug: "fighter" }, level: 5 }],
+      totalLevel: 10, featureUses: { "bard:bardic-inspiration": { used: 0, max: 3 } },
+    });
+    (ctx.resolved as { resources?: unknown }).resources = resolveFeatureResources([bard]);
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, ctx);
+    return rowByName(c, "Bardic Inspiration").querySelector<HTMLElement>(".pc-feature-detail")!;
+  };
+
+  it("RED FIRST (row 19): a Bard 5 / Fighter 5 reads d8 on its own row, at the OWNER's level not the total", () => {
+    const detail = bardRow("d6", "d8");
+    expect(detail.querySelector(".pc-resource-die")!.textContent).toBe("d8");
+    expect(detail.querySelectorAll(".pc-feature-track .archivist-toggle-box").length).toBe(3);
+  });
+
+  it("row 19: the 2024 corpus's own spelling travels verbatim (1d8), never a renderer-normalised face", () => {
+    expect(bardRow("1d6", "1d8").querySelector(".pc-resource-die")!.textContent).toBe("1d8");
+  });
+
+  it("RED FIRST (row 20): the die span precedes the track, as it does at the two shipped die sites", () => {
+    // The detail slot holds exactly these two children for this fixture: the feature owns its resource
+    // and consumes nothing, so no spend control, and `hasTracker` moves the attack note to the card.
+    expect(Array.from(bardRow("d6", "d8").children).map((n) => n.className))
+      .toEqual(["pc-resource-die", "pc-feature-track"]);
+  });
+
+  it("a die-less feature row grows no die span (the control that keeps row 19 non-vacuous)", () => {
+    const wind = rf({ id: "second-wind", name: "Second Wind",
+      resources: [{ id: "fighter:second-wind", name: "Second Wind", max_formula: "1", reset: "short-rest" }] });
+    const ctx = renderCtx([wind], { featureUses: { "fighter:second-wind": { used: 0, max: 1 } } });
+    (ctx.resolved as { resources?: unknown }).resources = resolveFeatureResources([wind]);
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, ctx);
+    expect(rowByName(c, "Second Wind").querySelector(".pc-resource-die")).toBeNull();
+  });
+});
