@@ -950,7 +950,9 @@ export class CharacterEditState {
   /** Toggle an activatable buff's id/slug in state.active_buffs. While present,
    *  the matching activatable feature/boon's effects fold in recalc; removing it
    *  drops the buff. Empties the array back to undefined so a no-buff file carries
-   *  no `active_buffs:` line (delete, not set-[]). Mirrors toggleCondition. */
+   *  no `active_buffs:` line (delete, not set-[]). Mirrors toggleCondition.
+   *  R4-G5 §4.4.2: the rest path applies the same delete-when-empty rule in
+   *  `applyRestResets`'s `buff:` arm. */
   toggleActiveBuff(slug: string): void {
     const list = (this.character.state.active_buffs ??= []);
     const i = list.indexOf(slug);

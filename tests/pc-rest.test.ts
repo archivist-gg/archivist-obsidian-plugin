@@ -472,3 +472,41 @@ describe("computeRestPlan · a pool pick's own uses (R4-G4 §12)", () => {
     expect(c.state.feature_uses![CLOUD_RUNE.slug]).toEqual({ used: 0, max: 1 });
   });
 });
+
+describe("applyRestResets · the buff clear (R4-G5 §4.4.2)", () => {
+  const RAGE = { feature: { id: "rage", name: "Rage", activatable: true, duration: { amount: 1, unit: "minute" } },
+    source: { kind: "class", slug: "barbarian", level: 1 } };
+  const BLADESONG = { feature: { id: "bladesong", name: "Bladesong", activatable: true },
+    source: { kind: "class", slug: "wizard", level: 1 } };
+  const withFeatures = (c: Character, features: object[]) =>
+    ({ ...(fakeResolved(c) as object), features }) as unknown as ResolvedCharacter;
+
+  it("RED FIRST: a short rest applies `buff:rage`, clearing the stored buff and deleting the emptied array", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.active_buffs = ["rage"];
+    const resolved = withFeatures(c, [RAGE]);
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set());
+    expect(c.state.active_buffs ?? []).not.toContain("rage");
+    expect(c.state.active_buffs).toBeUndefined();
+    expect(plan.categories.map((cat) => cat.id)).toContain("buff:rage");
+  });
+
+  it("a duration-less buff survives the same rest, and the array is kept when it is not empty", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.active_buffs = ["rage", "bladesong"];
+    const resolved = withFeatures(c, [RAGE, BLADESONG]);
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set());
+    expect(c.state.active_buffs).toEqual(["bladesong"]);
+  });
+
+  it("an opted-out buff category leaves the buff alone", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.active_buffs = ["rage"];
+    const resolved = withFeatures(c, [RAGE]);
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "long");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set(["buff:rage"]));
+    expect(c.state.active_buffs).toEqual(["rage"]);
+  });
+});

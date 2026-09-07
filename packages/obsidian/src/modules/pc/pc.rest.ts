@@ -68,6 +68,19 @@ export function applyRestResets(
       continue;
     }
 
+    if (cat.id.startsWith("buff:")) {
+      // R4-G5 §4.4.2: end an active buff whose carrier declares a structured `duration`. The stored key is the
+      // id's tail. The emptied array is DELETED, not left as [], so a no-buff file carries no `active_buffs:`
+      // line: the same rule `CharacterEditState.toggleActiveBuff` applies, and the two writers must not drift.
+      const key = cat.id.slice("buff:".length);
+      const list = character.state.active_buffs;
+      if (!list) continue;
+      const i = list.indexOf(key);
+      if (i >= 0) list.splice(i, 1);
+      if (list.length === 0) delete character.state.active_buffs;
+      continue;
+    }
+
     if (cat.id.startsWith("item:")) {
       const idx = Number(cat.id.slice("item:".length));
       const entry = character.equipment[idx];
