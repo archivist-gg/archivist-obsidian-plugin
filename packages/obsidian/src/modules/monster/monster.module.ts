@@ -4,6 +4,7 @@ import type {
   ModalConstructor,
   RenderContext,
 } from "../../shared/rendering/entity-presenter";
+import type { App } from "obsidian";
 import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import { renderMonsterBlock } from "./monster.renderer";
 import { renderMonsterEditMode } from "./edit/monster-edit-render";
@@ -26,7 +27,10 @@ class MonsterModule implements EntityPresenter {
   render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
     const monster = data as Monster;
     const columns = ctx.columns ?? monster.columns ?? 1;
-    const block = renderMonsterBlock(monster, columns);
+    // The `app` the markdown-filled sections (Lair Actions, Regional Effects, Variants) render through: both
+    // production entries put the plugin on the context (`renderViaModule` passes `plugin: this`,
+    // `renderRegisteredEntity` the module-level `pluginRef`), so the cast reads a defined value on both.
+    const block = renderMonsterBlock(monster, columns, (ctx.plugin as { app?: App } | undefined)?.app);
     el.appendChild(block);
     return block;
   }

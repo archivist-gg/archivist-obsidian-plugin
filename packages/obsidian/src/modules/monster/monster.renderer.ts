@@ -1,3 +1,4 @@
+import type { App } from "obsidian";
 import { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import type { Feature, FeatureRecharge } from "@archivist-gg/dnd5e";
 import type { Attack } from "@archivist-gg/dnd5e/types/attack";
@@ -15,15 +16,21 @@ import { proficiencyBonusFromCR } from "@archivist-gg/dnd5e/dnd/math";
 // used to define, now imported so the saves / skills / languages lines keep their byte-identical casing.
 import {
   capitalizeWords,
+  challengeLine,
   crString,
   formatAC,
   formatAlignment,
+  formatGear,
   formatHP,
+  formatInitiative,
   formatQualifiers,
   formatSize,
+  formatSkillsOther,
   formatSpeed,
   formatType,
 } from "@archivist-gg/dnd5e/monster/monster.format";
+import type { SectionDef } from "./monster.sections";
+import { buildSections, fillMarkdown, renderSpellcastingEntry } from "./monster.sections";
 
 function renderAttackLine(
   parent: HTMLElement,
@@ -136,17 +143,16 @@ function renderLegendaryBoxes(parent: HTMLElement, count: number): void {
   }
 }
 
-function renderLegendarySection(
+/**
+ * The Legendary Resistance label + boxes, extracted VERBATIM from what `renderLegendarySection` used to draw after
+ * its intro sentence and its action boxes. The intro sentence itself is now DATA: `buildSections` puts either the
+ * authored `section_headers` lines or `legendaryIntro`'s generated sentence in `SectionDef.intro`, and the boxes are
+ * drawn by `renderMonsterBlock`'s `renderSection` (spec §8.1).
+ */
+function renderLegendaryResistance(
   parent: HTMLElement,
   monster: Monster,
 ): void {
-  const legendaryCount = monster.legendary_action_uses ?? 3;
-  const monsterName = monster.name.toLowerCase();
-
-  const introText = `The ${monsterName} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monsterName} regains spent legendary actions at the start of its turn.`;
-  el("p", { cls: "archivist-legendary-intro", text: introText, parent });
-  renderLegendaryBoxes(parent, legendaryCount);
-
   if (monster.legendary_resistance && monster.legendary_resistance > 0) {
     const resCount = monster.legendary_resistance;
     const resBlock = el("div", { cls: "archivist-legendary-resistance", parent });
@@ -176,7 +182,7 @@ function createRichPropertyLine(
   return line;
 }
 
-export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLElement {
+export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: App): HTMLElement {
   const isTwoCol = columns === 2;
   const wrapperCls = isTwoCol
     ? ["archivist-monster-block-wrapper", "archivist-monster-two-col"]
@@ -216,9 +222,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
     if (NEEDS_RICH.test(value)) createRichPropertyLine(parent, label, (v) => renderTextWithInlineTags(value, v, true, monsterCtx), isLast);
     else createPropertyLine(parent, label, value, isLast);
   };
-  const richLine = (label: string, value: string) => { propertyLine(secondaryProps, label, value); hasSecondary = true; };
-
-  // 3. Core properties (AC, HP, Speed)
+  // 3. Core properties (AC, HP, Speed, Initiative)
   const coreProps = el("div", { cls: "property-block", parent: contentTarget });
   propertyLine(coreProps, "Armor Class", formatAC(monster.ac));
   createRichPropertyLine(coreProps, "Hit Points", (valueEl) => {
@@ -233,7 +237,14 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       valueEl.appendChild(doc.createTextNode(")"));
     }
   });
-  propertyLine(coreProps, "Speed", formatSpeed(monster.speed), true);
+  // Speed gives up the `last` marker to the Initiative line whenever one follows it.
+  propertyLine(coreProps, "Speed", formatSpeed(monster.speed), monster.initiative === undefined);
+  if (monster.initiative !== undefined) {
+    // `formatInitiative` needs the DEX modifier and the proficiency bonus: a 2024 `{proficiency: 1}` initiative is
+    // DEX + PB, and `advantage_mode` appends its decoded clause (spec §8.1).
+    const init = formatInitiative(monster.initiative, monster.abilities, proficiencyBonusFromCR(crString(monster.cr) ?? "0"));
+    if (init) createRichPropertyLine(coreProps, "Initiative", (v) => renderTextWithInlineTags(init, v, true, monsterCtx), true);
+  }
 
   // 4. SVG Bar
   createSvgBar(contentTarget);
@@ -280,6 +291,9 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
   // 7. Secondary properties
   const secondaryProps = el("div", { cls: "property-block", parent: contentTarget });
   let hasSecondary = false;
+  // Declared beside the two bindings it closes over: a call from the CORE block above would hit their temporal dead
+  // zone and throw. Every secondary line goes through it.
+  const richLine = (label: string, value: string) => { propertyLine(secondaryProps, label, value); hasSecondary = true; };
 
   if (monster.saves && Object.keys(monster.saves).length > 0) {
     const savesStr = Object.entries(monster.saves)
@@ -292,7 +306,9 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
     const skillsStr = Object.entries(monster.skills)
       .map(([k, v]) => `${capitalizeWords(k)} ${formatModifier(v)}`)
       .join(", ");
-    richLine("Skills", skillsStr);
+    // `skills_other` (Adult Oblex's "plus one of: ...") is a SUFFIX of the Skills value, never a second Skills line.
+    const other = formatSkillsOther(monster.skills_other);
+    richLine("Skills", other ? `${skillsStr} ${other}` : skillsStr);
   }
 
   if (
@@ -331,10 +347,20 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
     richLine("Languages", monster.languages.map(capitalizeWords).join(", "));
   }
 
-  // T3 keeps the BARE cr text; the XP / PB clause of spec §8.1 arrives at T7a with `challengeLine`.
-  const crText = crString(monster.cr);
-  if (crText !== undefined) {
-    richLine("Challenge", crText);
+  if (monster.gear && monster.gear.length > 0) {
+    richLine("Gear", formatGear(monster.gear));
+  }
+
+  // A `pb_note` WITHOUT a `cr` has no Challenge line to carry it, so it becomes a line of its own; with a `cr`,
+  // `challengeLine` prints it inside the Challenge parentheses (spec §8.1).
+  if (monster.cr === undefined && monster.pb_note) {
+    richLine("Proficiency Bonus", monster.pb_note);
+  }
+
+  // The Challenge line carries the XP and the proficiency bonus: the ONE named SRD delta of this phase (invariant 5).
+  const ch = challengeLine(monster.cr, monster.pb_note);
+  if (ch) {
+    richLine("Challenge", ch);
   }
 
   // 8. SVG Bar (only if secondary props exist)
@@ -342,21 +368,30 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
     createSvgBar(contentTarget);
   }
 
-  // 9. Section definitions (shared by tab mode and two-column mode)
-  const sectionDefs: {
-    id: string;
-    label: string;
-    features: Feature[] | undefined;
-  }[] = [
-    { id: "traits", label: "Traits", features: monster.traits },
-    { id: "actions", label: "Actions", features: monster.actions },
-    { id: "reactions", label: "Reactions", features: monster.reactions },
-    { id: "legendary", label: "Legendary Actions", features: monster.legendary_actions },
-  ];
+  // 9. Sections: ONE list (the UNION of the native arrays, the placed spellcasting blocks and the entry trees, in
+  // the fixed print order of spec §8.1) drives the tab strip in one column and the flowing headers in two.
+  const activeSections = buildSections(monster);
 
-  const activeSections = sectionDefs.filter(
-    (t) => t.features && t.features.length > 0,
-  );
+  /**
+   * One section body, drawn identically in both column modes: the intro lines, the legendary / mythic boxes, the
+   * note, then EITHER a markdown fill (the entry trees, which own the container from there on) OR the feature cards
+   * followed by any spellcasting block `displayAs` placed in this section.
+   */
+  const renderSection = (container: HTMLElement, s: SectionDef) => {
+    if (s.intro && s.intro.length > 0) {
+      for (const line of s.intro) el("p", { cls: "archivist-legendary-intro", text: line, parent: container });
+    }
+    // A Legendary section that holds ONLY a placed spellcasting block gets no intro and no boxes (Gate 2 M-1).
+    if (s.id === "legendary_actions" && s.features.length > 0) {
+      renderLegendaryBoxes(container, monster.legendary_action_uses ?? 3);
+      renderLegendaryResistance(container, monster);
+    }
+    if (s.id === "mythic") renderLegendaryBoxes(container, monster.legendary_action_uses ?? 3);
+    if (s.note) el("p", { cls: "archivist-legendary-intro", text: s.note, parent: container });
+    if (s.markdown !== undefined) { fillMarkdown(container, s.markdown, app); return; }
+    if (s.features.length > 0) renderFeatureBlock(container, s.features, monsterCtx);
+    for (const block of s.spellcasting) renderSpellcastingEntry(container, block, monsterCtx);
+  };
 
   if (activeSections.length > 0 && isTwoCol) {
     // Two-column mode: render all sections sequentially with headers (no tabs)
@@ -376,13 +411,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
         });
       }
 
-      if (section.id === "legendary") {
-        renderLegendarySection(sectionDiv, monster);
-      }
-
-      if (section.features) {
-        renderFeatureBlock(sectionDiv, section.features, monsterCtx);
-      }
+      renderSection(sectionDiv, section);
     }
   } else if (activeSections.length > 0) {
     // Single-column mode: tabbed navigation (existing behavior)
@@ -419,7 +448,8 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       });
     }
 
-    // Tab content
+    // Tab content. A NATIVE pane is built exactly as it always was, with no added class or attribute; a
+    // markdown-filled pane is the same pane plus what `fillMarkdown` puts on it (spec §8.1's container contract).
     for (let i = 0; i < activeSections.length; i++) {
       const tab = activeSections[i];
       const content = el("div", {
@@ -429,13 +459,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       content.style.display = i === 0 ? "" : "none";
       contentDivs.set(tab.id, content);
 
-      if (tab.id === "legendary") {
-        renderLegendarySection(content, monster);
-      }
-
-      if (tab.features) {
-        renderFeatureBlock(content, tab.features, monsterCtx);
-      }
+      renderSection(content, tab);
     }
   }
 

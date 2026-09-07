@@ -14,8 +14,9 @@ import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers";
  * The SRD monster RENDER PINS (R4-G6 spec §12.3). One sha per file per column mode over the outerHTML of
  * `renderMonsterBlock(resolved, columns)`, where `resolved` is the kernel's `resolve` output exactly as
  * `main.ts` renders it (NOT the codec output: the two agree today only because the renderer recomputes PB
- * itself). `G6_WRITE_PINS=1` re-writes the tracked pin file (T0 writes it; T7a re-writes it after the one-line
- * Challenge delta is reported); otherwise every file's two shas must equal the pins byte for byte.
+ * itself). `G6_WRITE_PINS=1` re-writes the tracked pin file (T0 wrote it; T7a re-wrote it once the one-line
+ * Challenge delta was reported, so the pins below are the post-T7a shas); otherwise every file's two shas must
+ * equal the pins byte for byte.
  * Replaces `monster-render-equivalence.test.ts`, which compared two calls of one function.
  */
 const PINS = path.resolve(__dirname, "../fixtures/g6-srd-render-pins.json");

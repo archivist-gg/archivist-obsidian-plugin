@@ -336,7 +336,12 @@ export function renderStatBlockTag(
  */
 export function appendMarkdownText(text: string, parent: HTMLElement): void {
   const doc = parent.ownerDocument ?? activeDocument;
-  const regex = /!?\[\[([^\]|]+)(?:\|([^\]]*))?\]\]|\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
+  // The emphasis runs may NOT span a wikilink opener. The alternation is leftmost-wins, so a `*` that opens before
+  // the next `[[` used to win the position and swallow the whole link into an `<em>` as literal text: a 5etools
+  // footnote marker on a spell entry ("[[...|invisibility]]*, [[...|mirror image]]*") printed the raw `[[...]]` to
+  // the reader on 30 of the 4,996 converter monsters. The lookahead makes such a run no match at all, so the
+  // wikilink arm reaches the link and the markers stay literal text.
+  const regex = /!?\[\[([^\]|]+)(?:\|([^\]]*))?\]\]|\*\*\*((?:(?!\[\[).)+?)\*\*\*|\*\*((?:(?!\[\[).)+?)\*\*|\*((?:(?!\[\[).)+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
