@@ -24,10 +24,22 @@ function renderDescBlock(host: HTMLElement, ctx: ComponentRenderContext, markdow
   });
 }
 
-/** Above this many resolved candidates the inline selection table is replaced
- *  by chips + a "Browse all N ▸" ghost that opens the filtered picker modal
- *  (smoke r1 — Fighter Weapon Mastery is choose-3-from-~70). */
+/** Above this many resolved, VISIBLE candidates an entity pick is browsed rather than splatted inline:
+ *  the registry-backed arm replaces its selection table, and since R4-G5 §3.2.1 the `from` arm replaces
+ *  its chips wall, both with chips-of-selection plus a "Browse all N ▸" ghost onto the picker modal
+ *  (smoke r1 · Fighter Weapon Mastery is choose-3-from-~70; R4-G5 · a Warlock 20's invocations are 59
+ *  after the cross-edition collapse). */
 const LONG_LIST_THRESHOLD = 12;
+
+/** The hidden-compendium empty copy, verbatim as the registry-backed arm has printed it since R3-P6.
+ *  R4-G5 §3.2.2 gives the `from` chips arm the same predicate, so both arms print the same sentence
+ *  from one place rather than two literals that can drift. */
+const HIDDEN_EMPTY_COPY = "No options available. Some exist in a hidden compendium (see Archivist settings).";
+
+/** Tooltip on a STRANDED pick's chip (R4-G5 §3.2.3): the option is still stored and still removable,
+ *  but its prerequisite no longer holds, which is the sheet's "Selected · prerequisite unmet" band in
+ *  one chip's worth of room. */
+export const STRANDED_TIP = "Prerequisite unmet: this pick no longer qualifies";
 
 /** Canonical toggle semantics shared by every call-site: under the limit
  *  toggle membership; at the limit choose-1 swaps, choose-N refuses. The
@@ -422,6 +434,16 @@ function writeValue(
   es.setChoice(opts.classIndex ?? 0, item.level, item.key, value);
 }
 
+/** The persisted SHAPE of a pick (R4-G5 §3.2.6). A POOL item is written as an ARRAY at every count,
+ *  because that is the shape `PoolTab.row` persists on the identical `setChoice(classIndex,
+ *  anchorLevel, pool.id, …)` key and the two surfaces must not write the same key two ways (measured
+ *  divergence D6: a count-1 pool synth wrote a bare string). Every other pick keeps the shipped shape,
+ *  a string at count 1, which is what `collectFeatSlugs` reads (`typeof feat === "string"`). */
+function pickValue(item: DecisionItem, slugs: string[], need: number): unknown {
+  if (item.pool) return [...slugs];
+  return need === 1 ? (slugs[0] ?? null) : [...slugs];
+}
+
 // ── controls ────────────────────────────────────────────────────────────────
 // Kind-based dispatch — ability-points and the registry-backed selection table
 // short-circuit BEFORE the chips fall-through, so an ability-points item (whose
@@ -451,7 +473,8 @@ function renderControl(
     // Candidates ride on the options the engine already resolved (each carries
     // its `.entity`); there is no separate registry pass here. Hidden
     // compendiums filter NEW choices only: the current selection is exempt,
-    // so its inline row and long-list chip label keep resolving.
+    // so its inline row and long-list chip label keep resolving (since R4-G5
+    // §3.2.2 the `from` arm below applies the same predicate).
     const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
     const allCandidates = item.options.flatMap((o) => (o.entity ? [o.entity] : []));
     const candidates = allCandidates.filter(
@@ -467,10 +490,7 @@ function renderControl(
     if (candidates.length === 0) {
       nest.createDiv({
         cls: "pc-dstrip-empty",
-        text:
-          allCandidates.length > 0
-            ? "No options available. Some exist in a hidden compendium (see Archivist settings)."
-            : "No options available in your vault yet.",
+        text: allCandidates.length > 0 ? HIDDEN_EMPTY_COPY : "No options available in your vault yet.",
       });
       return;
     }
@@ -490,13 +510,14 @@ function renderControl(
       single: need === 1,
       onToggle: (slug) => {
         applyChoiceToggle(selected, slug, need);
-        writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
+        writeValue(ctx, item, opts, pickValue(item, [...selected], need));
       },
     });
     return;
   }
 
-  // Inline / proficiency / explicit-`from` entity picks → the always-open chips
+  // Inline / proficiency picks, and an explicit-`from` entity pick with 12 or
+  // fewer visible candidates → the always-open chips
   // row. A `missing` option (slug with no resolved entity) is shown inert:
   // visible with a "(missing)" hint and no click listener, so it can never write
   // a dangling slug. NO `muted` chips at-limit — always-open means clicking
@@ -525,12 +546,37 @@ function renderControl(
   }
   const need = requiredOf(item);
   const selected = new Set(selectedSlugs(item));
+  // R4-G5 §3.2.2: ONE visibility predicate for both arms. A `from`-carrying select-entity item's
+  // options already carry their resolved `.entity`, so `entityCompendiumVisible` applies here exactly
+  // as it does in the registry-backed arm above, with the same current-selection exemption. An option
+  // with NO entity is KEPT (fail-open): a `missing` slug carries no compendium to hide it by, and the
+  // inline / proficiency kinds that share this arm have no entity at all.
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
+  const options = item.options.filter(
+    (o) => !o.entity || entityCompendiumVisible(o.entity, hidden) || selected.has(o.value),
+  );
+  if (options.length === 0) {
+    nest.createDiv({ cls: "pc-dstrip-empty", text: HIDDEN_EMPTY_COPY });
+    return;
+  }
+  // R4-G5 §3.2.1: a `from`-carrying ENTITY pick past the threshold takes the same chips-of-selection +
+  // "Browse all N" + DecisionPickModal path the registry-backed arm has (the modal re-derives nothing
+  // from `choice.where`, so the reuse is exact). The count is of VISIBLE, RESOLVED candidates, the same
+  // quantity the other arm counts: a hidden option must not push a pool over the threshold, and a
+  // `missing` option is not pickable in a modal and keeps its inert chip below. 12 or fewer stays chips.
+  const candidates = options.flatMap((o) => (o.entity ? [o.entity] : []));
+  if (ch.kind === "select-entity" && candidates.length > LONG_LIST_THRESHOLD) {
+    renderLongListBrowse(nest, ctx, item, opts, candidates, selected, need);
+    return;
+  }
   const chips = nest.createDiv({ cls: "pc-bchoice-chips" });
-  for (const o of item.options) {
+  for (const o of options) {
     const sel = selected.has(o.value);
     const chip = chips.createSpan({
       cls: `pc-bchoice-chip${sel ? " sel" : ""}${o.missing ? " inert" : ""}`,
-      text: sel ? `✓ ${o.label}` : o.missing ? `${o.label} (missing)` : o.label,
+      text: sel
+        ? `✓ ${o.label}${o.stranded ? " (prerequisite unmet)" : ""}`
+        : o.missing ? `${o.label} (missing)` : o.label,
     });
     // The chip's option value, exposed as a stable DOM hook. The rendered text
     // is a humanized label (and is prefixed with "✓ " when selected), so it is
@@ -541,17 +587,23 @@ function renderControl(
     // `--expect-absent` on a selector nothing ever emits returns 0 and passes
     // unconditionally.
     chip.setAttribute("data-prof", o.value);
+    // R4-G5 §3.2.3: the crimson dress a stranded pick wears IS `.sel`'s (a stranded option is by
+    // construction a selected one), so this adds wording and a stable hook, never a new class: the
+    // rendered text is a humanized label and is not addressable by a CSS selector, the same reason
+    // `data-prof` exists. The tooltip is set FIRST, so an option carrying its own `description`
+    // overwrites it on the line below: that is the shipped precedence, stated here and not changed.
+    if (o.stranded) { chip.setAttribute("data-stranded", "true"); chip.setAttribute("title", STRANDED_TIP); }
     // Each option's own prose as a hover tooltip, so the player can preview what an
     // option does before picking it (the data carries it — it was never surfaced).
     if (o.description) chip.setAttribute("title", o.description);
     if (!o.missing) chip.addEventListener("click", () => {
       applyChoiceToggle(selected, o.value, need);
-      writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
+      writeValue(ctx, item, opts, pickValue(item, [...selected], need));
     });
   }
   // The selected option's prose, shown beneath the chips, so the pick is
   // self-explanatory (e.g. the chosen Combat Mastery's effect).
-  for (const o of item.options) {
+  for (const o of options) {
     if (selected.has(o.value) && o.description?.trim()) renderDescBlock(nest, ctx, o.description.trim());
   }
 }
@@ -574,14 +626,14 @@ function renderLongListBrowse(
   need: number,
 ): void {
   const write = (): void =>
-    writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
+    writeValue(ctx, item, opts, pickValue(item, [...selected], need));
   const openModal = (): void => {
     new DecisionPickModal(ctx.app, ctx, {
       title: `${labelOf(item)} — choose ${need}`,
       need,
       candidates,
       initialSelected: [...selected],
-      writeValue: (value) => writeValue(ctx, item, opts, need === 1 ? (value[0] ?? null) : value),
+      writeValue: (value) => writeValue(ctx, item, opts, pickValue(item, value, need)),
       stateKey: `${opts.stateKey}.${item.level}.${item.key}.modal`,
     }).open();
   };
@@ -590,8 +642,13 @@ function renderLongListBrowse(
   if (selected.size) {
     const chips = nest.createDiv({ cls: "pc-bchoice-chips" });
     for (const slug of selected) {
+      const o = item.options.find((x) => x.value === slug);
       const label = candidates.find((e) => e.slug === slug)?.name ?? slug;
-      const chip = chips.createSpan({ cls: "pc-bchoice-chip sel", text: `✓ ${label}` });
+      const chip = chips.createSpan({
+        cls: "pc-bchoice-chip sel",
+        text: `✓ ${label}${o?.stranded ? " (prerequisite unmet)" : ""}`,
+      });
+      if (o?.stranded) { chip.setAttribute("data-stranded", "true"); chip.setAttribute("title", STRANDED_TIP); }
       chip.addEventListener("click", () => {
         applyChoiceToggle(selected, slug, need);
         write();

@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel } from "../packages/obsidian/src/modules/pc/components/builder/decision-strip";
+import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel, STRANDED_TIP } from "../packages/obsidian/src/modules/pc/components/builder/decision-strip";
 import { DecisionPickModal } from "../packages/obsidian/src/modules/pc/components/builder/decision-modal";
 import type { DecisionItem, ResolvedOption } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
@@ -959,8 +959,10 @@ describe("renderDecisionStrip", () => {
 // resolved by the engine into item.options[].entity. Hidden compendiums drop
 // those candidates from the NEW-pick surfaces (inline table + long-list browse),
 // exempting the current selection; a two-tier empty copy distinguishes "hidden
-// by settings" from "vault has none". The `from` chips fall-through is
-// feature-curated and is never filtered.
+// by settings" from "vault has none". Since R4-G5 §3.2.2 the `from` chips arm
+// applies the SAME predicate, so sheet and builder answer one rule; an option
+// with no `entity` (a `missing` slug, and every non-entity choice kind) carries
+// no compendium and is kept.
 describe("compendium visibility (F6)", () => {
   const HIDDEN = "SRD 5e";
   const VISIBLE = "SRD 2024";
@@ -1048,10 +1050,10 @@ describe("compendium visibility (F6)", () => {
       .toBe("No options available in your vault yet.");
   });
 
-  it("an explicit `from` chips list is NOT filtered", () => {
+  it("R4-G5 §3.2.2: an explicit `from` chips list IS filtered, on the SAME predicate as the table arm", () => {
     const c = mountContainer();
-    // select-entity WITH `from` (the chips fall-through): both option chips
-    // render despite BOTH options sitting in the hidden compendium.
+    // select-entity WITH `from` (the chips arm): both options sit in the hidden compendium and NEITHER
+    // is selected, so both chips go. Before R4-G5 this arm applied no filter and rendered 2 chips.
     const fromItem = selectEntityItem([
       compOpt("longsword", "Longsword", HIDDEN),
       compOpt("shortsword", "Shortsword", HIDDEN),
@@ -1064,7 +1066,9 @@ describe("compendium visibility (F6)", () => {
     renderDecisionStrip(c, ctxHiding(HIDDEN), {
       items: [fromItem], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
     });
-    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(2);
+    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(0);
+    expect(c.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("No options available. Some exist in a hidden compendium (see Archivist settings).");
   });
 });
 
@@ -1243,5 +1247,124 @@ describe("childLabel", () => {
     expect(full(3, ["acrobatics", "arcana", "athletics"])).toBe("Skills: choose 3");
     // One short of full still carries the tail, so the bound is `<`, not `<=`.
     expect(full(3, ["acrobatics", "arcana"])).toBe("Skills: choose 3 · 2 picked");
+  });
+});
+
+// ── R4-G5 §3 · the pool-synth item: long-list routing, the visibility filter, the stranded dress ──
+// The item shape is the one `buildDecisionLedger`'s pool synth emits (research A-02, replayed as DOM
+// by A-12): a `select-entity optional-feature` carrying `from`, plus T2's `pool` marker. A-12 measured
+// TODAY's behaviour on it: 43 options render 43 chips, no ghost, no tlabel.
+describe("renderDecisionStrip · the `from` pool-synth arm (R4-G5 §3.2.1-§3.2.3)", () => {
+  const fromOpt = (slug: string, over: Partial<ResolvedOption> = {}): ResolvedOption =>
+    ({ value: slug, label: slug, entity: registeredEntity(slug), ...over });
+
+  const poolItem = (
+    n: number,
+    over: Partial<DecisionItem> = {},
+    optOver: (i: number) => Partial<ResolvedOption> = () => ({}),
+  ): DecisionItem =>
+    item({
+      key: "battle-master-maneuvers", source: { kind: "class" } as never, level: 3,
+      featureName: "Maneuvers",
+      choice: {
+        kind: "select-entity", id: "battle-master-maneuvers", label: "Maneuvers", count: 3,
+        entity_type: "optional-feature", from: Array.from({ length: n }, (_, i) => `mv-${i}`),
+      } as never,
+      options: Array.from({ length: n }, (_, i) => fromOpt(`mv-${i}`, optOver(i))),
+      pool: { id: "battle-master-maneuvers", anchorLevel: 3 },
+      selected: undefined, status: "unresolved",
+      ...over,
+    } as Partial<DecisionItem>);
+
+  const hidingCtx = (editState: Record<string, unknown>, ...hiddenCompendiums: string[]): ComponentRenderContext =>
+    ({
+      resolved: { definition: {} }, derived: {},
+      services: { entities: {}, plugin: { settings: { hiddenCompendiums } } },
+      editState, builderUiState: new Map(),
+    }) as unknown as ComponentRenderContext;
+
+  const draw = (it_: DecisionItem, ctx: ComponentRenderContext): HTMLElement => {
+    const c = mountContainer();
+    renderDecisionStrip(c, ctx, { items: [it_], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t" });
+    return c;
+  };
+  const chipValues = (c: HTMLElement): (string | null)[] =>
+    Array.from(c.querySelectorAll(".pc-bchoice-chip")).map((n) => n.getAttribute("data-prof"));
+
+  it("RED FIRST (row 1): a 13-option `from` item renders the 'Browse all 13' ghost, not 13 chips", () => {
+    const c = draw(poolItem(13), mkCtx({ setChoice: vi.fn() }));
+    expect((c.querySelector(".pc-dstrip-browse") as HTMLElement | null)?.textContent).toContain("Browse all 13");
+    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(0);
+    // The `from` arm emits NO caps header: the chips row never had one and the route does not add one
+    // (the `!from` arm's own `.pc-dstrip-tlabel` is untouched, and A-12's control asserts it there).
+    expect(c.querySelectorAll(".pc-dstrip-tlabel").length).toBe(0);
+  });
+
+  it("row 2: a 12-option `from` item KEEPS its 12 chips and grows no ghost (the boundary)", () => {
+    const c = draw(poolItem(12), mkCtx({ setChoice: vi.fn() }));
+    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(12);
+    expect(c.querySelector(".pc-dstrip-browse")).toBeNull();
+  });
+
+  it("RED FIRST (row 3): a hidden-compendium `from` option loses its chip; a hidden SELECTED one keeps it", () => {
+    // mv-1 and mv-2 sit in the hidden compendium; mv-2 is the current pick, so the exemption keeps it.
+    const it_ = poolItem(3, { selected: ["mv-2"], status: "partial" }, (i) =>
+      i === 0 ? {} : { entity: { ...registeredEntity(`mv-${i}`), compendium: "SRD 5e" } as never });
+    const values = chipValues(draw(it_, hidingCtx({ setChoice: vi.fn() }, "SRD 5e")));
+    expect(values).not.toContain("mv-1");   // hidden, unselected: filtered
+    expect(values).toContain("mv-2");       // hidden BUT selected: exempt
+    expect(values).toContain("mv-0");       // visible
+  });
+
+  it("RED FIRST: a `stranded` option wears the prerequisite-unmet dress in the CHIPS arm", () => {
+    const it_ = poolItem(3, { selected: ["mv-2"], status: "partial" }, (i) => (i === 2 ? { stranded: true } : {}));
+    const c = draw(it_, mkCtx({ setChoice: vi.fn() }));
+    const chip = Array.from(c.querySelectorAll<HTMLElement>(".pc-bchoice-chip"))
+      .find((n) => n.getAttribute("data-prof") === "mv-2")!;
+    expect(chip.getAttribute("data-stranded")).toBe("true");
+    expect(chip.textContent).toContain("(prerequisite unmet)");
+    expect(chip.getAttribute("title")).toBe(STRANDED_TIP);
+    // The crimson IS `.sel`'s shipped dress: a stranded option is by construction a SELECTED one, so
+    // the task adds no CSS (spec §8 books three selectors, none in builder.css).
+    expect(chip.classList.contains("sel")).toBe(true);
+    // a non-stranded sibling carries neither the hook nor the wording (the assertion is not vacuous)
+    const plain = Array.from(c.querySelectorAll<HTMLElement>(".pc-bchoice-chip"))
+      .find((n) => n.getAttribute("data-prof") === "mv-0")!;
+    expect(plain.getAttribute("data-stranded")).toBeNull();
+  });
+
+  it("RED FIRST (row 5): a stranded SELECTION CHIP wears the dress beside the 'Change' ghost in the long-list arm", () => {
+    const it_ = poolItem(14, { selected: ["mv-13"], status: "partial" }, (i) => (i === 13 ? { stranded: true } : {}));
+    const c = draw(it_, mkCtx({ setChoice: vi.fn() }));
+    const chip = c.querySelector<HTMLElement>(".pc-bchoice-chip.sel")!;
+    expect(chip.getAttribute("data-stranded")).toBe("true");
+    expect(chip.textContent).toContain("(prerequisite unmet)");
+    expect((c.querySelector(".pc-dstrip-browse") as HTMLElement).textContent).toContain("Change");
+  });
+
+  it("RED FIRST (row 11): a POOL item at count 1 writes an ARRAY; a non-pool `from` item writes a string", () => {
+    const setChoice = vi.fn();
+    const one = poolItem(4);
+    (one.choice as { count: number }).count = 1;   // `poolItem` already stamps the `pool` marker
+    const c = draw(one, mkCtx({ setChoice }));
+    c.querySelectorAll<HTMLElement>(".pc-bchoice-chip")[0].click();
+    expect(setChoice).toHaveBeenCalledWith(0, 3, "battle-master-maneuvers", ["mv-0"]);
+    // The control: a `feat` pick keeps the STRING shape `collectFeatSlugs` reads (`typeof feat === "string"`).
+    const setChoice2 = vi.fn();
+    const feat = item({
+      key: "feat", source: { kind: "class" } as never, level: 19, featureName: "Epic Boon",
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat", from: ["boon-of-fate"] } as never,
+      options: [fromOpt("boon-of-fate")], selected: undefined, status: "unresolved",
+    });
+    const c2 = draw(feat, mkCtx({ setChoice: setChoice2 }));
+    c2.querySelectorAll<HTMLElement>(".pc-bchoice-chip")[0].click();
+    expect(setChoice2).toHaveBeenCalledWith(0, 19, "feat", "boon-of-fate");
+  });
+
+  it("the filter can empty a `from` arm, and the copy says so (fixture-only: shipped data removes nothing)", () => {
+    const it_ = poolItem(2, {}, (i) => ({ entity: { ...registeredEntity(`mv-${i}`), compendium: "SRD 5e" } as never }));
+    const c = draw(it_, hidingCtx({ setChoice: vi.fn() }, "SRD 5e"));
+    expect(c.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("No options available. Some exist in a hidden compendium (see Archivist settings).");
   });
 });

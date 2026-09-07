@@ -626,3 +626,53 @@ describe("PoolTab · the picks' own uses, the two guards and the custom tooltip 
     expect(pickRow(el, false).querySelectorAll(".pc-pick-track .archivist-toggle-box").length).toBe(1);
   });
 });
+
+// ── R4-G5 §3.2.2 · the sheet's half of the ONE visibility predicate (§13 row 41) ──
+// FIXTURE-ONLY: on the 13-book install the filter removes nothing further from any pool whose owning
+// class is in a VISIBLE compendium, because §9's collapse has already dropped the four SRD 5e fighting
+// styles. The entries below carry the `compendium` string §9.2.1 stamps at resolve time.
+describe("PoolTab · hidden compendiums (R4-G5 §3.2.2)", () => {
+  const ent = (slug: string, compendium: string) =>
+    ({ slug, compendium, entity: ofEntity(slug) as never });
+
+  const hiddenPool = {
+    ...basePool, count: 2,
+    selected: [ent("hell-mage", "SRD 5e")],
+    available: [ent("hell-mage", "SRD 5e"), ent("baleful-glare", "SRD 5e"), ent("visible-boon", "PHB")],
+    grants: [],
+  } as unknown as ResolvedPool;
+
+  const hidingCtx = (pool: ResolvedPool, ...hiddenCompendiums: string[]): ComponentRenderContext => {
+    const c = mkCtx(pool);
+    (c as { services: unknown }).services = { plugin: { settings: { hiddenCompendiums } } };
+    return c;
+  };
+
+  it("RED FIRST (row 41): a hidden candidate is absent from the spell-like list; a hidden SELECTED one stays", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, hidingCtx(hiddenPool, "SRD 5e"));
+    const names = Array.from(el.querySelectorAll(".pc-spell-name")).map((n) => n.textContent);
+    expect(names).not.toContain("baleful-glare");   // hidden, unselected: filtered
+    expect(names).toContain("hell-mage");           // hidden BUT selected: exempt
+    expect(names).toContain("visible-boon");
+    // the filter runs on a COPY: the counter still reads the untouched `selected`
+    expect(el.querySelector(".pc-spell-counts")?.textContent).toContain("1 / 2");
+  });
+
+  it("row 41: the `blocks` layout inherits the SAME filter (one filter, four layout entries)", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons", "blocks").render(el, hidingCtx(hiddenPool, "SRD 5e"));
+    const titles = Array.from(el.querySelectorAll(".pc-block-title")).map((n) => n.textContent);
+    expect(titles).not.toContain("baleful-glare");
+    expect(titles).toContain("hell-mage");
+    expect(titles).toContain("visible-boon");
+  });
+
+  it("no hidden compendiums, no change: every candidate renders (the control)", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, hidingCtx(hiddenPool));
+    const names = Array.from(el.querySelectorAll(".pc-spell-name")).map((n) => n.textContent);
+    expect(names).toContain("baleful-glare");
+    expect(names.length).toBe(3);
+  });
+});

@@ -1,7 +1,8 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedPool, ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-feature.types";
-import { levelPrereqMax } from "@archivist-gg/dnd5e/pc/pc.pools";
+import { levelPrereqMax, strandedPicks } from "@archivist-gg/dnd5e/pc/pc.pools";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../shared/entities/compendium-visibility";
 import type { PoolLayout } from "@archivist-gg/dnd5e/types/selection-pool";
 import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "./row-expand-state";
@@ -31,11 +32,25 @@ export class PoolTab implements SheetComponent {
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const root = el.createDiv({ cls: "pc-tab-body" });
-    const pool = ctx.resolved?.pools?.find((p) => p.id === this.poolId);
-    if (!pool) {
+    const found = ctx.resolved?.pools?.find((p) => p.id === this.poolId);
+    if (!found) {
       root.createDiv({ cls: "pc-empty-line", text: "No data for this pool." });
       return;
     }
+    // R4-G5 §3.2.2: the sheet's half of the ONE visibility predicate, applied ONCE here and BEFORE the
+    // `LAYOUTS` dispatch, on a SHALLOW COPY whose `available` is filtered over the `compendium` string
+    // `resolvePool` stamps at resolve time (§9.2.1). All four layout entries inherit it from one place.
+    // `selected` and `grants` are untouched, and therefore so is `strandedPicks`: the only entries this
+    // removes are UNSELECTED candidates, because the predicate exempts the current selection exactly as
+    // the builder's does. The executed order is collapse (in `resolvePool`, which has no visibility
+    // input) THEN filter (here). The optional chain is load-bearing: the sheet's fixtures cast an empty
+    // `services`, and `hiddenCompendiumSet` fails open on a nullish argument.
+    const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
+    const picked = new Set(found.selected.map((e) => e.slug));
+    const pool: ResolvedPool = {
+      ...found,
+      available: found.available.filter((e) => entityCompendiumVisible(e, hidden) || picked.has(e.slug)),
+    };
     const renderer = LAYOUTS.get(this.layout) ?? LAYOUTS.get("spell-like")!;
     renderer.call(this, root, pool, ctx);
   }
@@ -75,7 +90,7 @@ export class PoolTab implements SheetComponent {
       }
     }
 
-    const stranded = strandedSelections(pool);
+    const stranded = strandedPicks(pool);
     if (stranded.length) {
       root.createDiv({ cls: "pc-actions-section-head" }).createSpan({ text: "Selected · prerequisite unmet" });
       const list = root.createDiv({ cls: "pc-spell-list" });
@@ -185,7 +200,7 @@ export class PoolTab implements SheetComponent {
         granted: false, selected: selectedSlugs.has(entry.slug), atCap, active: activeBuffs.includes(entry.slug),
       }, pool, ctx);
     }
-    for (const entry of strandedSelections(pool)) {
+    for (const entry of strandedPicks(pool)) {
       this.blockCard(root, entry, {
         granted: false, selected: true, atCap, active: activeBuffs.includes(entry.slug),
       }, pool, ctx);
@@ -322,13 +337,6 @@ function renderPoolHead(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRen
   } else {
     renderPointPool(line, pointOpts);
   }
-}
-
-/** Selected picks no longer present in `available` (their prereq is now unmet);
- *  the resolver keeps them in `selected`, so we surface them as removable rows. */
-function strandedSelections(pool: ResolvedPool): ResolvedPoolEntry[] {
-  const avail = new Set(pool.available.map((e) => e.slug));
-  return pool.selected.filter((e) => !avail.has(e.slug));
 }
 
 /** Active-effects rail items: each selected, activatable, currently-on boon. */
