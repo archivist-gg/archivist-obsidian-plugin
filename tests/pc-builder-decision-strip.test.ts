@@ -1361,6 +1361,19 @@ describe("renderDecisionStrip · the `from` pool-synth arm (R4-G5 §3.2.1-§3.2.
     expect(setChoice2).toHaveBeenCalledWith(0, 19, "feat", "boon-of-fate");
   });
 
+  it("the ORDER is filter-then-count: 13 options, one hidden, stays on the CHIPS row (fixture-only)", () => {
+    // 13 `from` options, exactly ONE of them in the hidden compendium and none selected. The
+    // route counts VISIBLE resolved candidates, so 12 survive the filter and the item stays
+    // below the threshold. Counting BEFORE filtering would route it and lose the chips wall.
+    // t3-m3 kills the predicate but not its PLACEMENT, which is what this case pins.
+    const it_ = poolItem(13, {}, (i) =>
+      i === 12 ? { entity: { ...registeredEntity("mv-12"), compendium: "SRD 5e" } as never } : {});
+    const c = draw(it_, hidingCtx({ setChoice: vi.fn() }, "SRD 5e"));
+    expect(c.querySelector(".pc-dstrip-browse")).toBeNull();
+    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(12);
+    expect(chipValues(c)).not.toContain("mv-12");
+  });
+
   it("the filter can empty a `from` arm, and the copy says so (fixture-only: shipped data removes nothing)", () => {
     const it_ = poolItem(2, {}, (i) => ({ entity: { ...registeredEntity(`mv-${i}`), compendium: "SRD 5e" } as never }));
     const c = draw(it_, hidingCtx({ setChoice: vi.fn() }, "SRD 5e"));

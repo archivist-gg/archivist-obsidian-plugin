@@ -517,16 +517,19 @@ function renderControl(
   }
 
   // Inline / proficiency picks, and an explicit-`from` entity pick with 12 or
-  // fewer visible candidates → the always-open chips
-  // row. A `missing` option (slug with no resolved entity) is shown inert:
-  // visible with a "(missing)" hint and no click listener, so it can never write
+  // fewer visible candidates → the always-open chips row. A `missing` option
+  // (slug with no resolved entity) is shown inert: visible with a "(missing)"
+  // hint and no click listener, so it can never write
   // a dangling slug. NO `muted` chips at-limit — always-open means clicking
   // another chip in a resolved choose-1 row swaps directly (applyChoiceToggle
   // swaps for choose-1; choose-N still refuses past the cap).
   // A choice whose option pool resolved empty must say so. Reaching the chips row
   // with zero options renders a header and nothing clickable, which reads as a
   // broken UI rather than as missing data. Distinct copy from the select-entity
-  // empty-state above: compendium visibility is meaningless for a proficiency domain.
+  // empty-state above AND from this arm's OWN hidden-compendium empty state below
+  // (R4-G5 §3.2.2, printed when the visibility filter empties a resolved option
+  // list): compendium visibility is meaningless for a proficiency domain, and this
+  // guard fires BEFORE the filter, on a choice whose option list was already empty.
   //
   // The two zero-option cases are NOT coextensive (spec §6.1/§6.3), so the copy
   // splits on the engine's `satisfied` flag rather than on the count. SATISFIED
@@ -563,7 +566,9 @@ function renderControl(
   // "Browse all N" + DecisionPickModal path the registry-backed arm has (the modal re-derives nothing
   // from `choice.where`, so the reuse is exact). The count is of VISIBLE, RESOLVED candidates, the same
   // quantity the other arm counts: a hidden option must not push a pool over the threshold, and a
-  // `missing` option is not pickable in a modal and keeps its inert chip below. 12 or fewer stays chips.
+  // `missing` option is not pickable in a modal. Below the threshold a `missing` option keeps its inert
+  // chip; PAST it this route returns before the chip loop, so the route drops it exactly as it drops
+  // every other unpicked candidate that is not in `candidates`. 12 or fewer stays chips.
   const candidates = options.flatMap((o) => (o.entity ? [o.entity] : []));
   if (ch.kind === "select-entity" && candidates.length > LONG_LIST_THRESHOLD) {
     renderLongListBrowse(nest, ctx, item, opts, candidates, selected, need);
@@ -608,7 +613,8 @@ function renderControl(
   }
 }
 
-/** Long-list dress for a registry-backed entity pick. Two modes (smoke r4):
+/** Long-list dress for an entity pick past the threshold, from EITHER arm: the registry-backed one
+ *  (no explicit `from`) and, since R4-G5 §3.2.1, the explicit-`from` one. Two modes (smoke r4):
  *  - UNRESOLVED (nothing picked) → the prominent dashed ghost `Browse all N ▸`
  *    where the chips would be, inviting the first pick.
  *  - RESOLVED (pick made) → the chosen chip(s) plus a COMPACT inline `Change ▸`
