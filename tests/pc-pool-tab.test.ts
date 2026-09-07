@@ -300,10 +300,11 @@ describe("PoolTab — blocks layout", () => {
     //   * the tracker half needs an entry that WOULD draw one, so the case seeds `feature_uses["cs-block"]`
     //     AND its own index entry, exactly what `renderPickTracker` reads. It draws none because
     //     `blockCard` never calls it.
-    // `classes` is LOAD-BEARING here and nowhere else in this file today: `renderAffordanceCaption` reaches
-    // `resourceLevelFor`, which does `resolved.classes.find(...)` UNGUARDED, and `mkCtx` casts
-    // `{ pools, state }` only. T7 Step 4b adds the key to the builder for the same reason; this case sets it
-    // locally because T5 lands first.
+    // `classes` here carries the owning class for `renderAffordanceCaption`, which reaches
+    // `resourceLevelFor`, and that does `resolved.classes.find(...)` UNGUARDED (measured: it matches a
+    // `kind: "class"` source on `c.entity?.slug` and never reads `subclass`). `mkCtx` now casts
+    // `classes: []` (T7); this local, subclass-less entry predates it and is kept as the case's own
+    // witness that `poolSaveDC` returns null here.
     const csEntry = { slug: "cs-block", entity: ofEntity("cs-block", {
       rendering_hint: "granted-die-to-ally", uses: { max: 1, recharge: "short-rest" },
       consumes: { resource: "seals", amount: 1 },
@@ -418,11 +419,12 @@ describe("PoolTab — D1 pool-desc expand persistence", () => {
   });
 });
 
-/** `mkCtx` plus everything the two HINTED layouts' tab head reads (R4-G4 §4.3's contract,
+/** `mkCtx` plus everything a pool tab head reads, on any layout (R4-G4 §4.3's contract,
  *  confirmation r6 M-1): the pool's OWNED resource id, its seeded `feature_uses` entry, the
  *  `resolved.resources` index entry carrying `owner` and `die`, AND `resolved.classes` with the owning
  *  class, because `resourceLevelFor` walks `resolved.classes` and `poolSaveDC` indexes
- *  `classes[pool.classIndex]`: both THROW on an absent array and `mkCtx` casts `{ pools, state }` only.
+ *  `classes[pool.classIndex]`: both THROW on an absent array; `mkCtx` now casts an EMPTY `classes` (T7),
+ *  which this builder replaces with the owning class.
  *  `derived` carries the two fields `poolSaveDC` reads. */
 const withOwner = (pool: ResolvedPool, fu: { used: number; max: number }, res: object): ComponentRenderContext => {
   const c = mkCtx(pool);
@@ -481,8 +483,9 @@ describe("PoolTab · dice-pool / point-pool heads (R4-G4 §4.2.6)", () => {
   it("a hinted layout with NO owned resource renders the list and no head widget (Four Elements)", () => {
     const el = mountContainer();
     const c = mkCtx({ ...basePool, layout: "point-pool" });
-    // §4.3's contract, the classes half: `poolSaveDC` indexes `resolved.classes[pool.classIndex]` and
-    // `mkCtx` casts none (Gate 2 I-8); the same rule as `withOwner`, applied to the no-owner fixture too.
+    // §4.3's contract, the classes half: `poolSaveDC` indexes `resolved.classes[pool.classIndex]`
+    // (Gate 2 I-8). `mkCtx` now casts `classes: []`, so this local assignment is redundant, kept as the
+    // case's own witness.
     (c.resolved as { classes?: unknown }).classes = [];
     new PoolTab("interdict-boons", "point-pool").render(el, c);
     // Neither a DC nor an owned resource, so the head is never created: no empty spacer div carrying
@@ -791,8 +794,9 @@ describe("PoolTab · hidden compendiums (R4-G5 §3.2.2)", () => {
 
 // ── R4-G5 §5 · the head on RESOLVED data, on every layout (§13 row 25) ──
 // The function already guards itself three ways (`pool.resource`, its seeded `feature_uses` entry, its
-// index entry) and already decides its own widget from `numeric`, so the gate is the GUARD and the
-// change is four map entries. MEASURED shipped effect (see the task's evidence file): exactly one head
+// index entry) and already decides its own widget from `numeric`, so that guard gates the WIDGET (the
+// §11 DC line prints BEFORE it, on its own null guard) and the change is four map entries.
+// MEASURED 2026-09-07 on the 13-book install: exactly one head
 // appears that did not before, the XGE Arcane Archer (5e)'s Arcane Shot Uses, and no pool gains a DC
 // line, because the only DC-shaped pool owner on the install already derives `point-pool`.
 describe("PoolTab · the head on every layout (R4-G5 §5)", () => {
@@ -822,7 +826,7 @@ describe("PoolTab · the head on every layout (R4-G5 §5)", () => {
     expect(el.querySelectorAll(".pc-boon-block").length).toBeGreaterThan(0);
   });
 
-  it("a spell-like pool with NO `resource` renders NO head (the shipped guard IS the gate)", () => {
+  it("a spell-like pool with NO `resource` and NO DC renders NO head (the guard gates the WIDGET)", () => {
     const el = mountContainer();
     const c = mkCtx(basePool);
     (c.resolved as { classes?: unknown }).classes = [];   // `poolSaveDC` indexes classes[pool.classIndex]
