@@ -144,6 +144,20 @@ describe("converter monsters render every modelled key (R4-G6 §12.5)", () => {
     expect(tabs(render(N.baphomet))).toEqual(expect.arrayContaining(["Lair Actions", "Regional Effects"]));
     expect(tabs(render(N.turtle))).toEqual(expect.arrayContaining(["Mythic Actions", "Lair Actions", "Regional Effects", "Variants"]));
   });
+  /* GREEN at its first run: `action_note` / `reaction_note` shipped with the Task 7a block and no sample note carries
+   * either key (5 and 1 carriers corpus-wide, all outside the twenty). Its kill power is the mutant that drops
+   * `def.note = monster.action_note`, which reds this test's FIRST expect. */
+  it("action_note and reaction_note render as their section's paragraph (spec §8.1, a directly built fixture)", () => {
+    const m = {
+      name: "Noted", abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      actions: [{ name: "Slam", entries: ["It slams."] }], action_note: "x",
+      reactions: [{ name: "Parry", entries: ["It parries."] }], reaction_note: "y",
+    } as unknown as Monster;
+    const panes = Array.from(renderMonsterBlock(m, 1).querySelectorAll(".original-tab-content"));
+    expect(panes[0].querySelector(".archivist-legendary-intro")?.textContent).toBe("x");
+    expect(panes[1].querySelector(".archivist-legendary-intro")?.textContent).toBe("y");
+    expect(tabs(renderMonsterBlock(m, 1))).toEqual(["Actions", "Reactions"]);
+  });
   it("the container contract in BOTH modes: a markdown pane carries both additions, a native pane neither (spec §8.1)", () => {
     const c1 = render(N.burney, 1);
     const md1 = Array.from(c1.querySelectorAll('[data-fill="markdown"]'));

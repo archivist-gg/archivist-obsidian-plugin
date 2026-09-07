@@ -1,6 +1,7 @@
 import type { App } from "obsidian";
 import type { Feature, FormulaContext } from "@archivist-gg/dnd5e";
 import type { Monster, MonsterSpellcasting } from "@archivist-gg/dnd5e/monster/monster.types";
+import type { PlacedSection } from "@archivist-gg/dnd5e/monster/monster.format";
 import { displayAsSection, entriesToMarkdown, legendaryIntro, sectionHeader, spellcastingLines } from "@archivist-gg/dnd5e/monster/monster.format";
 import { el, renderTextWithInlineTags } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
@@ -30,7 +31,11 @@ const ORDER: { id: SectionId; label: string }[] = [
 export function buildSections(monster: Monster): SectionDef[] {
   const placed = new Map<SectionId, MonsterSpellcasting[]>();
   for (const block of monster.spellcasting ?? []) {
-    const id = displayAsSection(block.displayAs) as SectionId;
+    // `PlacedSection` is dnd5e's own vocabulary for where a block MAY land, and every member of it is a `SectionId`
+    // that renders feature cards. Keeping the narrow type instead of asserting `SectionId` is what makes it
+    // impossible to place a block into one of the three markdown-fill sections, where `renderSection`'s early return
+    // would drop it silently.
+    const id: PlacedSection = displayAsSection(block.displayAs);
     placed.set(id, [...(placed.get(id) ?? []), block]);
   }
   const out: SectionDef[] = [];

@@ -80,4 +80,30 @@ describe("appendMarkdownText wikilinks", () => {
     const host = render("[t](https://e.x) and [[a|b]]");
     expect(host.querySelectorAll("a").length).toBe(2);
   });
+  /*
+   * The two fixtures below pin the emphasis arms' `(?!\[\[)` lookahead, which lives in this function and arrived with
+   * the R4-G6 Task 7a block. They are GREEN at their first run, since they pin SHIPPED behaviour rather than driving
+   * it: their kill power is the mutant that reverts the three asterisk arms to `(.+?)`, which reds the anchor count
+   * here and the sample renders' zero-wikilink assertion on Tyreus and Feonor. The alternation is leftmost-wins, so
+   * without the lookahead a `*` opening before the next `[[` swallows the whole link into an `<em>` as literal text,
+   * which is the 5etools footnote shape a monster's spell group prints.
+   */
+  it("an emphasis run never swallows a wikilink: the footnote shape keeps both links and its markers", () => {
+    const host = render("[[a|b]]*, [[c|d]]*");
+    const links = Array.from(host.querySelectorAll("a"));
+    expect(links.length).toBe(2);
+    expect(links[0].getAttribute("data-href")).toBe("a");
+    expect(links[0].textContent).toBe("b");
+    expect(links[1].getAttribute("data-href")).toBe("c");
+    expect(links[1].textContent).toBe("d");
+    expect(host.textContent).toBe("b*, d*");
+    expect(host.querySelectorAll("em").length).toBe(0);
+  });
+  it("*[[a|b]]* renders the link with both asterisks as text and no emphasis element", () => {
+    const host = render("*[[a|b]]*");
+    expect(host.querySelectorAll("a").length).toBe(1);
+    expect(host.querySelector("a")!.getAttribute("data-href")).toBe("a");
+    expect(host.textContent).toBe("*b*");
+    expect(host.querySelectorAll("em").length).toBe(0);
+  });
 });
