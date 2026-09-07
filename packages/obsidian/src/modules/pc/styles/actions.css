@@ -163,6 +163,9 @@
   align-items: center;
   justify-content: flex-start;
 }
+/* The class feature row's granted die (R4-G5 §4.3.1) shares this gapless slot with the charge track, so
+   it abutted the first pip; the margin is on the die alone, since a boon row puts two children here. */
+.archivist-pc-sheet .pc-feature-detail > .pc-resource-die { margin-right: var(--pc-space-2); }
 .archivist-pc-sheet .pc-feature-attack-note {
   font-family: var(--pc-font-serif);
   font-style: italic;
@@ -460,7 +463,7 @@
 
 /* The granted-die recipient caption (R4-G5 §4.2.2 a). It takes `.pc-spend-caption`'s values verbatim:
    it is the same kind of quiet line beside the same kind of control, and the `.pc-regain-reset`
-   verbatim-values precedent above is the same decision. */
+   verbatim-values precedent below is the same decision. */
 .archivist-pc-sheet .pc-affordance-caption {
   font-size: 0.85em;
   opacity: 0.8;
@@ -470,14 +473,28 @@
    the entry's reset caption on one row, with the manual-override / prose note under it.
    Scoped to the sheet like every other rule in this partial; the explicit display/height
    pair is the Obsidian forced-button-height workaround the passive-tab pass measured. */
+/* The same overflow shape the T15 rider fixed on the sheet's other button, on this twin. `.pc-regain`'s
+   pre-rider declarations are byte-identical to that button's, and its label is data too
+   (`blocks/feature-card.ts` writes "Regain {amount} {resource.name}"), so a button that does not wrap
+   floors itself and its row at the label's intrinsic width under the flex default `min-width: auto`.
+   The button takes the rider's five properties and its row the rider's three. No jsdom witness exists:
+   the sweep at 768 / 400 px is the witness (R4-G5 §14 row 10). */
 .archivist-pc-sheet .pc-regain-row {
   display: flex;
   gap: 0.5em;
   align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-regain {
   display: inline-block;
   height: auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
 }
 .archivist-pc-sheet .pc-regain-note {
   font-size: 0.85em;
