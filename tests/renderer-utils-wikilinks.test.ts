@@ -18,6 +18,9 @@ describe("appendMarkdownText wikilinks", () => {
     expect(a.getAttribute("data-href")).toBe("Player's Handbook (2014)/Conditions/Grappled");
     expect(a.textContent).toBe("grappled");
     expect(a.classList.contains("internal-link")).toBe(true);
+    expect(a.getAttribute("href")).toBe("Player's Handbook (2014)/Conditions/Grappled");
+    expect(a.getAttribute("target")).toBe("_blank");
+    expect(a.getAttribute("rel")).toBe("noopener nofollow");
     expect(render("hit by [[x|y]] now").textContent).toBe("hit by y now");
   });
   it("[[target]] shows the last path segment", () => {
@@ -42,10 +45,36 @@ describe("appendMarkdownText wikilinks", () => {
     expect(a.getAttribute("data-href")).toBe("a");
     expect(a.textContent).toBe("b|c");
   });
+  it("a trailing-slash target keeps the whole target as the link text", () => {
+    const a = render("[[a/b/]]").querySelector("a")!;
+    expect(a.textContent).toBe("a/b/");
+    expect(a.getAttribute("data-href")).toBe("a/b/");
+  });
   it("a URL-scheme target renders as text", () => {
     const host = render("[[javascript:alert(1)|x]]");
+    expect(host.textContent).toBe("x");
+    expect(host.querySelectorAll("a").length).toBe(0);
+  });
+  it("a bare URL-scheme target renders as text", () => {
+    const host = render("[[javascript:alert(1)]]");
+    expect(host.querySelectorAll("a").length).toBe(0);
+    expect(host.textContent).toBe("javascript:alert(1)");
+  });
+  it("a whitespace-obfuscated scheme target renders as text", () => {
+    const spaced = render("[[ javascript:alert(1)|x]]");
+    expect(spaced.querySelectorAll("a").length).toBe(0);
+    expect(spaced.textContent).toBe("x");
+    const tabbed = render("[[java\tscript:alert(1)|x]]");
+    expect(tabbed.querySelectorAll("a").length).toBe(0);
+    expect(tabbed.textContent).toBe("x");
+  });
+  it("a protocol-relative target renders as text", () => {
+    const host = render("[[//evil.example|x]]");
     expect(host.querySelectorAll("a").length).toBe(0);
     expect(host.textContent).toBe("x");
+    const unc = render("[[\\\\evil.example|x]]");
+    expect(unc.querySelectorAll("a").length).toBe(0);
+    expect(unc.textContent).toBe("x");
   });
   it("a markdown link beside a wikilink: both render", () => {
     const host = render("[t](https://e.x) and [[a|b]]");

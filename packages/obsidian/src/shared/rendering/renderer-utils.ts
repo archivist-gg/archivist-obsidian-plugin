@@ -346,11 +346,17 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
     }
 
     if (match[1] !== undefined) {
-      // R4-G6 §7: a wikilink. The target is a vault path, never a URL: a scheme-looking target degrades to text
-      // (the same guard the markdown-link arm applies below).
+      // R4-G6 §7: a wikilink. The target is a vault path, so this is a scheme DENYLIST over it and NOT the
+      // markdown-link arm's guard below: that arm is an ALLOWLIST and fail-CLOSED (only http(s), mailto and #
+      // keep an anchor), this one is fail-OPEN by design, because any note name is a legal target. The probe
+      // drops what a URL parser ignores before the test: whitespace and control characters, which it strips
+      // leading and, for tab / newline, anywhere ("<space>javascript:alert(1)" resolves as "javascript:alert(1)").
+      // A protocol-relative target ("//host" or the backslash form) carries no scheme, so it is named outright.
       const target = match[1];
-      const alias = match[2] !== undefined && match[2].length > 0 ? match[2] : (target.split("/").pop() ?? target);
-      if (/^[a-z][a-z0-9+.-]*:/i.test(target)) {
+      const last = target.split("/").pop() ?? "";
+      const alias = match[2] !== undefined && match[2].length > 0 ? match[2] : (last.length > 0 ? last : target);
+      const probe = target.replace(/[\s\p{Cc}]/gu, "");
+      if (/^[a-z][a-z0-9+.-]*:/i.test(probe) || probe.startsWith("//") || probe.startsWith("\\\\")) {
         parent.appendChild(doc.createTextNode(alias));
       } else {
         const a = doc.createElement("a");
