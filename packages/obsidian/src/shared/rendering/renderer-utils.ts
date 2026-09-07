@@ -330,12 +330,13 @@ export function renderStatBlockTag(
 
 /**
  * Append text to a parent element, parsing inline markdown into proper DOM elements.
- * Supports: ***bold italic***, **bold**, *italic*, _italic_, ~~strikethrough~~, [text](url)
+ * Supports: [[target|alias]] and [[target]] wikilinks (R4-G6 §7), ***bold italic***, **bold**,
+ * *italic*, _italic_, ~~strikethrough~~, [text](url)
  * Plain text without markdown is appended as regular text nodes.
  */
 export function appendMarkdownText(text: string, parent: HTMLElement): void {
   const doc = parent.ownerDocument ?? activeDocument;
-  const regex = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
+  const regex = /!?\[\[([^\]|]+)(?:\|([^\]]*))?\]\]|\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -345,36 +346,53 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
     }
 
     if (match[1] !== undefined) {
-      const strong = doc.createElement("strong");
-      const em = doc.createElement("em");
-      em.textContent = match[1];
-      strong.appendChild(em);
-      parent.appendChild(strong);
-    } else if (match[2] !== undefined) {
-      const strong = doc.createElement("strong");
-      strong.textContent = match[2];
-      parent.appendChild(strong);
+      // R4-G6 §7: a wikilink. The target is a vault path, never a URL: a scheme-looking target degrades to text
+      // (the same guard the markdown-link arm applies below).
+      const target = match[1];
+      const alias = match[2] !== undefined && match[2].length > 0 ? match[2] : (target.split("/").pop() ?? target);
+      if (/^[a-z][a-z0-9+.-]*:/i.test(target)) {
+        parent.appendChild(doc.createTextNode(alias));
+      } else {
+        const a = doc.createElement("a");
+        a.classList.add("internal-link");
+        a.setAttribute("data-href", target);
+        a.setAttribute("href", target);
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener nofollow");
+        a.textContent = alias;
+        parent.appendChild(a);
+      }
     } else if (match[3] !== undefined) {
+      const strong = doc.createElement("strong");
       const em = doc.createElement("em");
       em.textContent = match[3];
-      parent.appendChild(em);
+      strong.appendChild(em);
+      parent.appendChild(strong);
     } else if (match[4] !== undefined) {
-      const em = doc.createElement("em");
-      em.textContent = match[4];
-      parent.appendChild(em);
+      const strong = doc.createElement("strong");
+      strong.textContent = match[4];
+      parent.appendChild(strong);
     } else if (match[5] !== undefined) {
-      const del = doc.createElement("del");
-      del.textContent = match[5];
-      parent.appendChild(del);
+      const em = doc.createElement("em");
+      em.textContent = match[5];
+      parent.appendChild(em);
     } else if (match[6] !== undefined) {
-      const rawUrl = match[7];
+      const em = doc.createElement("em");
+      em.textContent = match[6];
+      parent.appendChild(em);
+    } else if (match[7] !== undefined) {
+      const del = doc.createElement("del");
+      del.textContent = match[7];
+      parent.appendChild(del);
+    } else if (match[8] !== undefined) {
+      const rawUrl = match[9];
       const safe = /^(https?:|mailto:|#)/i.test(rawUrl);
       if (!safe) {
         // Degrade to plain text, no anchor for dangerous schemes
-        parent.appendChild(doc.createTextNode(match[6]));
+        parent.appendChild(doc.createTextNode(match[8]));
       } else {
         const a = doc.createElement("a");
-        a.textContent = match[6];
+        a.textContent = match[8];
         a.href = rawUrl;
         a.setAttribute("target", "_blank");
         a.setAttribute("rel", "noopener");
