@@ -92,7 +92,7 @@ describe("appendMarkdownText wikilinks", () => {
    * The two fixtures below pin the emphasis arms' `(?!\[\[)` lookahead, which lives in this function and arrived with
    * the R4-G6 Task 7a block. They are GREEN at their first run, since they pin SHIPPED behaviour rather than driving
    * it: their kill power is the mutant that reverts the three asterisk arms to `(.+?)`, which reds the anchor count
-   * here and the sample renders' zero-wikilink assertion on Tyreus and Feonor. The alternation is leftmost-wins, so
+   * here and the sample renders' zero-wikilink assertion on Tyreus. The alternation is leftmost-wins, so
    * without the lookahead a `*` opening before the next `[[` swallows the whole link into an `<em>` as literal text,
    * which is the 5etools footnote shape a monster's spell group prints.
    */

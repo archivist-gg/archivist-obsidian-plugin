@@ -336,11 +336,13 @@ export function renderStatBlockTag(
  */
 export function appendMarkdownText(text: string, parent: HTMLElement): void {
   const doc = parent.ownerDocument ?? activeDocument;
-  // The emphasis runs may NOT span a wikilink opener. The alternation is leftmost-wins, so a `*` that opens before
-  // the next `[[` used to win the position and swallow the whole link into an `<em>` as literal text: a 5etools
-  // footnote marker on a spell entry ("[[...|invisibility]]*, [[...|mirror image]]*") printed the raw `[[...]]` to
-  // the reader on 30 of the 4,996 converter monsters. The lookahead makes such a run no match at all, so the
-  // wikilink arm reaches the link and the markers stay literal text.
+  // The three ASTERISK runs (`***`, `**`, `*`) may NOT span a wikilink opener. The alternation is leftmost-wins, so
+  // a `*` that opens before the next `[[` used to win the position and swallow the whole link into an `<em>` as
+  // literal text: a 5etools footnote marker on a spell entry ("[[...|invisibility]]*, [[...|mirror image]]*")
+  // printed the raw `[[...]]` to the reader on 30 of the 4,996 converter monsters. The lookahead makes such a run
+  // no match at all, so the wikilink arm reaches the link and the markers stay literal text. The `_..._` and
+  // `~~...~~` arms carry NO such lookahead: a knowingly untouched residual, measured at 0 carriers of a run spanning
+  // a `[[` over both the 4,996 converter monster notes and the 656 SRD monster notes.
   const regex = /!?\[\[([^\]|]+)(?:\|([^\]]*))?\]\]|\*\*\*((?:(?!\[\[).)+?)\*\*\*|\*\*((?:(?!\[\[).)+?)\*\*|\*((?:(?!\[\[).)+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -356,6 +358,9 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
       // keep an anchor), this one is fail-OPEN by design, because any note name is a legal target. The probe
       // drops what a URL parser ignores before the test: whitespace and control characters, which it strips
       // leading and, for tab / newline, anywhere ("<space>javascript:alert(1)" resolves as "javascript:alert(1)").
+      // It is WIDER than a URL parser: it joins INTERNAL whitespace too, so a root-segment colon such as
+      // `[[Chapter 1: Start]]` probes as `Chapter1:Start` and degrades to TEXT, while `[[x/Chapter 1: Start]]` and
+      // `[[Note#Heading: x]]` still link, `/` and `#` being outside the scheme character class.
       // A protocol-relative target carries no scheme, so the guard names it by SHAPE: any two-character prefix made
       // of slashes or backslashes, which covers "//", "\\", "/\" and "\/" together (WHATWG treats "\" as "/"
       // under a special-scheme base). No legitimate vault path starts with two of those, so this is a narrowing.

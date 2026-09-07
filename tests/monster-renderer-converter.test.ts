@@ -145,7 +145,7 @@ describe("converter monsters render every modelled key (R4-G6 §12.5)", () => {
     expect(tabs(render(N.turtle))).toEqual(expect.arrayContaining(["Mythic Actions", "Lair Actions", "Regional Effects", "Variants"]));
   });
   /* GREEN at its first run: `action_note` / `reaction_note` shipped with the Task 7a block and no sample note carries
-   * either key (5 and 1 carriers corpus-wide, all outside the twenty). Its kill power is the mutant that drops
+   * either key (4 and 1 carriers corpus-wide, all outside the twenty). Its kill power is the mutant that drops
    * `def.note = monster.action_note`, which reds this test's FIRST expect. */
   it("action_note and reaction_note render as their section's paragraph (spec §8.1, a directly built fixture)", () => {
     const m = {
