@@ -21,6 +21,20 @@ import { editableToYaml } from "./monster.yaml-serializer";
 
 export type SkillProficiency = "none" | "proficient" | "expertise";
 
+/**
+ * R4-G6 §9 · the keys the editors OWN: `editableToMonster` writes each of these from the edit state, over the
+ * unmanaged keys it copies first. Every other authored key (`spellcasting`, `raw`, `gear`, the taxonomy tags,
+ * `lair_actions`, `mythic`, `section_headers`, ...) is unmanaged and round-trips verbatim (invariant 7).
+ */
+const MANAGED = new Set(["name","size","type","subtype","alignment","cr","ac","hp","speed","abilities","saves","skills","senses","passive_perception","languages","damage_vulnerabilities","damage_resistances","damage_immunities","condition_immunities","traits","actions","bonus_actions","reactions","legendary_actions","legendary_action_uses","legendary_resistance","columns"]);
+
+/**
+ * R4-G6 §9 · `EditableMonster`'s OWN fields, which are edit-state bookkeeping and NEVER reach the saved note.
+ * `xp` and `proficiencyBonus` are derived from `cr` for display; an AI-path authored top-level `xp` lives in
+ * `raw` after the codec and survives as an unmanaged key.
+ */
+const EDIT_STATE_KEYS = new Set(["overrides","saveProficiencies","skillProficiencies","activeSenses","customSenses","activeSections","xp","proficiencyBonus","extras"]);
+
 export interface EditableMonster extends Monster {
   overrides: Set<string>;
   saveProficiencies: Record<string, boolean>;
@@ -30,11 +44,14 @@ export interface EditableMonster extends Monster {
   activeSections: string[];
   xp: number;
   proficiencyBonus: number;
+  /** The unmanaged keys, recorded for the editors' bookkeeping; the runtime carrier is the `...monster` spread. */
+  extras: Record<string, unknown>;
 }
 
 /**
  * Convert a Monster to an EditableMonster by inferring proficiencies,
- * parsing senses, and detecting active sections.
+ * parsing senses, and detecting active sections. Every key outside MANAGED travels through the `...monster`
+ * spread and is also recorded in `extras`.
  */
 export function monsterToEditable(monster: Monster): EditableMonster {
   // The LOOKUP key only: the editable's `cr` FIELD keeps the authored value through the `...monster` spread, so
@@ -114,6 +131,8 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   if (monster.traits && monster.traits.length > 0) activeSections.push("traits");
   if (monster.actions && monster.actions.length > 0) activeSections.push("actions");
   if (monster.reactions && monster.reactions.length > 0) activeSections.push("reactions");
+  // The section key vocabulary is SECTION_KEY_MAP's snake_case (`bonus_actions`), in ALL_SECTIONS order.
+  if (monster.bonus_actions && monster.bonus_actions.length > 0) activeSections.push("bonus_actions");
   if (monster.legendary_actions && monster.legendary_actions.length > 0) activeSections.push("legendary_actions");
 
   // Detect overrides: compare parsed values against auto-calculated values
@@ -153,6 +172,9 @@ export function monsterToEditable(monster: Monster): EditableMonster {
     }
   }
 
+  const extras: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(monster)) if (!MANAGED.has(k)) extras[k] = v;
+
   return {
     ...monster,
     abilities: monster.abilities ? { ...monster.abilities } : undefined,
@@ -171,12 +193,15 @@ export function monsterToEditable(monster: Monster): EditableMonster {
     activeSections,
     xp: crToXP(cr),
     proficiencyBonus: profBonus,
+    extras,
   };
 }
 
 /**
- * Convert an EditableMonster back to a plain Monster by recalculating
- * saves, skills, senses, and passive perception from the editable state.
+ * Convert an EditableMonster back to a plain Monster: the UNMANAGED keys are copied first (the `...monster` spread
+ * in `monsterToEditable` carries them at runtime) and the managed keys are written OVER them, recalculating saves,
+ * skills, senses and passive perception from the editable state. The edit state's own fields (EDIT_STATE_KEYS) are
+ * never emitted, so the save is lossless for everything the editors do not own (R4-G6 §9, invariant 7).
  */
 export function editableToMonster(editable: EditableMonster): Monster {
   const abilities = editable.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
@@ -242,6 +267,9 @@ export function editableToMonster(editable: EditableMonster): Monster {
     name: editable.name,
   };
 
+  // The unmanaged keys FIRST; the managed copies below overwrite them.
+  for (const [k, v] of Object.entries(editable)) if (!MANAGED.has(k) && !EDIT_STATE_KEYS.has(k) && v !== undefined) (monster as unknown as Record<string, unknown>)[k] = v;
+
   if (editable.size) monster.size = editable.size;
   if (editable.type) monster.type = editable.type;
   if (editable.subtype) monster.subtype = editable.subtype;
@@ -272,6 +300,7 @@ export function editableToMonster(editable: EditableMonster): Monster {
   if (sections.includes("traits") && editable.traits && editable.traits.length > 0) monster.traits = editable.traits;
   if (sections.includes("actions") && editable.actions && editable.actions.length > 0) monster.actions = editable.actions;
   if (sections.includes("reactions") && editable.reactions && editable.reactions.length > 0) monster.reactions = editable.reactions;
+  if (sections.includes("bonus_actions") && editable.bonus_actions && editable.bonus_actions.length > 0) monster.bonus_actions = editable.bonus_actions;
   if (sections.includes("legendary_actions") && editable.legendary_actions && editable.legendary_actions.length > 0) monster.legendary_actions = editable.legendary_actions;
   if (editable.legendary_action_uses !== undefined) monster.legendary_action_uses = editable.legendary_action_uses;
   if (editable.legendary_resistance !== undefined) monster.legendary_resistance = editable.legendary_resistance;
