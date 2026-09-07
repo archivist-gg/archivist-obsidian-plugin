@@ -4,7 +4,6 @@ import { SKILL_ABILITY, STANDARD_SENSES, ABILITY_KEYS } from "@archivist-gg/dnd5
 import {
   abilityModifier,
   proficiencyBonusFromCR,
-  crToXP,
   savingThrow,
   skillBonus,
   passivePerception,
@@ -12,7 +11,7 @@ import {
   parseHitDiceFormula,
   hitDiceSizeFromCreatureSize,
 } from "@archivist-gg/dnd5e/dnd/math";
-import { crString, sizeWord } from "@archivist-gg/dnd5e/monster/monster.format";
+import { crString, formatCR, sizeWord } from "@archivist-gg/dnd5e/monster/monster.format";
 import { editableToYaml } from "./monster.yaml-serializer";
 
 // -----------------------------------------------------------------------------
@@ -191,7 +190,10 @@ export function monsterToEditable(monster: Monster): EditableMonster {
     activeSenses,
     customSenses,
     activeSections,
-    xp: crToXP(cr),
+    // `formatCR`, not a table read on `cr`: the lookup key is normalised there (a decimal `0.25` finds `1/4`) and an
+    // authored `xp` override wins, so edit mode shows the SAME XP as the rendered Challenge line. `cr` above stays
+    // the authored string, which is what the PB lookup and the CR select want.
+    xp: formatCR(monster.cr)?.xp ?? 0,
     proficiencyBonus: profBonus,
     extras,
   };
@@ -321,7 +323,7 @@ export function recalculate(monster: EditableMonster, changedField: string): Edi
   if (changedField === "cr") {
     result.proficiencyBonus = proficiencyBonusFromCR(crString(result.cr) ?? "0");
     if (!result.overrides.has("xp")) {
-      result.xp = crToXP(crString(result.cr) ?? "0");
+      result.xp = formatCR(result.cr)?.xp ?? 0;      // the same normalised lookup as `monsterToEditable`
     }
   }
   const profBonus = result.proficiencyBonus;

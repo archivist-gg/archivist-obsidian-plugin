@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
 import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
-import { MonsterEditState } from "../packages/obsidian/src/modules/monster/monster.edit-state";
+import { MonsterEditState, monsterToEditable, recalculate } from "../packages/obsidian/src/modules/monster/monster.edit-state";
 import { renderHeader, renderLanguagesAndCR, mergeQualifierSelection } from "../packages/obsidian/src/modules/monster/edit/info-editor";
 import { renderCombat } from "../packages/obsidian/src/modules/monster/edit/combat-editor";
 import type { DomRefs } from "../packages/obsidian/src/modules/monster/edit/types";
@@ -43,10 +43,27 @@ describe("renderHeader on a structured monster (R4-G6 §9)", () => {
     const crSelect = host.querySelector("select") as HTMLSelectElement;
     expect(crSelect.value).toBe("11");
     expect(crSelect.selectedIndex).toBe(14);   // ALL_CR_VALUES.indexOf("11")
-    // The XP text comes from dnd5e's `formatXP` now that the editor's `toLocaleString` twin is retired. GREEN at its
-    // first run: the two agree under an en locale, so its kill power is over a dropped or broken re-export, not over
-    // the locale divergence that motivated the retirement.
-    expect(host.querySelector(".archivist-auto-value")?.textContent).toBe("7,200");
+  });
+
+  it("the XP text beside the CR select: the block's normalised CR lookup, printed by dnd5e's formatXP", () => {
+    // The editor's `xp` used to read a fraction-keyed table on the AUTHORED string, so the 162 SRD notes spelling a
+    // fractional CR as a decimal showed `(0 XP)` in edit mode while the read block showed `(50 XP)`. Both surfaces
+    // now read `formatCR`, which normalises the lookup key and honours an authored `xp` override.
+    expect(monsterToEditable({ ...structured, cr: "0.25" } as unknown as Monster).xp).toBe(50);
+    expect(monsterToEditable({ ...structured, cr: "0.125" } as unknown as Monster).xp).toBe(25);
+    expect(monsterToEditable({ ...structured, cr: { cr: "0.5", xp: 7 } } as unknown as Monster).xp).toBe(7);   // the override wins
+    // `recalculate`'s twin, the site a CR edit goes through
+    const edited = recalculate({ ...monsterToEditable({ ...structured, cr: "5" } as unknown as Monster), cr: "0.5" }, "cr");
+    expect(edited.xp).toBe(100);
+    // and the rendered span, between the literal " (" and " XP)" the editor writes around it
+    const decimal = document.createElement("div");
+    renderLanguagesAndCR(decimal, new MonsterEditState({ ...structured, cr: "0.25" } as unknown as Monster, () => {}), {} as DomRefs);
+    expect(decimal.querySelector(".archivist-auto-value")?.textContent).toBe("50");
+    // The thousands separator is dnd5e's `formatXP` now that the editor's `toLocaleString` twin is retired. The two
+    // agree under an en locale, so this pins a dropped or broken re-export, not the locale divergence itself.
+    const big = document.createElement("div");
+    renderLanguagesAndCR(big, new MonsterEditState({ ...structured, cr: { cr: "11", xp_lair: 8400 } } as unknown as Monster, () => {}), {} as DomRefs);
+    expect(big.querySelector(".archivist-auto-value")?.textContent).toBe("7,200");
   });
 
   it("the combat editor shows the numeric part of an object speed (tsc-invisible reads)", () => {
