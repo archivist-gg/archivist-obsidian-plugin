@@ -6026,6 +6026,34 @@ body.theme-light .archivist-tag-atk:hover {
   }
 }
 
+/* R4 {G5, G6} live rider 2, V-1 at 252: a third step, where compaction alone has run out.
+ * The tier above was measured against "the ~300 px column a 400 px window leaves"; the live
+ * re-verify measured that column as **252** px, and the 299 px strip wrapped again, INVENTORY onto
+ * a row of its own on every four-tab sheet (`viewports/R4G5_Paladin2024-20_S__400x700__panel-passive__3.png`).
+ * Below 300 px the strip therefore renders each tab's DECLARED short label (`tabs-container.ts`
+ * writes `data-short` on every button; only `Passive & Features` declares a shorter form, and a
+ * data-declared pool tab repeats its own label), and the button's own text is zeroed rather than
+ * clipped. On the same measurement the 399 tier's comment carries: of the 261 px the four labels
+ * take at 11 px, `PASSIVE & FEATURES` is 111 px and `PASSIVE` about 47, so the four labels measure
+ * about 197 px at 11 px and 179 at 10 px; with 5 px of padding a side, 0.2 px of letter-spacing over
+ * 29 characters and three 2 px gaps the strip measures about 231 px and fits the 252 px column with
+ * roughly 20 px to spare, at the same 10 px type. A pool-tab strip (five and six tabs) may still
+ * wrap, as it does at the tier above. No label is clipped: `::before` renders the whole short form.
+ * The pseudo-element carries its own `font-size` and `letter-spacing`; case, weight and family
+ * inherit from the button. */
+@container pc-content (max-width: 299px) {
+  .archivist-pc-sheet .pc-tab-btn {
+    padding: 5px 5px;
+    font-size: 0;
+    letter-spacing: 0;
+  }
+  .archivist-pc-sheet .pc-tab-btn::before {
+    content: attr(data-short);
+    font-size: 10px;
+    letter-spacing: 0.2px;
+  }
+}
+
 /* Portrait picker modal (two-stage: grid + crop) */
 .pc-portrait-picker .pc-portrait-picker-body { width: 432px; max-width: 100%; }
 

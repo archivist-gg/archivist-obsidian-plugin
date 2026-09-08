@@ -5,14 +5,18 @@ import type { TabDecl } from "@archivist-gg/dnd5e/types/selection-pool";
 import { PoolTab } from "./pool-tab";
 
 // Built-in, always-on tabs. Notes removed in Phase 2.
-const BUILTIN: ReadonlyArray<{ type: string; panelId: string; label: string }> = [
+// `short` is the label the strip renders when the content column is too narrow for the full one
+// (R4 {G5, G6} live rider 2, V-1 at 252): it is DECLARED here, beside the label it shortens, so the
+// renderer holds no rule about which words may be dropped. Only the one long built-in label has one;
+// every other tab, including a data-declared pool tab, repeats its own label.
+const BUILTIN: ReadonlyArray<{ type: string; panelId: string; label: string; short?: string }> = [
   { type: "actions-tab",           panelId: "panel-actions",   label: "Actions" },
-  { type: "passive-features-tab",  panelId: "panel-passive",   label: "Passive & Features" },
+  { type: "passive-features-tab",  panelId: "panel-passive",   label: "Passive & Features", short: "Passive" },
   { type: "spells-tab",            panelId: "panel-spells",    label: "Spells" },
   { type: "inventory-tab",         panelId: "panel-inventory", label: "Inventory" },
 ];
 
-interface BuiltTab { panelId: string; label: string; component: SheetComponent | undefined; }
+interface BuiltTab { panelId: string; label: string; short: string; component: SheetComponent | undefined; }
 
 /** Data-declared tabs from the resolved class/subclass, de-duped by id. */
 function collectTabDecls(resolved: ResolvedCharacter | undefined): TabDecl[] {
@@ -39,7 +43,7 @@ export class TabsContainer implements SheetComponent {
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const tabs: BuiltTab[] = BUILTIN.map((b) => ({
-      panelId: b.panelId, label: b.label, component: this.registry.get(b.type),
+      panelId: b.panelId, label: b.label, short: b.short ?? b.label, component: this.registry.get(b.type),
     }));
 
     // Dynamic pool tabs: one PoolTab instance per declared tab whose pool resolved.
@@ -48,7 +52,7 @@ export class TabsContainer implements SheetComponent {
       if (!pool) continue;
       // authored beats derived beats default (R4-G4 §4.2.5)
       const layout = decl.renders.layout ?? pool.layout ?? "spell-like";
-      tabs.push({ panelId: `panel-pool-${decl.id}`, label: decl.label, component: new PoolTab(decl.renders.pool, layout) });
+      tabs.push({ panelId: `panel-pool-${decl.id}`, label: decl.label, short: decl.label, component: new PoolTab(decl.renders.pool, layout) });
     }
 
     const tabBar = el.createDiv({ cls: "pc-tabs-bar" });
@@ -67,8 +71,8 @@ export class TabsContainer implements SheetComponent {
         ? ctx.activeTabId
         : tabs[0].panelId;
 
-    for (const { panelId, label, component } of tabs) {
-      const btn = tabBar.createEl("button", { cls: "pc-tab-btn", text: label, attr: { "data-tab": panelId } });
+    for (const { panelId, label, short, component } of tabs) {
+      const btn = tabBar.createEl("button", { cls: "pc-tab-btn", text: label, attr: { "data-tab": panelId, "data-short": short } });
       const panel = panels.createDiv({ cls: "pc-tab-panel", attr: { id: panelId } });
       if (component) component.render(panel, ctx);
       else panel.createDiv({ cls: "pc-empty-line", text: `(No renderer for ${panelId})` });

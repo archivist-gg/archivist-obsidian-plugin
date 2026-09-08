@@ -53,6 +53,27 @@ describe("TabsContainer", () => {
     const btn = container.querySelector<HTMLElement>('.pc-tab-btn[data-tab="panel-pool-boons"]');
     expect(btn?.textContent).toBe("Interdict Boons");
   });
+  it("carries a short label on every tab: the built-in long one abbreviates, every other repeats its own label", () => {
+    // R4 {G5, G6} live rider 2, V-1 at 252: below a 300 px content column the strip renders
+    // `data-short` instead of the button's own text, so the four built-in tabs fit one row. The
+    // attribute is the renderer's whole part in that: the abbreviation is declared beside the label
+    // it shortens, and a data-declared pool tab repeats its own label rather than being shortened
+    // by any rule in the renderer.
+    const dyn: ComponentRenderContext = {
+      ...ctx,
+      resolved: {
+        classes: [{ entity: { tabs: [{ id: "boons", label: "Interdict Boons", renders: { pool: "interdict-boons" } }] }, subclass: null }],
+        pools: [{ id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 1, anchorLevel: 2, selected: [], available: [], grants: [] }],
+      } as never,
+    };
+    const container = mountContainer();
+    new TabsContainer(mkRegistry()).render(container, dyn);
+    const shorts = [...container.querySelectorAll<HTMLElement>(".pc-tab-btn")].map((b) => b.dataset.short);
+    expect(shorts).toEqual(["Actions", "Passive", "Spells", "Inventory", "Interdict Boons"]);
+    // The button's own text is untouched: the short form is an attribute the narrow tier reads.
+    const labels = [...container.querySelectorAll(".pc-tab-btn")].map((b) => b.textContent);
+    expect(labels).toEqual(["Actions", "Passive & Features", "Spells", "Inventory", "Interdict Boons"]);
+  });
   it("does NOT append a declared tab whose pool did not resolve", () => {
     const dyn: ComponentRenderContext = {
       ...ctx,
