@@ -7386,10 +7386,17 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* ---------- Unified feature/passive rows (grouped Actions tab) ----------
  * Shares the .pc-action-row base (grid/border/hover) but owns a 4-column grid:
- * [badge] [name] [right detail] [caret]. The detail column takes the leftover
- * slack so the charge-pip tracker keeps to one line. */
+ * [badge] [name] [right detail] [caret].
+ * R4 {G5, G6} live rider N-3-12: the NAME column takes the leftover slack now, not the detail one.
+ * Two thirds of the free width went to the detail column, which on a feature row holds a pip tracker
+ * about 90 px wide, so at ~1200 px on `SrdFighter4 S` `Second Wind` and `Weapon Mastery` broke across
+ * two lines beside an empty gap. The ratio flips and the detail column keeps a `min-content` floor, so
+ * its cluster is never squeezed below itself at narrow widths (which is what the 3fr on the items
+ * table was protecting) while a two-word name only wraps when the row is genuinely narrow.
+ * The items and weapons tables keep their own templates: their third column is a charge tracker with
+ * no name cell competing for the same slack. */
 .archivist-pc-sheet .pc-feature-list .pc-feature-row {
-  grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
+  grid-template-columns: 66px minmax(0, 2fr) minmax(min-content, 1fr) 18px;
 }
 /* D2 (item #5): zero the flex gap the base `.pc-feature-list` (blocks.css) leaks
  * onto the economy lists. The compound selector (specificity 0,3,0) beats the
