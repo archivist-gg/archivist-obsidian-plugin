@@ -193,11 +193,16 @@
      (`viewports-supp/R4G5_RuneKnight3_S__400x700__panel-pool-rune-knight-runes__3.png`), and
      `Quickened / Spell` the same way at 356 beside its ACTIVATE and spend pills
      (`viewports/R4G5_WildMagic2024-3_S__768x600__panel-pool-metamagic__2.png`).
-     The basis is the row minus the toggle box and its gap (18 px + 8 px), which is exactly the width
-     left on the first line: the name fills it, every control is pushed to the next line, and the
-     controls then share that line among themselves. A row with no box (a granted pick) simply has
-     26 px of slack on its name line. Above the tier the basis stays 0 and the row is unchanged. */
-  .archivist-pc-sheet .pc-spell-prep-row > .pc-spell-namewrap { flex-basis: calc(100% - 26px); }
+     The basis is the row minus a little more than the toggle box and its gap (18 px + 8 px, with
+     slack): the name's hypothetical size fills the first line on its own, and adding any control
+     beside it exceeds the line, since the narrowest control on these rows is the 75 px ACTIVATE pill.
+     So every control is pushed to the next line and they share it among themselves, while the name,
+     which still grows, takes the whole first line. The slack is deliberate: the toggle box states an
+     18 px width with a 2 px border, so its OUTER width is 18 or 22 px depending on whether a global
+     `box-sizing: border-box` reaches it, and an exact 26 px basis would drop the name under the box
+     in the second case. A row with no box (a granted pick) simply has more slack on its name line.
+     Above the tier the basis stays 0 and the row is unchanged. */
+  .archivist-pc-sheet .pc-spell-prep-row > .pc-spell-namewrap { flex-basis: calc(100% - 40px); }
 }
 
 /* ── Source tag (Cast + Prepare + Add) ────────────────── */
