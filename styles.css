@@ -7241,16 +7241,26 @@ body.theme-light .archivist-tag-atk:hover {
  * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
  * Here we only own the outer flex wrapper that places the pip row next to the
  * italic recovery suffix ("/ Dawn 1d6+1"), and the suffix's typography. */
+/* R4 {G5, G6} live rider N-3-8: the wrapper wraps and the caption does not. At 400 px the pip row and
+   the recovery caption competed for one line, and the pip row loses that competition: its own
+   `flex-wrap` (`.archivist-toggle-box-row`, shared with the monster blocks) makes its content minimum
+   ONE box, so four pips shattered 3 + 1 while "/ Short Rest" split across two lines beside them. With
+   the wrapper wrapping, the caption falls UNDER the pips and the pips keep their line; with the
+   caption unbreakable, the recovery clause is never split mid-phrase. The pip row keeps its own wrap
+   as the last resort for a 12-pip tracker at an extreme width. */
 .archivist-pc-sheet .pc-charge-boxes {
   display: inline-flex;
   align-items: center;
   gap: var(--pc-space-2);
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-1);
 }
 .archivist-pc-sheet .pc-charge-recovery {
   font-family: var(--pc-font-serif);
   font-style: italic;
   font-size: var(--pc-fs-small);
   color: var(--pc-text-soft);
+  white-space: nowrap;
 }
 
 /* ---------- Point pool + the at-will sentinel (R4-G4 §5.2) ----------
@@ -7258,10 +7268,21 @@ body.theme-light .archivist-tag-atk:hover {
  * with steppers instead of a box row; `max === AT_WILL_MAX` renders "at will".
  * The steppers carry the Obsidian forced-height override every sheet <button>
  * needs (display:inline-block + height:auto). */
+/* R4 {G5, G6} live rider V-11: the head wraps BETWEEN its parts, never inside one. At 356 px the
+   Paladin's Lay on Hands head broke `100 /` from `100` and `Long` from `Rest`, because the widget's
+   spans were ordinary shrinkable flex items. The three text parts are now unbreakable and the widget
+   wraps, so a head too wide for its column falls onto a second line as whole parts. */
 .archivist-pc-sheet .pc-point-pool {
   display: inline-flex;
   align-items: center;
   gap: 0.35em;
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-point-pool-value,
+.archivist-pc-sheet .pc-point-pool-name,
+.archivist-pc-sheet .pc-point-pool-reset {
+  white-space: nowrap;
 }
 .archivist-pc-sheet .pc-point-pool-minus,
 .archivist-pc-sheet .pc-point-pool-plus {
@@ -8412,7 +8433,9 @@ body.theme-light .archivist-tag-atk:hover {
    whitespace, so without this the name, the die and the pips abut. The name matches
    .pc-card-resource-name. (.pc-spend was named here too and shares none of the three: it reads
    inline-flex / 0.4em / baseline · review M-11.) */
-.archivist-pc-sheet .pc-pool-head-resource { display: flex; align-items: center; gap: var(--pc-space-2); }
+/* The line wraps (R4 {G5, G6} live rider N-3-8): at 400 px the name, the die and the tracker have to
+   fall onto a second line as whole parts rather than squeeze the tracker. */
+.archivist-pc-sheet .pc-pool-head-resource { display: flex; align-items: center; gap: var(--pc-space-2); row-gap: var(--pc-space-1); flex-wrap: wrap; }
 .archivist-pc-sheet .pc-pool-head-name { font-weight: 700; }
 
 /* The Active toggle and the pick's own uses tracker as ONE cluster on a pool row and a boon row
