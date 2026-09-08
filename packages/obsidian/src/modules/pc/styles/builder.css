@@ -219,15 +219,58 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* R4 {G5, G6} live rider 2, X-9-5: the Source cell WRAPS instead of being cut. Every row cell above
-   is a one-line ellipsis, and the Source track is a fixed 110 px, so a compendium name ended before
-   its year (`Player's Handbook (20…`) and the two editions of a species were separable by the
-   inline tag's colour alone. The year is the last thing in the name, which is exactly what an
+   is a one-line ellipsis, and the Source track was a fixed 110 px everywhere, so a compendium name
+   ended before its year (`Player's Handbook (20…`) and the two editions of a species were separable
+   by the inline tag's colour alone. The year is the last thing in the name, which is exactly what an
    end-ellipsis eats; wrapping keeps the whole name in the same track at the cost of a second line on
-   the rows that need one. */
+   the rows that need one. This is the base rule and it is what the MODAL tables keep. The SHEET's
+   wide tier below overrides it, having widened the track instead. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row > .col-source {
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
+}
+
+/* R4 {G5, G6} live rider 4, Y2-1: where the SHEET is wide enough to show the Source column, the
+   column is wide enough to read a compendium name on ONE line, and every row is one line tall.
+   MEASURED on `builder-steps/R4G5_SrdFighter4_B_sheet1132__step-race__{0,1,2}.png` (window 1200x800,
+   sidebars collapsed, `.archivist-pc-sheet` 1132, so the 699 tier above does NOT fire): the 119
+   Species rows measured 31 / 46 / 62 px, one line for `SRD 2024`, two for `MCDM`, three for
+   `Player's Handbook (2014)`, because X-9-5's wrap meets a 110 px track. Nothing was clipped; the
+   rhythm was.
+   The track widths behind the value, measured off that same shot at 1:1 (a text band's dark-pixel
+   extent per wrapped line, summed with the inter-line space solved from two names and then checked
+   against three more, which came out 179 vs 180, 180 vs 180 and 174 vs 170): the source cell needs
+   text + 5 px (`.pc-bsrc`'s own `margin-left`, which lands on the first line box) + 16 px (the
+   cell's `padding: 7px 8px`). The longest YEAR-BEARING name installed, `Dungeon Master's Guide
+   (2024)`, comes to 201 px, and `Player's Handbook (2024)` to 168 px. So the 160 px the finding
+   offered would still have cut BOTH Player's Handbook years, which is the exact information X-9-5
+   and V-9 bought; 220 px clears the longest year by 19 px and clears every installed name except
+   `Forgotten Realms: Heroes of Faerûn` (231 px), which the ellipsis below takes instead of a second
+   line. No year is ever the part that is eaten.
+   The cell is `nowrap` with an end-ellipsis so a name longer than the track is one line too: that,
+   not the width, is what makes all 119 rows equal. It must sit AFTER the base rule above, which it
+   ties with on specificity (both compute 0,3,0 · a container query adds none), so source order is
+   what decides it.
+   The track itself is an INLINE style (`renderSelectionTable`, `components/builder/selection-table.ts`),
+   which CSS cannot override one track of, so that function names it `var(--pc-btable-src-track, 110px)`
+   and this is the one rule that sets the property.
+   SCOPED twice over to the sheet: `.archivist-pc-sheet` is the only element that declares the
+   `pc-sheet` container (`containers.css`), and a container query matches only its DESCENDANTS. The
+   decision and class modals portal to the document body, so their tables keep the 110 px track and
+   X-9-5's wrap, with the year visible on a second line exactly as LIVE-D measured it.
+   THE COST, stated: the table is `width: max-content` with `min-width: 100%` inside a horizontal
+   scroller, so the extra 110 px comes off the fluid Name track first (at 1132 the host measures
+   about 903 px and Name still keeps about 473 px), and only where the fixed tracks already exceed
+   the host does it become extra scrolling · a band that, on the Species step's
+   `30px + 200px + 90px + 90px` of fixed tracks, is already scrolling before this rule. */
+@container pc-sheet (min-width: 700px) {
+  .archivist-pc-sheet .pc-btable { --pc-btable-src-track: 220px; }
+  .archivist-pc-sheet .pc-btable-row > .col-source {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row { cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row.pc-row-open > * { border-bottom-color: transparent; background: var(--pc-row-open-bg); }

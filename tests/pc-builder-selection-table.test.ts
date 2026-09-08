@@ -144,7 +144,22 @@ describe("renderSelectionTable", () => {
       columns: [CAT_COL], candidates: CANDS, stateKey: "t", selected: new Set(), onToggle: () => {},
     });
     const head = root.querySelector<HTMLElement>(".pc-btable-head")!;
-    expect(head.style.gridTemplateColumns).toBe("30px minmax(200px, 1fr) 90px 110px");
+    expect(head.style.gridTemplateColumns).toBe("30px minmax(200px, 1fr) 90px var(--pc-btable-src-track, 110px)");
+    const row = root.querySelector<HTMLElement>(".pc-btable-row")!;
+    expect(row.style.gridTemplateColumns).toBe(head.style.gridTemplateColumns);
+  });
+
+  // R4 {G5, G6} live rider 4, Y2-1: the Source track is named by a custom property so the stylesheet
+  // can widen it where the sheet has room, without moving the modal tables (`decision-modal.ts`,
+  // `class-modal.ts`), which are not descendants of the `pc-sheet` container the widening rule queries.
+  // The `110px` fallback is the shipped width and is what every surface that sets no property keeps.
+  it("names the Source track through a custom property, with its shipped 110px as the fallback", () => {
+    const root = mountContainer();
+    renderSelectionTable(root, ctxWith(new Map()), {
+      columns: [], candidates: CANDS, stateKey: "t", selected: new Set(), onToggle: () => {},
+    });
+    const head = root.querySelector<HTMLElement>(".pc-btable-head")!;
+    expect(head.style.gridTemplateColumns).toBe("30px minmax(200px, 1fr) var(--pc-btable-src-track, 110px)");
     const row = root.querySelector<HTMLElement>(".pc-btable-row")!;
     expect(row.style.gridTemplateColumns).toBe(head.style.gridTemplateColumns);
   });

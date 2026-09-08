@@ -79,15 +79,21 @@ export function renderSelectionTable(
   }
 
   const host = parent.createDiv({ cls: "pc-btable-host" });
-  // The built-in Name column is the single fluid track: data columns keep
-  // their fixed widths while Name absorbs the remaining host width, so the
-  // ledger fills wide hosts (builder step bodies) and still overflows into
-  // the host's horizontal scroll in narrow ones (drawers).
+  // The built-in Name column is the single fluid track: every data column keeps a fixed width while
+  // Name absorbs the remaining host width, so the ledger fills wide hosts (builder step bodies) and
+  // still overflows into the host's horizontal scroll in narrow ones (drawers).
+  // R4 {G5, G6} live rider 4, Y2-1: the built-in Source track is a fixed width too, but a NAMED one.
+  // `110px` is the shipped value and stays the fallback, so every host that sets no property lays out
+  // byte-identically; `builder.css` sets `--pc-btable-src-track` inside `@container pc-sheet
+  // (min-width: 700px)`, which is the only place it is set today. The property is the seam because
+  // this template is an inline style and CSS cannot override one track of it: the modal tables
+  // (`decision-modal.ts`, `class-modal.ts`) portal outside the sheet, so they never match that query
+  // and keep the 110 px track X-9-5's wrap was measured in.
   const tracks = [
     ...(opts.expandSelect ? [] : ["30px"]),
     "minmax(200px, 1fr)",
     ...opts.columns.map((c) => c.width),
-    "110px",
+    "var(--pc-btable-src-track, 110px)",
   ].join(" ");
 
   const draw = (): void => {
