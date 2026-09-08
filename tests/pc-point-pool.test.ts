@@ -12,7 +12,13 @@ describe("renderPointPool (R4-G4 §5.2.1)", () => {
     expect(root.querySelector(".pc-point-pool-value")!.textContent).toBe("20 / 25");
     expect(root.querySelector(".pc-point-pool-name")!.textContent).toBe("Lay on Hands");
     expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(0);
-    expect(root.querySelector(".pc-point-pool-reset")!.textContent).toBe("Long Rest");
+    // R4 {G5, G6} live rider V-7: the caption carries the separator that divides it from the name
+    // beside it. The live run read the Metamagic head as `2 / 2  Sorcery Point Long Rest`, two
+    // captions abutting with only the flex gap between them.
+    expect(root.querySelector(".pc-point-pool-reset")!.textContent).toBe("· Long Rest");
+    // The space the reader sees between the name and the mark is the widget's flex `gap`, so the DOM
+    // text abuts by design: this is the string, in order, that the head prints.
+    expect(root.textContent).toBe("−20 / 25+Lay on Hands· Long Rest");
   });
 
   it("− spends one (used + 1), + restores one (used − 1), both clamped to [0, max]", () => {

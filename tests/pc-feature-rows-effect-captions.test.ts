@@ -306,7 +306,8 @@ describe("renderCardResource · the die level (R4-G4 §6.2.4)", () => {
     const card = mountContainer();
     renderCardResource(card, runes.feature.resources![0], ctx);
     expect(card.querySelector(".pc-point-pool-reset")!.getAttribute("title")).toBe(TIP);
-    expect(card.querySelector(".pc-point-pool-reset")!.textContent).toBe("Special");
+    // The `·` is the rider's separator (V-7); the caption itself is unchanged.
+    expect(card.querySelector(".pc-point-pool-reset")!.textContent).toBe("· Special");
 
     const row = mountContainer();
     renderFirstResourceTracker(row, runes.feature, ctx);

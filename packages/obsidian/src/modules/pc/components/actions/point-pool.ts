@@ -34,8 +34,13 @@ export function renderPointPool(host: HTMLElement, opts: PointPoolOpts): HTMLEle
   const value = wrap.createSpan({ cls: "pc-point-pool-value", text: `${remaining()} / ${opts.max}` });
   const plus = wrap.createEl("button", { cls: "pc-point-pool-plus", text: "+", attr: { "aria-label": `Restore 1 ${opts.name}` } });
   wrap.createSpan({ cls: "pc-point-pool-name", text: opts.name });
+  // The reset caption carries its own separator (R4 {G5, G6} live rider V-7): the widget writes the
+  // resource name immediately before it and `createSpan` inserts no punctuation, so the live run read
+  // `2 / 2  Sorcery Point Long Rest` on the Metamagic head, the two captions divided by nothing but
+  // the flex gap. The `·` is the arc's separator and rides INSIDE the caption span, so the two words
+  // and the mark stay one unbreakable part when the head wraps.
   if (opts.resetLabel) {
-    const cap = wrap.createSpan({ cls: "pc-point-pool-reset", text: opts.resetLabel });
+    const cap = wrap.createSpan({ cls: "pc-point-pool-reset", text: `· ${opts.resetLabel}` });
     if (opts.resetTitle) cap.setAttribute("title", opts.resetTitle);
   }
   minus.addEventListener("click", (e) => { e.stopPropagation(); opts.onSet(clamp(opts.used + 1)); });
