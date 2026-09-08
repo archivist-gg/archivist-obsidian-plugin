@@ -177,10 +177,27 @@ describe("PoolTab — spell-like", () => {
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, ctx);
     const subs = [...el.querySelectorAll(".pc-spell-sub")].map((n) => n.textContent);
-    expect(subs).toContain("1 Superiority Dice");
+    // The `Passive · ` prefix is the N-1-7 rider's: neither fixture entity declares an action cost, so
+    // both rows name the bucket they file under before their cost.
+    expect(subs).toContain("Passive · 1 Superiority Dice");
     expect(subs.join(" | ")).not.toContain("fighter-2024:superiority-dice");
     // The negative: an id NO entity declares keeps the raw string, so nothing is invented.
-    expect(subs).toContain("2 homebrew:nobody-declares-this");
+    expect(subs).toContain("Passive · 2 homebrew:nobody-declares-this");
+  });
+
+  // R4 {G5, G6} live rider N-1-7: in the fighting-style pool `Great Weapon Fighting` alone had NO
+  // economy sub-line while its siblings read `Passive`, `Reaction`, `Passive · Special`. An entry that
+  // declares no action economy still FILES under Passive & Free Actions (`featureEconomy(undefined)`),
+  // so the row says the bucket it is in instead of saying nothing.
+  it("an entry with no action economy reads Passive in its meta sub-line", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(basePool));
+    const rows = [...el.querySelectorAll(".pc-spell-prep-row")];
+    const hellMage = rows.find((r) => r.querySelector(".pc-spell-name")?.textContent === "hell-mage")!;
+    expect(hellMage.querySelector(".pc-spell-sub")?.textContent).toBe("Passive");
+    // The control: a row that DOES declare a cost keeps its own reading, with no Passive prepended.
+    const baleful = rows.find((r) => r.querySelector(".pc-spell-name")?.textContent === "baleful-glare")!;
+    expect(baleful.querySelector(".pc-spell-sub")?.textContent).toBe("1 Action · 1 seals");
   });
 
   it("R4-G4 §3: a row whose consumes.resource is OWNED renders the spend control; an unowned one renders none", () => {

@@ -365,10 +365,18 @@ function renderCounter(parent: HTMLElement, pool: ResolvedPool): void {
   if (pool.selected.length > pool.count) b.classList.add("over");
 }
 
-/** Italic meta sub-line: "Passive", action cost, and consume cost. */
+/** Italic meta sub-line: "Passive", action cost, and consume cost.
+ *
+ *  R4 {G5, G6} live rider N-1-7: an entry that declares NEITHER `passive` NOR an `action_cost` reads
+ *  "Passive" too. It is not a guess about the game: `featureEconomy` (the sheet's own filing rule,
+ *  `actions/action-model.ts`) maps `free`, `special` and an ABSENT cost alike to the Passive & Free
+ *  Actions bucket, so such an entry already lives under that heading everywhere else on the sheet and
+ *  the row now says so instead of printing an empty sub-line. Measured live: in the fighting-style
+ *  pool `Great Weapon Fighting` was the one row with no sub-line at all while its siblings read
+ *  `Passive`, `Reaction` and `Passive · Special`. */
 function metaSub(e: OptionalFeatureEntity, ctx: ComponentRenderContext): string {
   const parts: string[] = [];
-  if (e.passive) parts.push("Passive");
+  if (e.passive || !e.action_cost) parts.push("Passive");
   if (e.action_cost) parts.push(COST_LABELS[e.action_cost] ?? e.action_cost);
   if (e.consumes?.amount) parts.push(consumeCost(e.consumes, ctx));
   return parts.join(" · ");
