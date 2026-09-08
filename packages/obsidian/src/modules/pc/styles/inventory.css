@@ -242,6 +242,16 @@
   color: var(--pc-text-muted);
   stroke-width: 1.5;
 }
+/* R4 {G5, G6} live rider 3, Z-6-2: what does not fit ends in an ellipsis instead of being cut inside a
+   word. X-7-1 above made the search box the part that gives, which is right for the button, and at
+   `.pc-content` 252 what it gives is most of the field: the placeholder
+   "search items, types, tags…" (`inventory-toolbar.ts`, `InventoryToolbar.render`) read
+   `search items, t`, cut mid-word with no mark that anything
+   followed (`viewports/R4G5_Warlock5Stranded_S__400x700__panel-inventory__3.png`, and the same on every
+   other sheet at that width). The declaration goes on the INPUT and not on `::placeholder`: Chromium
+   applies the input's own `text-overflow` to the placeholder text and ignores the property when it is
+   set on the pseudo-element. An unfocused long VALUE now ellipsizes the same way, which is the shipped
+   behaviour of every other single-line field the reader meets. */
 .archivist-pc-sheet .pc-inv-search input {
   border: none;
   background: transparent;
@@ -251,6 +261,8 @@
   outline: none;
   color: var(--pc-text-primary);
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .archivist-pc-sheet .pc-inv-search input::placeholder {
   color: var(--pc-text-muted);
