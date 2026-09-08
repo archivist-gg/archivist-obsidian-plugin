@@ -60,9 +60,14 @@ export function renderChronicleBlock(parent: HTMLElement, opts: ChronicleBlockOp
   const nameEl = ident.createEl("h3", { cls: "pc-cb-name", text: opts.name });
   opts.nameSuffix?.(nameEl);
   const subEl = ident.createDiv({ cls: "pc-cb-sub", text: opts.sub });
+  // R4 {G5, G6} live rider 2, X-9-2: the separator rides INSIDE the source segment, which the
+  // stylesheet keeps unbroken, so the two move to a second line together. As siblings they were two
+  // inline boxes with a space between them, and the live card wrapped exactly there: the sub-line
+  // ended on a dangling `·` with the source alone underneath.
   if (opts.badge && inlineSource) {
-    subEl.createSpan({ cls: "pc-cb-sub-sep", text: " · " });
-    subEl.createSpan({ cls: "pc-cb-src", text: opts.badge });
+    const src = subEl.createSpan({ cls: "pc-cb-src" });
+    src.createSpan({ cls: "pc-cb-sub-sep", text: " · " });
+    src.appendText(opts.badge);
   }
   if (opts.bandRight) {
     const rgt = bh.createDiv({ cls: "pc-cb-bh-rgt" });

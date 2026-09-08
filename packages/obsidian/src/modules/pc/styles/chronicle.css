@@ -47,9 +47,13 @@
    the absolute corner badge — which would collide with the band-right LV/REMOVE
    controls — and rides the sub-line as a quiet trailing run, matching the badge's
    muted sans dress so it reads as metadata, not part of the italic identity sub. */
+/* R4 {G5, G6} live rider 2, X-9-2: the segment carries its own leading ` · ` separator (the span is
+   written inside it) and never breaks, so a sub-line too long for the card moves the separator and
+   the source to the next line together instead of leaving the `·` dangling at the end of a line. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-src {
   font-style: normal; font-family: var(--pc-font-sans);
   font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub-sep { color: rgba(0, 0, 0, 0.4); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-flavor {
