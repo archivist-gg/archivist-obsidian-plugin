@@ -206,6 +206,17 @@
   font-size: var(--pc-fs-body); color: var(--pc-text-soft);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+/* R4 {G5, G6} live rider 2, X-9-5: the Source cell WRAPS instead of being cut. Every row cell above
+   is a one-line ellipsis, and the Source track is a fixed 110 px, so a compendium name ended before
+   its year (`Player's Handbook (20…`) and the two editions of a species were separable by the
+   inline tag's colour alone. The year is the last thing in the name, which is exactly what an
+   end-ellipsis eats; wrapping keeps the whole name in the same track at the cost of a second line on
+   the rows that need one. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row > .col-source {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
 :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row { cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row.pc-row-open > * { border-bottom-color: transparent; background: var(--pc-row-open-bg); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
