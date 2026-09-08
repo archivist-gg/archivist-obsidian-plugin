@@ -1966,6 +1966,25 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* Compendium badge inside stat block wrapper */
+/* R4 {G5, G6} live rider V-8: the block that CARRIES a badge reserves a strip for it. The badge is
+   absolutely positioned at the top-right of the rendered block, so on a `{{monster:...}}` REF whose
+   compendium name is long it painted over the monster's own name: the live run read
+   `FIZBAN'S TREASURY OF DRAGONS` across the last letters of `ASPECT OF TIAMAT`. Reserving width beside
+   the title cannot work, because the badge's width is DATA (the compendium name), so the reservation
+   is vertical: a strip the badge occupies alone, above the title. `:has(> .archivist-compendium-badge)`
+   keeps this to the badged blocks only, so a direct note, which carries no badge, renders exactly the
+   HTML it renders today. 28 px is the badge's own box (9 px type, 2 px padding and a 1 px border each
+   side) under its `top: 6px` offset, plus the gap. The `.archivist-compendium-ref > *` arm carries the
+   entity types whose presenter root is not one of the three block wrappers. */
+:is(
+  .archivist-monster-block-wrapper,
+  .archivist-spell-block-wrapper,
+  .archivist-item-block-wrapper,
+  .archivist-compendium-ref > *
+):has(> .archivist-compendium-badge) {
+  padding-top: 28px;
+}
+
 .archivist-compendium-badge {
   position: absolute;
   top: 6px;
