@@ -29,6 +29,7 @@ import {
   formatSkillsOther,
   formatSpeed,
   formatType,
+  skillDisplayName,
 } from "@archivist-gg/dnd5e/monster/monster.format";
 import type { SectionDef } from "./monster.sections";
 import { buildSections, fillMarkdown, renderSpellcastingEntry } from "./monster.sections";
@@ -305,8 +306,13 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: 
   }
 
   if (monster.skills && Object.keys(monster.skills).length > 0) {
+    // R4 {G5, G6} live rider 3, Z-9-8: the skill KEY is named by the canonical list, not title-cased. The keys
+    // carry a separator (`animal_handling`), and `capitalizeWords` only upper-cases the first letter of each
+    // word, so the SRD 5.1 Donkey's line read `Animal_handling +0, ... Sleight_of_hand +0`. `skillDisplayName`
+    // (dnd5e `monster/monster.format`) answers from `ALL_SKILLS` and keeps `capitalizeWords` for a key that
+    // list does not know, which is what every other key already rendered.
     const skillsStr = Object.entries(monster.skills)
-      .map(([k, v]) => `${capitalizeWords(k)} ${formatModifier(v)}`)
+      .map(([k, v]) => `${skillDisplayName(k)} ${formatModifier(v)}`)
       .join(", ");
     // `skills_other` (Adult Oblex's "plus one of: ...") is a SUFFIX of the Skills value, never a second Skills line.
     const other = formatSkillsOther(monster.skills_other);
