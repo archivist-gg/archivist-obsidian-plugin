@@ -54,10 +54,10 @@ export function renderFeatureRow(
   );
   const title = featureRowTitle(rf, ctx.resolved);
   // Sub-label joins the primary source with each merged (subclass) source; for a
-  // lone feature this is exactly `formatSourceLabel(rf.source)` (no behavior
+  // lone feature this is exactly `formatSourceLabel(rf.source, ctx.resolved)` (no behavior
   // change). Empty labels are dropped so the " · " separator never dangles.
   const sourceLabel = [rf, ...secondaries]
-    .map((r) => formatSourceLabel(r.source))
+    .map((r) => formatSourceLabel(r.source, ctx.resolved))
     .filter(Boolean)
     .join(" · ");
 

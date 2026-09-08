@@ -1,6 +1,6 @@
 import type { ComponentRenderContext } from "../components/component.types";
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
-import type { FeatureSource } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { FeatureSource, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { Resource, ResourceRecovery } from "@archivist-gg/dnd5e/types/resource";
 import { resourceBindings } from "@archivist-gg/dnd5e/pc/pc.resource-seed";
 import { resolveRecovery } from "@archivist-gg/dnd5e/pc/pc.resources";
@@ -343,22 +343,47 @@ function renderUsesRecovery(block: HTMLElement, resource: Resource, rec: Resourc
 
 /** Feature source → italic subtitle label ("Battle Master 3", "Background:
  *  Drifter", …). Relocated here as the surviving copy (the `features-table.ts`
- *  twin dies with that file in Task 5). */
-export function formatSourceLabel(source: FeatureSource | undefined): string {
+ *  twin dies with that file in Task 5).
+ *
+ *  `resolved` is the DISPLAY-NAME source (R4 {G5, G6} live rider N-3-17). A slug is an identifier, not
+ *  a name: the converter's carry the edition and the book, so title-casing one printed
+ *  `Oath Of Devotion 2024 Xphb 20` and `Battle Master 5e 3` under a row's name. The character already
+ *  holds the entity for every one of the five source kinds, and the entity holds the name the book
+ *  prints. `capitalizeSlug` stays as the fallback for a source the character does not carry and for
+ *  every caller that passes no character (the test suite's direct calls, and any future one). */
+export function formatSourceLabel(source: FeatureSource | undefined, resolved?: ResolvedCharacter): string {
   if (!source) return "";
+  const name = sourceEntityName(source, resolved) ?? capitalizeSlug(source.slug);
   switch (source.kind) {
     case "class":
     case "subclass":
-      return `${capitalizeSlug(source.slug)} ${source.level}`;
+      return `${name} ${source.level}`;
     case "race":
-      return capitalizeSlug(source.slug);
+      return name;
     case "background":
-      return `Background: ${capitalizeSlug(source.slug)}`;
+      return `Background: ${name}`;
     case "feat":
-      return `Feat: ${capitalizeSlug(source.slug)}`;
+      return `Feat: ${name}`;
     default:
       return "";
   }
+}
+
+/** The `name` the character's own resolved entity carries for this source, or undefined when the
+ *  character carries no entity with that slug (and when the caller passed no character). Every arm
+ *  matches on the entity slug the resolver stamps into `FeatureSource.slug`, so the lookup is an
+ *  identity match and never a heuristic. The `?? []` guards are for the cast fixtures that build a
+ *  `ResolvedCharacter` without these fields. */
+function sourceEntityName(source: FeatureSource, resolved: ResolvedCharacter | undefined): string | undefined {
+  if (!resolved) return undefined;
+  type Named = { slug?: string; name?: string } | null | undefined;
+  const candidates: Named[] =
+    source.kind === "class" ? (resolved.classes ?? []).map((c) => c.entity)
+    : source.kind === "subclass" ? (resolved.classes ?? []).map((c) => c.subclass)
+    : source.kind === "race" ? [resolved.race]
+    : source.kind === "background" ? [resolved.background]
+    : (resolved.feats ?? []);
+  return candidates.find((e) => e?.slug === source.slug)?.name;
 }
 
 function capitalizeSlug(slug: string): string {
