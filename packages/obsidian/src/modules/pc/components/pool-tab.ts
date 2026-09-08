@@ -375,15 +375,69 @@ function metaSub(e: OptionalFeatureEntity, ctx: ComponentRenderContext): string 
 }
 
 /** The "Cost" text for a `consumes` link, shared by the row sub-line and the block card's meta
- *  (R4-G4 §3.2.4). The resource's NAME from `resolved.resources` when the character owns it, else
- *  the raw id: never singularized and never capitalized, because the old
- *  `.replace(/s$/, "")` + capitalize pair was game-vocabulary logic living in a renderer
- *  (invariant 3), and it printed "1 Fighter-2024:superiority-dice" on a Parry row. A `column` or
- *  absent link keeps the literal it always had. */
+ *  (R4-G4 §3.2.4). THREE sources for the name, in order: the resource's NAME from
+ *  `resolved.resources` when the character OWNS it; else the name a registry entity DECLARES for that
+ *  id (R4 {G5, G6} live rider V-5); else the raw id. Never singularized and never capitalized, because
+ *  the old `.replace(/s$/, "")` + capitalize pair was game-vocabulary logic living in a renderer
+ *  (invariant 3), and it printed "1 Fighter-2024:superiority-dice" on a Parry row. The declared lookup
+ *  is not that logic returning: it reads a `name` a document authored beside the `id`, and it invents
+ *  nothing when no document declares one. A `column` or absent link keeps the literal it always had. */
 function consumeCost(consumes: NonNullable<OptionalFeatureEntity["consumes"]>, ctx: ComponentRenderContext): string {
   const id = consumes.resource ?? consumes.column ?? "resource";
-  const name = consumes.resource ? (ctx.resolved.resources?.get(consumes.resource)?.name ?? id) : id;
+  const owned = consumes.resource ? ctx.resolved.resources?.get(consumes.resource)?.name : undefined;
+  const name = consumes.resource ? (owned ?? declaredResourceNames(ctx).get(consumes.resource) ?? id) : id;
   return `${consumes.amount} ${name}`;
+}
+
+/** id → declared display name, for every resource ANY registered entity declares.
+ *
+ *  Why it exists: a cross-edition pick consumes a resource its owner does not own (a 2014 Battle
+ *  Master's PHB 2024 maneuvers consume `fighter-2024:superiority-dice`), so `resolved.resources`, which
+ *  indexes the CHARACTER's own features, misses and the id used to reach the sheet raw. The name is in
+ *  the vault regardless: the PHB 2024 Fighter declares that id with `name: Superiority Dice`.
+ *
+ *  The walk is over SHAPE, not entity type: any registered document that carries a `resources[]`, at
+ *  the top level or on a feature in `features_by_level`, contributes its `id` → `name` pairs. Nothing
+ *  here names a class, a subclass or any other game word, so a homebrew document that declares
+ *  resources is read exactly like a book one. The first declaration of an id wins, matching
+ *  `resolveFeatureResources` in dnd5e, whose walk this mirrors · including its floor: like that walk,
+ *  this one does NOT descend into `sub_features`, because a resource declared there is not in the
+ *  character's index either, so descending would make the two disagree.
+ *
+ *  Built ONCE per sheet render and cached against the render CONTEXT, which `renderPCSheet` builds
+ *  fresh on every pass: the cache therefore cannot outlive a compendium change, and a pool tab drawing
+ *  a dozen rows walks the registry once rather than a dozen times. A context with no registry (every
+ *  cast test fixture) memoises an empty map and every id stays raw. */
+const DECLARED_RESOURCE_NAMES = new WeakMap<ComponentRenderContext, Map<string, string>>();
+
+function declaredResourceNames(ctx: ComponentRenderContext): Map<string, string> {
+  const cached = DECLARED_RESOURCE_NAMES.get(ctx);
+  if (cached) return cached;
+  const out = new Map<string, string>();
+  const registry = ctx.services?.entities;
+  const collect = (value: unknown): void => {
+    if (!Array.isArray(value)) return;
+    for (const r of value) {
+      const res = r as { id?: unknown; name?: unknown };
+      if (typeof res?.id !== "string" || typeof res.name !== "string") continue;
+      if (!out.has(res.id)) out.set(res.id, res.name);
+    }
+  };
+  if (registry) {
+    for (const slug of registry.getAllSlugs()) {
+      const data = registry.getBySlug(slug)?.data;
+      if (!data) continue;
+      collect(data.resources);
+      const byLevel = data.features_by_level;
+      if (!byLevel || typeof byLevel !== "object") continue;
+      for (const features of Object.values(byLevel)) {
+        if (!Array.isArray(features)) continue;
+        for (const f of features) collect((f as { resources?: unknown })?.resources);
+      }
+    }
+  }
+  DECLARED_RESOURCE_NAMES.set(ctx, out);
+  return out;
 }
 
 /** One crimson-labelled meta item inside a pc-block-meta row. */

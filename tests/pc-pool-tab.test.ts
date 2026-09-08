@@ -7,6 +7,7 @@ import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import { CUSTOM_RESET_TIP } from "../packages/obsidian/src/modules/pc/components/actions/reset-labels";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { ResolvedCharacter, ResolvedPool } from "@archivist-gg/dnd5e/pc/pc.types";
+import { EntityRegistry } from "@core/entity-registry";
 
 /** The `spend control:` warnings this file's fixture provokes, captured instead of printed. */
 const swallowedSpendWarns: string[] = [];
@@ -129,12 +130,57 @@ describe("PoolTab — spell-like", () => {
   });
 
   it("shows the consume cost in the row's meta sub-line", () => {
+    // R4-G4: the raw id when the character owns no such resource AND no registry entity declares one;
+    // the singularized "Seal" was renderer-side game vocabulary (invariant 3). The owned half of this
+    // read is pinned by the spend-control test below, and the DECLARED half by the rider's own test.
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, mkCtx(basePool));
-    // R4-G4: the raw id when the character owns no such resource; the singularized
-    // "Seal" was renderer-side game vocabulary (invariant 3). The owned half of this
-    // read is pinned by the spend-control test below.
     expect(el.textContent).toContain("1 seals");
+  });
+
+  // R4 {G5, G6} live rider V-5. Twelve rows on the live sheets printed a raw resource id as their
+  // subtitle (`1 fighter-2024:superiority-dice`, `1 fighter:arcane-shot-uses`) where their siblings
+  // read `1 Superiority Dice`: a cross-edition pick consumes a resource its owner does not own, so the
+  // `resolved.resources` index misses and the id fell through. The NAME is in the vault all the same:
+  // the class that declares the resource carries it. This is a data lookup, not vocabulary logic ·
+  // nothing here singularizes, capitalizes or knows a game word.
+  it("prints the NAME a registry entity declares for a resource the character does not own", () => {
+    const reg = new EntityRegistry();
+    reg.register({
+      slug: "phb-2024_class_fighter", name: "Fighter", entityType: "class",
+      filePath: "Player's Handbook (2024)/Classes/Fighter.md", compendium: "Player's Handbook (2024)",
+      readonly: true, homebrew: false,
+      data: {
+        resources: [],
+        features_by_level: {
+          3: [{
+            id: "combat-superiority", name: "Combat Superiority",
+            resources: [{
+              id: "fighter-2024:superiority-dice", name: "Superiority Dice",
+              max_formula: "4", reset: "short-rest", die: { base: "d8" },
+            }],
+          }],
+        },
+      },
+    });
+    const pool: ResolvedPool = {
+      ...basePool,
+      selected: [{ slug: "ambush", entity: ofEntity("ambush", { consumes: { resource: "fighter-2024:superiority-dice", amount: 1 } }) as never }],
+      available: [
+        { slug: "ambush", entity: ofEntity("ambush", { consumes: { resource: "fighter-2024:superiority-dice", amount: 1 } }) as never },
+        { slug: "unheard-of", entity: ofEntity("unheard-of", { consumes: { resource: "homebrew:nobody-declares-this", amount: 2 } }) as never },
+      ],
+      grants: [],
+    };
+    const ctx = mkCtx(pool);
+    (ctx as { services: unknown }).services = { entities: reg } as never;
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, ctx);
+    const subs = [...el.querySelectorAll(".pc-spell-sub")].map((n) => n.textContent);
+    expect(subs).toContain("1 Superiority Dice");
+    expect(subs.join(" | ")).not.toContain("fighter-2024:superiority-dice");
+    // The negative: an id NO entity declares keeps the raw string, so nothing is invented.
+    expect(subs).toContain("2 homebrew:nobody-declares-this");
   });
 
   it("R4-G4 §3: a row whose consumes.resource is OWNED renders the spend control; an unowned one renders none", () => {
