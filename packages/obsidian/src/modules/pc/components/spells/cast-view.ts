@@ -6,7 +6,7 @@ import { spellEffectAtSlot, upcastLevelsFor } from "@archivist-gg/dnd5e/spell/sp
 import { toggleSpellBlock } from "./spell-block-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
-import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters } from "./spell-display";
+import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters, EMPTY_CELL } from "./spell-display";
 import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
 import { confirm } from "../../../../shared/modals/ConfirmModal";
 
@@ -304,12 +304,18 @@ function renderRow(
 
   // COMPONENTS / duration
   const comp = tr.createDiv({ cls: "pc-spell-comp" });
-  if (spell.entity.components) {
-    const { letters } = componentLetters(spell.entity.components);
-    if (letters.length) {
-      // Compact "V S M"; full material prose available on hover, not dumped into the cell.
-      comp.createDiv({ text: letters.join(" "), attr: { title: spell.entity.components } });
-    }
+  const letters = componentLetters(spell.entity.components).letters;
+  if (letters.length) {
+    // Compact "V S M"; full material prose available on hover, not dumped into the cell.
+    // `letters` is non-empty only when `components` is a string, but that is a fact about
+    // `componentLetters`, not one tsc can read, so the attribute is spread rather than asserted.
+    comp.createDiv({ text: letters.join(" "), ...(spell.entity.components ? { attr: { title: spell.entity.components } } : {}) });
+  } else {
+    // R4 {G5, G6} live rider N-1-19: a spell whose document carries no `components` (the live
+    // Paladin's Protection from Evil and Good) used to leave this cell empty, so its row read a line
+    // short beside `V` and `V S M` neighbours. It prints the SAME placeholder the Range cell already
+    // prints for an absent range · one constant, one glyph, and P8 still owns which glyph that is.
+    comp.createDiv({ text: EMPTY_CELL });
   }
   if (spell.entity.duration) {
     const d = spell.entity.concentration ? `Conc · ${spell.entity.duration}` : spell.entity.duration;

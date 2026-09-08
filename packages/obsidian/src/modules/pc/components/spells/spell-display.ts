@@ -7,6 +7,12 @@ const ABBR: Record<string, string> = { strength: "STR", dexterity: "DEX", consti
 
 export interface CastBadge { label: string; kind: "action" | "bonus" | "reaction" | "time"; }
 
+/** The Cast table's placeholder for a cell whose value the spell does not carry. Named (R4 {G5, G6}
+ *  live rider N-1-19) because three cells print it and the rider made a fourth do so: a cell that used
+ *  to render empty left its row a line short beside its neighbours. The GLYPH is not this rider's to
+ *  choose · P8 owns the null-glyph ruling, and this constant is where that ruling will land. */
+export const EMPTY_CELL = "—";
+
 export function castingTimeBadge(token: string | undefined): CastBadge {
   switch (token) {
     case "action": return { label: "Action", kind: "action" };
@@ -95,13 +101,13 @@ export function compactCastingTime(token: string | undefined): string {
     case "8hours": return "8 hr";
     case "12hours": return "12 hr";
     case "24hours": return "24 hr";
-    default: return token ? token : "—";
+    default: return token ? token : EMPTY_CELL;
   }
 }
 
 /** Compact range. `range` is already a human string ("120 feet", "Touch", "Self"…). */
 export function formatRange(range: string | undefined): string {
-  if (!range) return "—";
+  if (!range) return EMPTY_CELL;
   const feet = range.match(/^(\d+)\s*feet$/i);
   if (feet) return `${feet[1]} ft`;
   return range; // Touch / Self / Special / Sight / Unlimited / "1 mile" pass through
