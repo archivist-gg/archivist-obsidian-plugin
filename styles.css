@@ -5956,6 +5956,36 @@ body.theme-light .archivist-tag-atk:hover {
     overflow-x: visible;
     row-gap: 2px;
   }
+  /* R4 {G5, G6} live rider V-1: wrapping was reached BEFORE the strip was ever
+   * compacted, so the default sheet layout (`.pc-content` 356 px, the file
+   * explorer open) dropped INVENTORY onto a row of its own on all 15 sheet
+   * fixtures. Measured from the run's own tab rectangles
+   * (`.superpowers/sdd/2026-09-06-r4-g5-choice-gated-mechanics/evidence/g5-t12-shot/new-visual/book13/index.json`,
+   * `open.tabRects`): ACTIONS 76 + PASSIVE & FEATURES 144 + SPELLS 64 +
+   * INVENTORY 93 = 377 px, plus three 2 px gaps = 383 px against a 356 px
+   * column. Those widths carry 12 px of padding a side and 0.5 px of
+   * letter-spacing over 40 characters, so the labels themselves measure 261 px;
+   * at 7 px of padding and 0.25 px of letter-spacing the four tabs measure
+   * 261 + 10 + 56 + 6 = 333 px and fit the column with 23 px to spare, at the
+   * same 11 px type. The label is never clipped and `flex-wrap` above stays the
+   * fallback for the sheets that carry pool tabs (a Warlock's strip is six tabs
+   * wide and still wraps). */
+  .archivist-pc-sheet .pc-tab-btn {
+    padding: 6px 7px;
+    letter-spacing: 0.25px;
+  }
+}
+
+/* Below tiny tier: one more compaction step before the wrap, on the same
+ * measurement. At 10 px the 261 px of labels scale to about 237, so the strip
+ * measures 237 + 8 + 48 + 6 = 299 px and still fits the ~300 px column a
+ * 400 px window leaves. */
+@container pc-content (max-width: 399px) {
+  .archivist-pc-sheet .pc-tab-btn {
+    padding: 5px 6px;
+    font-size: 10px;
+    letter-spacing: 0.2px;
+  }
 }
 
 /* Portrait picker modal (two-stage: grid + crop) */
