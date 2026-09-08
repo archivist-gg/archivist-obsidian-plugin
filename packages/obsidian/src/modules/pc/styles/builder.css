@@ -259,11 +259,14 @@
    `pc-sheet` container (`containers.css`), and a container query matches only its DESCENDANTS. The
    decision and class modals portal to the document body, so their tables keep the 110 px track and
    X-9-5's wrap, with the year visible on a second line exactly as LIVE-D measured it.
-   THE COST, stated: the table is `width: max-content` with `min-width: 100%` inside a horizontal
-   scroller, so the extra 110 px comes off the fluid Name track first (at 1132 the host measures
-   about 903 px and Name still keeps about 473 px), and only where the fixed tracks already exceed
-   the host does it become extra scrolling · a band that, on the Species step's
-   `30px + 200px + 90px + 90px` of fixed tracks, is already scrolling before this rule. */
+   THE COST, measured off the same shot: the table is `width: max-content` with `min-width: 100%`
+   inside a horizontal scroller, so the extra 110 px comes off the fluid Name track first, and only
+   where the tracks exceed the host does it become extra scrolling. The Species step passes
+   `expandSelect: true` (`components/builder/race-step.ts`), so it emits NO 30 px add column and its
+   tracks are `minmax(200px, 1fr) 90px 90px` plus this one. The header underline spans x 246..1147
+   there, so at a 1132 px sheet the host is 902 px: Name held 612 px and now holds 502 px, and the
+   table's own minimum goes from 490 px to 600 px. On that single sheet-to-host reading (the host is
+   230 px under the sheet) the scroller starts at a sheet of about 830 px instead of about 720 px. */
 @container pc-sheet (min-width: 700px) {
   .archivist-pc-sheet .pc-btable { --pc-btable-src-track: 220px; }
   .archivist-pc-sheet .pc-btable-row > .col-source {
