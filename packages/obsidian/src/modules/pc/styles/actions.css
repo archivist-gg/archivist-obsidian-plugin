@@ -51,6 +51,14 @@
   white-space: nowrap;
 }
 
+/* R4 {G5, G6} live rider N-1-8: the buff toggle is a bare `input[type=checkbox]`, so the platform
+   painted its tick with Obsidian's `--interactive-accent` (violet on the default theme) in the middle
+   of the crimson sheet. `accent-color` recolours the native control without replacing it, the same
+   move `archivist-edit.css` already makes for the edit-mode checkboxes. */
+.archivist-pc-sheet .pc-action-buff-toggle {
+  accent-color: var(--pc-crimson);
+}
+
 /* ---------- Point pool + the at-will sentinel (R4-G4 §5.2) ----------
  * Above CHARGE_BOX_LIMIT points the feature sites render "remaining / max <name>"
  * with steppers instead of a box row; `max === AT_WILL_MAX` renders "at will".
@@ -483,6 +491,12 @@
   min-width: 0;
   max-width: 100%;
 }
+/* R4 {G5, G6} live rider N-1-4: the control wears the sheet's own button dress. It carried layout
+   properties only, so Obsidian's default `button` background painted every `Spend 1 ...` as a dark
+   charcoal pill on the cream sheet. The values are `.pc-pool-active`'s, its neighbour in the same
+   control cluster (transparent ground, a crimson hairline, crimson text, a pill radius) with that
+   button's hover tint; the LABEL's case and wrapping are untouched, because it is a sentence built
+   from the resource name, not a micro-cap. */
 .archivist-pc-sheet .pc-spend-control {
   display: inline-block;
   height: auto;
@@ -491,6 +505,16 @@
   white-space: normal;
   overflow-wrap: anywhere;
   text-align: left;
+  padding: 2px 10px;
+  border: 1px solid var(--pc-crimson);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--pc-crimson);
+  box-shadow: none;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-spend-control:hover {
+  background: rgba(146, 38, 16, 0.10);
 }
 .archivist-pc-sheet .pc-spend-caption {
   font-size: 0.85em;
