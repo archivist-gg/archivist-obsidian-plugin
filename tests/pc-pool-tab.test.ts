@@ -197,7 +197,26 @@ describe("PoolTab — spell-like", () => {
     expect(hellMage.querySelector(".pc-spell-sub")?.textContent).toBe("Passive");
     // The control: a row that DOES declare a cost keeps its own reading, with no Passive prepended.
     const baleful = rows.find((r) => r.querySelector(".pc-spell-name")?.textContent === "baleful-glare")!;
-    expect(baleful.querySelector(".pc-spell-sub")?.textContent).toBe("1 Action · 1 seals");
+    expect(baleful.querySelector(".pc-spell-sub")?.textContent).toBe("Action · 1 seals");
+  });
+
+  // R4 {G5, G6} live rider 2, X-1-13: the ECONOMY half of the sub-line names the economy and nothing
+  // else. `1 Bonus Action` beside a sibling's bare `Reaction` read as a quantity of actions, and the
+  // only number a reader can act on is the COST, which keeps its amount.
+  it("the economy label carries no amount, while the cost half keeps its own", () => {
+    const pool: ResolvedPool = {
+      ...basePool,
+      selected: [],
+      available: [
+        { slug: "quickened", entity: ofEntity("quickened", { passive: true, action_cost: "bonus-action", consumes: { resource: "sorcery-points", amount: 2 } }) as never },
+        { slug: "baleful-glare", entity: ofEntity("baleful-glare", { action_cost: "action", consumes: { resource: "seals", amount: 1 } }) as never },
+      ],
+      grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(pool));
+    const subs = [...el.querySelectorAll(".pc-spell-sub")].map((n) => n.textContent);
+    expect(subs).toEqual(["Passive · Bonus Action · 2 sorcery-points", "Action · 1 seals"]);
   });
 
   it("R4-G4 §3: a row whose consumes.resource is OWNED renders the spend control; an unowned one renders none", () => {

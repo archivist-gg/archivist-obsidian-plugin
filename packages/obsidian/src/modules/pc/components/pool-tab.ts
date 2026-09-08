@@ -16,8 +16,13 @@ import { RESET_LABELS, CUSTOM_RESET_TIP } from "./actions/reset-labels";
 import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import { resourceLevelFor, poolSaveDC } from "@archivist-gg/dnd5e/pc/pc.resources";
 
+/* The ECONOMY label for a pool row's sub-line and a block card's Cost meta. R4 {G5, G6} live rider 2,
+ * X-1-13: the label names the economy and carries no amount. `1 Action` / `1 Bonus Action` beside a
+ * sibling row's bare `Reaction` read as a quantity of actions, and on a narrow column the pair
+ * `Passive · 1 Bonus Action` broke across lines with the stray `1` ending one. The amount a reader
+ * can act on is the COST, which `consumeCost` still prints with its number. */
 const COST_LABELS: Record<string, string> = {
-  action: "1 Action", "bonus-action": "1 Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
+  action: "Action", "bonus-action": "Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
 };
 
 /** Generic tab that renders one selection pool, reusing the Spells "Prepare"
