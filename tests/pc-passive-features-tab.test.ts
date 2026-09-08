@@ -795,6 +795,9 @@ describe("PassiveFeaturesTab · the active-effects rail (R4-G5 §4.4.1)", () => 
     const p = pool({ selected: [entry("tce_frost-rune", { name: "Frost Rune", activatable: true })] });
     new PassiveFeaturesTab().render(c, renderCtx([], { pools: [p], activeBuffs: ["tce_frost-rune"] }));
     expect(c.querySelector(".pc-ae-tile .pc-ae-name")!.textContent).toBe("Frost Rune");
+    // R4 {G5, G6} live rider 2, X-8-3: the caption is the POOL's own label, from the data, not the
+    // invented "Active boon"; the class-feature arm above keeps the neutral "Active".
+    expect(c.querySelector(".pc-ae-tile .pc-ae-label")!.textContent).toBe("Interdict Boons");
   });
 
   it("RED FIRST (row 38): a buff stored under the OTHER edition's twin still shows ONE tile (the bare-slug match)", () => {

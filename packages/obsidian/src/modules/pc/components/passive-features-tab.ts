@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { ResolvedPool, ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { bareEntitySlug } from "@archivist-gg/dnd5e/entities/slug";
 import { warnOnce } from "@archivist-gg/dnd5e/dnd/warn-once";
 import { buildActionModel } from "./actions/action-model";
@@ -86,12 +86,17 @@ function activeBuffItems(ctx: ComponentRenderContext): ActiveEffectItem[] {
     }
     const bare = bareEntitySlug(key);
     let hit: ResolvedPoolEntry | undefined;
+    let from: ResolvedPool | undefined;
     for (const p of ctx.resolved.pools ?? []) {
       hit = [...p.selected, ...p.grants].find((e) => e.slug === key || bareEntitySlug(e.slug) === bare);
-      if (hit) break;
+      if (hit) { from = p; break; }
     }
     if (hit) {
-      items.push({ label: "Active boon", name: hit.entity.name, onEnd: () => ctx.editState?.toggleActiveBuff(key) });
+      // R4 {G5, G6} live rider 2, X-8-3: the caption is the POOL's own label, from the data. The
+      // literal it replaces, "Active boon", was a game noun this renderer invented, and on a Warlock
+      // it sat beside a real Pact Boon tab. A pool with no label falls back to the neutral word the
+      // class-feature arm above already uses.
+      items.push({ label: from?.label || "Active", name: hit.entity.name, onEnd: () => ctx.editState?.toggleActiveBuff(key) });
       continue;
     }
     warnOnce(`passive-rail:${key}`, `active buff "${key}" matches no feature id and no pool entry slug; no tile rendered`);

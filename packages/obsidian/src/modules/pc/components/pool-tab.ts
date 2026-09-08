@@ -354,7 +354,11 @@ function activeItems(pool: ResolvedPool, activeBuffs: string[], ctx: ComponentRe
   return pool.selected
     .filter((e) => e.entity.activatable && activeBuffs.includes(e.slug))
     .map((e) => ({
-      label: "Active boon",
+      // R4 {G5, G6} live rider 2, X-8-3: the tile's caption is the POOL's own label, from the data.
+      // The literal it replaces, "Active boon", was a game noun this renderer invented, and on a
+      // Warlock it sat beside a real Pact Boon tab. A pool with no label falls back to the neutral
+      // word the class-feature tiles already use.
+      label: pool.label || "Active",
       name: e.entity.name,
       onEnd: () => ctx.editState?.toggleActiveBuff(e.slug),
     }));

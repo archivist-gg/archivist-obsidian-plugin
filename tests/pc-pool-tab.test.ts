@@ -339,6 +339,10 @@ describe("PoolTab — spell-like", () => {
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, mkCtx(actPool, {}, ["majesty"]));
     expect(el.querySelector(".pc-ae-tile .pc-ae-name")?.textContent).toBe("majesty");
+    // R4 {G5, G6} live rider 2, X-8-3: the tile's caption is the POOL's own label, from the data.
+    // The literal it replaces, "Active boon", was a game noun the renderer invented, and it sat on a
+    // Warlock beside a real Pact Boon tab.
+    expect(el.querySelector(".pc-ae-tile .pc-ae-label")?.textContent).toBe("Interdict Boons");
   });
 
   it("renders an empty-state when the pool id is unknown", () => {
