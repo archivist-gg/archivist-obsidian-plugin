@@ -239,9 +239,19 @@ function renderDecisions(block: HTMLElement, ctx: ComponentRenderContext, d: Cla
   }
   // Owned: the live always-open strip with level pills; equipment picks are
   // the Equipment step's scope (keys synthesized as `equipment-{i}`).
-  const items: DecisionItem[] = (opts.ledger?.classes.find((c) => c.classIndex === (opts.classIndex ?? 0))?.levels ?? [])
+  const all: DecisionItem[] = (opts.ledger?.classes.find((c) => c.classIndex === (opts.classIndex ?? 0))?.levels ?? [])
     .flatMap((l) => l.items)
     .filter((i) => !i.key.startsWith("equipment-"));
+  // R4 {G5, G6} live rider 2, X-9-4: a feature is listed ONCE. The decision engine emits an
+  // informational card for every gained feature and a real decision for the ones that carry a choice,
+  // so a feature that is both (the converted 2024 Fighter's `Fighting Style` and `Fighter Subclass`)
+  // reached this strip twice at the same level, the second row a card with nothing to answer. The
+  // engine keeps both deliberately (R4-G5 §3.2.4: dropping the informational push would make a
+  // SUPPRESSED feature vanish from the ledger entirely), so the card drops the twin it would print
+  // under its own decision, and only there: an informational card whose feature has no decision at
+  // that level still gets its row, which is the complete-view guarantee.
+  const decided = new Set(all.filter((i) => i.status !== "informational").map((i) => `${i.level}\u0000${i.featureName}`));
+  const items = all.filter((i) => i.status !== "informational" || !decided.has(`${i.level}\u0000${i.featureName}`));
   if (!items.length) return;
   // The strip shows every gained feature (informational cards for plain flavor), but
   // the header counts only real DECISIONS — informational items need no player input.

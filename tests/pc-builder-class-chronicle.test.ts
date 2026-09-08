@@ -15,6 +15,14 @@ import type { DecisionLedger } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 
 const emptyLedger = (): DecisionLedger => ({ classes: [], origin: [] });
 
+/** One ledger item, in the shape `buildDecisionLedger` pushes (X-9-4's fixture). */
+const dItem = (over: Record<string, unknown>): unknown => ({
+  key: "k", source: { kind: "class", slug: "bard", level: 1 }, level: 1, featureName: "Feature",
+  choice: { kind: "select-inline", id: "k", options: [{ value: "_", label: "_" }] },
+  options: [], selected: undefined, status: "unresolved", satisfied: false,
+  ...over,
+});
+
 beforeAll(() => installObsidianDomHelpers());
 
 const BARD_SKILLS = [
@@ -272,6 +280,36 @@ describe("renderClassChronicle (owned band)", () => {
     renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger: emptyLedger(), stateKey: "t" });
     expect(c.querySelector(".pc-cb-sub")!.textContent).not.toContain("Level 5 of 20");
     expect(c.querySelector(".pc-cb-sub")!.textContent).toContain("Class");
+  });
+
+  // R4 {G5, G6} live rider 2, X-9-4: the strip lists a gained feature ONCE. The decision engine emits
+  // an informational card for every gained feature AND a real decision for the ones that carry a
+  // choice, so on the converted 2024 Fighter `Fighting Style` and `Fighter Subclass` each had two rows
+  // at the same level, one of them a card with nothing to answer. The SRD copy of the same class shows
+  // each once, which is why the run read it as a duplicate. The engine keeps both (the informational
+  // card is R4-G5 §3.2.4's guarantee that a suppressed feature never vanishes from the ledger); the
+  // CARD drops the twin it would otherwise print under its own decision.
+  it("lists a feature once when its informational card and its decision share a level", () => {
+    const c = mountContainer();
+    const ledger: DecisionLedger = {
+      classes: [{
+        classIndex: 0,
+        levels: [{
+          level: 1,
+          items: [
+            dItem({ key: "fighting-style-info", level: 1, featureName: "Fighting Style", status: "informational" }),
+            dItem({ key: "fighting-style", level: 1, featureName: "Fighting Style", status: "unresolved" }),
+            dItem({ key: "second-wind", level: 1, featureName: "Second Wind", status: "informational" }),
+          ],
+        }],
+      }],
+      origin: [],
+    } as unknown as DecisionLedger;
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger, stateKey: "t" });
+    const names = [...c.querySelectorAll(".pc-dstrip-row .pc-dstrip-name")].map((n) => n.textContent);
+    expect(names.filter((n) => n === "Fighting Style").length).toBe(1);
+    // The control: an informational card whose feature has NO decision keeps its row.
+    expect(names).toContain("Second Wind");
   });
 
   it("renders the bandRight hook into the band's right-side controls and the prereq `pre` into the body", () => {
