@@ -7418,11 +7418,28 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-point-pool-reset {
   white-space: nowrap;
 }
+/* R4 {G5, G6} live rider 2, X-8-5: one stepper dress on the sheet. These two carried layout
+   properties only, so Obsidian's default `button` painted them as dark filled pills beside the
+   INSPIRATION stepper's light outlined squares on the same sheet. The values below are
+   `.pc-insp-counter button`'s (components.css) verbatim, the sheet's other stepper: a transparent
+   ground, a tan hairline, a 3 px radius and the sheet's primary text colour, in the serif face the
+   counter beside them uses. The display / height pair and the horizontal padding stay: they are the
+   Obsidian forced-button-height workaround and this stepper's own width. */
 .archivist-pc-sheet .pc-point-pool-minus,
 .archivist-pc-sheet .pc-point-pool-plus {
   display: inline-block;
   height: auto;
   padding: 0 0.45em;
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-small);
+  line-height: var(--pc-lh-tight);
+  border: 1px solid var(--pc-tan);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--pc-text-primary);
+  box-shadow: none;
+  cursor: pointer;
 }
 .archivist-pc-sheet .pc-charge-at-will {
   font-variant: small-caps;
