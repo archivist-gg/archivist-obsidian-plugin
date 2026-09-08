@@ -40,8 +40,14 @@
 .archivist-pc-sheet .pc-pool-head-name { font-weight: 700; }
 
 /* The Active toggle and the pick's own uses tracker as ONE cluster on a pool row and a boon row
-   (R4-G5 §4.2.2 b). Sheet-scoped like every rule in this partial. It WRAPS and may shrink, while
-   `.pc-pool-active` inside it keeps its own `white-space: nowrap; flex-shrink: 0`, so the pair falls to
-   a second line together instead of the button being pushed out of the row (the shape the T15 rider
-   measured at 400 px). */
-.archivist-pc-sheet .pc-buff-group { display: inline-flex; align-items: center; gap: 0.35rem; min-width: 0; flex-wrap: wrap; }
+   (R4-G5 §4.2.2 b). Sheet-scoped like every rule in this partial. It wraps its two children onto two
+   lines rather than squeezing them, and it never shrinks below the WIDEST of them: `min-width: 0` let
+   the box shrink to 43 px around a `white-space: nowrap; flex-shrink: 0` ACTIVATE pill that measures
+   75, and the pill then painted outside its own group, which is what the {G5, G6} live run measured on
+   both Battle Master probes (`clientWidth` 43-72 against `scrollWidth` 75 at 768 and 400, reading
+   `ACTIV`). `min-content` on a wrapping flex container IS the widest single child, so the group still
+   wraps the two-child case internally while the pill keeps its text whole.
+   `justify-content` and `align-items` are stated rather than left to the initial value because the
+   wrapped lines are what the reader sees at these widths: both lines start at the cluster's left edge,
+   under each other, and each line centres on its own cross axis. */
+.archivist-pc-sheet .pc-buff-group { display: inline-flex; align-items: center; justify-content: flex-start; gap: 0.35rem; row-gap: var(--pc-space-1); min-width: min-content; flex-wrap: wrap; }

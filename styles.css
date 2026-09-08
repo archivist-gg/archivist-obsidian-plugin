@@ -7364,10 +7364,18 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row {
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
+/* R4 {G5, G6} live rider N-2-7: the detail slot WRAPS too, with the same left-aligned lines. On
+   `Warlock5Stranded S`'s Actions tab the Ghostly Gaze cluster ran out of room while the pill read
+   ACTIVATE (the shorter ACTIVE fits), and the wrapped pill sat over the uses row aligned with nothing.
+   With the slot wrapping and both axes stated, the group and the spend control fall onto their own
+   line, each line starting at the slot's left edge. */
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;
   align-items: center;
+  align-content: center;
   justify-content: flex-start;
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-1);
 }
 /* The class feature row's granted die (R4-G5 §4.3.1) shares this gapless slot with the charge track, so
    it abutted the first pip; the margin is on the die alone, since a boon row puts two children here. */
@@ -8150,7 +8158,14 @@ body.theme-light .archivist-tag-atk:hover {
    flex row) so it stacks BELOW the row. The dashed separator lives on the host
    so the row + its expanded block read as one unit above the line. */
 .archivist-pc-sheet .pc-spell-prep-row-host { display: block; border-bottom: 1px dashed var(--pc-tan-muted); }
-.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; }
+/* R4 {G5, G6} live rider N-3-7: the row WRAPS. Its trailing controls (the `.pc-buff-group` cluster
+   and the `.pc-spend` wrapper) used to be squeezed against a name cell that kept shrinking, which at
+   768 and 400 px left the Battle Master's cost sub-line ragged over three lines. A flex line breaks on
+   the items' hypothetical sizes, and the name cell's is its longest WORD (it is `flex: 1`, so its
+   base size is 0 and only the content minimum floors it), so a long name or sub-line does not push the
+   controls down on a wide sheet: they fall to their own line only when the row genuinely cannot hold
+   them. The Spells tab's prepare rows share this class and gain the same behaviour. */
+.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); row-gap: var(--pc-space-1); flex-wrap: wrap; padding: 6px 4px; }
 .archivist-pc-sheet .pc-spell-namewrap { flex: 1; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
 .archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }
@@ -8395,11 +8410,17 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-pool-head-name { font-weight: 700; }
 
 /* The Active toggle and the pick's own uses tracker as ONE cluster on a pool row and a boon row
-   (R4-G5 §4.2.2 b). Sheet-scoped like every rule in this partial. It WRAPS and may shrink, while
-   `.pc-pool-active` inside it keeps its own `white-space: nowrap; flex-shrink: 0`, so the pair falls to
-   a second line together instead of the button being pushed out of the row (the shape the T15 rider
-   measured at 400 px). */
-.archivist-pc-sheet .pc-buff-group { display: inline-flex; align-items: center; gap: 0.35rem; min-width: 0; flex-wrap: wrap; }
+   (R4-G5 §4.2.2 b). Sheet-scoped like every rule in this partial. It wraps its two children onto two
+   lines rather than squeezing them, and it never shrinks below the WIDEST of them: `min-width: 0` let
+   the box shrink to 43 px around a `white-space: nowrap; flex-shrink: 0` ACTIVATE pill that measures
+   75, and the pill then painted outside its own group, which is what the {G5, G6} live run measured on
+   both Battle Master probes (`clientWidth` 43-72 against `scrollWidth` 75 at 768 and 400, reading
+   `ACTIV`). `min-content` on a wrapping flex container IS the widest single child, so the group still
+   wraps the two-child case internally while the pill keeps its text whole.
+   `justify-content` and `align-items` are stated rather than left to the initial value because the
+   wrapped lines are what the reader sees at these widths: both lines start at the cluster's left edge,
+   under each other, and each line centres on its own cross axis. */
+.archivist-pc-sheet .pc-buff-group { display: inline-flex; align-items: center; justify-content: flex-start; gap: 0.35rem; row-gap: var(--pc-space-1); min-width: min-content; flex-wrap: wrap; }
 
 
 /* ============================================
