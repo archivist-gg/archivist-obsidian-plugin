@@ -184,6 +184,20 @@
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-range { grid-column: 3; grid-row: 3; white-space: normal; }
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-hitdc { grid-column: 4; grid-row: 3; text-align: left; white-space: normal; }
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-comp { grid-column: 2 / -1; grid-row: 4; }
+
+  /* R4 {G5, G6} live rider 2, X-9-10 and X-2-14 (the W-1 family, on this row): below this tier the
+     NAME takes the whole first line and the row's controls fall under it as one block, instead of
+     the name being squeezed to whatever the controls leave. The name box grows from a zero basis and
+     the controls beside it do not shrink, so the live run measured `Frost / Rune` over a four-line
+     sub-line at 252 with the tracker and ACTIVATE beside it
+     (`viewports-supp/R4G5_RuneKnight3_S__400x700__panel-pool-rune-knight-runes__3.png`), and
+     `Quickened / Spell` the same way at 356 beside its ACTIVATE and spend pills
+     (`viewports/R4G5_WildMagic2024-3_S__768x600__panel-pool-metamagic__2.png`).
+     The basis is the row minus the toggle box and its gap (18 px + 8 px), which is exactly the width
+     left on the first line: the name fills it, every control is pushed to the next line, and the
+     controls then share that line among themselves. A row with no box (a granted pick) simply has
+     26 px of slack on its name line. Above the tier the basis stays 0 and the row is unchanged. */
+  .archivist-pc-sheet .pc-spell-prep-row > .pc-spell-namewrap { flex-basis: calc(100% - 26px); }
 }
 
 /* ── Source tag (Cast + Prepare + Add) ────────────────── */
