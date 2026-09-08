@@ -25,6 +25,7 @@ interface RenderOpts {
   totalLevel?: number;
   editState?: object | null;
   actionsDisabled?: boolean;
+  activeBuffs?: string[];
 }
 
 function renderCtx(features: ResolvedFeature[], opts: RenderOpts = {}): ComponentRenderContext {
@@ -33,7 +34,7 @@ function renderCtx(features: ResolvedFeature[], opts: RenderOpts = {}): Componen
       definition: { equipment: [] },
       race: null, classes: opts.classes ?? [], background: null, feats: [],
       totalLevel: opts.totalLevel ?? 5, features,
-      state: { feature_uses: opts.featureUses ?? {} },
+      state: { feature_uses: opts.featureUses ?? {}, active_buffs: opts.activeBuffs ?? [] },
     } as unknown as ResolvedCharacter,
     derived: {
       attacks: opts.attacks ?? [],
@@ -201,6 +202,20 @@ describe("ActionsTab — grouped structure", () => {
   // "Free Thing" free-dim, the "Darkvision" passive-tag, and the "Free Thing"
   // FREE-pill cases (all no-cost/free → passive) moved to
   // pc-passive-features-tab.test.ts.
+
+  // R4 {G5, G6} live rider V-6 / N-3-14 / N-3-15. The live run read `Active1 minute` on the
+  // Barbarian's Rage and `Activate10 minute` on the Paladin's Holy Nimbus: `createSpan` inserts no
+  // whitespace between the label and the duration, and the unit was printed as the datum spells it
+  // whatever the amount. Both states and both amounts are pinned here.
+  it("separates the buff label from its duration and counts the unit, in both toggle states", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([
+      rf({ id: "rage", name: "Rage", action: "bonus-action", activatable: true, duration: { amount: 1, unit: "minute" } }),
+      rf({ id: "nimbus", name: "Holy Nimbus", action: "bonus-action", activatable: true, duration: { amount: 10, unit: "minute" } }),
+    ], { activeBuffs: ["rage"] }));
+    expect(rowByName(c, "Rage").querySelector(".pc-action-buff")!.textContent).toBe("Active · 1 minute");
+    expect(rowByName(c, "Holy Nimbus").querySelector(".pc-action-buff")!.textContent).toBe("Activate · 10 minutes");
+  });
 
   it("wires the activatable buff toggle on an action-feature via editState", () => {
     const c = mountContainer();

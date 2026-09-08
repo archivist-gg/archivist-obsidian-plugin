@@ -106,8 +106,16 @@ export function renderFeatureRow(
       e.stopPropagation();
       ctx.editState?.toggleActiveBuff(buffId);
     });
+    // The label and the duration are two elements with no whitespace between them (`createSpan`
+    // inserts none), so the separator is written explicitly, in the arc's `·` idiom, inside the same
+    // guard as the duration itself. The unit is a counted English noun and takes an English plural
+    // when the amount is not 1 ("10 minutes"), which is copy about a number, not game vocabulary: the
+    // four units dnd5e's `durationSchema` admits (round, minute, hour, day) all pluralise regularly,
+    // and no branch here reads WHICH unit it is.
     if (feature.duration && typeof feature.duration === "object") {
-      buffWrap.createSpan({ cls: "pc-action-buff-duration", text: `${feature.duration.amount} ${feature.duration.unit}` });
+      const { amount, unit } = feature.duration;
+      buffWrap.appendText(" · ");
+      buffWrap.createSpan({ cls: "pc-action-buff-duration", text: `${amount} ${unit}${amount === 1 ? "" : "s"}` });
     }
   }
 
