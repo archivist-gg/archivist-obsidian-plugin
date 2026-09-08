@@ -7321,12 +7321,27 @@ body.theme-light .archivist-tag-atk:hover {
   white-space: nowrap;
 }
 
-/* R4 {G5, G6} live rider N-1-8: the buff toggle is a bare `input[type=checkbox]`, so the platform
-   painted its tick with Obsidian's `--interactive-accent` (violet on the default theme) in the middle
-   of the crimson sheet. `accent-color` recolours the native control without replacing it, the same
-   move `archivist-edit.css` already makes for the edit-mode checkboxes. */
+/* R4 {G5, G6} live rider 2, N-1-8: the buff toggle is painted by the SHEET, not by the app theme.
+   The first rider set `accent-color` alone, and the live re-verify measured what that is worth here:
+   the computed `accent-color` IS crimson and the control still paints `rgb(138, 92, 245)`, because
+   Obsidian's own stylesheet sets `appearance: none` on `input[type=checkbox]` and fills the replaced
+   box with `--interactive-accent`. `accent-color` only tints a control the platform still draws, so
+   it changed nothing. The box and its border are therefore stated directly, in the `!important`
+   idiom `.archivist-toggle-box` (the sheet's own pip, archivist-dnd.css) already uses against the
+   same theme rules: crimson when checked, the sheet's tan line token when not. `accent-color` stays
+   for a theme that leaves the control native, where it is the whole fix. The tick glyph is Obsidian's
+   own `:checked` marker, which the run measured as drawn (white on the violet box); pinning
+   `--checkbox-marker-color` to the sheet's parchment keeps it legible on crimson under any theme,
+   and is inert where a theme does not read that variable. */
 .archivist-pc-sheet .pc-action-buff-toggle {
   accent-color: var(--pc-crimson);
+  --checkbox-marker-color: var(--pc-parchment-light);
+  background-color: transparent !important;
+  border-color: var(--pc-tan) !important;
+}
+.archivist-pc-sheet .pc-action-buff-toggle:checked {
+  background-color: var(--pc-crimson) !important;
+  border-color: var(--pc-crimson) !important;
 }
 
 /* ---------- Point pool + the at-will sentinel (R4-G4 §5.2) ----------
