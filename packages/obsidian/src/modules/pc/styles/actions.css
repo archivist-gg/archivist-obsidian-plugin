@@ -422,6 +422,30 @@
   .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: anywhere; }
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; }
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-mastery { display: none; }
+
+  /* R4 {G5, G6} live rider 2, W-1: a row whose detail slot carries the SPEND CONTROL gives that slot
+     the whole row below this tier, on the `.pc-weapon-mastery` precedent above and on the shape the
+     pool tabs already read (the live run measured the same control 196 x 24 there at every viewport,
+     because a pool row's controls wrap onto their own line). At the default 356 px column the four
+     column tracks left the detail 80 px: an ACTIVATE pill and a "Spend 1 Superiority Dice (d8)"
+     button in 80 px. With the detail on its own grid row the button has the row's full width and its
+     label wraps at spaces, and the name column keeps the slack the N-3-12 commit gave it (that rule
+     lives outside this tier, so the 788 px column it was measured at is untouched).
+     The detail's grid row is stated: an auto-placed spanning item would depend on source order. The
+     caret is left to auto-placement, which puts it in the row's last track beside the name.
+     `:has()` is supported in every Chromium >= 105 (all current Obsidian builds), the same premise
+     `components.css` and `chronicle.css` already build on. Its argument makes this selector more
+     specific than the passive tab's own template, so that tab restates its own tracks here. */
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend) {
+    grid-template-columns: 66px minmax(0, 1fr) 18px;
+  }
+  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend) {
+    grid-template-columns: minmax(0, 1fr) 18px;
+  }
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend) > .pc-feature-detail {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
 }
 
 /* Below narrow tier: tighten condition-chip gap so more chips
@@ -495,15 +519,25 @@
    properties only, so Obsidian's default `button` background painted every `Spend 1 ...` as a dark
    charcoal pill on the cream sheet. The values are `.pc-pool-active`'s, its neighbour in the same
    control cluster (transparent ground, a crimson hairline, crimson text, a pill radius) with that
-   button's hover tint; the LABEL's case and wrapping are untouched, because it is a sentence built
-   from the resource name, not a micro-cap. */
+   button's hover tint; the LABEL's case is untouched, because it is a sentence built from the
+   resource name, not a micro-cap.
+   R4 {G5, G6} live rider 2, W-1: the label breaks between words, and inside one only when the word
+   alone cannot fit. `overflow-wrap: anywhere` (the T15 rider's value) also drops the button's
+   min-content to a single character, so a column that squeezed the button broke the resource name
+   itself: the live run measured a 78 x 78 button reading `Spend 1` / `Superiori` / `ty Dice` / `(d8)`
+   on the Battle Master's Actions rows at `.pc-content` 356 and 252. `break-word` keeps the T15
+   rider's protection (a word too long for its line still breaks rather than overflowing the sheet)
+   while leaving min-content at the longest WORD, which is what a label reads by. `word-break` and
+   `hyphens` are stated because a theme may set either on `button`. */
 .archivist-pc-sheet .pc-spend-control {
   display: inline-block;
   height: auto;
   min-width: 0;
   max-width: 100%;
   white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
   text-align: left;
   padding: 2px 10px;
   border: 1px solid var(--pc-crimson);
