@@ -62,7 +62,7 @@ describe("renderAffordanceCaption (R4-G5 §4.2.2 a)", () => {
     ] });
     new ActionsTab().render(c, ctxWith([p], { base: "d8" }));
     expect(boonRowByName(c, "Commander's Strike").querySelector(".pc-affordance-caption")!.textContent)
-      .toBe("1 d8 to an ally");
+      .toBe("1d8 to an ally");
     expect(boonRowByName(c, "Parry").querySelector(".pc-affordance-caption")).toBeNull();
   });
 
@@ -72,7 +72,7 @@ describe("renderAffordanceCaption (R4-G5 §4.2.2 a)", () => {
     // The owner is the subclass at level 3 and the character's Fighter level is 10, so the 10-step face
     // is the right answer and the base d8 is the mutant's.
     renderAffordanceCaption(host, cs, ctxWith([pool({ selected: [cs] })], { base: "d8", scaling: { "10": "d12" } }));
-    expect(host.querySelector(".pc-affordance-caption")!.textContent).toBe("1 d12 to an ally");
+    expect(host.querySelector(".pc-affordance-caption")!.textContent).toBe("1d12 to an ally");
   });
 
   it("an owner resource with NO die renders NO caption, rather than an empty face", () => {

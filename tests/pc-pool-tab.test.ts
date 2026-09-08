@@ -385,7 +385,7 @@ describe("PoolTab — blocks layout", () => {
     const el = mountContainer();
     new PoolTab("interdict-boons", "blocks").render(el, c);
     const card = el.querySelector<HTMLElement>(".pc-boon-block")!;
-    expect(card.querySelector(".pc-affordance-caption")!.textContent).toBe("1 d8 to an ally");
+    expect(card.querySelector(".pc-affordance-caption")!.textContent).toBe("1d8 to an ally");
     expect(card.querySelector(".pc-pick-track")).toBeNull();
   });
 });
