@@ -536,6 +536,28 @@ describe("renderDecisionStrip", () => {
     }
   });
 
+  // R4 {G5, G6} live rider V-10: the run read `Maneuvers — choose 3` off the open modal. The
+  // separator between the label and the count is the arc's `·` in BOTH copies the sentence reaches:
+  // the modal heading and the `.pc-dstrip-tlabel` twin the same control writes above it.
+  it("the long-list pick separates label from count with '·', in the tlabel and the modal title", () => {
+    const titles: string[] = [];
+    const openSpy = vi.spyOn(DecisionPickModal.prototype, "open").mockImplementation(function (this: DecisionPickModal) {
+      titles.push((this as unknown as { opts: { title: string } }).opts.title);
+    });
+    try {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+        items: [bigEntityItem(70)], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+      });
+      const nest = c.querySelector(".pc-dstrip-nest")!;
+      expect(nest.querySelector(".pc-dstrip-tlabel")!.textContent).toBe("Weapon Mastery · choose 3");
+      (nest.querySelector(".pc-dstrip-browse") as HTMLElement).click();
+      expect(titles).toEqual(["Weapon Mastery · choose 3"]);
+    } finally {
+      openSpy.mockRestore();
+    }
+  });
+
   it("a select-entity item with ≤12 candidates still renders the inline table (regression pin)", () => {
     const c = mountContainer();
     renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {

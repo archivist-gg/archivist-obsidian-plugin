@@ -13,7 +13,7 @@ import {
 } from "../../../../shared/entities/compendium-visibility";
 
 export interface DecisionPickBodyOptions {
-  /** Modal heading + the strip's tlabel sentence, e.g. "Weapon Mastery — choose 3". */
+  /** Modal heading + the strip's tlabel sentence, e.g. "Weapon Mastery · choose 3". */
   title: string;
   /** choose-N cap; enforced by applyChoiceToggle (choose-1 swaps, choose-N refuses). */
   need: number;

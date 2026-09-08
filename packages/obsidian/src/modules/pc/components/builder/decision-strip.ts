@@ -484,7 +484,7 @@ function renderControl(
     // `.pc-dstrip-fcl` sub-label (childLabel) already precedes this control and
     // carries the requirement, so re-emitting tlabel would duplicate the label
     // and leak the inherited parent featureName ("FEAT FEAT").
-    if (!inChild) nest.createDiv({ cls: "pc-dstrip-tlabel", text: `${labelOf(item)} — choose ${need}` });
+    if (!inChild) nest.createDiv({ cls: "pc-dstrip-tlabel", text: `${labelOf(item)} · choose ${need}` });
     // Zero resolved candidates → a quiet line, not the full table chrome. The
     // copy distinguishes "vault has none" from "all hidden by settings".
     if (candidates.length === 0) {
@@ -494,7 +494,7 @@ function renderControl(
       });
       return;
     }
-    // Long candidate lists (e.g. Fighter Weapon Mastery — choose 3 from ~70)
+    // Long candidate lists (e.g. Fighter Weapon Mastery · choose 3 from ~70)
     // would splat an enormous table into the card. Past the threshold, show the
     // current picks as removable chips + a ghost that opens the filtered picker
     // modal instead. Small lists (a class's handful of subclasses) stay inline.
@@ -635,7 +635,7 @@ function renderLongListBrowse(
     writeValue(ctx, item, opts, pickValue(item, [...selected], need));
   const openModal = (): void => {
     new DecisionPickModal(ctx.app, ctx, {
-      title: `${labelOf(item)} — choose ${need}`,
+      title: `${labelOf(item)} · choose ${need}`,
       need,
       candidates,
       initialSelected: [...selected],
