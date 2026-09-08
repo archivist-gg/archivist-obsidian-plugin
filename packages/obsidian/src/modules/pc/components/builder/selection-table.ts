@@ -1,6 +1,6 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist-gg/core";
-import { renderSourceTag } from "./compendium-filter";
+import { renderSourceTag, sourceTagCls } from "./compendium-filter";
 import { renderEntityBlock } from "./entity-block";
 
 export interface ColSpec {
@@ -148,6 +148,14 @@ export function renderSelectionTable(
     const nameTd = tr.createDiv({ cls: "col-name" });
     nameTd.createSpan({ cls: `pc-btable-name${isSel ? " on" : ""}`, text: e.name });
     if (opts.expandSelect && isSel) nameTd.createSpan({ cls: "pc-bname-seal", text: " ✓" });
+    // R4 {G5, G6} live rider V-9: the source, a second time, under the name. The table is
+    // `width: max-content` inside a horizontal scroller, so at the builder's narrow widths the Source
+    // column is simply off the end of it: the Species step listed every species TWICE, one row per
+    // edition, with nothing on screen telling the two apart. The span is always in the DOM and the
+    // stylesheet reveals it only at the tier where the column has gone (`builder.css`), which is why
+    // this renders unconditionally rather than measuring anything. It carries `renderSourceTag`'s own
+    // colour class, so the two editions differ in colour as well as in words.
+    nameTd.createSpan({ cls: `pc-bsrc pc-sel-src-inline ${sourceTagCls(e)}`, text: e.compendium });
     for (const c of opts.columns) c.render(tr.createDiv({ cls: c.cls }), e);
     renderSourceTag(tr.createDiv({ cls: "col-source" }), e);
 

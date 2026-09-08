@@ -8642,6 +8642,20 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2014 { color: var(--pc-text-muted); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2024 { color: #1f3f7a; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.hb { color: #2f6f3a; }
+/* R4 {G5, G6} live rider V-9: the source tag, repeated under the NAME, for the widths where the Source
+   column is off the end of the table's horizontal scroller. `renderSelectionTable` always writes this
+   span (so the DOM can be asserted); the reveal is here, and only here. It takes `.pc-bsrc`'s own
+   typography and edition colours by carrying that class too, and drops its inline margin because on
+   its own line it starts at the name's left edge. Where it shows, the Source COLUMN is blanked, so no
+   table ever prints the compendium twice. The query is `pc-sheet` because a selection table also lives
+   in modals (the class and decision pickers), which are wide and declare no such container, so this
+   pair never fires there. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-sel-src-inline { display: none; margin-left: 0; }
+@container pc-sheet (max-width: 699px) {
+  .archivist-pc-sheet .pc-sel-src-inline { display: block; }
+  .archivist-pc-sheet .pc-btable-head > .col-source,
+  .archivist-pc-sheet .pc-btable-row > .col-source { visibility: hidden; }
+}
 
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bblock { min-width: 0; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bblock-fallback { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-muted); padding: var(--pc-space-3) 0; }

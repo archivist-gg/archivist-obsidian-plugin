@@ -52,9 +52,31 @@ describe("renderSelectionTable", () => {
     renderSelectionTable(root, ctxWith(new Map()), {
       columns: [CAT_COL], candidates: CANDS, stateKey: "t", selected: new Set(), onToggle: () => {},
     });
-    const names = [...root.querySelectorAll(".pc-btable-row .col-name")].map((n) => n.textContent);
+    const names = [...root.querySelectorAll(".pc-btable-row .col-name .pc-btable-name")].map((n) => n.textContent);
     expect(names).toEqual(["Alert", "Brawny"]);
     expect(root.querySelectorAll(".pc-btable-head .pc-btable-th").length).toBe(4); // add, name, category, source
+  });
+
+  // R4 {G5, G6} live rider V-9: at the builder's narrow widths the Source column is off the end of the
+  // table's horizontal scroller, so the Species step listed every species TWICE (one row per edition)
+  // with nothing on screen to tell the two apart. The row carries the source a SECOND time, inline
+  // under the name, and the stylesheet shows that copy only at the tier where the column is gone.
+  it("carries the source inline under the name as well as in the Source column", () => {
+    const root = mountContainer();
+    renderSelectionTable(root, ctxWith(new Map()), {
+      columns: [CAT_COL], candidates: CANDS, stateKey: "t", selected: new Set(), onToggle: () => {},
+    });
+    const row = root.querySelector(".pc-btable-row")!;
+    const inline = row.querySelector(".col-name .pc-sel-src-inline");
+    // Asserted before the read below so a missing span reds HERE rather than as a TypeError.
+    expect(inline).not.toBeNull();
+    expect(inline!.textContent).toBe("SRD 5e");
+    expect(row.querySelector(".col-source .pc-bsrc")!.textContent).toBe("SRD 5e");
+    // The inline copy carries the same edition colour class as the column's tag, so the two editions
+    // of one species read differently even before the words are read.
+    expect(row.querySelector(".col-name .pc-sel-src-inline")!.classList.contains("e2024")).toBe(
+      row.querySelector(".col-source .pc-bsrc")!.classList.contains("e2024"),
+    );
   });
 
   it("clicking a sortable header sorts by that column and flips direction on re-click", () => {
@@ -65,10 +87,10 @@ describe("renderSelectionTable", () => {
     });
     const catTh = root.querySelectorAll<HTMLElement>(".pc-btable-th")[2];
     catTh.click(); // general(Brawny) vs origin(Alert) → asc: Brawny, Alert
-    let names = [...root.querySelectorAll(".pc-btable-row .col-name")].map((n) => n.textContent);
+    let names = [...root.querySelectorAll(".pc-btable-row .col-name .pc-btable-name")].map((n) => n.textContent);
     expect(names).toEqual(["Brawny", "Alert"]);
     root.querySelectorAll<HTMLElement>(".pc-btable-th")[2].click(); // desc
-    names = [...root.querySelectorAll(".pc-btable-row .col-name")].map((n) => n.textContent);
+    names = [...root.querySelectorAll(".pc-btable-row .col-name .pc-btable-name")].map((n) => n.textContent);
     expect(names).toEqual(["Alert", "Brawny"]);
   });
 
@@ -177,7 +199,7 @@ describe("renderSelectionTable", () => {
         columns: [], candidates: CANDS, stateKey: "t", selected: new Set(), onToggle: () => {},
       }),
     ).not.toThrow();
-    const names = [...root.querySelectorAll(".pc-btable-row .col-name")].map((n) => n.textContent);
+    const names = [...root.querySelectorAll(".pc-btable-row .col-name .pc-btable-name")].map((n) => n.textContent);
     expect(names).toEqual(["Alert", "Brawny"]);
   });
 });
