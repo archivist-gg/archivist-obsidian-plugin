@@ -60,7 +60,11 @@ export function buildSubtitle(resolved: ResolvedCharacter): string {
   const classLabel = resolved.classes
     .map((c) => {
       const cname = c.entity?.name ?? prettySlug(stripSlugRef(c.entity ? `[[${c.entity.slug}]]` : null) ?? "?");
-      const sname = c.subclass?.name ? ` (${c.subclass.name})` : "";
+      // R4 {G5, G6} live rider 2, X-1-14: the subclass is named BESIDE its class, in the arc's ` · `
+      // idiom, never wrapped in a parenthesis of the renderer's own. A converted subclass name
+      // carries its edition parenthetical from the book (`Beast Master (2024 XPHB)`), so the wrap
+      // printed one pair inside another: `Ranger (Beast Master (2024 XPHB)) 3`.
+      const sname = c.subclass?.name ? ` · ${c.subclass.name}` : "";
       return `${cname}${sname} ${c.level}`;
     })
     .join(" / ");
