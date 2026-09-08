@@ -7570,10 +7570,13 @@ body.theme-light .archivist-tag-atk:hover {
   grid-template-columns: minmax(0, 2fr) minmax(min-content, 1fr) 18px;
 }
 /* R4 {G5, G6} live rider N-2-7: the detail slot WRAPS too, with the same left-aligned lines. On
-   `Warlock5Stranded S`'s Actions tab the Ghostly Gaze cluster ran out of room while the pill read
-   ACTIVATE (the shorter ACTIVE fits), and the wrapped pill sat over the uses row aligned with nothing.
-   With the slot wrapping and both axes stated, the group and the spend control fall onto their own
-   line, each line starting at the slot's left edge. */
+   `Warlock5Stranded S`'s Actions tab the Ghostly Gaze cluster ran out of room and the wrapped pill sat
+   over the uses row aligned with nothing. With the slot wrapping and both axes stated, the group and
+   the spend control fall onto their own line, each line starting at the slot's left edge.
+   The first writing of this comment added "(the shorter ACTIVE fits)", which rider 3 measured FALSE:
+   `R4G5_Warlock7Ghostly_S__400x700__panel-actions__4.png` and `__768x600__panel-actions__1.png` show
+   the same row wrapping the same way with the pill reading ACTIVE. The slot's width, not the pill's
+   text, is what decides it, which is why the Z-7-2 rule below reads the cluster and not its state. */
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;
   align-items: center;
@@ -7810,14 +7813,36 @@ body.theme-light .archivist-tag-atk:hover {
      caret is left to auto-placement, which puts it in the row's last track beside the name.
      `:has()` is supported in every Chromium >= 105 (all current Obsidian builds), the same premise
      `components.css` and `chronicle.css` already build on. Its argument makes this selector more
-     specific than the passive tab's own template, so that tab restates its own tracks here. */
-  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend) {
+     specific than the passive tab's own template, so that tab restates its own tracks here.
+
+     R4 {G5, G6} live rider 3, Z-7-2: the SECOND selector of each list gives the same block to a row
+     whose detail slot carries a CONTROL CLUSTER with a uses tracker in it, with or without a spend
+     control beside it. That cluster is `renderControlGroup`'s `.pc-buff-group`
+     (`components/actions/entry-affordance.ts`), built for a SELECTED boon row by `renderBoonRow`
+     (`components/actions/boon-rows.ts`), holding the Activate toggle and `renderPickTracker`'s
+     `.pc-feature-track.pc-pick-track`. The four tracks above leave the detail 80 px at `.pc-content`
+     356, and neither the pill nor the tracker will shrink: `.pc-pool-active` is `nowrap` and
+     `flex-shrink: 0` (pool.css), and the track's own minimum is the unbreakable "/ Short Rest"
+     caption. So the group wrapped the pill onto one line and the tracker onto a second, the tracker's
+     wrapper then split the pips from the caption onto a third, and the row's `align-items: center`
+     lifted the pill's line ABOVE the ACTION badge. At 252 the detail's `min-content` floor also took
+     the name column to about 61 px and `Ghostly Gaze` broke in two. Measured on
+     `R4G5_Warlock5Stranded_S` (the pill reading ACTIVATE) and `R4G5_Warlock7Ghostly_S` (ACTIVE) at
+     both viewports, which is why the selector reads the cluster and not the pill's text.
+     With the detail on its own full-width grid row the whole cluster is one line again, the pips and
+     their caption included, the name keeps the row's slack on the first line, and the caret stays
+     beside it. A cluster with a toggle and NO tracker is deliberately OUT: the pill alone fits the
+     80 px slot at 356 today, so this rule would cost it a line and buy it nothing. */
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend),
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group > .pc-feature-track) {
     grid-template-columns: 66px minmax(0, 1fr) 18px;
   }
-  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend) {
+  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend),
+  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group > .pc-feature-track) {
     grid-template-columns: minmax(0, 1fr) 18px;
   }
-  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend) > .pc-feature-detail {
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend) > .pc-feature-detail,
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group > .pc-feature-track) > .pc-feature-detail {
     grid-column: 1 / -1;
     grid-row: 2;
   }
