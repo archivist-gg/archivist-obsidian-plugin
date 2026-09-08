@@ -7830,48 +7830,69 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; }
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-mastery { display: none; }
 
-  /* R4 {G5, G6} live rider 2, W-1: a row whose detail slot carries the SPEND CONTROL gives that slot
-     the whole row below this tier, on the `.pc-weapon-mastery` precedent above and on the shape the
-     pool tabs already read (the live run measured the same control 196 x 24 there at every viewport,
-     because a pool row's controls wrap onto their own line). At the default 356 px column the four
-     column tracks left the detail 80 px: an ACTIVATE pill and a "Spend 1 Superiority Dice (d8)"
-     button in 80 px. With the detail on its own grid row the button has the row's full width and its
-     label wraps at spaces, and the name column keeps the slack the N-3-12 commit gave it (that rule
-     lives outside this tier, so the 788 px column it was measured at is untouched).
+  /* R4 {G5, G6} live rider 2, W-1 · rider 3, Z-7-2 · rider 4, Y2-2: below this tier a feature row
+     whose detail slot carries a CONTROL CLUSTER of ANY shape gives that slot the whole row, on the
+     `.pc-weapon-mastery` precedent above and on the shape the pool tabs already read (the live run
+     measured the same spend control 196 x 24 there at every viewport, because a pool row's controls
+     wrap onto their own line). At the default 356 px column the four column tracks above leave the
+     detail 80 px, and every cluster child has an unbreakable minimum: a button does not wrap its
+     label, `.pc-pool-active` is `nowrap` with `flex-shrink: 0` (pool.css), and a tracker's floor is
+     its "/ Long Rest" caption (`.pc-charge-recovery`, `white-space: nowrap`). So the cluster wrapped
+     inside those 80 px line by line, and the row's `align-items: center` lifted the first of those
+     lines above the badge. With the detail on its own full-width grid row the cluster is one line
+     again, and the name keeps the row's slack on the first line.
      The detail's grid row is stated: an auto-placed spanning item would depend on source order. The
      caret is left to auto-placement, which puts it in the row's last track beside the name.
      `:has()` is supported in every Chromium >= 105 (all current Obsidian builds), the same premise
-     `components.css` and `chronicle.css` already build on. Its argument makes this selector more
+     `components.css` and `chronicle.css` already build on. Its argument makes these selectors more
      specific than the passive tab's own template, so that tab restates its own tracks here.
 
-     R4 {G5, G6} live rider 3, Z-7-2: the SECOND selector of each list gives the same block to a row
-     whose detail slot carries a CONTROL CLUSTER with a uses tracker in it, with or without a spend
-     control beside it. That cluster is `renderControlGroup`'s `.pc-buff-group`
-     (`components/actions/entry-affordance.ts`), built for a SELECTED boon row by `renderBoonRow`
-     (`components/actions/boon-rows.ts`), holding the Activate toggle and `renderPickTracker`'s
-     `.pc-feature-track.pc-pick-track`. The four tracks above leave the detail 80 px at `.pc-content`
-     356, and neither the pill nor the tracker will shrink: `.pc-pool-active` is `nowrap` and
-     `flex-shrink: 0` (pool.css), and the track's own minimum is the unbreakable "/ Short Rest"
-     caption. So the group wrapped the pill onto one line and the tracker onto a second, the tracker's
-     wrapper then split the pips from the caption onto a third, and the row's `align-items: center`
-     lifted the pill's line ABOVE the ACTION badge. At 252 the detail's `min-content` floor also took
-     the name column to about 61 px and `Ghostly Gaze` broke in two. Measured on
-     `R4G5_Warlock5Stranded_S` (the pill reading ACTIVATE) and `R4G5_Warlock7Ghostly_S` (ACTIVE) at
-     both viewports, which is why the selector reads the cluster and not the pill's text.
-     With the detail on its own full-width grid row the whole cluster is one line again, the pips and
-     their caption included, the name keeps the row's slack on the first line, and the caret stays
-     beside it. A cluster with a toggle and NO tracker is deliberately OUT: the pill alone fits the
-     80 px slot at 356 today, so this rule would cost it a line and buy it nothing. */
+     THREE terms, covering the FIVE cluster shapes `renderFeatureRow` (`components/actions/
+     feature-rows.ts`) and `renderBoonRow` (`components/actions/boon-rows.ts`) can put in the slot:
+
+     1. `> .pc-feature-detail > .pc-spend` · the SPEND control (W-1), on either row, with or without
+        a tracker beside it. Measured on `R4G5_BattleMaster3_S__400x700__panel-actions__4.png` and
+        `__768x600__panel-actions__2.png`, where an ACTIVATE pill and a "Spend 1 Superiority Dice
+        (d8)" button shared 80 px.
+     2. `> .pc-feature-detail > .pc-buff-group` · `renderControlGroup`'s cluster
+        (`components/actions/entry-affordance.ts`) on a SELECTED boon row. TOGGLE + TRACKER is Z-7-2,
+        measured on `R4G5_Warlock5Stranded_S` (the pill reading ACTIVATE) and `R4G5_Warlock7Ghostly_S`
+        (ACTIVE) at 356 and 252, which is why the term reads the cluster and not the pill's text.
+        TOGGLE ALONE is what rider 4 adds by dropping rider 3's `> .pc-feature-track`: the pill's
+        scrollWidth was measured at 75 px (V-3) and it neither shrinks nor wraps, so in a
+        `min-content`-floored track it takes that much off the name column with no tracker beside it
+        either. No shot in the corpus holds that shape; it is in for ONE rule over the whole family.
+     3. `> .pc-feature-detail > .pc-feature-track` · a tracker as a DIRECT child of the slot. That is
+        the class-feature row (`renderFirstResourceTracker`), which is Y2-2: measured on
+        `R4G5_Bard5-2024_S__768x800__panel-passive__1.png` and `__400x900__panel-passive__2.png`,
+        where Bardic Inspiration stacked `1d8`, its three pips and `/ Long Rest` on three lines, and
+        on `R4G5_SrdFighter4_S__768x600__panel-actions__1.png`, where Second Wind's pips and
+        `/ Short Rest` took two. It is ALSO the GRANTED boon arm, whose "granted" marker and
+        `renderPickTracker` tracker are direct children of the slot as well. The track span wraps all
+        THREE widgets `renderChargeBoxes` can pick (`./charge-boxes.ts`): the pips, the numeric
+        `renderPointPool` fallback above `CHARGE_BOX_LIMIT` (Lay on Hands, V-11) and the "at will"
+        sentinel, so an at-will row pays one line for two words to keep one rule over the family.
+
+     DELIBERATELY OUT, both measured rather than assumed: `.pc-feature-attack-note`, a text aside and
+     not a control, which `renderFeatureRow` renders in-row only when NEITHER a tracker nor a control
+     did; and a granted boon row whose tracker did not render, leaving the italic "granted" marker
+     alone in the slot. The Race and Background rows are out by construction · their
+     `.pc-feature-detail` is created empty (`components/passive/race-block.ts`,
+     `components/passive/background-block.ts`) and a race trait's tracker hosts in the expand card's
+     `.pc-cb-trait-track`, never in the row. */
   .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend),
-  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group > .pc-feature-track) {
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group),
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-feature-track) {
     grid-template-columns: 66px minmax(0, 1fr) 18px;
   }
   .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend),
-  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group > .pc-feature-track) {
+  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group),
+  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-feature-track) {
     grid-template-columns: minmax(0, 1fr) 18px;
   }
   .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend) > .pc-feature-detail,
-  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group > .pc-feature-track) > .pc-feature-detail {
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group) > .pc-feature-detail,
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-feature-track) > .pc-feature-detail {
     grid-column: 1 / -1;
     grid-row: 2;
   }
