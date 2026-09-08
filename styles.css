@@ -6566,11 +6566,24 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* ---------- Toolbar (search + add/done) ---------- */
+/* R4 {G5, G6} live rider 2, X-7-1: the search field yields to the button instead of pushing it out
+   of the column. Measured on the `9fb865df` build at the 400 px viewport (`.pc-content` 252): the
+   toolbar's own items spanned about 323 px, the search box holding 205 of them and `+ ADD ITEM`
+   starting past the column's right edge, so the button read `+ ADD IT` on every sheet
+   (`viewports/R4G5_SrdFighter4_S__400x900__panel-inventory__2.png`). The search box grows from a
+   zero basis but carried the flex default `min-width: auto`, and its `<input>` child brings an
+   intrinsic field width with it, so the box could not be shrunk below that width and the row
+   overflowed rather than dividing. `min-width: 0` makes the field the part that gives; `flex-wrap`
+   is the fallback below any width where even that is not enough, and the button never breaks its
+   own label. */
 .archivist-pc-sheet .pc-inv-toolbar {
   display: flex;
   gap: var(--pc-space-2);
   margin-bottom: var(--pc-space-2);
   align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-inv-search {
   display: flex;
@@ -6581,6 +6594,7 @@ body.theme-light .archivist-tag-atk:hover {
   padding: 4px 8px;
   background: rgba(255, 248, 220, 0.45);
   flex: 1;
+  min-width: 0;
 }
 .archivist-pc-sheet .pc-inv-search-icon svg {
   width: 13px; height: 13px;
@@ -6603,6 +6617,8 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-inv-add,
 .archivist-pc-sheet .pc-inv-done {
+  flex: 0 0 auto;
+  white-space: nowrap;
   padding: 5px 12px;
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
