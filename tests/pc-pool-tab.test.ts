@@ -219,6 +219,24 @@ describe("PoolTab — spell-like", () => {
     expect(subs).toEqual(["Passive · Bonus Action · 2 sorcery-points", "Action · 1 seals"]);
   });
 
+  // R4 {G5, G6} live rider 2, X-8-7: each half of the sub-line is its own element, so the line can
+  // wrap at the ` · ` between halves and never inside one (`Passive · 2` / `Sorcery Point` was
+  // measured at the 356 px column). The composed TEXT is unchanged, which is what every other
+  // assertion in this file reads.
+  it("writes each half of the sub-line as its own segment, with the joined text unchanged", () => {
+    const pool: ResolvedPool = {
+      ...basePool,
+      selected: [],
+      available: [{ slug: "quickened", entity: ofEntity("quickened", { passive: true, action_cost: "bonus-action", consumes: { resource: "sorcery-points", amount: 2 } }) as never }],
+      grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(pool));
+    const segs = [...el.querySelectorAll(".pc-spell-sub-seg")].map((n) => n.textContent);
+    expect(segs).toEqual(["Passive", "Bonus Action", "2 sorcery-points"]);
+    expect(el.querySelector(".pc-spell-sub")?.textContent).toBe("Passive · Bonus Action · 2 sorcery-points");
+  });
+
   it("R4-G4 §3: a row whose consumes.resource is OWNED renders the spend control; an unowned one renders none", () => {
     const ctx = ownedCtx({ ...basePool });
     const el = mountContainer();

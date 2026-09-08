@@ -62,6 +62,11 @@
 .archivist-pc-sheet .pc-spell-namewrap { flex: 1; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
 .archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }
+/* R4 {G5, G6} live rider 2, X-8-7: the sub-line breaks BETWEEN its halves, never inside one. A pool
+   row's line is written as one segment per half (`pool-tab.ts` `renderMetaSub`) joined by ` · `, and
+   at the 356 px column the run measured `Passive · 2` ending a line with `Sorcery Point` on the next.
+   The same protection V-11 gave the point-pool value and X-4-2 the buff duration. */
+.archivist-pc-sheet .pc-spell-sub-seg { white-space: nowrap; }
 
 /* Prepare counters, locked box, always tag, remove */
 .archivist-pc-sheet .pc-spell-prep-head { display: flex; align-items: center; justify-content: space-between; gap: var(--pc-space-3); flex-wrap: wrap; margin-bottom: var(--pc-space-2); }

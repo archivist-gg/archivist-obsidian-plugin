@@ -140,8 +140,7 @@ export class PoolTab implements SheetComponent {
 
     const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
     nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
-    const sub = metaSub(e, ctx);
-    if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
+    renderMetaSub(nameWrap, metaSub(e, ctx));
     renderAffordanceCaption(nameWrap, entry, ctx);
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
@@ -175,8 +174,7 @@ export class PoolTab implements SheetComponent {
     nameWrap.createSpan({ cls: "pc-spell-always", text: "granted" });
     // A granted pick tracks its own `uses` exactly like a selected one (R4-G4 §12).
     renderPickTracker(nameWrap, entry, ctx);
-    const sub = metaSub(e, ctx);
-    if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
+    renderMetaSub(nameWrap, metaSub(e, ctx));
     renderAffordanceCaption(nameWrap, entry, ctx);
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
@@ -379,12 +377,26 @@ function renderCounter(parent: HTMLElement, pool: ResolvedPool): void {
  *  the row now says so instead of printing an empty sub-line. Measured live: in the fighting-style
  *  pool `Great Weapon Fighting` was the one row with no sub-line at all while its siblings read
  *  `Passive`, `Reaction` and `Passive · Special`. */
-function metaSub(e: OptionalFeatureEntity, ctx: ComponentRenderContext): string {
+function metaSub(e: OptionalFeatureEntity, ctx: ComponentRenderContext): string[] {
   const parts: string[] = [];
   if (e.passive || !e.action_cost) parts.push("Passive");
   if (e.action_cost) parts.push(COST_LABELS[e.action_cost] ?? e.action_cost);
   if (e.consumes?.amount) parts.push(consumeCost(e.consumes, ctx));
-  return parts.join(" · ");
+  return parts;
+}
+
+/** The row sub-line, one SEGMENT element per part (R4 {G5, G6} live rider 2, X-8-7). The parts are
+ *  joined by the same ` · ` text this line has always carried, so the composed `textContent` is
+ *  unchanged; the segments exist so the CSS can forbid a break inside one, which is what split
+ *  `Passive · 2` from `Sorcery Point` at the 356 px column. No part renders no line at all, as
+ *  before. */
+function renderMetaSub(nameWrap: HTMLElement, parts: string[]): void {
+  if (!parts.length) return;
+  const sub = nameWrap.createDiv({ cls: "pc-spell-sub" });
+  parts.forEach((part, i) => {
+    if (i) sub.appendText(" · ");
+    sub.createSpan({ cls: "pc-spell-sub-seg", text: part });
+  });
 }
 
 /** The "Cost" text for a `consumes` link, shared by the row sub-line and the block card's meta
