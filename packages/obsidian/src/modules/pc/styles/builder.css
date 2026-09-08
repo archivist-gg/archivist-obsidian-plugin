@@ -144,10 +144,22 @@
    in modals (the class and decision pickers), which are wide and declare no such container, so this
    pair never fires there. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-sel-src-inline { display: none; margin-left: 0; }
+/* R4 {G5, G6} live rider 3, Y-1: the blanked Source cell is REMOVED from the row, not merely made
+   invisible. `12519086` (X-9-5) gave `.col-source` `white-space: normal` so the compendium name keeps
+   its year, and that reaches these rows too · where the cell is blanked but, at `visibility: hidden`,
+   still laid out: in a 110 px track "Player's Handbook (2024)" now takes THREE lines, so every row was
+   62 px tall against the two lines its visible cells need, and every builder view grew by about
+   1,788 px (8 scroll pages to 10) with no text change. `display: none` takes the cell out of the grid
+   instead. It is the LAST cell of both the head and the row and its track is the last of the inline
+   template `renderSelectionTable` writes (`components/builder/selection-table.ts`), so no other cell
+   shifts a track; the empty 110 px track is what a hidden cell already occupied, and the row's dashed
+   underline is drawn per cell, so it ended there before this change too. The MODAL tables keep the
+   X-9-5 wrap and their Source column: this block is scoped to `.archivist-pc-sheet` and, twice over,
+   only `.archivist-pc-sheet` declares the `pc-sheet` container (`containers.css`). */
 @container pc-sheet (max-width: 699px) {
   .archivist-pc-sheet .pc-sel-src-inline { display: block; }
   .archivist-pc-sheet .pc-btable-head > .col-source,
-  .archivist-pc-sheet .pc-btable-row > .col-source { visibility: hidden; }
+  .archivist-pc-sheet .pc-btable-row > .col-source { display: none; }
 }
 
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bblock { min-width: 0; }
