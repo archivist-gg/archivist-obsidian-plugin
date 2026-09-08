@@ -16,7 +16,12 @@ export class HitDiceWidget implements SheetComponent {
     );
 
     if (dies.length === 0) {
+      // R4 {G5, G6} live rider N-3-18: the empty state is a bordered box like the populated one, so it
+      // carries the same heading · without it the reader sees a box with a glyph in it and nothing
+      // saying which widget is empty. No die suffix here: there is no die to name. The glyph itself is
+      // untouched (P8 owns the null-glyph ruling).
       wrap.createDiv({ cls: "pc-hd-empty", text: "—" });
+      wrap.createDiv({ cls: "pc-hd-label", text: "HIT DICE" });
       return;
     }
 
