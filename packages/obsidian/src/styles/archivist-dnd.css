@@ -1206,6 +1206,23 @@
   color: var(--stat-block-text);
 }
 
+/* R4 {G5, G6} live rider 3, Z-9-4: on the SPELLCASTING card each entry is its own LINE. Every other
+   feature emits ONE entry element, so `display: inline` above is what puts a trait's prose after its
+   bold name, which is the stat block's shape; the spellcasting card is the one caller that emits MANY
+   (`renderSpellcastingEntry`, `modules/monster/monster.sections.ts`, one element per
+   `spellcastingLines` line, and the only caller to emit a div rather than a span). Inline, and with no
+   whitespace between the elements, those lines ran together at every group boundary: the live pass read
+   `wizard spells prepared:At Will: light, ray of frost1st Level (2 Slots): thunderwave` on Andir
+   Valmakos and the same glue on the Archmage, Feonor, Auspicia Dran and Sir Talavar
+   (`g5-t12d-shots/g6/sample-*.png`). As blocks, the card reads: the bold `Spellcasting.` on its own
+   line, then the header prose, then `At Will:`, then one line per spell level. `text-indent` is reset
+   because `.archivist-feature` sets a -1em hanging indent for the name, and every block line would
+   otherwise hang the same 1em; the name keeps the hang, its lines do not. */
+.archivist-monster-spellcasting .archivist-feature-entry {
+  display: block;
+  text-indent: 0;
+}
+
 /* 8. Tab Navigation (from monster stat block)
    ========================================================================== */
 
