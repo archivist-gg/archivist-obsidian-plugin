@@ -1217,9 +1217,19 @@
   border-bottom: 1px solid #7a200d;
 }
 
+/* R4 {G5, G6} live rider 2, X-9-6: the strip WRAPS, as the PC sheet's own tab strip does at its
+   narrow tiers. It was a scroller with its scrollbar hidden and no scroll affordance rendered (the
+   `.original-tab-fade` rules below are styling for elements this renderer does not create), so a
+   strip wider than the note's column simply cut its last label: the live run read `MYTHIC ACTI` at
+   the right edge at every window size. With the row wrapping, a strip too wide for its column takes
+   a second line and every label stays whole; the buttons keep their own `flex-shrink: 0` and
+   `white-space: nowrap`, so none of them is squeezed either. The overflow pair stays as the last
+   resort for a single label wider than the whole column. */
 .archivist-monster-block .original-tab-navigation {
   display: flex;
   gap: 2px;
+  row-gap: 2px;
+  flex-wrap: wrap;
   flex: 1;
   overflow-x: auto;
   overflow-y: hidden;
