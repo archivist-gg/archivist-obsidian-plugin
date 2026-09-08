@@ -800,7 +800,13 @@
     row-gap: 2px;
   }
   .archivist-pc-sheet .pc-inv-filter-row { gap: var(--pc-space-2); }
-  .archivist-pc-sheet .pc-inv-filter-group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
+  /* R4 {G5, G6} live rider V-4: the chip groups WRAP at this tier, they do not scroll. The
+     `nowrap` + `overflow-x: auto` pair put every group on one line inside a scroller the reader has
+     no reason to suspect, so at the default 356 px column the TYPE row simply ended mid-word
+     ("Weapons Armor Wondrous Rin") and the RARITY row ended flush at the edge with `Very Rare` cut.
+     The base rule already wraps and already supplies the row gap through its `gap`, so the group
+     inherits it and every chip stays on screen and clickable. */
+  .archivist-pc-sheet .pc-inv-filter-group { max-width: 100%; }
 }
 
 /* ── P4 · Scroll & unidentified-item inventory treatments (Task 5) ──────────
