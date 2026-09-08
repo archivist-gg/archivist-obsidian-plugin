@@ -534,6 +534,19 @@ describe("PassiveFeaturesTab", () => {
       expect(economyForBoon(c, "Boon of Sight")).toBe("Passive & Free Actions");
     });
 
+    // R4 {G5, G6} live rider 2, X-2-12: a picked pool entry filed on THIS tab reads the same economy
+    // and cost sub-line its pool row reads. The Passive tab drops the badge column, so before this the
+    // row carried no economy anywhere, while the same entry on its pool tab read
+    // `Passive · 1 Superiority Dice`. The composer is the pool row's own.
+    it("carries the pool row's economy and cost sub-line on a picked entry", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([], {
+        pools: [pool({ selected: [entry("wrath", { name: "Boon of Wrath", passive: true, consumes: { resource: "seals", amount: 1 } })] })],
+      }));
+      const row = boonRowByName(c, "Boon of Wrath");
+      expect(row.querySelector(".pc-action-row-sub")?.textContent).toBe("Passive · 1 seals");
+    });
+
     it("shows an Active toggle wired to editState for an activatable selected boon", () => {
       const c = mountContainer();
       const toggleActiveBuff = vi.fn();

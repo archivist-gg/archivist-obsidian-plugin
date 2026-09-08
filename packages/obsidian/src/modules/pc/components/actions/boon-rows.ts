@@ -7,6 +7,7 @@ import { renderSpendControl } from "./spend-control";
 import { renderEffectCaptions } from "./effect-captions";
 import { renderPickTracker } from "./pick-tracker";
 import { renderAffordanceCaption, renderControlGroup } from "./entry-affordance";
+import { metaSub, renderMetaSub } from "./entry-meta";
 
 /**
  * A single Interdict Boon row on the consolidated Actions tab (spec §3.6 / #1b).
@@ -76,6 +77,12 @@ export function renderBoonRow(
   // the `poolLabel` parameter this function keeps.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
   nameCell.createDiv({ cls: "pc-action-row-name", text: e.name });
+  // R4 {G5, G6} live rider 2, X-2-12: on the PASSIVE tab the row carries the same economy and cost
+  // sub-line its pool row carries, through the pool row's own composer (`entry-meta.ts`). That tab
+  // drops the badge column, so before this a picked entry showed no economy anywhere on it, while
+  // the same entry on its pool tab read `Passive · 1 Superiority Dice`. The ACTIONS tab keeps the
+  // badge column and states the economy in the pill there, so the line would only repeat it.
+  if (passive) renderMetaSub(nameCell, metaSub(e, ctx), "pc-action-row-sub");
   renderEffectCaptions(nameCell, e.effects ?? [], ctx);
 
   // R4-G5 §4.2.2 (a): the granted-die recipient, beside the effect captions in the same cell (the
