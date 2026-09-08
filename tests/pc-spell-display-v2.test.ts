@@ -23,6 +23,23 @@ describe("compactCastingTime", () => {
     expect(compactCastingTime(undefined)).toBe("—");
     expect(compactCastingTime("weird")).toBe("weird"); // unknown passes through
   });
+
+  // R4 {G5, G6} live rider N-1-17: on the 13-book install the Paladin's Spells tab mixed `1A` with
+  // `bonus action` and `1 minute` in ONE column. The bundle spells all carry the tokens above, so the
+  // odd spellings are a converted book's: the same token written with a space or a capital, which fell
+  // through the switch to the raw string. The token is normalised before it is matched, so one
+  // vocabulary reaches the column whatever the document spells.
+  it("matches a token whatever its spacing, hyphenation or case", () => {
+    expect(compactCastingTime("bonus action")).toBe("1BA");
+    expect(compactCastingTime("Bonus Action")).toBe("1BA");
+    expect(compactCastingTime("1 minute")).toBe("1 min");
+    expect(compactCastingTime("10 minutes")).toBe("10 min");
+    expect(compactCastingTime("Action")).toBe("1A");
+    expect(compactCastingTime(" reaction ")).toBe("1R");
+    // Still verbatim when nothing matches, and the placeholder is unchanged.
+    expect(compactCastingTime("1 week")).toBe("1 week");
+    expect(compactCastingTime(undefined)).toBe("—");
+  });
 });
 
 describe("formatRange", () => {

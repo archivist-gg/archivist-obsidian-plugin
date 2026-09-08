@@ -72,11 +72,20 @@ export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo
 }
 
 /** Compact casting-time label for the Cast table. Real tokens: action,
- *  bonus-action, reaction, 1minute|minute, 10minutes, 1hour|hour, 8/12/24hours. */
+ *  bonus-action, reaction, 1minute|minute, 10minutes, 1hour|hour, 8/12/24hours.
+ *
+ *  The token is MATCHED after normalisation (R4 {G5, G6} live rider N-1-17): case folded and every
+ *  space and hyphen dropped, so `bonus-action`, `bonus action` and `Bonus Action` are one token and
+ *  `1 minute` is `1minute`. The live Paladin's Spells tab mixed `1A` with `bonus action` and
+ *  `1 minute` in one column because a converted book spells the same token differently from the
+ *  bundle's (measured: all 601 bundle spells carry the hyphenated / unspaced forms), and every other
+ *  spelling fell through to the raw string. A token that matches nothing still passes through
+ *  verbatim, and an absent one still reads as the placeholder. */
 export function compactCastingTime(token: string | undefined): string {
-  switch (token) {
+  switch (token?.toLowerCase().replace(/[\s-]+/g, "")) {
+    // The case labels are the NORMALISED forms (no hyphen, no space, lower case).
     case "action": return "1A";
-    case "bonus-action": return "1BA";
+    case "bonusaction": return "1BA";
     case "reaction": return "1R";
     case "minute":
     case "1minute": return "1 min";
