@@ -6748,11 +6748,23 @@ body.theme-light .archivist-tag-atk:hover {
   padding: var(--pc-space-2) 0;
   flex-wrap: wrap;
 }
+/* R4 {G5, G6} live rider 2, W-2: the attunement box gives way instead of pushing the column open.
+   Measured on the `9fb865df` build: `.pc-header-attune` and the `.pc-attune-strip` inside it both
+   read 371 px on all 15 sheet fixtures, which is `.pc-attune-head` (about 71 px) + a 12 px gap +
+   three 88 px medallion wrappers with two 12 px gaps; `.pc-content` then read clientWidth/scrollWidth
+   356/371 and 252/371, the ONLY root overflow in the run's 15 x 6 x 3 sweep, with the third medallion
+   and the right half of the `+ ADD ITEM` control outside the visible column. A flex item's default
+   `min-width: auto` floors it at that intrinsic width, so the box could not shrink and the strip had
+   no wrap point to fall back on. With both flex rows wrapping and the floor released, the medallion
+   row falls under the ATTUNED head, and below it the medallions themselves wrap: nothing is cut at
+   any column width and the medallion keeps its size. */
 .archivist-pc-sheet .pc-header-attune {
   display: flex;
   align-items: stretch;
   gap: var(--pc-space-4);
   flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-header-divider {
   width: 1px;
@@ -6770,6 +6782,10 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   align-items: center;
   gap: var(--pc-space-3);
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-2);
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-attune-head {
   display: flex;
@@ -6801,6 +6817,10 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   gap: var(--pc-space-3);
   align-items: flex-start;
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-2);
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* ---------- Attune popover ---------- */
