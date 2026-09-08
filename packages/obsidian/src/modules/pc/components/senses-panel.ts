@@ -46,7 +46,10 @@ export class SensesPanel implements SheetComponent {
       if (dist > 0) {
         const row = list.createDiv({ cls: "pc-sense-row" });
         row.createSpan({ cls: "pc-sense-name", text: label });
-        row.createSpan({ cls: "pc-sense-dist", text: `${dist} ft.` });
+        // R4 {G5, G6} live rider N-2-8: the SAME boxed template as a passive score, plus its own class
+        // for the widths a distance needs. Rendered bare, `30 ft. DARKVISION` read as a stray line
+        // under three bordered scores rather than as a fourth sense.
+        row.createSpan({ cls: "pc-sense-val pc-sense-dist", text: `${dist} ft.` });
       }
     }
   }

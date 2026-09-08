@@ -175,10 +175,16 @@
 }
 /* Distance reading (e.g. Darkvision "60 ft.") — quiet serif text aligned in
    the value column, NOT the boxed-numeral treatment used for passive scores. */
+/* R4 {G5, G6} live rider N-2-8: a sense DISTANCE now wears `.pc-sense-val`'s box (the span carries both
+   classes), and this rule only widens it: a distance reads "120 ft.", which will not fit the 28 px
+   square a passive score sits in, so the box grows with its text while keeping the square's height,
+   border and centring. */
 .archivist-pc-sheet .pc-sense-dist {
   order: 0;
+  width: auto;
   min-width: 28px;
-  text-align: right;
+  padding: 0 6px;
+  text-align: center;
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-body);
   color: var(--pc-text-primary);
