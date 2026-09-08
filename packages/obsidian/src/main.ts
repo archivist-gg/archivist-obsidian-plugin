@@ -1,4 +1,4 @@
-import { Plugin, Notice, setIcon, normalizePath } from "obsidian";
+import { Plugin, Notice, setIcon, normalizePath, parseLinktext } from "obsidian";
 
 // Entity module presenters
 import { monsterModule } from "./modules/monster/monster.module";
@@ -17,7 +17,7 @@ import { conditionModule } from "./modules/condition/condition.module";
 
 import { parseInlineTag } from "@archivist-gg/dnd5e/inline-tag-parser";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
-import { createErrorBlock } from "./shared/rendering/renderer-utils";
+import { createErrorBlock, setWikilinkResolver } from "./shared/rendering/renderer-utils";
 
 // Edit mode scaffolding (shared across entity modules)
 import { renderSideButtons } from "./shared/edit/side-buttons";
@@ -133,6 +133,17 @@ export default class ArchivistPlugin extends Plugin {
     setEntityPresenters(this.presenters);
     setEntityPresenterPlugin(this);
     setEntityPresenterKernel(this.archivist);
+    // R4 {G5, G6} live rider V-12: the vault half of the shared renderer's wikilink arm, injected the
+    // same way and in the same place as the three setters above. Obsidian's `parseLinktext` splits the
+    // subpath off (`Note#Heading` resolves on `Note`), and a target that is ONLY a subpath (`[[#Top]]`)
+    // points at the note the reader is already in, so it always resolves. The source path is "", which
+    // resolves a link by name across the vault: the blocks this renders sit in many notes and the seam
+    // carries no per-render path, so a RELATIVE target ("../Foo") would be reported unresolved. Every
+    // link the shipped data carries is vault-absolute or a bare note name.
+    setWikilinkResolver((target) => {
+      const { path } = parseLinktext(target);
+      return path === "" || this.app.metadataCache.getFirstLinkpathDest(path, "") !== null;
+    });
     // Register the real dnd5e pack: the only pack the kernel knows.
     this.archivist.registerPack(dnd5ePack);
     // Direct composition: pc is a stateful-app, wired with a typed PCServices

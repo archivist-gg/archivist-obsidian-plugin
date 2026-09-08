@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
-import { appendMarkdownText } from "../packages/obsidian/src/shared/rendering/renderer-utils";
+import { describe, it, expect, beforeAll, afterEach } from "vitest";
+import { appendMarkdownText, setWikilinkResolver } from "../packages/obsidian/src/shared/rendering/renderer-utils";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -113,5 +113,37 @@ describe("appendMarkdownText wikilinks", () => {
     expect(host.querySelector("a")!.getAttribute("data-href")).toBe("a");
     expect(host.textContent).toBe("*b*");
     expect(host.querySelectorAll("em").length).toBe(0);
+  });
+
+  /*
+   * R4 {G5, G6} live rider V-12. The run read Auspicia Dran's `Armor Class. 15 (Chain Shirt)`: the
+   * link is styled exactly like a resolved one although its cross-book target is dangling and clicking
+   * it opens nothing. Obsidian marks such a link `is-unresolved`; this renderer never did, because it
+   * knows nothing about the vault. The resolver is INJECTED (the shared tree may not import the
+   * plugin), and with none injected every link keeps today's classes, which is what the third
+   * assertion pins.
+   */
+  describe("unresolved marking", () => {
+    afterEach(() => setWikilinkResolver(null));
+
+    it("marks a link the resolver rejects, leaves one it accepts, and marks nothing with no resolver", () => {
+      setWikilinkResolver(() => false);
+      const dangling = render("[[Chain Shirt]]").querySelector("a")!;
+      expect(dangling.classList.contains("is-unresolved")).toBe(true);
+      expect(dangling.classList.contains("internal-link")).toBe(true);
+
+      setWikilinkResolver(() => true);
+      expect(render("[[Chain Shirt]]").querySelector("a")!.classList.contains("is-unresolved")).toBe(false);
+
+      setWikilinkResolver(null);
+      expect(render("[[Chain Shirt]]").querySelector("a")!.classList.contains("is-unresolved")).toBe(false);
+    });
+
+    it("hands the resolver the RAW target, subpath and all", () => {
+      const seen: string[] = [];
+      setWikilinkResolver((t) => { seen.push(t); return true; });
+      render("[[SRD 2024/Spells/Fireball#Higher Levels|boom]]");
+      expect(seen).toEqual(["SRD 2024/Spells/Fireball#Higher Levels"]);
+    });
   });
 });

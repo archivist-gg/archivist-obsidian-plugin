@@ -334,6 +334,18 @@ export function renderStatBlockTag(
  * *italic*, _italic_, ~~strikethrough~~, [text](url)
  * Plain text without markdown is appended as regular text nodes.
  */
+/** Injected vault-link resolver (R4 {G5, G6} live rider V-12): true when a wikilink TARGET resolves to
+ *  a real note. The shared tree may not import the plugin, so the plugin sets this at load exactly as
+ *  it sets the presenter map and the kernel in `entity-presenter-dispatch.ts`; `null` (the default, and
+ *  what every test must restore) means "no vault to ask", and every link then keeps the classes it has
+ *  always had. The RAW target travels, subpath and all: stripping `#`/`^` is Obsidian's `parseLinktext`
+ *  job and belongs on the plugin side of the seam. */
+let wikilinkResolver: ((target: string) => boolean) | null = null;
+
+export function setWikilinkResolver(fn: ((target: string) => boolean) | null): void {
+  wikilinkResolver = fn;
+}
+
 export function appendMarkdownText(text: string, parent: HTMLElement): void {
   const doc = parent.ownerDocument ?? activeDocument;
   // The three ASTERISK runs (`***`, `**`, `*`) may NOT span a wikilink opener. The alternation is leftmost-wins, so
@@ -373,6 +385,11 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
       } else {
         const a = doc.createElement("a");
         a.classList.add("internal-link");
+        // R4 {G5, G6} live rider V-12: a link whose target no note answers wears Obsidian's own
+        // `is-unresolved` beside `internal-link`, so a dangling cross-book reference reads as dangling
+        // instead of promising a note that opens nothing. With no resolver injected the class is never
+        // added and the anchor is byte-identical to the one this arm has always emitted.
+        if (wikilinkResolver && !wikilinkResolver(target)) a.classList.add("is-unresolved");
         a.setAttribute("data-href", target);
         a.setAttribute("href", target);
         a.setAttribute("target", "_blank");

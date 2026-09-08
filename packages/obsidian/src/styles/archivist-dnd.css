@@ -762,6 +762,19 @@
   color: #5a1808;
   text-decoration-style: solid;
 }
+/* R4 {G5, G6} live rider V-12: a link the vault cannot resolve, INSIDE a block. The rule above sets a
+   flat colour on every `a.internal-link` in these four blocks and would otherwise hide Obsidian's own
+   unresolved treatment, so the block states it in its own palette: the same brick, faded through
+   Obsidian's `--link-unresolved-opacity` where the theme defines one, with a dashed underline against
+   the resolved link's dotted one. The class itself is Obsidian's and is written by the shared
+   renderer's wikilink arm when the injected resolver finds no note. */
+.archivist-spell-block a.internal-link.is-unresolved,
+.archivist-item-block a.internal-link.is-unresolved,
+.archivist-class-block a.internal-link.is-unresolved,
+.archivist-monster-block a.internal-link.is-unresolved {
+  opacity: var(--link-unresolved-opacity, 0.55);
+  text-decoration-style: dashed;
+}
 
 /* Mechanical summary — appears under the item card in inventory expand */
 .archivist-item-summary {
