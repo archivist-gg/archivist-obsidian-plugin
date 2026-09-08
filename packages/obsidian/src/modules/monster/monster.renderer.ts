@@ -26,6 +26,7 @@ import {
   formatInitiative,
   formatQualifiers,
   formatSize,
+  formatLanguages,
   formatSkillsOther,
   formatSpeed,
   formatType,
@@ -352,7 +353,11 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: 
   }
 
   if (monster.languages && monster.languages.length > 0) {
-    richLine("Languages", monster.languages.map(capitalizeWords).join(", "));
+    // R4 {G5, G6} live rider 3, Z-9-9: `formatLanguages` (dnd5e `monster/monster.format`) title-cases each
+    // entry exactly as `capitalizeWords` did, except that the word right after an amount keeps its authored
+    // case, because that word is the amount's unit. The line read `Telepathy 120 Ft.` while the Senses line
+    // right above printed its own `darkvision 120 ft.` verbatim.
+    richLine("Languages", formatLanguages(monster.languages));
   }
 
   if (monster.gear && monster.gear.length > 0) {
