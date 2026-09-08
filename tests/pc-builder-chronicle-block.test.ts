@@ -44,6 +44,20 @@ describe("renderChronicleBlock", () => {
     expect(kids.indexOf("pc-cb-bh")).toBeLessThan(kids.indexOf("pc-cb-flavor"));
   });
 
+  // R4 {G5, G6} live rider 2, X-9-1: the flavour line is PROSE from a book, so it renders through the
+  // sheet's inline-markdown path. The 2024 class descriptions open with a bold lead-in, which the card
+  // printed as literal asterisks: `**Fighter.** Fighters are ...`.
+  it("renders the flavour paragraph as inline markdown, not as literal markers", () => {
+    const c = mountContainer();
+    renderChronicleBlock(c, {
+      name: "Fighter", sub: "Class", flavor: "**Fighter.** A master of martial combat.",
+      tiles: [], body: () => {},
+    });
+    const flavor = c.querySelector(".pc-cb-flavor")!;
+    expect(flavor.querySelector("strong")?.textContent).toBe("Fighter.");
+    expect(flavor.textContent).toBe("Fighter. A master of martial combat.");
+  });
+
   it("with bandRight (owned mode) the corner badge is dropped and the source rides the sub-line (smoke r8)", () => {
     const c = mountContainer();
     renderChronicleBlock(c, {
