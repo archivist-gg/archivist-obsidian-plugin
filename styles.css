@@ -7343,6 +7343,15 @@ body.theme-light .archivist-tag-atk:hover {
   background-color: var(--pc-crimson) !important;
   border-color: var(--pc-crimson) !important;
 }
+/* R4 {G5, G6} live rider 2, X-4-2: the duration is one part and breaks as one. Measured on the
+   `9fb865df` build at `.pc-content` 356 (`Barbarian5-2014 S`, Passive): the Rage toggle read
+   `Active · 1` / `minute`, because the amount and the unit are one text run in an ordinary inline
+   span and the line broke at the space inside it. The same protection V-11 gave the point-pool
+   value: the line may still break at the ` · ` separator between the label and the duration, which
+   is a break between parts, never inside one. */
+.archivist-pc-sheet .pc-action-buff-duration {
+  white-space: nowrap;
+}
 
 /* ---------- Point pool + the at-will sentinel (R4-G4 §5.2) ----------
  * Above CHARGE_BOX_LIMIT points the feature sites render "remaining / max <name>"
