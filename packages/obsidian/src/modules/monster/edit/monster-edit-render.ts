@@ -8,6 +8,7 @@ import type ArchivistPlugin from "../../../main";
 import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import { MonsterEditState } from "../monster.edit-state";
 import { renderSideButtons } from "../../../shared/edit/side-buttons";
+import { isUnchanged } from "../../../shared/edit/unchanged";
 import { createSvgBar } from "../../../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../../../shared/entities/compendium-modal";
 import { showCompendiumPicker } from "../../../shared/edit/compendium-picker";
@@ -49,6 +50,13 @@ export function renderMonsterEditMode(
     updateSideBtns();
   });
 
+  // R4-G6b §4.2: the snapshot at OPEN, through the ONE projection this editor writes with (`editableToYaml`); a
+  // fresh parse is already a deep copy. Never derived lazily from `original` at save time: the feature arrays alias
+  // it, so a real feature edit would compare EQUAL and the user's work would be discarded (§4.3).
+  // (`yaml.load` already answers `unknown`, so no assertion belongs on either call.)
+  const before = yaml.load(state.toYaml());
+  const unchanged = () => isUnchanged(before, yaml.load(state.toYaml()));
+
   // --- Side buttons (save / save-as-new / cancel) ---
   let sideBtns = el.querySelector<HTMLElement>(".archivist-side-btns");
   if (!sideBtns) {
@@ -68,6 +76,7 @@ export function renderMonsterEditMode(
       onEdit: () => cancelAndExit(),
       onSave: () => {
         if (compendiumContext) {
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
           const yamlStr = state.toYaml();
           const yamlData = yaml.load(yamlStr) as Record<string, unknown>;
           plugin.compendiumManager?.updateEntity(compendiumContext.slug, yamlData)
@@ -77,6 +86,7 @@ export function renderMonsterEditMode(
             })
             .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
         } else {
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
           saveAndExit();
         }
       },

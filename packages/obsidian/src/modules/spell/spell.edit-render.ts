@@ -7,6 +7,7 @@ import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../../main";
 import type { Spell } from "@archivist-gg/dnd5e/spell/spell.types";
 import { renderSideButtons } from "../../shared/edit/side-buttons";
+import { isUnchanged } from "../../shared/edit/unchanged";
 import { createSvgBar } from "../../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../../shared/entities/compendium-modal";
 import { showCompendiumPicker } from "../../shared/edit/compendium-picker";
@@ -107,6 +108,14 @@ export function renderSpellEditMode(
   // Mutable working copy
   const draft = JSON.parse(JSON.stringify(spell)) as Spell;
 
+  // R4-G6b §4.2: the snapshot at OPEN, through the ONE projection this editor writes with. The clone is
+  // load-bearing, not defensive: `buildSpellYamlObject` assigns `clean.at_higher_levels = draft.at_higher_levels`,
+  // the SAME array the At-higher-levels textarea writes into IN PLACE, so an un-cloned snapshot would carry the new
+  // text, compare EQUAL and destroy the edit. `structuredClone` (the first use in the repo) is available in the
+  // sheet's runtime and under vitest's jsdom, and this projection is plain YAML-shaped data, so it cannot throw.
+  const before = structuredClone(buildSpellYamlObject(draft));
+  const unchanged = () => isUnchanged(before, buildSpellYamlObject(draft));
+
   // --- Side buttons ---
   let sideBtns = el.querySelector<HTMLElement>(".archivist-side-btns");
   if (!sideBtns) {
@@ -130,6 +139,7 @@ export function renderSpellEditMode(
       onEdit: () => cancelAndExit(),
       onSave: () => {
         if (compendiumContext) {
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
           const yamlData = buildSpellYamlObject(draft);
           plugin.compendiumManager?.updateEntity(compendiumContext.slug, yamlData)
             .then(() => {
@@ -138,6 +148,7 @@ export function renderSpellEditMode(
             })
             .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
         } else {
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
           saveAndExit();
         }
       },

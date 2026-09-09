@@ -13,6 +13,9 @@ import {
 } from "@archivist-gg/dnd5e/dnd/math";
 import { crString, formatCR, sizeWord } from "@archivist-gg/dnd5e/monster/monster.format";
 import { editableToYaml } from "./monster.yaml-serializer";
+// The VALUE, so the deep copy below can never drift from the add-section dropdown's own vocabulary. `edit/types`
+// only back-references this module with an `import type`, so there is no runtime cycle.
+import { SECTION_KEY_MAP } from "./edit/types";
 
 // -----------------------------------------------------------------------------
 // EditableMonster type and conversion helpers (formerly src/dnd/editable-monster.ts)
@@ -51,6 +54,12 @@ export interface EditableMonster extends Monster {
  * Convert a Monster to an EditableMonster by inferring proficiencies,
  * parsing senses, and detecting active sections. Every key outside MANAGED travels through the `...monster`
  * spread and is also recorded in `extras`.
+ *
+ * R4-G6b §4.4 · `abilities`, `hp`, `ac`, `speed`, `saves`, `skills`, `senses` and `languages` are deep-copied
+ * field by field below, and EVERY feature array `SECTION_KEY_MAP` names is deep-copied after them (element by
+ * element, a shallow object copy each). Without that loop those seven arrays ride the `...monster` spread BY
+ * REFERENCE, so `addFeature` / `removeFeature` write into an array `original` still points at and `cancel()`,
+ * which rebuilds from `original`, cannot revert a feature edit.
  */
 export function monsterToEditable(monster: Monster): EditableMonster {
   // The LOOKUP key only: the editable's `cr` FIELD keeps the authored value through the `...monster` spread, so
@@ -174,7 +183,7 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   const extras: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(monster)) if (!MANAGED.has(k)) extras[k] = v;
 
-  return {
+  const editable: EditableMonster = {
     ...monster,
     abilities: monster.abilities ? { ...monster.abilities } : undefined,
     hp: monster.hp ? { ...monster.hp } : undefined,
@@ -197,6 +206,19 @@ export function monsterToEditable(monster: Monster): EditableMonster {
     proficiencyBonus: profBonus,
     extras,
   };
+
+  // R4-G6b §4.4: every feature array the add-section dropdown can open, deep-copied so `addFeature` / `removeFeature`
+  // never write into an array `original` still points at. Read through the same `Record<string, unknown>` cast
+  // `addFeature` uses: `SectionKey` carries `mythic_actions`, which is not a `Monster` key, and `lair_actions` is
+  // `unknown[]`, so neither a typed index nor a typed element is available here.
+  const src = monster as unknown as Record<string, unknown>;
+  const out = editable as unknown as Record<string, unknown>;
+  for (const k of Object.values(SECTION_KEY_MAP)) {
+    const arr = src[k] as Record<string, unknown>[] | undefined;
+    if (arr) out[k] = arr.map((f) => ({ ...f }));
+  }
+
+  return editable;
 }
 
 /**

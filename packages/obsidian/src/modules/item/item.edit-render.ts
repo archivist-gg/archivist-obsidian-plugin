@@ -7,6 +7,7 @@ import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../../main";
 import type { Item } from "@archivist-gg/dnd5e/item/item.types";
 import { renderSideButtons } from "../../shared/edit/side-buttons";
+import { isUnchanged } from "../../shared/edit/unchanged";
 import { SaveAsNewModal, CreateCompendiumModal } from "../../shared/entities/compendium-modal";
 import { showCompendiumPicker } from "../../shared/edit/compendium-picker";
 
@@ -39,6 +40,13 @@ export function renderItemEditMode(
 ): void {
   // Mutable working copy
   const draft = JSON.parse(JSON.stringify(item)) as Item;
+
+  // R4-G6b §4.2: the snapshot at OPEN, through the ONE projection this editor writes with (`buildClean` is a
+  // hoisted function declaration in this scope). The clone is load-bearing: `buildClean` assigns the draft's
+  // nested containers (`properties`, ...) BY REFERENCE, so an un-cloned snapshot would follow an in-place edit,
+  // compare EQUAL and destroy it.
+  const before = structuredClone(buildClean());
+  const unchanged = () => isUnchanged(before, buildClean());
 
   // --- Side buttons ---
   let sideBtns = el.querySelector<HTMLElement>(".archivist-side-btns");
@@ -81,6 +89,7 @@ export function renderItemEditMode(
       onEdit: () => cancelAndExit(),
       onSave: () => {
         if (compendiumContext) {
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
           const yamlData = buildClean();
           plugin.compendiumManager?.updateEntity(compendiumContext.slug, yamlData)
             .then(() => {
@@ -89,6 +98,7 @@ export function renderItemEditMode(
             })
             .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
         } else {
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
           saveAndExit();
         }
       },
@@ -319,20 +329,9 @@ export function renderItemEditMode(
   // =========================================================================
 
   function saveAndExit() {
-    // Clean up empty optional fields
-    const clean: Record<string, unknown> = { name: draft.name };
-    if (draft.type) clean.type = draft.type;
-    if (draft.rarity) clean.rarity = draft.rarity;
-    if (draft.attunement !== undefined && draft.attunement !== false) clean.attunement = draft.attunement;
-    if (draft.weight != null) clean.weight = draft.weight;
-    if (draft.value != null) clean.value = draft.value;
-    if (draft.damage) clean.damage = draft.damage;
-    if (draft.damage_type) clean.damage_type = draft.damage_type;
-    if (draft.properties && draft.properties.length > 0) clean.properties = draft.properties;
-    if (draft.charges != null) clean.charges = draft.charges;
-    if (draft.recharge) clean.recharge = draft.recharge;
-    if (draft.curse) clean.curse = true;
-    if (draft.description && draft.description.length > 0) clean.description = draft.description;
+    // R4-G6b §4.2: the ONE clean builder. A verbatim inline duplicate of `buildClean` stood here until this task
+    // (the G2 Task 7 `buildSpellYamlObject` precedent), so the guard's before and the writer's after could drift.
+    const clean = buildClean();
 
     const yamlStr = yaml.dump(clean, {
       lineWidth: -1,
