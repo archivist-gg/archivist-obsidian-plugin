@@ -142,6 +142,30 @@
   border-left: none;
   margin: 0;
 }
+
+/* R4-G6b §5.5 (Q-3): the Unarmed Strike expand's two term lists, renderACTooltip's row shape (source left, signed amount right); the card's own rules, never the floating tooltip's class names */
+.archivist-pc-sheet .pc-unarmed-card {
+  display: flex;
+  flex-direction: column;
+  max-width: 22em;
+  min-width: 0;
+}
+.archivist-pc-sheet .pc-unarmed-card-head {
+  font-weight: 600;
+  margin: 0.3em 0 0.15em;
+}
+.archivist-pc-sheet .pc-unarmed-card-head:first-child {
+  margin-top: 0;
+}
+.archivist-pc-sheet .pc-unarmed-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--pc-space-3);
+  padding: 0.1em 0;
+}
+.archivist-pc-sheet .pc-unarmed-card-amount {
+  font-variant-numeric: tabular-nums;
+}
 /* strip the inventory-expand chrome (tint, dotted rule, padding) when the
    inventory row-expand is reused inside the actions table */
 .archivist-pc-sheet .pc-action-expand-inner .pc-inv-expand {
