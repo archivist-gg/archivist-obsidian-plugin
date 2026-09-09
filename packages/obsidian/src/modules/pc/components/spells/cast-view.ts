@@ -76,11 +76,16 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
   // sections; a "consumable" row (a scroll) surfaces in its own "Scrolls &
   // Consumables" section below.
   const cantrips = castable.filter((s) => spellSource(s).section === "spellbook" && (s.entity.level ?? 0) === 0);
-  if (cantrips.length) {
+  // R4-G6b §9 (Q-7): the section renders whenever the character CAN cast cantrips, from the class table's
+  // Cantrips column through spellLimits; empty, it reads "None prepared." in the leveled twin's shape. The optional
+  // chain is load-bearing: fixture-built `derived` objects omit `spellLimits` behind an `as never` cast.
+  const canCastCantrips = cantrips.length > 0 || (ctx.derived.spellLimits ?? []).some((l) => (l.cantripsKnown ?? 0) > 0);
+  if (canCastCantrips) {
     const head = root.createDiv({ cls: "pc-spell-sec" });
     head.createSpan({ cls: "pc-spell-sec-label", text: "Cantrips" });
     const body = tableFor(root);
-    for (const s of cantrips) renderRow(body, s, 0, ctx, dcFor, atkFor, { cantrip: true });
+    if (cantrips.length) for (const s of cantrips) renderRow(body, s, 0, ctx, dcFor, atkFor, { cantrip: true });
+    else body.createDiv({ cls: "pc-spell-empty-row", text: "None prepared." });
   }
 
   // ── Leveled sections: slot boxes + CAST ──
