@@ -45,6 +45,10 @@ describe("renderSeparated (R4-G6b §10.1)", () => {
     expect(u.classList.contains("pc-charge-recovery")).toBe(true);
     expect(u.textContent).toBe("/ Long Rest");
     expect(host.textContent).toBe("/ Long Rest");
+    // §14 row 25 pins BOTH halves of the `spaces: false` case: the spacing class stays off AND the
+    // clipping class goes on. Only the host class makes the ruling work on the two flex carriers, and
+    // nothing else in `tests/` asserts it outside the spaces-TRUE `it` (T8 review, m15b).
+    expect(host.classList.contains("pc-cap-host")).toBe(true);
     expect(host.classList.contains("pc-cap-spaced")).toBe(false);
   });
 });
