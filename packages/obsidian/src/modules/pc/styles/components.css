@@ -524,6 +524,10 @@
   color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-hp-temp .pc-hp-val { color: var(--pc-text-muted); }
+/* R4-G6b §6: a current HP above the maximum (the character file's value) is shown as written and flagged: a crimson
+   value and a small superscript mark (its own dress; NOT the `.archivist-override-mark` pill, which is a click target). */
+.archivist-pc-sheet .pc-hp-current.pc-hp-over .pc-hp-val { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-hp-over-mark { font-size: 0.7em; vertical-align: super; color: var(--pc-crimson); margin-left: 2px; cursor: help; }
 .archivist-pc-sheet .pc-hp-label {
   text-align: center;
   font-family: var(--pc-font-serif);

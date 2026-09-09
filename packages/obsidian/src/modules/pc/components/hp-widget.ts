@@ -93,6 +93,13 @@ export class HpWidget implements SheetComponent {
       // Normal body — the tiles + HIT POINTS label.
       const nums = body.createDiv({ cls: "pc-hp-nums" });
       const curTile = this.col(nums, "pc-hp-current", "CURRENT", String(ctx.derived.hp.current));
+      const over = ctx.derived.hp.current > ctx.derived.hp.max;
+      if (over) {
+        // R4-G6b §6: shown as written, flagged; the file's value is never changed by the flag.
+        curTile.col.addClass("pc-hp-over");
+        curTile.col.createSpan({ cls: "pc-hp-over-mark", text: "!" });
+        setTooltip(curTile.val, `Current HP exceeds the maximum of ${ctx.derived.hp.max}. The value comes from the character file and is shown as written.`);
+      }
       const maxTile = this.col(nums, "pc-hp-max", "MAX", String(ctx.derived.hp.max));
       const tempTile = this.col(
         nums,
@@ -107,11 +114,13 @@ export class HpWidget implements SheetComponent {
 
       if (ctx.editState) {
         const editState = ctx.editState;
+        // R4-G6b §6: `makeInlineInput` clamps BEFORE `onCommit` and Enter commits untyped, so the clamp must
+        // never lower a seeded over-max value; a deliberately typed value still clamps in `setCurrentHp`.
         numberField(curTile.val, {
           getValue: () => ctx.resolved.state.hp.current,
-          onSet: (n) => editState.setCurrentHp(n),
+          onSet: (n) => { if (n === ctx.resolved.state.hp.current) return; editState.setCurrentHp(n); },
           min: 0,
-          max: ctx.derived.hp.max,
+          max: Math.max(ctx.derived.hp.max, ctx.resolved.state.hp.current),
         });
         const overridesHp = ctx.resolved.definition?.overrides?.hp;
         if (overridesHp?.max !== undefined) {
