@@ -1,3 +1,5 @@
+import { renderSeparated } from "../separated-caption";
+
 /** A PRESENTATIONAL constant (renderer-side, not game vocabulary: Gate 0 Q3): above this many points
  *  the feature sites switch to the numeric widget. RE-MEASURED 2026-09-07 with
  *  `grep -rn "renderChargeBoxes(" packages/obsidian/src`, after R4-G5 §4.3.2 folded the four tracker
@@ -113,7 +115,12 @@ export function renderChargeBoxes(parent: HTMLElement, opts: ChargeBoxesOpts): H
 
   if (opts.recovery) {
     const label = formatRecovery(opts.recovery);
-    const cap = wrap.createDiv({ cls: "pc-charge-recovery", text: `/ ${label}` });
+    // R4-G6b §10 (Q-8): the caption is a UNIT holding its `/ ` separator out of flow, so the mark is
+    // clipped away when the caption falls onto its own line under the pips and never starts it. The
+    // element is a `span` now rather than a `div` (harmless: it is a flex item of an `inline-flex`
+    // host and `.pc-charge-recovery` declares no `display`), it keeps the class and the `title`, and
+    // its `textContent` is still `/ <label>`.
+    const [cap] = renderSeparated(wrap, [label], { sep: "/", leading: true, spaces: false, unitCls: "pc-charge-recovery" });
     if (opts.recoveryTitle) cap.setAttribute("title", opts.recoveryTitle);
   }
   return wrap;

@@ -6317,6 +6317,58 @@ body.theme-light .archivist-tag-atk:hover {
 .pc-portrait-picker .pc-portrait-crop-handle-sw { top: 100%; left: 0; cursor: nesw-resize; }
 .pc-portrait-picker .pc-portrait-crop-handle-se { top: 100%; left: 100%; cursor: nwse-resize; }
 
+/* ---------- R4-G6b §10 · separated captions (Q-8) ----------
+   The ruling: a caption's separator must never START a wrapped line. The primitive
+   (`components/separated-caption.ts`) writes each part as a UNIT holding an out-of-flow separator
+   and the bare segment, so the mark hangs to the LEFT of its part, inside the inter-part gap. What
+   makes it disappear at a line start is what that gap is made of: a collapsible space (the inline
+   hosts) or the flex `gap` (`.pc-charge-boxes`, `.pc-point-pool`), and NEITHER exists at a line
+   start. A leading space is removed at a line break and `gap` is never applied at a flex line
+   start, so a mid-line separator sits in the gap and shows, while a separator whose segment starts
+   a line sits at negative x and is clipped away by the host.
+
+   Out of flow: `.pc-cap-sep` is absolutely positioned, so it has NO horizontal advance and line
+   breaking is identical whether the mark is visible or not. It is anchored by its RIGHT edge at
+   `100% + var(--pc-cap-clip)` from the unit, so it sits at least the clip margin outside the
+   unit's box and is hidden BY CONSTRUCTION when the unit starts a line, never by the width of the
+   trailing space it carries. That space is not decoration: it is what keeps the composed
+   `textContent` byte-identical to the joined strings these captions printed before (invariant 9),
+   so the separator BOX is the mark PLUS the space, held together by `white-space: pre`.
+
+   `overflow-x: clip`, not `hidden`: in Chromium 132 `clip` on one axis leaves the other `visible`,
+   so nothing a host paints above or below its box is cut, and `overflow-clip-margin` is the slack
+   a focus or hover outline on a control at a line edge needs (`.pc-action-buff`'s Obsidian-painted
+   checkbox, the inline `<input>` `makeInlineInput` swaps into `.pc-point-pool`'s value). The T0
+   live probe measured the flex baseline under `clip` on `.pc-feature-track .pc-charge-boxes`: the
+   box's and its first pip's `getBoundingClientRect().top` were IDENTICAL before and after (delta
+   0 / 0, height 36 / 36), so the flex container itself is the clipping host and the captions need
+   no inner wrapper.
+
+   `word-spacing` rides on `.pc-cap-spaced` ALONE, the class only a host that emits the inter-unit
+   space node carries: the two flex hosts supply their own `gap`, emit no space and never carry it,
+   so their other children (`.pc-point-pool-value` "20 / 25", `.pc-point-pool-name`) keep today's
+   spacing by construction. The unit and the segment reset it to `normal`, or the host's widened
+   spacing would loosen every multi-word part ("10 minutes", "Long Rest", "Bonus Action") and only
+   the host's own inter-unit space is meant to widen.
+
+   THE GAP, MEASURED (2026-09-09, live in the vault on the deployed build, evidence
+   `g6b-t8-sep-width.txt`: ONE hidden `white-space: pre` span inside the sheet, dressed in the
+   computed font of a real `.pc-charge-recovery`, italic 11px "Libre Baskerville", removed and its
+   absence asserted). The separator BOX measures `· ` 6.063 px and `/ ` 7.328 px at 11 px, and
+   6.609 px / 7.984 px at 12 px; a plain space measures 3.031 px at 11 px. The required inter-part
+   distance is the box plus `--pc-cap-clip`, so 6.063 + 2 = 8.063 px on an inline host at 11 px.
+   The distance an inline host supplies is the space's own advance plus `--pc-cap-gap`:
+   3.031 + 0.6em (6.6 px at 11 px) = 9.631 px, which clears the requirement by 1.568 px, and the
+   margin only grows with the type size (box and space are both em-proportional while the 2 px clip
+   is not). Every host on the live sheet measured `padding-left: 0px`, which is where `overflow`
+   clips. The two flex hosts state their own distance beside their own rules in `actions.css`. */
+.archivist-pc-sheet { --pc-cap-clip: 2px; --pc-cap-gap: 0.6em; }
+.archivist-pc-sheet .pc-cap-host { overflow-x: clip; overflow-y: visible; overflow-clip-margin: var(--pc-cap-clip); }
+.archivist-pc-sheet .pc-cap-spaced { word-spacing: var(--pc-cap-gap); }
+.archivist-pc-sheet .pc-cap-unit { position: relative; white-space: nowrap; word-spacing: normal; }
+.archivist-pc-sheet .pc-cap-seg { word-spacing: normal; }
+.archivist-pc-sheet .pc-cap-sep { position: absolute; right: calc(100% + var(--pc-cap-clip)); top: 0; white-space: pre; }
+
 
 /* ============================================
    pc/blocks.css
@@ -7396,7 +7448,15 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-charge-boxes {
   display: inline-flex;
   align-items: center;
-  gap: var(--pc-space-2);
+  /* R4-G6b §10.2: the pip row and the recovery caption are two PARTS, and since the caption is a
+     `pc-cap-unit` its `/ ` separator hangs out of flow into this gap. The gap must therefore be at
+     least the separator BOX plus `--pc-cap-clip`, or the mark overlaps the last pip. Measured
+     2026-09-09 live (`g6b-t8-sep-width.txt`): the separator renders inside `.pc-charge-recovery`,
+     italic 11px "Libre Baskerville", where `/ ` is 7.328 px, so the requirement is 9.328 px and the
+     shipped `var(--pc-space-2)` (8 px) was 1.328 px SHORT. Raised by the clip margin to 10 px, which
+     clears it by 0.672 px: a deliberate 2 px change to this widget's spacing, witnessed live against
+     the OLD shot (§15 row 8). */
+  gap: calc(var(--pc-space-2) + var(--pc-cap-clip));
   flex-wrap: wrap;
   row-gap: var(--pc-space-1);
 }
@@ -7434,8 +7494,9 @@ body.theme-light .archivist-tag-atk:hover {
    `9fb865df` build at `.pc-content` 356 (`Barbarian5-2014 S`, Passive): the Rage toggle read
    `Active · 1` / `minute`, because the amount and the unit are one text run in an ordinary inline
    span and the line broke at the space inside it. The same protection V-11 gave the point-pool
-   value: the line may still break at the ` · ` separator between the label and the duration, which
-   is a break between parts, never inside one. */
+   value: the line may still break at the SPACE before the duration unit, which is a break between
+   parts, never inside one. R4-G6b §10 (Q-8): that unit holds the ` · ` mark out of flow, so when the
+   duration is what starts the wrapped line the mark is clipped and no line begins with a separator. */
 .archivist-pc-sheet .pc-action-buff-duration {
   white-space: nowrap;
 }
@@ -7452,7 +7513,15 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-point-pool {
   display: inline-flex;
   align-items: center;
-  gap: 0.35em;
+  /* R4-G6b §10.2: the reset caption is a `pc-cap-unit` and its `· ` separator hangs out of flow into
+     this gap, so the gap must be at least the separator BOX plus `--pc-cap-clip`. The reset unit
+     declares no font of its own, so the mark renders in the sheet face at the widget size: measured
+     2026-09-09 live (`g6b-t8-sep-width.txt`) `· ` is 6.344 px at 12 px and 7.406 px at 14 px, so the
+     requirement is 8.344 px (9.406 px at 14 px) while the shipped `0.35em` is 4.2 px at 12 px, SHORT
+     by 4.14 px. Raised to 10 px, which clears both. A deliberate change to this widget's internal
+     spacing (the surface V-11 and RIDER-4 tuned) that §15 row 8 witnesses against the OLD build's shot
+     at 1200 and 252. */
+  gap: calc(var(--pc-space-2) + var(--pc-cap-clip));
   flex-wrap: wrap;
   row-gap: var(--pc-space-1);
 }
@@ -8528,8 +8597,11 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
 .archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }
 /* R4 {G5, G6} live rider 2, X-8-7: the sub-line breaks BETWEEN its halves, never inside one. A pool
-   row's line is written as one segment per half (`pool-tab.ts` `renderMetaSub`) joined by ` · `, and
-   at the 356 px column the run measured `Passive · 2` ending a line with `Sorcery Point` on the next.
+   row's line is written as one segment per half (`actions/entry-meta.ts` `renderMetaSub`), and at the
+   356 px column the run measured `Passive · 2` ending a line with `Sorcery Point` on the next. Since
+   R4-G6b §10 (Q-8) each part is a `pc-cap-unit` holding an out-of-flow separator and the BARE segment,
+   so the ` · ` is no longer text between the halves and a half that starts a wrapped line is never
+   preceded by a dangling mark; the segments keep `white-space: nowrap`, which is this rule.
    The same protection V-11 gave the point-pool value and X-4-2 the buff duration. */
 .archivist-pc-sheet .pc-spell-sub-seg { white-space: nowrap; }
 

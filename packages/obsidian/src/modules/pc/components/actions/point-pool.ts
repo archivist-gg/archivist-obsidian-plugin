@@ -1,4 +1,5 @@
 import { numberField } from "../edit-primitives";
+import { renderSeparated } from "../separated-caption";
 
 export interface PointPoolOpts {
   id: string;
@@ -37,10 +38,12 @@ export function renderPointPool(host: HTMLElement, opts: PointPoolOpts): HTMLEle
   // The reset caption carries its own separator (R4 {G5, G6} live rider V-7): the widget writes the
   // resource name immediately before it and `createSpan` inserts no punctuation, so the live run read
   // `2 / 2  Sorcery Point Long Rest` on the Metamagic head, the two captions divided by nothing but
-  // the flex gap. The `·` is the arc's separator and rides INSIDE the caption span, so the two words
-  // and the mark stay one unbreakable part when the head wraps.
+  // the flex gap. Since R4-G6b §10 (Q-8) the caption is a UNIT and the `·` is the unit's out-of-flow
+  // child, clipped when the caption starts a wrapped line: the mark shows between the name and the
+  // caption, the two words and the mark stay one unbreakable part, and no wrapped line begins with a
+  // separator. The composed `· <label>` text is unchanged.
   if (opts.resetLabel) {
-    const cap = wrap.createSpan({ cls: "pc-point-pool-reset", text: `· ${opts.resetLabel}` });
+    const [cap] = renderSeparated(wrap, [opts.resetLabel], { sep: "·", leading: true, spaces: false, unitCls: "pc-point-pool-reset" });
     if (opts.resetTitle) cap.setAttribute("title", opts.resetTitle);
   }
   minus.addEventListener("click", (e) => { e.stopPropagation(); opts.onSet(clamp(opts.used + 1)); });

@@ -12,6 +12,7 @@ import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import { resourceLevelFor } from "@archivist-gg/dnd5e/pc/pc.resources";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
+import { renderSeparated } from "../separated-caption";
 
 /**
  * One unified feature/passive row:
@@ -55,11 +56,13 @@ export function renderFeatureRow(
   const title = featureRowTitle(rf, ctx.resolved);
   // Sub-label joins the primary source with each merged (subclass) source; for a
   // lone feature this is exactly `formatSourceLabel(rf.source, ctx.resolved)` (no behavior
-  // change). Empty labels are dropped so the " · " separator never dangles.
-  const sourceLabel = [rf, ...secondaries]
+  // change). Empty labels are dropped so the separator never dangles. The ARRAY is what the
+  // row's own sub-line renders (R4-G6b §10: one `pc-cap-unit` per source, the ` · ` out of flow);
+  // the joined string is derived from it for `renderFeatureCard`, whose `sourceLabel` is text.
+  const sourceLabels = [rf, ...secondaries]
     .map((r) => formatSourceLabel(r.source, ctx.resolved))
-    .filter(Boolean)
-    .join(" · ");
+    .filter(Boolean);
+  const sourceLabel = sourceLabels.join(" · ");
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
@@ -85,7 +88,7 @@ export function renderFeatureRow(
   // keeps the toggle click from bubbling into the row-expand handler.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
   nameCell.createDiv({ cls: "pc-action-row-name", text: title });
-  if (sourceLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: sourceLabel });
+  if (sourceLabels.length) renderSeparated(nameCell.createDiv({ cls: "pc-action-row-sub" }), sourceLabels, { sep: "·" });
   // R4-G3a §4: the caption line for heal / temp-hp / extra-action and for every
   // effect imposed on someone else. It hangs off the NAME cell, not the detail
   // slot: that slot is single-occupancy and the resource tracker wins it on
@@ -106,16 +109,17 @@ export function renderFeatureRow(
       e.stopPropagation();
       ctx.editState?.toggleActiveBuff(buffId);
     });
-    // The label and the duration are two elements with no whitespace between them (`createSpan`
-    // inserts none), so the separator is written explicitly, in the arc's `·` idiom, inside the same
-    // guard as the duration itself. The unit is a counted English noun and takes an English plural
-    // when the amount is not 1 ("10 minutes"), which is copy about a number, not game vocabulary: the
-    // four units dnd5e's `durationSchema` admits (round, minute, hour, day) all pluralise regularly,
-    // and no branch here reads WHICH unit it is.
+    // The line is the label, one plain space and the duration UNIT, whose separator is out of flow
+    // and clipped when the unit starts a line: R4-G6b §10 (Q-8). `renderSeparated` writes the space
+    // itself (the host already has the label as a child), so the composed `Active · 1 minute` is
+    // byte-identical to what the two elements plus an explicit " · " printed before. The unit is a
+    // counted English noun and takes an English plural when the amount is not 1 ("10 minutes"),
+    // which is copy about a number, not game vocabulary: the four units dnd5e's `durationSchema`
+    // admits (round, minute, hour, day) all pluralise regularly, and no branch here reads WHICH unit
+    // it is.
     if (feature.duration && typeof feature.duration === "object") {
       const { amount, unit } = feature.duration;
-      buffWrap.appendText(" · ");
-      buffWrap.createSpan({ cls: "pc-action-buff-duration", text: `${amount} ${unit}${amount === 1 ? "" : "s"}` });
+      renderSeparated(buffWrap, [`${amount} ${unit}${amount === 1 ? "" : "s"}`], { sep: "·", leading: true, segCls: "pc-action-buff-duration" });
     }
   }
 

@@ -2203,3 +2203,55 @@
 .pc-portrait-picker .pc-portrait-crop-handle-ne { top: 0; left: 100%; cursor: nesw-resize; }
 .pc-portrait-picker .pc-portrait-crop-handle-sw { top: 100%; left: 0; cursor: nesw-resize; }
 .pc-portrait-picker .pc-portrait-crop-handle-se { top: 100%; left: 100%; cursor: nwse-resize; }
+
+/* ---------- R4-G6b §10 · separated captions (Q-8) ----------
+   The ruling: a caption's separator must never START a wrapped line. The primitive
+   (`components/separated-caption.ts`) writes each part as a UNIT holding an out-of-flow separator
+   and the bare segment, so the mark hangs to the LEFT of its part, inside the inter-part gap. What
+   makes it disappear at a line start is what that gap is made of: a collapsible space (the inline
+   hosts) or the flex `gap` (`.pc-charge-boxes`, `.pc-point-pool`), and NEITHER exists at a line
+   start. A leading space is removed at a line break and `gap` is never applied at a flex line
+   start, so a mid-line separator sits in the gap and shows, while a separator whose segment starts
+   a line sits at negative x and is clipped away by the host.
+
+   Out of flow: `.pc-cap-sep` is absolutely positioned, so it has NO horizontal advance and line
+   breaking is identical whether the mark is visible or not. It is anchored by its RIGHT edge at
+   `100% + var(--pc-cap-clip)` from the unit, so it sits at least the clip margin outside the
+   unit's box and is hidden BY CONSTRUCTION when the unit starts a line, never by the width of the
+   trailing space it carries. That space is not decoration: it is what keeps the composed
+   `textContent` byte-identical to the joined strings these captions printed before (invariant 9),
+   so the separator BOX is the mark PLUS the space, held together by `white-space: pre`.
+
+   `overflow-x: clip`, not `hidden`: in Chromium 132 `clip` on one axis leaves the other `visible`,
+   so nothing a host paints above or below its box is cut, and `overflow-clip-margin` is the slack
+   a focus or hover outline on a control at a line edge needs (`.pc-action-buff`'s Obsidian-painted
+   checkbox, the inline `<input>` `makeInlineInput` swaps into `.pc-point-pool`'s value). The T0
+   live probe measured the flex baseline under `clip` on `.pc-feature-track .pc-charge-boxes`: the
+   box's and its first pip's `getBoundingClientRect().top` were IDENTICAL before and after (delta
+   0 / 0, height 36 / 36), so the flex container itself is the clipping host and the captions need
+   no inner wrapper.
+
+   `word-spacing` rides on `.pc-cap-spaced` ALONE, the class only a host that emits the inter-unit
+   space node carries: the two flex hosts supply their own `gap`, emit no space and never carry it,
+   so their other children (`.pc-point-pool-value` "20 / 25", `.pc-point-pool-name`) keep today's
+   spacing by construction. The unit and the segment reset it to `normal`, or the host's widened
+   spacing would loosen every multi-word part ("10 minutes", "Long Rest", "Bonus Action") and only
+   the host's own inter-unit space is meant to widen.
+
+   THE GAP, MEASURED (2026-09-09, live in the vault on the deployed build, evidence
+   `g6b-t8-sep-width.txt`: ONE hidden `white-space: pre` span inside the sheet, dressed in the
+   computed font of a real `.pc-charge-recovery`, italic 11px "Libre Baskerville", removed and its
+   absence asserted). The separator BOX measures `· ` 6.063 px and `/ ` 7.328 px at 11 px, and
+   6.609 px / 7.984 px at 12 px; a plain space measures 3.031 px at 11 px. The required inter-part
+   distance is the box plus `--pc-cap-clip`, so 6.063 + 2 = 8.063 px on an inline host at 11 px.
+   The distance an inline host supplies is the space's own advance plus `--pc-cap-gap`:
+   3.031 + 0.6em (6.6 px at 11 px) = 9.631 px, which clears the requirement by 1.568 px, and the
+   margin only grows with the type size (box and space are both em-proportional while the 2 px clip
+   is not). Every host on the live sheet measured `padding-left: 0px`, which is where `overflow`
+   clips. The two flex hosts state their own distance beside their own rules in `actions.css`. */
+.archivist-pc-sheet { --pc-cap-clip: 2px; --pc-cap-gap: 0.6em; }
+.archivist-pc-sheet .pc-cap-host { overflow-x: clip; overflow-y: visible; overflow-clip-margin: var(--pc-cap-clip); }
+.archivist-pc-sheet .pc-cap-spaced { word-spacing: var(--pc-cap-gap); }
+.archivist-pc-sheet .pc-cap-unit { position: relative; white-space: nowrap; word-spacing: normal; }
+.archivist-pc-sheet .pc-cap-seg { word-spacing: normal; }
+.archivist-pc-sheet .pc-cap-sep { position: absolute; right: calc(100% + var(--pc-cap-clip)); top: 0; white-space: pre; }

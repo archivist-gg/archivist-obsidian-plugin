@@ -4,6 +4,7 @@ import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
+import { renderSeparated } from "../separated-caption";
 
 const RARITY_CLASS: Record<string, string> = {
   "common": "rarity-common", "uncommon": "rarity-uncommon", "rare": "rarity-rare",
@@ -53,7 +54,8 @@ export function renderItemRow(
   const subParts: string[] = [];
   if (entity?.rarity) subParts.push(entity.rarity);
   if (entry.attuned) subParts.push("attuned");
-  if (subParts.length) nameCell.createDiv({ cls: "pc-action-row-sub", text: subParts.join(" · ") });
+  // R4-G6b §10 (Q-8): one `pc-cap-unit` per part, the ` · ` out of flow, the composed text unchanged.
+  if (subParts.length) renderSeparated(nameCell.createDiv({ cls: "pc-action-row-sub" }), subParts, { sep: "·" });
 
   // Range
   row.createDiv({ cls: "pc-action-range", text: action.range ?? "" });

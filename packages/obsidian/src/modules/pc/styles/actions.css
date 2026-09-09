@@ -39,7 +39,15 @@
 .archivist-pc-sheet .pc-charge-boxes {
   display: inline-flex;
   align-items: center;
-  gap: var(--pc-space-2);
+  /* R4-G6b §10.2: the pip row and the recovery caption are two PARTS, and since the caption is a
+     `pc-cap-unit` its `/ ` separator hangs out of flow into this gap. The gap must therefore be at
+     least the separator BOX plus `--pc-cap-clip`, or the mark overlaps the last pip. Measured
+     2026-09-09 live (`g6b-t8-sep-width.txt`): the separator renders inside `.pc-charge-recovery`,
+     italic 11px "Libre Baskerville", where `/ ` is 7.328 px, so the requirement is 9.328 px and the
+     shipped `var(--pc-space-2)` (8 px) was 1.328 px SHORT. Raised by the clip margin to 10 px, which
+     clears it by 0.672 px: a deliberate 2 px change to this widget's spacing, witnessed live against
+     the OLD shot (§15 row 8). */
+  gap: calc(var(--pc-space-2) + var(--pc-cap-clip));
   flex-wrap: wrap;
   row-gap: var(--pc-space-1);
 }
@@ -77,8 +85,9 @@
    `9fb865df` build at `.pc-content` 356 (`Barbarian5-2014 S`, Passive): the Rage toggle read
    `Active · 1` / `minute`, because the amount and the unit are one text run in an ordinary inline
    span and the line broke at the space inside it. The same protection V-11 gave the point-pool
-   value: the line may still break at the ` · ` separator between the label and the duration, which
-   is a break between parts, never inside one. */
+   value: the line may still break at the SPACE before the duration unit, which is a break between
+   parts, never inside one. R4-G6b §10 (Q-8): that unit holds the ` · ` mark out of flow, so when the
+   duration is what starts the wrapped line the mark is clipped and no line begins with a separator. */
 .archivist-pc-sheet .pc-action-buff-duration {
   white-space: nowrap;
 }
@@ -95,7 +104,15 @@
 .archivist-pc-sheet .pc-point-pool {
   display: inline-flex;
   align-items: center;
-  gap: 0.35em;
+  /* R4-G6b §10.2: the reset caption is a `pc-cap-unit` and its `· ` separator hangs out of flow into
+     this gap, so the gap must be at least the separator BOX plus `--pc-cap-clip`. The reset unit
+     declares no font of its own, so the mark renders in the sheet face at the widget size: measured
+     2026-09-09 live (`g6b-t8-sep-width.txt`) `· ` is 6.344 px at 12 px and 7.406 px at 14 px, so the
+     requirement is 8.344 px (9.406 px at 14 px) while the shipped `0.35em` is 4.2 px at 12 px, SHORT
+     by 4.14 px. Raised to 10 px, which clears both. A deliberate change to this widget's internal
+     spacing (the surface V-11 and RIDER-4 tuned) that §15 row 8 witnesses against the OLD build's shot
+     at 1200 and 252. */
+  gap: calc(var(--pc-space-2) + var(--pc-cap-clip));
   flex-wrap: wrap;
   row-gap: var(--pc-space-1);
 }

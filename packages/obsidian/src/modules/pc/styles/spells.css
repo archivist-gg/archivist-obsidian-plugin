@@ -63,8 +63,11 @@
 .archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
 .archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }
 /* R4 {G5, G6} live rider 2, X-8-7: the sub-line breaks BETWEEN its halves, never inside one. A pool
-   row's line is written as one segment per half (`pool-tab.ts` `renderMetaSub`) joined by ` · `, and
-   at the 356 px column the run measured `Passive · 2` ending a line with `Sorcery Point` on the next.
+   row's line is written as one segment per half (`actions/entry-meta.ts` `renderMetaSub`), and at the
+   356 px column the run measured `Passive · 2` ending a line with `Sorcery Point` on the next. Since
+   R4-G6b §10 (Q-8) each part is a `pc-cap-unit` holding an out-of-flow separator and the BARE segment,
+   so the ` · ` is no longer text between the halves and a half that starts a wrapped line is never
+   preceded by a dangling mark; the segments keep `white-space: nowrap`, which is this rule.
    The same protection V-11 gave the point-pool value and X-4-2 the buff duration. */
 .archivist-pc-sheet .pc-spell-sub-seg { white-space: nowrap; }
 

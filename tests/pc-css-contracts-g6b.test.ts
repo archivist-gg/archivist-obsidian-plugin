@@ -21,13 +21,24 @@ const STYLES_DIR = resolve(__dirname, "../packages/obsidian/src/modules/pc/style
  * `STYLES_DIR` (this file reads several partials, so the path is an argument rather than a closed-over
  * constant as in `pc-defenses-conditions-panel.test.ts`). The `\s*\{` tail anchors the match to the whole
  * selector, so `.pc-unarmed-card` never matches `.pc-unarmed-card-head`.
+ *
+ * HARDENED at T8 (T6 review Minor 4): the escape now covers EVERY regex metacharacter (the old class
+ * missed `*`, `+`, `?`, `^`, `$`, `{`, `}`, `|`, so a selector carrying one would have been read as a
+ * pattern), and a RULE BOUNDARY is required before the selector (the start of the file, or a `}`, a
+ * `;` or a newline, then optional whitespace). Without the boundary a queried selector that is a
+ * SUFFIX of an earlier rule's selector (`.pc-cap-host` against `.archivist-pc-sheet .pc-cap-host`)
+ * read the EARLIER block and the row asserted against the wrong declarations.
  */
 const ruleOf = (cssPath: string, selector: string): string => {
   const css = readFileSync(resolve(STYLES_DIR, cssPath), "utf8");
-  const match = css.match(new RegExp(selector.replace(/[.\\[\]()]/g, "\\$&") + "\\s*\\{([^}]+)\\}"));
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = css.match(new RegExp("(?:^|[};]|\\n)\\s*" + escaped + "\\s*\\{([^}]+)\\}"));
   expect(match, `${selector} rule missing from ${cssPath}`).toBeTruthy();
   return (match as RegExpMatchArray)[1];
 };
+
+/** The whole partial, for the rows that assert a declaration appears NOWHERE ELSE. */
+const cssOf = (cssPath: string): string => readFileSync(resolve(STYLES_DIR, cssPath), "utf8");
 
 describe("R4-G6b CSS contracts · §6 the over-max HP flag (components.css)", () => {
   it("the flagged CURRENT value is crimson", () => {
@@ -69,5 +80,70 @@ describe("R4-G6b CSS contracts · §5.5 the Unarmed Strike expand card (actions.
   it("the amount is tabular so the signed numbers line up", () => {
     const block = ruleOf("actions.css", ".archivist-pc-sheet .pc-unarmed-card-amount");
     expect(block).toMatch(/font-variant-numeric:\s*tabular-nums/);
+  });
+});
+
+describe("R4-G6b CSS contracts · §10 the separated-caption primitive (components.css)", () => {
+  it("the sheet declares the clip margin and the inter-part gap as tokens", () => {
+    const block = ruleOf("components.css", ".archivist-pc-sheet");
+    expect(block).toMatch(/--pc-cap-clip:\s*2px/);
+    expect(block).toMatch(/--pc-cap-gap:\s*0\.6em/);
+  });
+
+  it("the host clips horizontally ONLY, with the clip margin as slack", () => {
+    const block = ruleOf("components.css", ".archivist-pc-sheet .pc-cap-host");
+    // `clip`, never `hidden`: `hidden` would make the host a scroll container and cut the other axis.
+    expect(block).toMatch(/overflow-x:\s*clip/);
+    expect(block).not.toMatch(/overflow-x:\s*hidden/);
+    expect(block).toMatch(/overflow-y:\s*visible/);
+    expect(block).toMatch(/overflow-clip-margin:\s*var\(--pc-cap-clip\)/);
+  });
+
+  it("the word-spacing rides on pc-cap-spaced ALONE, outside the two `normal` resets", () => {   // m18's kill row
+    const block = ruleOf("components.css", ".archivist-pc-sheet .pc-cap-spaced");
+    expect(block).toMatch(/word-spacing:\s*var\(--pc-cap-gap\)/);
+    // The two flex hosts supply their own `gap` and never carry this class, so their non-unit
+    // children keep today's spacing: the ONLY widened declaration in the partial is this one, and
+    // the only other two are the unit's and the segment's resets, in that order.
+    const decls = Array.from(cssOf("components.css").matchAll(/word-spacing:\s*([^;]+);/g)).map((m) => m[1].trim());
+    expect(decls).toEqual(["var(--pc-cap-gap)", "normal", "normal"]);
+  });
+
+  it("the unit is the positioning context, unbreakable, and resets the inherited spacing", () => {
+    const block = ruleOf("components.css", ".archivist-pc-sheet .pc-cap-unit");
+    expect(block).toMatch(/position:\s*relative/);
+    expect(block).toMatch(/white-space:\s*nowrap/);
+    expect(block).toMatch(/word-spacing:\s*normal/);
+  });
+
+  it("the segment resets the inherited spacing too", () => {
+    const block = ruleOf("components.css", ".archivist-pc-sheet .pc-cap-seg");
+    expect(block).toMatch(/word-spacing:\s*normal/);
+  });
+
+  it("the separator is out of flow, anchored the clip margin outside the unit's left edge", () => {
+    const block = ruleOf("components.css", ".archivist-pc-sheet .pc-cap-sep");
+    expect(block).toMatch(/position:\s*absolute/);
+    expect(block).toMatch(/right:\s*calc\(100% \+ var\(--pc-cap-clip\)\)/);
+    expect(block).toMatch(/top:\s*0/);
+    // `pre` keeps the trailing space the composed `textContent` needs (invariant 9).
+    expect(block).toMatch(/white-space:\s*pre/);
+  });
+});
+
+describe("R4-G6b CSS contracts · §10.2 the two flex hosts' raised gaps (actions.css)", () => {
+  // Measured live 2026-09-09 (`g6b-t8-sep-width.txt`): the `/ ` box is 7.328 px in the caption face
+  // at 11 px, so `.pc-charge-boxes` needs 9.328 px and its shipped 8 px was short; the `· ` box is
+  // 6.344 px in the sheet face at 12 px, so `.pc-point-pool` needs 8.344 px and its shipped 0.35em
+  // (4.2 px at 12 px) was short. Both are now the 10 px `var(--pc-space-2) + var(--pc-cap-clip)`.
+  it("the charge boxes leave room for the recovery caption's out-of-flow separator", () => {
+    const block = ruleOf("actions.css", ".archivist-pc-sheet .pc-charge-boxes");
+    expect(block).toMatch(/gap:\s*calc\(var\(--pc-space-2\) \+ var\(--pc-cap-clip\)\)/);
+  });
+
+  it("the point pool leaves room for the reset caption's out-of-flow separator", () => {
+    const block = ruleOf("actions.css", ".archivist-pc-sheet .pc-point-pool");
+    expect(block).toMatch(/gap:\s*calc\(var\(--pc-space-2\) \+ var\(--pc-cap-clip\)\)/);
+    expect(block).not.toMatch(/gap:\s*0\.35em/);
   });
 });

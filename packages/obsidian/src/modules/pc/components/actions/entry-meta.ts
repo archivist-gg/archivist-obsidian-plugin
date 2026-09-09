@@ -10,6 +10,7 @@
  */
 import type { ComponentRenderContext } from "../component.types";
 import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-feature.types";
+import { renderSeparated } from "../separated-caption";
 
 /* The ECONOMY label for a pool row's sub-line and a block card's Cost meta. R4 {G5, G6} live rider 2,
  * X-1-13: the label names the economy and carries no amount. `1 Action` / `1 Bonus Action` beside a
@@ -37,22 +38,22 @@ export function metaSub(e: OptionalFeatureEntity, ctx: ComponentRenderContext): 
   return parts;
 }
 
-/** The row sub-line, one SEGMENT element per part (R4 {G5, G6} live rider 2, X-8-7). The parts are
- *  joined by the same ` · ` text this line has always carried, so the composed `textContent` is
- *  unchanged; the segments exist so the CSS can forbid a break inside one, which is what split
- *  `Passive · 2` from `Sorcery Point` at the 356 px column. No part renders no line at all, as
- *  before.
+/** The row sub-line, one SEGMENT element per part (R4 {G5, G6} live rider 2, X-8-7). Since R4-G6b §10
+ *  (Q-8) each part is a UNIT (`pc-cap-unit`) holding an out-of-flow ` · ` separator plus the BARE
+ *  segment, and what divides two parts is the host's own space widened by its `word-spacing`: the
+ *  composed `textContent` is byte-identical to the joined text this line has always carried, while a
+ *  part that starts a wrapped line has its mark clipped away instead of leading the line. The
+ *  segments exist so the CSS can forbid a break inside one, which is what split `Passive · 2` from
+ *  `Sorcery Point` at the 356 px column. No part renders no line at all, as before.
  *
  *  `cls` is the LINE's own class and defaults to the pool row's: a boon row filed on the Passive tab
- *  passes the sub-label class those rows already style (X-2-12). The segment spans keep their one
- *  class either way, which is what the `white-space: nowrap` rule matches. */
+ *  passes the sub-label class those rows already style (X-2-12). The segment spans carry
+ *  `pc-cap-seg pc-spell-sub-seg` either way, so the `white-space: nowrap` rule still matches them,
+ *  and their `textContent` is the bare part (the separator is the unit's child, never theirs). */
 export function renderMetaSub(nameWrap: HTMLElement, parts: string[], cls = "pc-spell-sub"): void {
   if (!parts.length) return;
   const sub = nameWrap.createDiv({ cls });
-  parts.forEach((part, i) => {
-    if (i) sub.appendText(" · ");
-    sub.createSpan({ cls: "pc-spell-sub-seg", text: part });
-  });
+  renderSeparated(sub, parts, { sep: "·", segCls: "pc-spell-sub-seg" });
 }
 
 /** The "Cost" text for a `consumes` link, shared by the row sub-line and the block card's meta
