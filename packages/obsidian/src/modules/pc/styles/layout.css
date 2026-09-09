@@ -7,7 +7,14 @@
   margin: 0 auto;
   border-radius: var(--pc-radius-lg);
   box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
-  overflow: hidden;
+  /* R4-G6b §7: `hidden` made the sheet the nearest scroll container for position: sticky;
+   * `clip` keeps the corner clip and creates none. The T0 live probe (2026-09-09,
+   * `evidence/g6b-t0-probe.txt` blocks A and B) measured the sheet's parent as `.view-content`
+   * computing `overflow: auto` with `transform`, `filter` and `contain` all `none`: the PANE is
+   * the scroller a sticky descendant needs, so no re-host is required. */
+  overflow: clip;
+  /* belt-and-braces: container-type already supplies the formatting context */
+  display: flow-root;
 }
 
 .archivist-pc-sheet .pc-header { padding: 0; }

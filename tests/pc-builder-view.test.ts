@@ -22,6 +22,12 @@ describe("BuilderView shell", () => {
     expect(root.querySelectorAll(".pc-builder-step").length).toBe(6);
   });
 
+  it("the six step items live inside .pc-builder-rail-steps (R4-G6b §7)", () => {
+    const root = mountContainer();
+    new BuilderView().render(root, ctx());
+    expect(root.querySelectorAll(".pc-builder-rail > .pc-builder-rail-steps > .pc-builder-step").length).toBe(6);
+  });
+
   it("starts on the first step (race) marked active", () => {
     const root = mountContainer();
     new BuilderView().render(root, ctx());

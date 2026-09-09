@@ -147,3 +147,24 @@ describe("R4-G6b CSS contracts · §10.2 the two flex hosts' raised gaps (action
     expect(block).not.toMatch(/gap:\s*0\.35em/);
   });
 });
+
+describe("R4-G6b CSS contracts · §7 the sticky builder rail (layout.css, builder.css)", () => {
+  // T0's live probe (2026-09-09, `g6b-t0-probe.txt` blocks A and B) measured
+  // `.archivist-pc-sheet.parentElement === .view-content` and `.view-content` computing
+  // `overflow: auto` on both axes with `transform: none`, `filter: none`, `contain: none`,
+  // `position: static`: the PANE is the scroller, so the sticky needs no re-host. The root
+  // rule's own `overflow` is the only thing that stood in the way.
+  it("the sheet root clips without creating a scroll container", () => {   // m19's kill row
+    const block = ruleOf("layout.css", ".archivist-pc-sheet");
+    expect(block).toMatch(/overflow:\s*clip/);
+    // `hidden` made the root the nearest scroll container, so nothing inside could stick.
+    expect(block).not.toMatch(/overflow:\s*hidden/);
+    expect(block).toMatch(/display:\s*flow-root/);
+  });
+
+  it("the step list pins to the pane top", () => {
+    const block = ruleOf("builder.css", ".archivist-pc-sheet .pc-builder-rail-steps");
+    expect(block).toMatch(/position:\s*sticky/);
+    expect(block).toMatch(/top:\s*0/);
+  });
+});

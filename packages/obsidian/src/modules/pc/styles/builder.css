@@ -45,6 +45,11 @@
 .archivist-pc-sheet .pc-builder-rail {
   border-right: 1px solid var(--pc-tan); padding: 8px 6px; background: rgba(232, 213, 176, 0.32);
 }
+/* R4-G6b §7 (Q-5): the steps pin to the pane top while the rail cell keeps spanning the column.
+ * The scroller is the pane, `.view-content` (T0 live probe 2026-09-09, `g6b-t0-probe.txt` blocks
+ * A and B: it is the sheet's parent and computes `overflow: auto`, no transform / filter /
+ * contain), which the root's `overflow: clip` in `layout.css` no longer shadows. */
+.archivist-pc-sheet .pc-builder-rail-steps { position: sticky; top: 0; }
 .archivist-pc-sheet .pc-builder-step {
   display: flex; align-items: center; gap: 6px; padding: 6px;
   border-radius: var(--pc-radius-sm); cursor: pointer;
