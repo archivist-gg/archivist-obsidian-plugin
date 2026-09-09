@@ -344,7 +344,7 @@ export function buildActionModel(
 
   // Materialize in fixed ECONOMY × SOURCE order, omitting empties.
   const attacksPerAction = derived.attacksPerAction ?? 1;
-  const equippedCount = (derived.attacks ?? []).length;
+  const equippedCount = (derived.attacks ?? []).filter((a) => !!a.slotKey).length; // R4-G6b §5.5: the unarmed row never counts
 
   const sections: Section[] = [];
   for (const economy of ECONOMY_ORDER) {
@@ -366,8 +366,10 @@ export function buildActionModel(
         : SOURCE_LABEL[source];
       const subGroup: SubGroup = { key: source, label, entries };
       if (economy === "actions" && source === "weapons") {
-        const prefix = attacksPerAction > 1 ? `×${attacksPerAction} attacks · ` : "";
-        subGroup.count = `${prefix}${equippedCount} equipped`;
+        const prefixPart = attacksPerAction > 1 ? `×${attacksPerAction} attacks` : "";
+        const equippedPart = equippedCount > 0 ? `${equippedCount} equipped` : "";
+        const count = [prefixPart, equippedPart].filter(Boolean).join(" · ");
+        if (count) subGroup.count = count;
       }
       subGroups.push(subGroup);
     }

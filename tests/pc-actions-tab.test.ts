@@ -17,7 +17,7 @@ beforeAll(() => installObsidianDomHelpers());
 const sampleAttack = (overrides: Partial<AttackRow> = {}): AttackRow => ({
   id: "0:standard", name: "Longsword", range: "melee", toHit: 5,
   damageDice: "1d8+3", damageType: "slashing", properties: [], proficient: true,
-  breakdown: { toHit: [], damage: [] }, ...overrides,
+  breakdown: { toHit: [], damage: [] }, slotKey: "mainhand", ...overrides,
 });
 
 interface CtxOpts {

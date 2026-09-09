@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { ACTerm, AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { ActionEntry } from "./action-model";
 import { renderConditionTag, MODE_CLASS } from "../condition-tag";
 import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
@@ -181,24 +181,32 @@ export function renderWeaponRow(
   // Expand block = a full-width sibling div AFTER the row, rendered once and
   // toggled via `hidden` (no container redraw). Built eagerly like the feature
   // rows; the inventory expand is a pure read of the resolved equipment.
-  // AttackRow.id is `${index}:standard` — unique per equipped weapon slot and
-  // self-healing on index shift (same D1 contract as the item rows).
+  // AttackRow.id is `${index}:standard` for a weapon slot and `unarmed-strike`
+  // for the engine's unarmed row (R4-G6b §5): unique per equipped weapon slot
+  // and self-healing on index shift (same D1 contract as the item rows).
   const expandKey = rowExpandKey("weapon", a.id);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
   const expanded = isRowExpanded(ctx, expandKey);
   expand.hidden = !expanded;
   if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
-  const entry = findEntryForAttack(ctx, a);
-  const resolved = findResolvedForAttack(ctx, a);
-  if (entry && resolved) {
-    renderInventoryRowExpand(inner, {
-      entry, resolved, app: ctx.app, editState: ctx.editState,
-      registry: ctx.services?.entities ?? null,
-      mastery: a.mastery,
-    });
+  if (a.unarmed) {
+    // R4-G6b §5.5: the engine's unarmed row has no equipment entry. Gate BEFORE the lookup:
+    // `findEntryForAttack` compares `e.slot === a.slotKey`, and `undefined === undefined` matches
+    // the first equipped entry that carries no `slot` key, which would open another item's expand here.
+    renderUnarmedCard(inner, a);
   } else {
-    inner.createDiv({ cls: "pc-action-row-sub", text: "(no item record for this attack)" });
+    const entry = findEntryForAttack(ctx, a);
+    const resolved = findResolvedForAttack(ctx, a);
+    if (entry && resolved) {
+      renderInventoryRowExpand(inner, {
+        entry, resolved, app: ctx.app, editState: ctx.editState,
+        registry: ctx.services?.entities ?? null,
+        mastery: a.mastery,
+      });
+    } else {
+      inner.createDiv({ cls: "pc-action-row-sub", text: "(no item record for this attack)" });
+    }
   }
 
   // Situational sub-line — full-width sibling div (was a colspan row).
@@ -234,6 +242,21 @@ export function renderWeaponRow(
 
 function formatSigned(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
+}
+
+/** The unarmed row's expand: the two term lists, source + signed amount per row (R4-G6b §5.5). */
+function renderUnarmedCard(host: HTMLElement, a: AttackRow): void {
+  const card = host.createDiv({ cls: "pc-unarmed-card" });
+  const list = (title: string, terms: ACTerm[]) => {
+    card.createDiv({ cls: "pc-unarmed-card-head", text: title });
+    for (const t of terms) {
+      const row = card.createDiv({ cls: "pc-unarmed-card-row" });
+      row.createSpan({ cls: "pc-unarmed-card-source", text: t.source });
+      row.createSpan({ cls: "pc-unarmed-card-amount", text: formatSigned(t.amount) });
+    }
+  };
+  list("To hit", a.breakdown.toHit);
+  list("Damage", a.breakdown.damage);
 }
 
 function findEntryForAttack(ctx: ComponentRenderContext, a: AttackRow): EquipmentEntry | null {

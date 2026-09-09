@@ -363,3 +363,24 @@ describe("renderWeaponRow — D1 expand persistence", () => {
     expect(expand2.hidden).toBe(false);
   });
 });
+
+const unarmed = (): AttackRow => ({
+  id: "unarmed-strike", name: "Unarmed Strike", unarmed: true, range: "5 ft", toHit: 5, damageDice: "1+3",
+  damageType: "bludgeoning", properties: [], proficient: true, subLabel: "unarmed", actionCost: "action",
+  breakdown: { toHit: [{ source: "STR modifier", amount: 3, kind: "ability" }, { source: "Proficiency bonus", amount: 2, kind: "ability" }],
+               damage: [{ source: "Base damage", amount: 0, kind: "ability" }, { source: "STR modifier", amount: 3, kind: "ability" }] },
+});
+
+describe("the Unarmed Strike row's expand (R4-G6b §5.5)", () => {
+  it("renders the breakdown card, never the item record, even beside a slotless equipped entry", () => {
+    const root = mountContainer();
+    const ctx = { ...ctxWithAttacks([unarmed()]), resolved: { definition: { equipment: [{ item: "[[x]]", equipped: true }] } } as never };
+    renderWeapons(root, [unarmed()], ctx);
+    const card = root.querySelector(".pc-action-expand .pc-unarmed-card");
+    expect(card).not.toBeNull();
+    expect(root.querySelector(".pc-action-expand")?.textContent).not.toContain("no item record");
+    expect(card?.querySelectorAll(".pc-unarmed-card-head").length).toBe(2);
+    expect(card?.textContent).toContain("Proficiency bonus");
+    expect(card?.textContent).toContain("+2");
+  });
+});

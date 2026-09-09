@@ -27,7 +27,7 @@ import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-f
 const attack = (over: Partial<AttackRow> = {}): AttackRow => ({
   id: "atk", name: "Longsword", range: "melee", toHit: 5,
   damageDice: "1d8+3", damageType: "slashing", properties: [], proficient: true,
-  breakdown: { toHit: [], damage: [] }, ...over,
+  breakdown: { toHit: [], damage: [] }, slotKey: "mainhand", ...over,
 });
 
 const feat = (
@@ -377,10 +377,17 @@ describe("buildActionModel", () => {
     });
     const aw = sub(secs, "actions", "weapons");
     expect(aw!.entries).toHaveLength(1);           // only the action-cost weapon lands here
-    expect(aw!.count).toBe("×2 attacks · 2 equipped"); // M = derived.attacks.length (all equipped)
+    expect(aw!.count).toBe("×2 attacks · 2 equipped"); // M = the rows WITH a slotKey (equipped weapons); the engine's unarmed row never counts
     const bw = sub(secs, "bonus", "weapons");
     expect(bw!.entries).toHaveLength(1);
     expect(bw!.count).toBeUndefined();
+  });
+
+  it("the Weapons count drops at zero equipped and keeps the ×N prefix (R4-G6b §5.5)", () => {
+    const unarmedOnly = [{ ...attack({ name: "Unarmed Strike" }), slotKey: undefined, unarmed: true as const }];
+    expect(sub(build({ attacks: unarmedOnly, attacksPerAction: 2 }), "actions", "weapons")!.count).toBe("×2 attacks");
+    expect(sub(build({ attacks: unarmedOnly, attacksPerAction: 1 }), "actions", "weapons")!.count).toBeUndefined();
+    expect(sub(build({ attacks: [attack({ name: "Sword" }), ...unarmedOnly] }), "actions", "weapons")!.count).toBe("1 equipped");
   });
 
   it("orders sections actions→bonus→reactions→passive and sub-groups in the fixed SourceKey order", () => {
