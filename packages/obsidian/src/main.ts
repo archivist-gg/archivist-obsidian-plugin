@@ -445,6 +445,9 @@ export default class ArchivistPlugin extends Plugin {
       // Side buttons container
       const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
 
+      // R4-G6b §3.3: evaluated on EVERY call, never cached per block (the compendiums are discovered after onload).
+      const hostReadonly = (): boolean => this.compendiumManager?.getByPath(ctx.sourcePath)?.readonly === true;
+
       const deleteBlock = () => {
         const info = ctx.getSectionInfo(el);
         if (!info) return;
@@ -495,6 +498,7 @@ export default class ArchivistPlugin extends Plugin {
           ctx,
           source,
           onExit: exitEditMode,
+          hostReadonly: hostReadonly(),
         });
       };
 
@@ -533,6 +537,7 @@ export default class ArchivistPlugin extends Plugin {
           state: isEditMode ? "editing" : "default",
           isColumnActive: supportsColumns && columns === 2,
           showColumnToggle: supportsColumns,
+          isHostReadonly: hostReadonly(),
           onEdit: () => {
             if (isEditMode) {
               exitEditMode();
@@ -558,6 +563,11 @@ export default class ArchivistPlugin extends Plugin {
         });
       };
       updateSideButtons();
+
+      // R4-G6b §3.3: a block rendered during the cold-start window (the manager is constructed in onload, its
+      // compendiums discovered from onLayoutReady) reads no compendium yet; re-render the bar once they are known.
+      // `!isEditMode` is load-bearing: the editors reuse this element for their pending bar.
+      void this.compendiumsReady.then(() => { if (sideBtns.isConnected && !isEditMode) updateSideButtons(); });
     });
   }
 }

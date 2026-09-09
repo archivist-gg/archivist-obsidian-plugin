@@ -288,6 +288,17 @@ export class CompendiumManager {
     return this.compendiums.get(name);
   }
 
+  /** The compendium whose folder CONTAINS `filePath` (R4-G6b §3.1): the `/` boundary is load-bearing
+   *  (`Compendium/SRD 5e` must not claim `Compendium/SRD 5e Homebrew/x.md`); the longest folder wins, which is
+   *  defensive (discover() registers direct children of the root only) and serves a hand-added nested compendium. */
+  getByPath(filePath: string): Compendium | undefined {
+    let best: Compendium | undefined;
+    for (const c of this.getAll()) {
+      if (filePath.startsWith(c.folderPath + "/") && (!best || c.folderPath.length > best.folderPath.length)) best = c;
+    }
+    return best;
+  }
+
   /** Add a compendium to the internal Map. */
   addCompendium(comp: Compendium): void {
     this.compendiums.set(comp.name, comp);

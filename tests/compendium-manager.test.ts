@@ -519,6 +519,32 @@ describe("CompendiumManager", () => {
   });
 
   // -------------------------------------------------------------------------
+  // getByPath()
+  // -------------------------------------------------------------------------
+  describe("getByPath (R4-G6b §3.1)", () => {
+    it("a bare prefix never claims a sibling folder (the / boundary)", () => {
+      manager.addCompendium({ name: "SRD 5e", description: "", readonly: true, homebrew: false, hidden: false, folderPath: "Compendium/SRD 5e" });
+      expect(manager.getByPath("Compendium/SRD 5e Homebrew/x.md")).toBeUndefined();
+      expect(manager.getByPath("Compendium/SRD 5e/x.md")?.name).toBe("SRD 5e");
+    });
+
+    it("matches inside the folder and returns undefined outside every compendium", () => {
+      manager.addCompendium({ name: "SRD 5e", description: "", readonly: true, homebrew: false, hidden: false, folderPath: "Compendium/SRD 5e" });
+      manager.addCompendium({ name: "Homebrew", description: "", readonly: false, homebrew: true, hidden: false, folderPath: "Compendium/SRD 5e Homebrew" });
+      expect(manager.getByPath("Compendium/SRD 5e Homebrew/x.md")?.name).toBe("Homebrew");
+      expect(manager.getByPath("Compendium/SRD 5e/Monsters/Aboleth.md")?.name).toBe("SRD 5e");
+      expect(manager.getByPath("Notes/x.md")).toBeUndefined();
+    });
+
+    it("the longest folderPath wins for a hand-added nested pair", () => {
+      manager.addCompendium({ name: "A", description: "", readonly: true, homebrew: false, hidden: false, folderPath: "Compendium/A" });
+      manager.addCompendium({ name: "A/B", description: "", readonly: false, homebrew: true, hidden: false, folderPath: "Compendium/A/B" });
+      expect(manager.getByPath("Compendium/A/B/x.md")?.name).toBe("A/B");
+      expect(manager.getByPath("Compendium/A/y.md")?.name).toBe("A");
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // discover()
   // -------------------------------------------------------------------------
   describe("discover", () => {

@@ -39,7 +39,7 @@ class MonsterModule implements EntityPresenter {
     const monster = data as Monster;
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderMonsterEditMode>[2];
-    renderMonsterEditMode(monster, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef);
+    renderMonsterEditMode(monster, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef, ctx.hostReadonly);
   }
 
   getInsertModal(): ModalConstructor {

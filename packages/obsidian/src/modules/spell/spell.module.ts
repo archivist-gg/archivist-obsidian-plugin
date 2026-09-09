@@ -49,7 +49,7 @@ class SpellModule implements EntityPresenter {
     const spell = data as Spell;
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderSpellEditMode>[2];
-    renderSpellEditMode(spell, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef);
+    renderSpellEditMode(spell, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef, ctx.hostReadonly);
   }
 
   getInsertModal(): ModalConstructor {

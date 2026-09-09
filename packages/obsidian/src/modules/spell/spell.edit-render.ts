@@ -102,6 +102,7 @@ export function renderSpellEditMode(
   onCancelExit?: () => void,
   compendiumContext?: { slug: string; compendium: string; readonly: boolean },
   onReplaceRef?: (newRefText: string) => void,
+  hostReadonly?: boolean,
 ): void {
   // Mutable working copy
   const draft = JSON.parse(JSON.stringify(spell)) as Spell;
@@ -125,6 +126,7 @@ export function renderSpellEditMode(
       state: sideState,
       isColumnActive: false,
       isReadonly: compendiumContext?.readonly,
+      isHostReadonly: hostReadonly,
       onEdit: () => cancelAndExit(),
       onSave: () => {
         if (compendiumContext) {
@@ -148,6 +150,9 @@ export function renderSpellEditMode(
             .then((registered) => {
               if (onReplaceRef) {
                 onReplaceRef(`{{spell:${registered.slug}}}`);
+              } else if (hostReadonly) {
+                // R4-G6b §3.4: the host is a readonly compendium note; the new note is the only write, so the
+                // fence is left byte-untouched (invariant 10) and the view re-renders it.
               } else {
                 const info = ctx?.getSectionInfo(el);
                 if (info) {
