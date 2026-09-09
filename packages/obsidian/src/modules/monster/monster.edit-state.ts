@@ -26,7 +26,12 @@ export type SkillProficiency = "none" | "proficient" | "expertise";
 /**
  * R4-G6 §9 · the keys the editors OWN: `editableToMonster` writes each of these from the edit state, over the
  * unmanaged keys it copies first. Every other authored key (`spellcasting`, `raw`, `gear`, the taxonomy tags,
- * `lair_actions`, `mythic`, `section_headers`, ...) is unmanaged and round-trips verbatim (invariant 7).
+ * `lair_actions`, `mythic`, `section_headers`, ...) is unmanaged: its VALUE reaches the save unchanged (invariant
+ * 7). One structural qualifier since R4-G6b §4.4: the seven section arrays `SECTION_KEY_MAP` names (`traits`,
+ * `actions`, `reactions`, `bonus_actions`, `legendary_actions`, `lair_actions`, `mythic_actions`) are rebuilt
+ * element by element in `monsterToEditable`, where a plain-object entry becomes a shallow copy and every other
+ * entry (a scalar, `null`, a nested array) rides by reference; every key outside those seven still rides the
+ * `...monster` spread by reference, untouched.
  */
 const MANAGED = new Set(["name","size","type","subtype","alignment","cr","ac","hp","speed","abilities","saves","skills","senses","passive_perception","languages","damage_vulnerabilities","damage_resistances","damage_immunities","condition_immunities","traits","actions","bonus_actions","reactions","legendary_actions","legendary_action_uses","legendary_resistance","columns"]);
 
@@ -211,11 +216,20 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   // never write into an array `original` still points at. Read through the same `Record<string, unknown>` cast
   // `addFeature` uses: `SectionKey` carries `mythic_actions`, which is not a `Monster` key, and `lair_actions` is
   // `unknown[]`, so neither a typed index nor a typed element is available here.
+  //
+  // Only PLAIN OBJECT entries are copied (R4-G6b §4.4, T5 review). `lair_actions` is `unknown[]`, and in the shipped
+  // corpus all 222 converter notes carrying the key start with a scalar string or a `{ type: list, items: [...] }`
+  // node, never a `{ name, entries }` feature: spreading a string yields a per-character object, which
+  // `editableToMonster`'s unmanaged pass would then write to the note. Scalars, `null` and nested arrays pass
+  // through by reference (nothing writes into them), and `Array.isArray` replaces a truthiness test so an authored
+  // scalar `lair_actions: some text` cannot throw at open.
   const src = monster as unknown as Record<string, unknown>;
   const out = editable as unknown as Record<string, unknown>;
   for (const k of Object.values(SECTION_KEY_MAP)) {
-    const arr = src[k] as Record<string, unknown>[] | undefined;
-    if (arr) out[k] = arr.map((f) => ({ ...f }));
+    const raw = src[k];
+    if (!Array.isArray(raw)) continue;
+    const arr = raw as unknown[];
+    out[k] = arr.map((f) => (f !== null && typeof f === "object" && !Array.isArray(f) ? { ...f } : f));
   }
 
   return editable;
