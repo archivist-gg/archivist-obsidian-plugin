@@ -447,6 +447,12 @@ describe("renderCastView — D1 spell-block persistence", () => {
     expect(upcast2.classList.contains("pc-row-open")).toBe(false);
     expect(root2.querySelectorAll(".pc-spell-expand-row").length).toBe(1);
   });
+});
+
+// Fix round 1 (F-6): the three legs below are about the CANTRIPS SECTION, not D1's expand-block persistence; they
+// were nested in that describe only because they were appended to the file. Their bodies are byte-identical to what
+// the D1 block carried, so m14's kill row is still the second leg's first `expect`.
+describe("renderCastView · cantrips section (R4-G6b §9)", () => {
   it("a caster who can know cantrips but has none renders an empty Cantrips section (R4-G6b §9)", () => {
     const root = mountContainer();
     const ctx = ctxFor([sp("Cure Wounds", 1)]);
@@ -460,14 +466,22 @@ describe("renderCastView — D1 spell-block persistence", () => {
     expect(root.querySelector(".pc-spell-empty-row")?.textContent).toBe("None prepared.");
     expect(root.querySelector(".pc-spell-sec")!.querySelector(".pc-spell-slots")).toBeNull();
   });
-  it("a non-caster and a derived without spellLimits render no Cantrips section", () => {
+  // Fix round 1 (F-6 c): the title said "a non-caster and a derived without spellLimits", but the fixture is
+  // `ctxFor([])` — a full Wizard (`spellcastingClasses: [wizard]`, `derivedSpellSlots: { 1: 4, 2: 3 }`) with
+  // `spellLimits` deleted. Only the second half was ever asserted; the title now claims only that.
+  it("a derived without spellLimits renders without throwing and no Cantrips section", () => {
     const root = mountContainer(); const ctx = ctxFor([]); delete (ctx.derived as { spellLimits?: unknown }).spellLimits;
     expect(() => renderCastView(root, ctx)).not.toThrow();
     expect(root.querySelector(".pc-spell-sec-label")?.textContent).not.toBe("Cantrips");
   });
-  it("spellLimits [] with no cantrips renders no Cantrips section, and cantrips present render rows with no empty row (R4-G6b §14 row 24)", () => {
+  it("a cantripsKnown 0 limit with no cantrips renders no Cantrips section, and cantrips present render rows with no empty row (R4-G6b §14 row 24)", () => {
     const bare = mountContainer();
-    renderCastView(bare, ctxFor([sp("Cure Wounds", 1)]));
+    const bareCtx = ctxFor([sp("Cure Wounds", 1)]);
+    // Fix round 1 (F-6 b): `ctxFor`'s default `spellLimits: []` misses the boundary entirely (nothing to iterate).
+    // A shipped-data shape that DOES iterate is a class that knows no cantrips (Paladin, and the 2014 Ranger):
+    // `cantripsKnown: 0` must not open the section, which is what `(l.cantripsKnown ?? 0) > 0` says.
+    (bareCtx.derived as { spellLimits: unknown[] }).spellLimits = [{ classSlug: "paladin", kind: "prepared", cantripsKnown: 0, preparedOrKnown: 4 }];
+    renderCastView(bare, bareCtx);
     expect(Array.from(bare.querySelectorAll(".pc-spell-sec-label")).map((e) => e.textContent)).not.toContain("Cantrips");
 
     const root = mountContainer();

@@ -160,6 +160,10 @@ describe("R4-G6b CSS contracts · §7 the sticky builder rail (layout.css, build
     const block = ruleOf("layout.css", ".archivist-pc-sheet");
     expect(block).toMatch(/overflow:\s*clip/);
     // `hidden` made the root the nearest scroll container, so nothing inside could stick.
+    // Fix round 1 (F-7 / M-3): `ruleOf` returns the block's RAW text, COMMENTS INCLUDED, so this negative match is
+    // coupled to the prose inside the rule as well as its declarations. It passes today only because layout.css's
+    // own comment says "`hidden` made the sheet the nearest scroll container" without writing `overflow: hidden`;
+    // a future comment that spells the pair out would false-fail this row without the CSS changing at all.
     expect(block).not.toMatch(/overflow:\s*hidden/);
     expect(block).toMatch(/display:\s*flow-root/);
   });
@@ -206,7 +210,11 @@ describe("R4-G6b CSS contracts · §8.2 the body-fit collapse (layout.css)", () 
 
   it("the measurement class keeps the two-column template and shrinks the cells to their content", () => {
     const block = ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-measure");
-    expect(block).toMatch(/grid-template-columns:\s*minmax\(0, 240px\) minmax\(0, 1fr\)/);
+    // Fix round 1 (F-7): §8.1's stated property is EQUALITY with the base `.pc-body` template, not a particular pair
+    // of track values: the measurement must happen under the template the two-column dress actually uses. A literal
+    // matches both after a drift in only one of them, so the base rule is the expectation.
+    expect(declsOf(block)["grid-template-columns"])
+      .toBe(declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body"))["grid-template-columns"]);
     // Without `start` both cells stretch to the row and the two rects would be EQUAL every time.
     expect(block).toMatch(/align-items:\s*start/);
   });

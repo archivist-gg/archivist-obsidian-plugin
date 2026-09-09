@@ -62,7 +62,7 @@ describe("renderMonsterEditMode: an unchanged save writes nothing (R4-G6b §4.2,
     setAc(el, "52");
     clickSave(el);
     expect(editor.replaceRange).toHaveBeenCalledTimes(1);
-    expect(editor.replaceRange.mock.calls[0][0]).toContain("ac:");
+    expect(editor.replaceRange.mock.calls[0][0]).toContain("ac: 52");
   });
 
   it("an edit reverted by hand is unchanged again and writes nothing", () => {

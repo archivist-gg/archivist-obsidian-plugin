@@ -97,8 +97,12 @@ export class HpWidget implements SheetComponent {
       if (over) {
         // R4-G6b §6: shown as written, flagged; the file's value is never changed by the flag.
         curTile.col.addClass("pc-hp-over");
-        curTile.col.createSpan({ cls: "pc-hp-over-mark", text: "!" });
-        setTooltip(curTile.val, `Current HP exceeds the maximum of ${ctx.derived.hp.max}. The value comes from the character file and is shown as written.`);
+        const overMark = curTile.col.createSpan({ cls: "pc-hp-over-mark", text: "!" });
+        const overMsg = `Current HP exceeds the maximum of ${ctx.derived.hp.max}. The value comes from the character file and is shown as written.`;
+        setTooltip(curTile.val, overMsg);
+        // Fix round 1 (F-2): `components.css`'s `.pc-hp-over-mark` sets `cursor: help`, which promises an
+        // explanation on the mark itself; the same sentence answers a hover over the `!`, not only over the value.
+        setTooltip(overMark, overMsg);
       }
       const maxTile = this.col(nums, "pc-hp-max", "MAX", String(ctx.derived.hp.max));
       const tempTile = this.col(

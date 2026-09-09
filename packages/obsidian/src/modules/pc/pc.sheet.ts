@@ -54,9 +54,15 @@ export interface RenderSheetOptions {
 }
 
 /**
- * Pure DOM render of a resolved + derived PC into `root`. Clears the root
- * first. Top strip → ability row → combat stats → 2-col body. Warnings get
- * a banner at the very top.
+ * DOM render of a resolved + derived PC into `root`. Clears the root first.
+ * Top strip → ability row → combat stats → 2-col body. Warnings get a banner
+ * at the very top. NOT a pure render: the sheet branch ends in
+ * `attachBodyFit(root, body, BODY_FIT_BAND)`, which installs a live
+ * `ResizeObserver` keyed on `root` in a module-level `WeakMap` that outlives
+ * this call, so the CALLER MUST call `disposeBodyFit(root)` at teardown (the
+ * four `pc.view.ts` sites: `setViewData`, `clear`, `onunload` and
+ * `onLoadFile`). Re-entry is safe on its own: this function
+ * disposes `root`'s previous observer before it empties the root.
  */
 export function renderPCSheet(opts: RenderSheetOptions): void {
   const { root, resolved, derived, registry, services, app, warnings } = opts;

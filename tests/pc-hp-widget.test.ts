@@ -417,6 +417,9 @@ describe("HpWidget — click-to-edit numerics (SP4b)", () => {
       expect(cur.classList.contains("pc-hp-over")).toBe(true);
       expect(cur.querySelector(".pc-hp-over-mark")?.textContent).toBe("!");
       expect(cur.querySelector(".pc-hp-val")?.getAttribute("aria-label")).toMatch(/exceeds the maximum of 28/);
+      // Fix round 1 (F-2): `components.css`'s `cursor: help` sits on the `!` mark, so the mark must answer the
+      // hover too, not only the value tile. The test double's `setTooltip` writes `aria-label`.
+      expect(cur.querySelector(".pc-hp-over-mark")?.getAttribute("aria-label")).toMatch(/exceeds the maximum of 28/);
     });
     it("the mark sits beside the value, so the value's text stays the bare number", () => {   // m13's kill row
       const root = mountContainer(); const { ctx } = interactiveCtx({ current: 40, max: 28, temp: 0 });

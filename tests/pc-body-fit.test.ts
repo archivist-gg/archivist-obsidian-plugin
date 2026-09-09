@@ -50,17 +50,17 @@ describe("attachBodyFit (R4-G6b §8.1)", () => {
   const bodyWith = (sidebarH: number, contentH: number) => {
     const root = mountContainer();
     const body = root.createDiv({ cls: "pc-body" });
-    const sidebar = body.createDiv({ cls: "pc-sidebar" }); sidebar.createDiv({ cls: "pc-panel" });
-    const content = body.createDiv({ cls: "pc-content" }); content.createDiv({ cls: "pc-tabs-bar" });
+    const sidebar = body.createDiv({ cls: "pc-sidebar" }); const panel = sidebar.createDiv({ cls: "pc-panel" });
+    const content = body.createDiv({ cls: "pc-content" }); const tabsBar = content.createDiv({ cls: "pc-tabs-bar" });
     const seen: string[] = [];
     const stub = (el: HTMLElement, height: number) => {
       el.getBoundingClientRect = () => { seen.push(body.className); return { height, top: 0, bottom: height, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => ({}) } as DOMRect; };
     };
     stub(sidebar, sidebarH); stub(content, contentH);
-    return { root, body, seen };
+    return { root, body, seen, panel, tabsBar };
   };
   it("the RO callback writes no class; the rAF measures under pc-body-measure; the fit class follows the decision", () => {   // m20's kill row
-    const { root, body, seen } = bodyWith(600, 400);
+    const { root, body, seen, panel, tabsBar } = bodyWith(600, 400);
     attachBodyFit(root, body);
     FakeResizeObserver.last!.fire();
     expect(body.className).toBe("pc-body");
@@ -68,6 +68,10 @@ describe("attachBodyFit (R4-G6b §8.1)", () => {
     expect(seen).toEqual(["pc-body pc-body-measure", "pc-body pc-body-measure"]);
     expect(body.classList.contains("pc-body-fit-one")).toBe(true);
     expect(body.classList.contains("pc-body-measure")).toBe(false);
+    // Fix round 1 (F-4): the two `ro.observe` loops over the rail's and the panel's CHILDREN are Q-6's only
+    // tab-switch trigger (a tab swap changes no rect on `body` itself), and both could be deleted with the rest of
+    // this file green. The observed list pins them: body first, then each column's children in DOM order.
+    expect(FakeResizeObserver.last!.observed).toEqual([body, panel, tabsBar]);
   });
   it("the END STATE holds across two identical fires", () => {
     const { root, body } = bodyWith(600, 400);
