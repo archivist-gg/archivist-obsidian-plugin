@@ -4070,6 +4070,20 @@ body.theme-light .archivist-tag-atk:hover {
   }
 }
 
+/* R4-G6b §8 (Q-6): when the tab panel is SHORTER than the left rail at the two-column widths, the body goes one
+   column (the 499 tier's dress, restated) and the rail's three panels flow side by side. `pc-body-measure` is the
+   observer's measurement class: the two-column template with the cells shrunk to their content. Both body selectors
+   carry the root prefix so they outrank the base rule by specificity, never by source order. */
+@container pc-sheet (min-width: 500px) {
+  .archivist-pc-sheet .pc-body.pc-body-measure { grid-template-columns: minmax(0, 240px) minmax(0, 1fr); align-items: start; }
+  .archivist-pc-sheet .pc-body.pc-body-fit-one { grid-template-columns: 1fr; padding: 0 var(--pc-space-4) var(--pc-space-4); }
+  .archivist-pc-sheet .pc-body.pc-body-fit-one .pc-sidebar {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--pc-space-3);
+    padding: var(--pc-space-4) 0 var(--pc-space-3); border-right: none; border-bottom: 1px solid var(--pc-tan);
+  }
+  .archivist-pc-sheet .pc-body.pc-body-fit-one .pc-content { padding: var(--pc-space-3) 0 0; }
+}
+
 .archivist-pc-error {
   max-width: 600px;
   margin: var(--pc-space-5) auto;

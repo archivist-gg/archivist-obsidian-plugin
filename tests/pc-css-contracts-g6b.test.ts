@@ -29,13 +29,15 @@ const STYLES_DIR = resolve(__dirname, "../packages/obsidian/src/modules/pc/style
  * SUFFIX of an earlier rule's selector (`.pc-cap-host` against `.archivist-pc-sheet .pc-cap-host`)
  * read the EARLIER block and the row asserted against the wrong declarations.
  */
-const ruleOf = (cssPath: string, selector: string): string => {
-  const css = readFileSync(resolve(STYLES_DIR, cssPath), "utf8");
+const ruleInText = (css: string, selector: string, where: string): string => {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = css.match(new RegExp("(?:^|[};]|\\n)\\s*" + escaped + "\\s*\\{([^}]+)\\}"));
-  expect(match, `${selector} rule missing from ${cssPath}`).toBeTruthy();
+  expect(match, `${selector} rule missing from ${where}`).toBeTruthy();
   return (match as RegExpMatchArray)[1];
 };
+
+const ruleOf = (cssPath: string, selector: string): string =>
+  ruleInText(readFileSync(resolve(STYLES_DIR, cssPath), "utf8"), selector, cssPath);
 
 /** The whole partial, for the rows that assert a declaration appears NOWHERE ELSE. */
 const cssOf = (cssPath: string): string => readFileSync(resolve(STYLES_DIR, cssPath), "utf8");
@@ -166,5 +168,85 @@ describe("R4-G6b CSS contracts · §7 the sticky builder rail (layout.css, build
     const block = ruleOf("builder.css", ".archivist-pc-sheet .pc-builder-rail-steps");
     expect(block).toMatch(/position:\s*sticky/);
     expect(block).toMatch(/top:\s*0/);
+  });
+});
+
+/**
+ * T10 (spec §8.2) reads a selector INSIDE one `@container` block. `.archivist-pc-sheet .pc-sidebar` and
+ * `.archivist-pc-sheet .pc-content` exist BOTH as base rules and inside the 499 tier, and `ruleOf` returns the
+ * FIRST match, which is the base rule: the 499 tier's own declarations are only reachable by slicing its block
+ * first. `query` is the text between `@container` and the opening brace.
+ */
+const containerBlock = (cssPath: string, query: string): string => {
+  const css = readFileSync(resolve(STYLES_DIR, cssPath), "utf8");
+  const head = `@container ${query} {`;
+  const start = css.indexOf(head);
+  expect(start, `@container ${query} missing from ${cssPath}`).toBeGreaterThan(-1);
+  let depth = 0;
+  for (let i = start + head.length - 1; i < css.length; i++) {
+    if (css[i] === "{") depth++;
+    else if (css[i] === "}" && --depth === 0) return css.slice(start, i + 1);
+  }
+  throw new Error(`@container ${query} is unterminated in ${cssPath}`);
+};
+
+/** One block's declarations as a property map, so two blocks can be compared property by property. */
+const declsOf = (block: string): Record<string, string> =>
+  Object.fromEntries(
+    block
+      .split(";")
+      .map((d) => d.trim())
+      .filter((d) => d.includes(":"))
+      .map((d) => [d.slice(0, d.indexOf(":")).trim(), d.slice(d.indexOf(":") + 1).trim()]),
+  );
+
+describe("R4-G6b CSS contracts · §8.2 the body-fit collapse (layout.css)", () => {
+  const FIT_TIER = "pc-sheet (min-width: 500px)";
+  const NARROW_TIER = "pc-sheet (max-width: 499px)";
+
+  it("the measurement class keeps the two-column template and shrinks the cells to their content", () => {
+    const block = ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-measure");
+    expect(block).toMatch(/grid-template-columns:\s*minmax\(0, 240px\) minmax\(0, 1fr\)/);
+    // Without `start` both cells stretch to the row and the two rects would be EQUAL every time.
+    expect(block).toMatch(/align-items:\s*start/);
+  });
+
+  it("the fit class is one column with the narrow tier's body padding", () => {
+    const fit = declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one"));
+    const narrow = declsOf(ruleInText(containerBlock("layout.css", NARROW_TIER), ".archivist-pc-sheet .pc-body", NARROW_TIER));
+    expect(fit["grid-template-columns"]).toBe("1fr");
+    expect(fit.padding).toBe(narrow.padding);
+    expect(narrow["grid-template-columns"]).toBe("1fr");
+  });
+
+  it("the fit rail restates the 499 tier's sidebar declarations and flows the panels side by side", () => {
+    const fit = declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one .pc-sidebar"));
+    const narrow = declsOf(ruleInText(containerBlock("layout.css", NARROW_TIER), ".archivist-pc-sheet .pc-sidebar", NARROW_TIER));
+    // Only the SHARED properties are compared: the fit rail ALSO carries `display: grid`,
+    // `grid-template-columns` and `gap` (the side-by-side flow), which the 499 tier does not.
+    for (const prop of ["padding", "border-right", "border-bottom"]) {
+      expect(fit[prop], `${prop} must restate the 499 tier's value`).toBe(narrow[prop]);
+    }
+    // `.pc-sidebar` is `display: flex; flex-direction: column`, so the template alone would be inert.
+    expect(fit.display).toBe("grid");
+    expect(fit["grid-template-columns"]).toBe("repeat(auto-fit, minmax(220px, 1fr))");
+    expect(fit.gap).toBe("var(--pc-space-3)");
+  });
+
+  it("the fit content column restates the 499 tier's padding", () => {
+    const fit = declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one .pc-content"));
+    const narrow = declsOf(ruleInText(containerBlock("layout.css", NARROW_TIER), ".archivist-pc-sheet .pc-content", NARROW_TIER));
+    expect(fit.padding).toBe(narrow.padding);
+  });
+
+  it("both classes live under the min-width tier and carry the root prefix", () => {
+    const fitTier = containerBlock("layout.css", FIT_TIER);
+    expect(fitTier).toContain(".archivist-pc-sheet .pc-body.pc-body-measure");
+    expect(fitTier).toContain(".archivist-pc-sheet .pc-body.pc-body-fit-one");
+    // Below 500 px both classes are inert: the narrow tier never mentions them.
+    expect(containerBlock("layout.css", NARROW_TIER)).not.toContain("pc-body-fit-one");
+    // The prefix is what outranks the base `.archivist-pc-sheet .pc-body` rule: an UNPREFIXED
+    // `.pc-body.pc-body-fit-one` rule would tie on specificity and depend on source order.
+    expect(cssOf("layout.css")).not.toMatch(/(?:^|[};]|\n)\s*\.pc-body\.pc-body-(?:measure|fit-one)\s*\{/);
   });
 });

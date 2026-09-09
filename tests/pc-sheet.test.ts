@@ -25,6 +25,16 @@ function fullRegistry(): ComponentRegistry {
   return r;
 }
 
+/** The tests/pc-builder-selection-table.test.ts idiom; the R4-G6b §8.1 row reads `static last` and
+ *  `disconnected` only. */
+class FakeResizeObserver {
+  static last: FakeResizeObserver | null = null;
+  observed: Element[] = []; disconnected = false;
+  constructor(public cb: ResizeObserverCallback) { FakeResizeObserver.last = this; }
+  observe(el: Element): void { this.observed.push(el); }
+  disconnect(): void { this.disconnected = true; }
+}
+
 const resolved = { state: {}, definition: { class: [{}] } } as unknown as ResolvedCharacter;
 const derived = {} as DerivedStats;
 const services = {} as PCServices;
@@ -83,6 +93,20 @@ describe("renderPCSheetError", () => {
     expect(root.textContent).toContain("Boom");
     (root.querySelector<HTMLButtonElement>("button.mod-cta")!).click();
     expect(called).toBe(true);
+  });
+
+  it("renderPCSheetError disposes the body-fit observer (R4-G6b §8.1)", () => {          // m22's kill row
+    const original = globalThis.ResizeObserver;
+    (globalThis as never as { ResizeObserver: unknown }).ResizeObserver = FakeResizeObserver;
+    try {
+      const root = mountContainer();
+      renderPCSheet({ root, resolved, derived, registry: fullRegistry(), services, app: {} as never, editState: null, warnings: [] });
+      const ro = FakeResizeObserver.last!;
+      renderPCSheetError(root, "Boom", () => {});
+      expect(ro.disconnected).toBe(true);
+    } finally {
+      (globalThis as never as { ResizeObserver: unknown }).ResizeObserver = original;
+    }
   });
 });
 
