@@ -258,3 +258,33 @@ describe("R4-G6b CSS contracts · §8.2 the body-fit collapse (layout.css)", () 
     expect(cssOf("layout.css")).not.toMatch(/(?:^|[};]|\n)\s*\.pc-body\.pc-body-(?:measure|fit-one)\s*\{/);
   });
 });
+
+/**
+ * The T13 LIVE riders. Each row guards a rule the live run's finding named; the finding's own
+ * measurement is quoted beside it, because jsdom computes no layout and only the re-verify can read
+ * the rendered result.
+ */
+describe("R4-G6b CSS contracts · T13 live rider F-B · carrier 5's unit wraps (actions.css)", () => {
+  it("the source sub-label's unit wraps internally, so an over-wide label is not CUT at the 252 px column", () => {
+    // Measured at 400x700 on `R4G6b Paladin2024-20 S`: `Oath of Devotion (2024 XPHB) 15` read
+    // scrollWidth 176 in a clientWidth 140 box and stopped at `(2024 XP`. The host is a
+    // `pc-cap-host` (`overflow-x: clip`) and the unit is `nowrap`, so an over-wide part clips
+    // instead of wrapping. Only the UNIT is relaxed: the host still clips, which is what hides a
+    // separator that would start a line.
+    expect(declsOf(ruleOf("actions.css", ".archivist-pc-sheet .pc-action-row-sub .pc-cap-unit"))["white-space"]).toBe("normal");
+  });
+
+  it("the primitive keeps nowrap and stays the separator's containing block for carriers 1 to 4", () => {
+    const base = declsOf(ruleOf("components.css", ".archivist-pc-sheet .pc-cap-unit"));
+    expect(base["white-space"]).toBe("nowrap");
+    // `position: relative` is what anchors `.pc-cap-sep` (`right: calc(100% + var(--pc-cap-clip))`)
+    // to the unit; with the unit wrapping, that is its FIRST fragment, so a continuation line
+    // carries no mark.
+    expect(base.position).toBe("relative");
+  });
+
+  it("the relaxation is carrier 5's alone: actions.css states one unit rule and the primitive is untouched", () => {
+    expect([...cssOf("actions.css").matchAll(/\.pc-cap-unit\s*\{/g)]).toHaveLength(1);
+    expect(cssOf("components.css")).not.toMatch(/\.pc-cap-unit[^{}]*\{[^}]*white-space:\s*normal/);
+  });
+});

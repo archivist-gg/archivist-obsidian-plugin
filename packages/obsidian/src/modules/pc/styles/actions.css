@@ -374,6 +374,16 @@
   font-size: var(--pc-fs-small);
   color: var(--pc-text-muted);
 }
+/* R4-G6b live rider F-B (Q-8, carrier 5). This is the ONE caption carrier whose parts wrapped before
+   §10.3 made it a `pc-cap-host`: the other four already declared `nowrap`. Inside a clipping host a
+   `nowrap` unit wider than its box is CUT, and the live run measured exactly that at the 252 px
+   content column on `R4G6b Paladin2024-20 S`, where `Oath of Devotion (2024 XPHB) 15` (scrollWidth
+   176 in a clientWidth 140 box) stopped at `(2024 XP` while a wider-boxed row on the same screen
+   read whole. So carrier 5's UNIT wraps internally again and the label reads whole on two lines.
+   The HOST keeps `overflow-x: clip`, which is what hides a separator that would start a line, and
+   the unit keeps `position: relative` from the primitive: the separator is anchored to the unit's
+   FIRST fragment, so a continuation line carries no mark. Carriers 1 to 4 are untouched. */
+.archivist-pc-sheet .pc-action-row-sub .pc-cap-unit { white-space: normal; }
 
 /* Muted captions for weapon attack metadata: crit range (pc-weapon-crit)
  * and reroll/attack-rule notes (pc-weapon-note). */
