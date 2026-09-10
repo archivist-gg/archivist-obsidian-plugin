@@ -366,7 +366,7 @@ describe("renderWeaponRow — D1 expand persistence", () => {
 
 const unarmed = (): AttackRow => ({
   id: "unarmed-strike", name: "Unarmed Strike", unarmed: true, range: "5 ft", toHit: 5, damageDice: "1+3",
-  damageType: "bludgeoning", properties: [], proficient: true, subLabel: "unarmed", actionCost: "action",
+  damageType: "bludgeoning", properties: [], proficient: true, subLabel: "Unarmed", actionCost: "action",
   breakdown: { toHit: [{ source: "STR modifier", amount: 3, kind: "ability" }, { source: "Proficiency bonus", amount: 2, kind: "ability" }],
                damage: [{ source: "Base damage", amount: 0, kind: "ability" }, { source: "STR modifier", amount: 3, kind: "ability" }] },
 });
