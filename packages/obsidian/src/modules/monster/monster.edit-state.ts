@@ -30,8 +30,8 @@ export type SkillProficiency = "none" | "proficient" | "expertise";
  * 7). One structural qualifier since R4-G6b §4.4: the seven section arrays `SECTION_KEY_MAP` names (`traits`,
  * `actions`, `reactions`, `bonus_actions`, `legendary_actions`, `lair_actions`, `mythic_actions`) are rebuilt
  * element by element in `monsterToEditable`, where a plain-object entry becomes a shallow copy and every other
- * entry (a scalar, `null`, a nested array) rides by reference; every key outside those seven still rides the
- * `...monster` spread by reference, untouched.
+ * entry (a scalar, `null`, a nested array, and since R4-G7 §7.4 a `Date` or any other non-plain object) rides by
+ * reference; every key outside those seven still rides the `...monster` spread by reference, untouched.
  */
 const MANAGED = new Set(["name","size","type","subtype","alignment","cr","ac","hp","speed","abilities","saves","skills","senses","passive_perception","languages","damage_vulnerabilities","damage_resistances","damage_immunities","condition_immunities","traits","actions","bonus_actions","reactions","legendary_actions","legendary_action_uses","legendary_resistance","columns"]);
 
@@ -62,9 +62,9 @@ export interface EditableMonster extends Monster {
  *
  * R4-G6b §4.4 · `abilities`, `hp`, `ac`, `speed`, `saves`, `skills`, `senses` and `languages` are deep-copied
  * field by field below, and EVERY feature array `SECTION_KEY_MAP` names is deep-copied after them (element by
- * element, a shallow object copy each). Without that loop those seven arrays ride the `...monster` spread BY
- * REFERENCE, so `addFeature` / `removeFeature` write into an array `original` still points at and `cancel()`,
- * which rebuilds from `original`, cannot revert a feature edit.
+ * element, a shallow copy of each PLAIN-object entry). Without that loop those seven arrays ride the `...monster`
+ * spread BY REFERENCE, so `addFeature` / `removeFeature` write into an array `original` still points at and
+ * `cancel()`, which rebuilds from `original`, cannot revert a feature edit.
  */
 export function monsterToEditable(monster: Monster): EditableMonster {
   // The LOOKUP key only: the editable's `cr` FIELD keeps the authored value through the `...monster` spread, so
@@ -223,13 +223,18 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   // `editableToMonster`'s unmanaged pass would then write to the note. Scalars, `null` and nested arrays pass
   // through by reference (nothing writes into them), and `Array.isArray` replaces a truthiness test so an authored
   // scalar `lair_actions: some text` cannot throw at open.
+  //
+  // R4-G7 §7.4 · PLAIN means the prototype IS `Object.prototype`, not merely `typeof f === "object"`. js-yaml loads
+  // an unquoted ISO scalar as a `Date`, whose own enumerable keys are none, so the old test spread it to `{}` and
+  // destroyed the authored value on the next save. A `Date`, a class instance and an array now all ride by
+  // reference, exactly like a scalar; only an entry the editors actually write into is copied.
   const src = monster as unknown as Record<string, unknown>;
   const out = editable as unknown as Record<string, unknown>;
   for (const k of Object.values(SECTION_KEY_MAP)) {
     const raw = src[k];
     if (!Array.isArray(raw)) continue;
     const arr = raw as unknown[];
-    out[k] = arr.map((f) => (f !== null && typeof f === "object" && !Array.isArray(f) ? { ...f } : f));
+    out[k] = arr.map((f) => (f !== null && typeof f === "object" && Object.getPrototypeOf(f) === Object.prototype ? { ...f } : f));
   }
 
   return editable;
