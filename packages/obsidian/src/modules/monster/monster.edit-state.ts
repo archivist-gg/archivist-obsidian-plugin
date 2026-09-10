@@ -31,7 +31,10 @@ export type SkillProficiency = "none" | "proficient" | "expertise";
  * `actions`, `reactions`, `bonus_actions`, `legendary_actions`, `lair_actions`, `mythic_actions`) are rebuilt
  * element by element in `monsterToEditable`, where a plain-object entry becomes a shallow copy and every other
  * entry (a scalar, `null`, a nested array, and since R4-G7 §7.4 a `Date` or any other non-plain object) rides by
- * reference; every key outside those seven still rides the `...monster` spread by reference, untouched.
+ * reference; every key outside those seven still rides the `...monster` spread by reference, untouched. Since
+ * R4-G7 §7.4 (a) a section key whose WHOLE VALUE is not an array is the one key that rides neither: it is deleted
+ * from the editable so no reader can mistake it for a feature array, and `editableToMonster` re-emits it from
+ * `extras`, so invariant 7 still holds for it byte for byte.
  */
 const MANAGED = new Set(["name","size","type","subtype","alignment","cr","ac","hp","speed","abilities","saves","skills","senses","passive_perception","languages","damage_vulnerabilities","damage_resistances","damage_immunities","condition_immunities","traits","actions","bonus_actions","reactions","legendary_actions","legendary_action_uses","legendary_resistance","columns"]);
 
@@ -51,7 +54,12 @@ export interface EditableMonster extends Monster {
   activeSections: string[];
   xp: number;
   proficiencyBonus: number;
-  /** The unmanaged keys, recorded for the editors' bookkeeping; the runtime carrier is the `...monster` spread. */
+  /**
+   * The unmanaged keys, recorded for the editors' bookkeeping; the runtime carrier is the `...monster` spread.
+   * R4-G7 §7.4 (a) · with ONE exception, which is a real carrier and not bookkeeping: a non-array value under a
+   * `SECTION_KEY_MAP` key is deleted from the editable and recorded here (the five MANAGED section keys included,
+   * which the `!MANAGED.has(k)` loop would otherwise skip), and `editableToMonster` re-emits it from here.
+   */
   extras: Record<string, unknown>;
 }
 
@@ -232,7 +240,20 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   const out = editable as unknown as Record<string, unknown>;
   for (const k of Object.values(SECTION_KEY_MAP)) {
     const raw = src[k];
-    if (!Array.isArray(raw)) continue;
+    if (!Array.isArray(raw)) {
+      // R4-G7 §7.4 (a) · a non-array value under a section key is not feature data, and leaving it on the editable
+      // is what let `getFeatures` hand a string back cast as `Feature[]` and `MonsterEditState.addFeature` call
+      // `.push` on it (a TypeError). It is DELETED here, and `editableToMonster` re-emits it from `extras` so the
+      // save stays lossless under R4-G6 §9 invariant 7. `extras` already holds the value for the two UNMANAGED
+      // section keys (`lair_actions`, `mythic_actions`) from the loop above, which skips MANAGED keys, so the five
+      // managed ones are carried in here; `null` is carried like any other value, so an authored `lair_actions:`
+      // with no items keeps the behaviour it has always had. MEASURED over the 13,835-file converter corpus: zero
+      // documents carry either shape (`evidence/g7-t3-section-scalar-population.txt`), so this is a hardening for
+      // hand-authored and homebrew notes, not a repair of shipped data.
+      if (raw !== undefined) extras[k] = raw;
+      delete out[k];
+      continue;
+    }
     const arr = raw as unknown[];
     out[k] = arr.map((f) => (f !== null && typeof f === "object" && Object.getPrototypeOf(f) === Object.prototype ? { ...f } : f));
   }
@@ -312,6 +333,19 @@ export function editableToMonster(editable: EditableMonster): Monster {
 
   // The unmanaged keys FIRST; the managed copies below overwrite them.
   for (const [k, v] of Object.entries(editable)) if (!MANAGED.has(k) && !EDIT_STATE_KEYS.has(k) && v !== undefined) (monster as unknown as Record<string, unknown>)[k] = v;
+
+  // R4-G7 §7.4 (a) under R4-G6 §9 invariant 7 · `monsterToEditable` DELETES a non-array value from the editable
+  // under a section key, so nothing on the editable can carry it to the save. Its authored VALUE still has to
+  // reach the note unchanged, so it is re-emitted from `extras`, which is where the copy site recorded it. The
+  // guard is ABSENCE on the editable, never falsiness: a section the user genuinely empties is an ARRAY (`[]`,
+  // written by `removeSection`), so a deliberate clear is never resurrected by the authored value. The managed
+  // writes below cannot clobber these keys either, since every one of their guards reads the same absent field.
+  const sectionExtras = editable.extras ?? {};
+  for (const k of Object.values(SECTION_KEY_MAP)) {
+    if ((editable as unknown as Record<string, unknown>)[k] === undefined && sectionExtras[k] !== undefined) {
+      (monster as unknown as Record<string, unknown>)[k] = sectionExtras[k];
+    }
+  }
 
   if (editable.size) monster.size = editable.size;
   if (editable.type) monster.type = editable.type;

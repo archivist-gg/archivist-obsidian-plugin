@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import * as yaml from "js-yaml";
 import { MonsterEditState } from "../packages/obsidian/src/modules/monster/monster.edit-state";
 import { getFeatures } from "../packages/obsidian/src/modules/monster/edit/traits-editor";
+import { SECTION_KEY_MAP } from "../packages/obsidian/src/modules/monster/edit/types";
 
 /** `Monster.traits` is `Feature[] | undefined` and `lair_actions` is `unknown[] | undefined` (strictNullChecks). */
 const names = (a: unknown): string[] => ((a as { name: string }[] | undefined) ?? []).map((f) => f.name);
@@ -41,7 +42,9 @@ describe("monsterToEditable copies only plain-object section entries (R4-G6b §4
   it("an authored scalar lair_actions does not throw at open and round-trips", () => {
     const m = { name: "Aboleth", lair_actions: "some text" } as never;
     const s = new MonsterEditState(m, () => {});
-    expect(s.current.lair_actions).toBe("some text");
+    // R4-G7 §7.4 (a): the value LEAVES the editable, so no reader can mistake it for a feature array. R4-G6 §9
+    // invariant 7 is unchanged: `editableToMonster`'s re-emit puts it back on the save, byte for byte.
+    expect(s.current.lair_actions).toBeUndefined();
     expect((yaml.load(s.toYaml()) as { lair_actions: unknown }).lair_actions).toBe("some text");
   });
 });
@@ -85,5 +88,52 @@ describe("monsterToEditable copies plain objects only, so a Date rides by refere
     expect(lair[0]).toBe(when);                                    // m11's kill row: the spread yields {}
     expect(lair[1]).toEqual({ name: "l", entries: ["e"] });
     expect(lair[1]).not.toBe(authored[1]);                         // and the plain object is still a COPY
+  });
+});
+
+/**
+ * R4-G7 §7.4 (a) under R4-G6 §9 invariant 7 · a non-array value under a section key is DELETED from the editable
+ * at the copy site, so no reader (the shape-testing `getFeatures`, and `MonsterEditState.addFeature`, which reads
+ * the key directly and would `.push` on a truthy string) can ever treat it as a feature array; and
+ * `editableToMonster` re-emits it from `extras`, so the save stays lossless. Measured population of such a value
+ * in the shipped corpus: ZERO (`evidence/g7-t3-section-scalar-population.txt`), so this is a hardening for
+ * hand-authored and homebrew notes, not a repair of shipped data.
+ */
+describe("a scalar section value leaves the editable and still reaches the save (R4-G7 §7.4 (a))", () => {
+  it("a scalar traits value is off the editable, reads as an empty active section, and still round-trips", () => {
+    const m = { name: "Aboleth", traits: "some text" } as never;
+    const s = new MonsterEditState(m, () => {});
+    expect(s.current.traits).toBeUndefined();                                  // the kill: the string survived
+    expect(getFeatures(s.current, "traits")).toEqual([]);
+    expect(s.current.activeSections).toContain("traits");                      // a 9-character string opens the tab
+    expect((yaml.load(s.toYaml()) as { traits: unknown }).traits).toBe("some text");   // invariant 7
+    // No section key carries a string any more, which is what makes `addFeature`'s direct read safe.
+    for (const k of Object.values(SECTION_KEY_MAP)) {
+      expect(typeof (s.current as unknown as Record<string, unknown>)[k]).not.toBe("string");
+    }
+  });
+
+  it("addFeature on such a section can no longer push onto a string", () => {
+    const s = new MonsterEditState({ name: "Aboleth", traits: "some text" } as never, () => {});
+    expect(() => s.addFeature("traits")).not.toThrow();                        // the kill: TypeError on a string
+    expect((s.current.traits as unknown as unknown[]).length).toBe(1);
+  });
+
+  it("the re-emit keeps an unmanaged scalar section value in the save (invariant 7)", () => {
+    const s = new MonsterEditState({ name: "Aboleth", mythic_actions: "some text" } as never, () => {});
+    expect((yaml.load(s.toYaml()) as { mythic_actions: unknown }).mythic_actions).toBe("some text");  // m12's kill row
+    expect((s.current as unknown as Record<string, unknown>).mythic_actions).toBeUndefined();
+  });
+
+  it("CONTROL: a section the user empties in the editor is never resurrected by the re-emit", () => {
+    // Green by construction, and that is the point: the re-emit fires only when the key is ABSENT on the editable,
+    // never when it is an array, so a deliberate clear-to-[] is not undone by the authored value.
+    const m = { name: "Aboleth", traits: [{ name: "t", entries: ["e"] }], lair_actions: ["x"] } as never;
+    const s = new MonsterEditState(m, () => {});
+    s.removeSection("traits");
+    s.removeSection("lair_actions");
+    const out = yaml.load(s.toYaml()) as Record<string, unknown>;
+    expect(out.traits).toBeUndefined();          // a managed section: dropped entirely
+    expect(out.lair_actions).toEqual([]);        // an unmanaged one: the cleared array, not the authored ["x"]
   });
 });
