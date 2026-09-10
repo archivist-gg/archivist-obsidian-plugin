@@ -134,6 +134,36 @@ describe("renderAddDrawer — table", () => {
     expect(rowNames(root)).toEqual(["Bless"]);
   });
 
+  /**
+   * R4-G7 §7.5 · the drawer's browse rows read the RAW registry entity (`c.entity`), never a resolved one, so a
+   * converter spell arrives carrying the structured `duration` ARRAY the parser would have collapsed. Without the
+   * normaliser the cell's `textContent` stringifies the array and the user reads `[object Object]`. The shape is
+   * the spec's own: `[{type: "timed", duration: {type: "minute", amount: 1}, concentration: true}]` -> `1 minute`
+   * (concentration is never synthesised into the string; the separate boolean drives the badge).
+   */
+  const REG_CONV = buildMockRegistry([
+    { slug: "conv-bless", name: "Bless", entityType: "spell", data: {
+      name: "Bless", level: 1, classes: ["wizard"], edition: "2014",
+      school: "enchantment", casting_time: "action", range: "30 feet", components: "V, S, M",
+      concentration: true,
+      duration: [{ type: "timed", duration: { type: "minute", amount: 1 }, concentration: true }] } },
+  ]);
+
+  it("a browse row whose registry spell carries an object duration prints the parser's string", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, { ...ctx(), services: { entities: REG_CONV } as never });
+    const dur = root.querySelector(".pc-spell-add-table .pc-spell-add-row .col-dur");
+    expect(dur?.textContent).toBe("1 minute");
+  });
+
+  it("a string duration still prints byte-unchanged", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx());
+    // `Array.from`, not a spread: this tsconfig's lib gives `NodeListOf<Element>` no `[Symbol.iterator]` (TS2488).
+    const cells = Array.from(root.querySelectorAll(".pc-spell-add-table .pc-spell-add-row .col-dur")).map((c) => c.textContent);
+    expect(cells).toEqual(["", "1 minute", ""]);   // Fire Bolt, Bless (authored string), Misty Step
+  });
+
   it("optional columns carry .col-* classes so CSS can hide them responsively", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());

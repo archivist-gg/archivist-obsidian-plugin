@@ -22,6 +22,15 @@ describe("spell-display helpers", () => {
     expect(componentLetters(undefined)).toEqual({ letters: [], material: false });
   });
 
+  it("CONTROL (R4-G7 §7.5): componentLetters reads the parser's normalised string", () => {
+    // Green by construction, and that is the point: the sheet's reader was never broken. `V, S, M (x)` is the exact
+    // string `normalizeSpellComponents` writes for the converter object `{v: true, s: true, m: {text: "x", cost:
+    // 2500, consume: true}}`, so this is the control that T2's resolve-time mirror is what fixes the sheet, not a
+    // change here. Passing the raw OBJECT instead would yield `{letters: [], material: false}`: no `\bV\b` in
+    // `[object Object]`.
+    expect(componentLetters("V, S, M (x)")).toEqual({ letters: ["V", "S", "M"], material: true });
+  });
+
   it("effectTags pulls save ability + damage types", () => {
     expect(effectTags(sp({ name: "Fireball", saving_throw: { ability: "dexterity" }, damage: { types: ["fire"] } }))).toEqual(["DEX save", "fire"]);
     expect(effectTags(sp({ name: "Mage Hand" }))).toEqual([]);

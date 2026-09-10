@@ -9,6 +9,7 @@ import {
   SOURCES, SCHOOLS, CAST_TIMES, RANGES, DAMAGE_TYPES, SAVES,
 } from "./spell-filter";
 import { compareCandidates } from "@archivist-gg/dnd5e/spell/spell.filter";
+import { normalizeSpellDuration } from "@archivist-gg/dnd5e/spell/spell.parser";
 import type { SortKey } from "@archivist-gg/dnd5e/spell/spell.filter";
 import { confirmResetFilters } from "./reset-filters-modal";
 import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
@@ -127,7 +128,11 @@ function renderRow(
   if (ed) srcTd.createSpan({ cls: `pc-spell-srctag e${ed}`, text: ed === "2014" ? "5e" : ed });
   tr.createDiv({ cls: "col-damage", text: e.damage?.types?.[0] ?? "—" });
   tr.createDiv({ cls: "col-save", text: e.saving_throw?.ability ? abbrAbility(e.saving_throw.ability) : "—" });
-  tr.createDiv({ cls: "col-dur", text: e.duration ?? "" });
+  // R4-G7 §7.5 · a browse row reads the RAW registry entity, so a converter spell still carries the structured
+  // `duration` array here; the parser's OWN normaliser collapses it to the corpus's string form. A string passes
+  // through byte-unchanged and `undefined` answers "" (`toStringSafe`), so this is exactly the old `?? ""` for
+  // every spell that already authored a string.
+  tr.createDiv({ cls: "col-dur", text: normalizeSpellDuration(e.duration) });
 
   const toggleExpand = (): void => {
     const next = tr.nextElementSibling;
