@@ -80,7 +80,7 @@ describe("renderHeader on a structured monster (R4-G6 §9)", () => {
 
   it("routing scope: a property value with markdown emphasis but no wikilink stays a TEXT node (the four SRD 5e notes)", () => {
     const m = { name: "Archmage", ac: [{ ac: 12, from: ["15 with _mage armor_"] }], abilities: structured.abilities } as unknown as Monster;
-    const block = renderMonsterBlock(m, 1);
+    const { el: block } = renderMonsterBlock(m, 1);
     const ac = Array.from(block.querySelectorAll(".property-line")).find((l) => l.querySelector("h4")?.textContent === "Armor Class")!;
     expect(ac.querySelector("p")!.innerHTML).toBe("12 (15 With _mage Armor_)");
   });

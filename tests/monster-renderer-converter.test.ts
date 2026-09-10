@@ -11,7 +11,10 @@ import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 
 /** R4-G6 §12.5 · converter monsters through the production chain (parse → resolve → render). The converter root comes
  *  from G6_CONVERTER_ROOT; an absent root FAILS loudly. Markdown-filled sections render as TEXT under the jsdom mock, so
- *  the zero-`[[` assertion runs on the block MINUS those containers (their strings are pinned in dnd5e). */
+ *  the zero-`[[` assertion runs on the block MINUS those containers (their strings are pinned in dnd5e). Since Q-11
+ *  (R4-G7 spec §7.6) a feature's PROSE is markdown-rendered the same way, so `.archivist-feature-entry` joins that
+ *  exclusion: 13 of the 20 samples carry a wikilink inside a feature entry (MEASURED, `g7-t4-owntext-measure.txt`),
+ *  and what the assertion still guards is every part of the block the plugin builds itself, entry prose aside. */
 const ROOT = process.env.G6_CONVERTER_ROOT ?? "/Users/shinoobi/w/archivist-import-5etools/output";
 const N = {
   tiamat: "Fizban's Treasury of Dragons/Monsters/Aspect of Tiamat.md",
@@ -47,12 +50,12 @@ function render(rel: string, columns = 1): HTMLElement {
   if (!doc.success) throw new Error(`container: ${rel}`);
   const resolved = archivist.resolve(doc.data);
   if (!resolved.success) throw new Error(`resolve: ${rel}`);
-  return renderMonsterBlock(resolved.data as Monster, columns);
+  return renderMonsterBlock(resolved.data as Monster, columns).el;
 }
 const typeLine = (b: HTMLElement) => b.querySelector(".monster-type")?.textContent ?? "";
 const prop = (b: HTMLElement, label: string) => Array.from(b.querySelectorAll(".property-line")).find((l) => l.querySelector("h4")?.textContent === label)?.querySelector("p")?.textContent ?? "";
 const tabs = (b: HTMLElement) => Array.from(b.querySelectorAll(".original-tab-button")).map((t) => t.textContent);
-const ownText = (b: HTMLElement) => { const c = b.cloneNode(true) as HTMLElement; c.querySelectorAll('[data-fill="markdown"]').forEach((n) => n.remove()); return c.textContent ?? ""; };
+const ownText = (b: HTMLElement) => { const c = b.cloneNode(true) as HTMLElement; c.querySelectorAll('[data-fill="markdown"], .archivist-feature-entry').forEach((n) => n.remove()); return c.textContent ?? ""; };
 const entriesIn = (b: HTMLElement, tab: string) => { const i = tabs(b).indexOf(tab); return Array.from(b.querySelectorAll(".original-tab-content"))[i]?.textContent ?? ""; };
 
 beforeAll(() => installObsidianDomHelpers());
@@ -91,7 +94,7 @@ describe("converter monsters render every modelled key (R4-G6 §12.5)", () => {
   });
   it("a pb_note WITHOUT cr renders a standalone Proficiency Bonus line (a directly built fixture)", () => {
     const m = { name: "Summoned", pb_note: "equals your Proficiency Bonus", abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 } } as unknown as Monster;
-    const b = renderMonsterBlock(m, 1);
+    const { el: b } = renderMonsterBlock(m, 1);
     expect(prop(b, "Proficiency Bonus")).toBe("equals your Proficiency Bonus");
     expect(prop(b, "Challenge")).toBe("");
   });
@@ -153,10 +156,10 @@ describe("converter monsters render every modelled key (R4-G6 §12.5)", () => {
       actions: [{ name: "Slam", entries: ["It slams."] }], action_note: "x",
       reactions: [{ name: "Parry", entries: ["It parries."] }], reaction_note: "y",
     } as unknown as Monster;
-    const panes = Array.from(renderMonsterBlock(m, 1).querySelectorAll(".original-tab-content"));
+    const panes = Array.from(renderMonsterBlock(m, 1).el.querySelectorAll(".original-tab-content"));
     expect(panes[0].querySelector(".archivist-legendary-intro")?.textContent).toBe("x");
     expect(panes[1].querySelector(".archivist-legendary-intro")?.textContent).toBe("y");
-    expect(tabs(renderMonsterBlock(m, 1))).toEqual(["Actions", "Reactions"]);
+    expect(tabs(renderMonsterBlock(m, 1).el)).toEqual(["Actions", "Reactions"]);
   });
   it("the container contract in BOTH modes: a markdown pane carries both additions, a native pane neither (spec §8.1)", () => {
     const c1 = render(N.burney, 1);
@@ -189,7 +192,7 @@ describe("converter monsters render every modelled key (R4-G6 §12.5)", () => {
   });
   it("thumbnail and image render as markdown-filled embeds (spec §8.1 images, row 40)", async () => {
     const m = { name: "X", image: "[[a.png]]", thumbnail: "b.png", abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 } } as unknown as Monster;
-    const b = renderMonsterBlock(m, 1);
+    const { el: b } = renderMonsterBlock(m, 1);
     await new Promise((r) => setTimeout(r, 0));                                  // the fills are async (Gate 2 B-5)
     const portrait = b.querySelector('[data-fill="markdown"].archivist-monster-portrait');
     expect(portrait?.textContent).toContain("![[a.png]]");                       // the jsdom mock renders markdown as TEXT

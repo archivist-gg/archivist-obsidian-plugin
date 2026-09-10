@@ -30,7 +30,11 @@ class MonsterModule implements EntityPresenter {
     // The `app` the markdown-filled sections (Lair Actions, Regional Effects, Variants) render through: both
     // production entries put the plugin on the context (`renderViaModule` passes `plugin: this`,
     // `renderRegisteredEntity` the module-level `pluginRef`), so the cast reads a defined value on both.
-    const block = renderMonsterBlock(monster, columns, (ctx.plugin as { app?: App } | undefined)?.app);
+    // The block is built synchronously; its markdown fills (every feature's prose since Q-11, and the entry-tree
+    // sections) settle afterwards. Nothing here waits for them, so `ready`'s rejection path is handled once, right
+    // here, instead of surfacing as an unhandled rejection (spec §7.6; `fillMarkdown`'s catch is the precedent).
+    const { el: block, ready } = renderMonsterBlock(monster, columns, (ctx.plugin as { app?: App } | undefined)?.app);
+    void ready.catch((err: unknown) => console.error("[Archivist] monster block render failed", err));
     el.appendChild(block);
     return block;
   }

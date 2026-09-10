@@ -32,8 +32,9 @@ import {
   formatType,
   skillDisplayName,
 } from "@archivist-gg/dnd5e/monster/monster.format";
-import type { SectionDef } from "./monster.sections";
+import type { MonsterMarkdownRender, SectionDef } from "./monster.sections";
 import { buildSections, fillMarkdown, renderSpellcastingEntry } from "./monster.sections";
+import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 
 function renderAttackLine(
   parent: HTMLElement,
@@ -93,11 +94,21 @@ function formatRechargeSuffix(r: FeatureRecharge | undefined): string {
   }
 }
 
-function renderFeatureBlock(
+/**
+ * The feature cards of one section. Every card's DOM is built SYNCHRONOUSLY (the name with its recharge suffix, the
+ * entry span, the attack lines), so the card order and the section's structure never depend on a fill; only each
+ * feature's PROSE is asynchronous, because Q-11 (spec §7.6) renders it through the markdown path instead of through
+ * `renderTextWithInlineTags`. The returned promise settles when every entry has landed, and `renderSection` joins it
+ * into `renderMonsterBlock`'s `ready`.
+ */
+async function renderFeatureBlock(
   parent: HTMLElement,
   features: Feature[],
-  monsterCtx?: FormulaContext,
-): void {
+  monsterCtx: FormulaContext | undefined,
+  render: MonsterMarkdownRender,
+  app?: App,
+): Promise<void> {
+  const pending: Promise<void>[] = [];
   for (const feature of features) {
     const featureDiv = el("div", { cls: "archivist-feature", parent });
     const nameSpan = el("span", { cls: "archivist-feature-name", parent: featureDiv });
@@ -105,8 +116,11 @@ function renderFeatureBlock(
 
     if (feature.entries && feature.entries.length > 0) {
       const entrySpan = el("span", { cls: "archivist-feature-entry", parent: featureDiv });
-      const entryText = feature.entries.join(" ");
-      renderTextWithInlineTags(entryText, entrySpan, true, monsterCtx);
+      // The entries join as PARAGRAPHS, never with a space: an entry that is a `- ` list is a list of its own in the
+      // markdown, and a blank line is what keeps it one. `monsterCtx` rides along so the tags inside the prose still
+      // resolve against this monster's abilities and proficiency bonus.
+      const entryText = feature.entries.join("\n\n");
+      pending.push(render(entrySpan, entryText, app, undefined, monsterCtx));
     } else if (feature.attacks && feature.attacks.length > 0) {
       const attacksWrap = el("span", {
         cls: "archivist-feature-attacks",
@@ -117,6 +131,7 @@ function renderFeatureBlock(
       }
     }
   }
+  await Promise.all(pending);
 }
 
 function renderLegendaryBoxes(parent: HTMLElement, count: number): void {
@@ -185,7 +200,22 @@ function createRichPropertyLine(
   return line;
 }
 
-export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: App): HTMLElement {
+/**
+ * The read-mode monster block. The element is built SYNCHRONOUSLY and returned as `el`, exactly as it always was; the
+ * markdown fills it starts (every feature's prose since Q-11, and the entry-tree sections) settle later, and `ready`
+ * is the join of them (spec §7.6). A caller that only mounts the block ignores `ready`; a caller that measures the
+ * rendered HTML awaits it first. `opts.render` replaces the markdown renderer for the whole block, which is the one
+ * seam the SRD render pins use.
+ */
+export function renderMonsterBlock(
+  monster: Monster,
+  columns: number = 1,
+  app?: App,
+  opts?: { render?: MonsterMarkdownRender },
+): { el: HTMLElement; ready: Promise<void> } {
+  const render = opts?.render ?? renderMarkdownDescription;
+  /** Every markdown fill this block starts, joined into `ready` below. */
+  const pending: Promise<void>[] = [];
   const isTwoCol = columns === 2;
   const wrapperCls = isTwoCol
     ? ["archivist-monster-block-wrapper", "archivist-monster-two-col"]
@@ -213,7 +243,10 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: 
   const alignmentText = formatAlignment(monster.alignment, monster.alignment_prefix);
   const fullType = alignmentText ? `${typeText}, ${alignmentText}` : typeText;
   el("p", { cls: "monster-type", text: fullType, parent: header });
-  if (monster.thumbnail) fillMarkdown(el("div", { cls: "archivist-monster-token", parent: header }), imageEmbeds(monster.thumbnail).join("\n"), app);
+  // The token and the portrait below stay fire-and-forget: they are NOT joined into `ready`. MEASURED again at
+  // R4-G7 T4: 0 of the 656 bundle monster notes carry `image` or `thumbnail`, so no pinned sha can race on them,
+  // and joining them would make `ready` wait on a vault image lookup that nothing in the block's layout needs.
+  if (monster.thumbnail) void fillMarkdown(el("div", { cls: "archivist-monster-token", parent: header }), imageEmbeds(monster.thumbnail).join("\n"), app, render, monsterCtx);
 
   // 2. SVG Bar
   createSvgBar(contentTarget);
@@ -388,9 +421,10 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: 
   /**
    * One section body, drawn identically in both column modes: the intro lines, the legendary / mythic boxes, the
    * note, then EITHER a markdown fill (the entry trees, which own the container from there on) OR the feature cards
-   * followed by any spellcasting block `displayAs` placed in this section.
+   * followed by any spellcasting block `displayAs` placed in this section. It returns the promise of whichever fills
+   * it started, so `ready` covers the section's markdown AND its feature prose (spec §7.6).
    */
-  const renderSection = (container: HTMLElement, s: SectionDef) => {
+  const renderSection = (container: HTMLElement, s: SectionDef): Promise<void> => {
     if (s.intro && s.intro.length > 0) {
       for (const line of s.intro) el("p", { cls: "archivist-legendary-intro", text: line, parent: container });
     }
@@ -401,9 +435,12 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: 
     }
     if (s.id === "mythic") renderLegendaryBoxes(container, monster.legendary_action_uses ?? 3);
     if (s.note) el("p", { cls: "archivist-legendary-intro", text: s.note, parent: container });
-    if (s.markdown !== undefined) { fillMarkdown(container, s.markdown, app); return; }
-    if (s.features.length > 0) renderFeatureBlock(container, s.features, monsterCtx);
+    if (s.markdown !== undefined) return fillMarkdown(container, s.markdown, app, render, monsterCtx);
+    // The feature cards are all in the DOM by the time `renderFeatureBlock` returns its promise, so the spellcasting
+    // entries still append AFTER them, exactly as they did when the whole section was synchronous.
+    const features = s.features.length > 0 ? renderFeatureBlock(container, s.features, monsterCtx, render, app) : Promise.resolve();
     for (const block of s.spellcasting) renderSpellcastingEntry(container, block, monsterCtx);
+    return features;
   };
 
   if (activeSections.length > 0 && isTwoCol) {
@@ -424,7 +461,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: 
         });
       }
 
-      renderSection(sectionDiv, section);
+      pending.push(renderSection(sectionDiv, section));
     }
   } else if (activeSections.length > 0) {
     // Single-column mode: tabbed navigation (existing behavior)
@@ -472,11 +509,11 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1, app?: 
       content.style.display = i === 0 ? "" : "none";
       contentDivs.set(tab.id, content);
 
-      renderSection(content, tab);
+      pending.push(renderSection(content, tab));
     }
   }
 
-  if (monster.image) fillMarkdown(el("div", { cls: "archivist-monster-portrait", parent: block }), imageEmbeds(monster.image).join("\n\n"), app);
+  if (monster.image) void fillMarkdown(el("div", { cls: "archivist-monster-portrait", parent: block }), imageEmbeds(monster.image).join("\n\n"), app, render, monsterCtx);
 
-  return wrapper;
+  return { el: wrapper, ready: Promise.all(pending).then(() => undefined) };
 }

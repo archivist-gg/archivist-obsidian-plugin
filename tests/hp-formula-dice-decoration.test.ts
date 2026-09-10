@@ -57,14 +57,14 @@ const BASE_MONSTER: Monster = {
 
 describe("HP formula dice decoration", () => {
   it("wraps the HP formula in a dice pill", () => {
-    const node = renderMonsterBlock(BASE_MONSTER);
+    const { el: node } = renderMonsterBlock(BASE_MONSTER);
     const dicePill = node.querySelector(".archivist-stat-tag-dice");
     expect(dicePill).not.toBeNull();
     expect(dicePill?.textContent).toContain("19d12+133");
   });
 
   it("still shows the HP average before the pill", () => {
-    const node = renderMonsterBlock(BASE_MONSTER);
+    const { el: node } = renderMonsterBlock(BASE_MONSTER);
     const hpLine = node.querySelectorAll(".property-line")[1]?.querySelector("p");
     expect(hpLine?.textContent).toContain("256");
     expect(hpLine?.textContent).toContain("(");

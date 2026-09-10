@@ -1,6 +1,7 @@
 import { MarkdownRenderer, Component, type App } from "obsidian";
 import { parseInlineTag } from "@archivist-gg/dnd5e/inline-tag-parser";
 import { convert5eToolsTags } from "@archivist-gg/dnd5e/dnd/prose-tags";
+import type { FormulaContext } from "@archivist-gg/dnd5e";
 import { renderStatBlockTag } from "./renderer-utils";
 
 /**
@@ -13,6 +14,12 @@ import { renderStatBlockTag } from "./renderer-utils";
  *   2. Dice-tag <code> elements (d:2d6, dc:15, atk:STR, …) get replaced
  *      with clickable widgets via the inline-tag walker.
  *
+ * `monsterCtx` is the formula context those widgets resolve against: a caller
+ * that renders monster prose (Q-11, R4-G7 spec §7.6) passes the monster's
+ * abilities and proficiency bonus so `atk:STR+PB` and `dc:WIS` print a number
+ * instead of their formula. Every other caller omits it and the widgets read
+ * exactly as they always did.
+ *
  * Async because MarkdownRenderer.render is async. Callers (spell, item,
  * class renderers) await this; their renderer functions become async.
  */
@@ -21,6 +28,7 @@ export async function renderMarkdownDescription(
   markdown: string,
   app?: App,
   component?: Component,
+  monsterCtx?: FormulaContext,
 ): Promise<void> {
   if (!markdown || markdown.length === 0) {
     // Still allow post-processing of any pre-existing <code> the caller
@@ -70,13 +78,13 @@ export async function renderMarkdownDescription(
       parsed = parseInlineTag(oldWidget.textContent ?? "");
     }
     if (!parsed) return;
-    const widget = renderStatBlockTag(parsed, undefined, doc);
+    const widget = renderStatBlockTag(parsed, monsterCtx, doc);
     oldWidget.replaceWith(widget);
   });
   parent.querySelectorAll("code").forEach((code) => {
     const parsed = parseInlineTag(code.textContent ?? "");
     if (!parsed) return;
-    const widget = renderStatBlockTag(parsed, undefined, doc);
+    const widget = renderStatBlockTag(parsed, monsterCtx, doc);
     code.replaceWith(widget);
   });
 }

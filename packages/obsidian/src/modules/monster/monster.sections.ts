@@ -1,4 +1,4 @@
-import type { App } from "obsidian";
+import type { App, Component } from "obsidian";
 import type { Feature, FormulaContext } from "@archivist-gg/dnd5e";
 import type { Monster, MonsterSpellcasting } from "@archivist-gg/dnd5e/monster/monster.types";
 import type { PlacedSection } from "@archivist-gg/dnd5e/monster/monster.format";
@@ -71,17 +71,24 @@ export function renderSpellcastingEntry(parent: HTMLElement, block: MonsterSpell
   }
 }
 
-/** Fills a markdown section: the container exists SYNCHRONOUSLY (the tab strip is never wrong); the fill is
- *  fire-and-forget with the MANDATORY catch (the condition module's pattern). */
+/** The markdown seam every monster render goes through (Q-11, R4-G7 spec §7.6): the section fills AND, since Q-11,
+ *  each feature's prose. `renderMarkdownDescription` is the default; the pin fixture injects its own. */
+export type MonsterMarkdownRender = (parent: HTMLElement, markdown: string, app?: App, component?: Component, monsterCtx?: FormulaContext) => Promise<void>;
+
+/** Fills a markdown section: the container exists SYNCHRONOUSLY (the tab strip is never wrong); the fill itself is
+ *  asynchronous, with the MANDATORY catch (the condition module's pattern). The settled promise is RETURNED so
+ *  `renderMonsterBlock` can join it into its `ready` (spec §7.6); a caller that wants the old fire-and-forget
+ *  behaviour simply drops it. `monsterCtx` reaches the widget walker, so a section's own tags resolve too. */
 export function fillMarkdown(
   container: HTMLElement,
   markdown: string,
   app?: App,
-  render: (parent: HTMLElement, markdown: string, app?: App) => Promise<void> = renderMarkdownDescription,   // injectable for the row-39 fixture
-): void {
+  render: MonsterMarkdownRender = renderMarkdownDescription,   // injectable for the row-39 fixture
+  monsterCtx?: FormulaContext,
+): Promise<void> {
   container.dataset.fill = "markdown";
   container.classList.add("archivist-monster-section");
-  void render(container, markdown, app).catch((err: unknown) => {
+  return render(container, markdown, app, undefined, monsterCtx).catch((err: unknown) => {
     console.error("[Archivist] monster section render failed", err);
     el("div", { cls: "archivist-block-error", text: `Section failed to render: ${String(err)}`, parent: container });
   });
