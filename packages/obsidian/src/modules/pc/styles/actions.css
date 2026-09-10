@@ -561,7 +561,33 @@
   .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: break-word; }
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; grid-row: 3; }
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-mastery { display: none; }
+}
 
+/* R4-G6b live rider F-D · the feature-row tier vs Q-6's one-column flip. The stacked tier below used
+   to ride the 499 boundary the rest of that block uses. Q-6 (§8) flips the sheet body to ONE column
+   whenever the active tab is shorter than the left rail, which widened the 768 window's content
+   column from 356 px to 620 px and so lifted every feature row OVER that boundary: the row took the
+   four-column layout and the detail cell got 168 px, LESS room than the 348 px it had when it
+   spanned the row below the name. The live run measured `Commander's Strike` and `Parry` on
+   `R4G6b BattleMaster3 S` at 768x900 and 768x600 with `detailBelowName: false`, the cluster over two
+   lines and `Spend 1 Superiority Dice (d8)` wrapped inside its own pill. The flip is right by §8;
+   the tier boundary is what had to account for it, so the feature rows get their own.
+
+   THE ARITHMETIC (the witness `g6b-t13-row9-report.json`, matched to the pixel at three columns).
+   For a content column C the Actions-tab row is `66px minmax(0, 2fr) minmax(min-content, 1fr) 18px`
+   with 8 px gaps inside 4 px padding, so the detail cell reads (C - 116) / 3: 312 px at C = 1052,
+   224 px at C = 788, 168 px at C = 620. The Passive tab drops the badge column and reads
+   (C - 42) / 3: 336.66 / 248.67 / 192.67 px at the same three, which is what the run recorded.
+   The four-column layout is kept only where the detail cell gets at least the 224 px it has at the
+   NARROWEST column that ships it today, C = 788 (the 1200 window's two-column tab panel, which the
+   ruling pins unchanged): (C - 116) / 3 >= 224 iff C >= 788, so this block stops at 787 px.
+   What that gives, by arithmetic (UNVERIFIED until the live re-verify): at 768 flipped (C = 620)
+   the row stacks and the detail spans 612 px on one line; at 1200 flipped (C = 1052) and at 1200
+   unflipped (C = 788) the four columns stay exactly as they are. The band is also wide enough that
+   the FLIP itself can no longer change the tier: the content column measured window - 412 unflipped
+   and window - 148 flipped, so every window that was narrow-tier unflipped (below 912) flips to at
+   most 763 px, which is inside this block. */
+@container pc-content (max-width: 787px) {
   /* R4 {G5, G6} live rider 2, W-1 · rider 3, Z-7-2 · rider 4, Y2-2: below this tier a feature row
      whose detail slot carries a CONTROL CLUSTER of ANY shape gives that slot the whole row, on the
      `.pc-weapon-mastery` precedent above and on the shape the pool tabs already read (the live run
@@ -682,10 +708,13 @@
    one long token), and the wrapper gets `min-width: 0`, `max-width: 100%` and `flex-wrap: wrap` so
    the `free_uses` / `expend_condition` captions fall under the button instead of beside it.
 
-   The chain is the SAME at every width, measured across the partials: neither the
-   `@container pc-content (max-width: 499px)` block in this file and in blocks.css nor the
-   `@container pc-sheet (max-width: 499px)` block restyles `.pc-action-row`, `.pc-feature-detail` or
-   `.pc-spell-prep-row`, so the wide-tier grid and flex chain is what the narrow widths lay out.
+   The chain WAS the same at every width when this was written, and no longer is: the feature rows
+   own a stacked tier of their own (`@container pc-content (max-width: 787px)`, R4 {G5, G6} RIDER-2
+   moved there by R4-G6b live rider F-D), which hands `.pc-feature-detail` the whole row on a second
+   grid line below 788 px, and the 499 tier restyles the weapons `.pc-action-row`. What is unchanged
+   is THIS control chain: no narrow block in this file, in blocks.css or under `@container pc-sheet`
+   restyles `.pc-spend`, `.pc-spend-control` or `.pc-spell-prep-row`, so the flex rules below are
+   what every width lays out.
    jsdom computes no layout and applies no stylesheet, so no unit test can hold this: the witness is
    the live cdp-verify sweep with `--check-overflow --check-overlap`, recorded in the Task 15
    report. */

@@ -333,3 +333,42 @@ describe("R4-G6b CSS contracts · T13 live rider F-C · the weapons table at the
     expect(block).toMatch(/\.archivist-pc-sheet \.pc-weapons-table \.pc-weapon-range \{ white-space: normal; \}/);
   });
 });
+
+describe("R4-G6b CSS contracts · T13 live rider F-D · the feature-row tier vs the one-column flip (actions.css)", () => {
+  const NARROW = "pc-content (max-width: 499px)";
+  const STACK = "pc-content (max-width: 787px)";
+
+  it("the stacked feature-row tier has its own boundary, above the 499 tier's", () => {
+    // THE ARITHMETIC, from the T13 witness (`g6b-t13-row9-report.json`). On the Actions tab the row
+    // is `66px minmax(0, 2fr) minmax(min-content, 1fr) 18px` with 8 px gaps inside 4 px padding, so
+    // the detail cell reads (C - 116) / 3 for a content column C: 312 px at C = 1052, 224 px at
+    // C = 788, 168 px at C = 620 - the three widths the run measured, to the pixel. Q-6's one-column
+    // flip widened the 768 window's column from 356 to 620, which lifted the row over the 499
+    // boundary and handed the detail 168 px, LESS than the 348 px it had when it spanned the row
+    // below the name. The four-column layout is now kept only where the detail cell gets at least
+    // the 224 px it has at the narrowest column that ships it today (C = 788, the 1200 window's
+    // two-column tab panel, which the ruling pins unchanged): (C - 116) / 3 >= 224 iff C >= 788.
+    const block = containerBlock("actions.css", STACK);
+    expect(block).toContain(".pc-feature-row:has(> .pc-feature-detail > .pc-spend)");
+    expect(block).toContain(".pc-feature-row:has(> .pc-feature-detail > .pc-buff-group)");
+    expect(block).toContain(".pc-feature-row:has(> .pc-feature-detail > .pc-feature-track)");
+  });
+
+  it("the detail cell spans the row on its own second line, on both tabs' templates", () => {
+    const block = containerBlock("actions.css", STACK);
+    const detail = declsOf(ruleInText(block, ".archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-feature-track) > .pc-feature-detail", STACK));
+    expect(detail["grid-column"]).toBe("1 / -1");
+    expect(detail["grid-row"]).toBe("2");
+    // The Actions tab drops to badge + name + caret, the Passive tab (which has no badge) to name + caret.
+    expect(declsOf(ruleInText(block, ".archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-feature-track)", STACK))["grid-template-columns"]).toBe("66px minmax(0, 1fr) 18px");
+    expect(declsOf(ruleInText(block, ".archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-feature-track)", STACK))["grid-template-columns"]).toBe("minmax(0, 1fr) 18px");
+  });
+
+  it("the 499 tier no longer owns the feature-row tier, and keeps everything else it had", () => {
+    const narrow = containerBlock("actions.css", NARROW);
+    expect(narrow).not.toContain("pc-feature-row");
+    // The rest of that block is untouched by this rider.
+    expect(narrow).toContain(".archivist-pc-sheet .pc-attack-table");
+    expect(narrow).toContain(".archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery");
+  });
+});
