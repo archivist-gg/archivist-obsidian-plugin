@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as yaml from "js-yaml";
-import { MonsterEditState } from "../packages/obsidian/src/modules/monster/monster.edit-state";
+import { MonsterEditState, monsterToEditable, editableToMonster } from "../packages/obsidian/src/modules/monster/monster.edit-state";
 import { getFeatures } from "../packages/obsidian/src/modules/monster/edit/traits-editor";
 import { SECTION_KEY_MAP } from "../packages/obsidian/src/modules/monster/edit/types";
 
@@ -127,7 +127,10 @@ describe("a scalar section value leaves the editable and still reaches the save 
 
   it("CONTROL: a section the user empties in the editor is never resurrected by the re-emit", () => {
     // Green by construction, and that is the point: the re-emit fires only when the key is ABSENT on the editable,
-    // never when it is an array, so a deliberate clear-to-[] is not undone by the authored value.
+    // never when it is an array, so a deliberate clear-to-[] is not undone by the authored value. This row alone
+    // cannot tell the shipped `=== undefined` guard from a falsiness one, because `[]` is truthy under both: the
+    // row that can is "CONTROL for the re-emit's guard" in the fix-round-1 block below (m13's kill row), and the
+    // SCALAR half of the same clear is the row beside it, RED until `removeSection` learned to clear the carrier.
     const m = { name: "Aboleth", traits: [{ name: "t", entries: ["e"] }], lair_actions: ["x"] } as never;
     const s = new MonsterEditState(m, () => {});
     s.removeSection("traits");
@@ -135,5 +138,41 @@ describe("a scalar section value leaves the editable and still reaches the save 
     const out = yaml.load(s.toYaml()) as Record<string, unknown>;
     expect(out.traits).toBeUndefined();          // a managed section: dropped entirely
     expect(out.lair_actions).toEqual([]);        // an unmanaged one: the cleared array, not the authored ["x"]
+  });
+});
+
+/**
+ * R4-G7 T3 fix round 1 · the re-emit's other half. `removeSection` writes `[]` only when the key is DEFINED
+ * (`monster.edit-state.ts:553-555` before this round), and after §7.4 (a)'s delete a scalar-authored section has
+ * NO key, so closing its tab was a no-op on the value and the re-emit put the string straight back. The carrier in
+ * `extras` is now cleared there too, so a deliberate clear wins over the authored value for BOTH shapes.
+ */
+describe("removing a section clears its scalar carrier too (R4-G7 T3 fix round 1)", () => {
+  it("clearing a scalar-authored section removes the value, exactly as clearing an array-authored one does", () => {
+    const s = new MonsterEditState({ name: "Aboleth", traits: "some text" } as never, () => {});
+    s.removeSection("traits");
+    expect((yaml.load(s.toYaml()) as Record<string, unknown>).traits).toBeUndefined();   // the kill: the re-emit resurrected it
+    const u = new MonsterEditState({ name: "Aboleth", lair_actions: "some text" } as never, () => {});
+    u.removeSection("lair_actions");
+    expect((yaml.load(u.toYaml()) as Record<string, unknown>).lair_actions).toBeUndefined();
+    // and re-opening the section starts it EMPTY: the carrier is gone for good, so the authored string cannot
+    // come back. (`addSection` leaves the key itself absent here, because `sectionToMonsterKey` maps the spaced
+    // label "lair actions" and not the snake key: pre-existing, unrelated to this round, and harmless because
+    // `getFeatures` answers `[]` for an active section either way.)
+    u.addSection("lair_actions");
+    expect(getFeatures(u.current, "lair_actions")).toEqual([]);
+    expect((yaml.load(u.toYaml()) as Record<string, unknown>).lair_actions).toBeUndefined();
+  });
+
+  it("CONTROL for the re-emit's guard: ABSENCE, not falsiness, so a falsy value the editors wrote wins", () => {
+    // The array control above cannot tell the two guards apart, because `[]` is truthy under both. This row can:
+    // it puts a DEFINED falsy value under the key, which `=== undefined` leaves alone and `!value` overwrites with
+    // the authored string. m13's kill row.
+    const m = { name: "Aboleth", lair_actions: "some text" } as never;
+    const e = monsterToEditable(m);
+    (e as unknown as Record<string, unknown>).lair_actions = null;
+    expect((editableToMonster(e) as unknown as Record<string, unknown>).lair_actions).toBeNull();
+    // with the key genuinely ABSENT (the copy site's delete), the re-emit does fire
+    expect((editableToMonster(monsterToEditable(m)) as unknown as Record<string, unknown>).lair_actions).toBe("some text");
   });
 });

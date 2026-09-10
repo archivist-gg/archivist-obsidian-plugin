@@ -337,9 +337,12 @@ export function editableToMonster(editable: EditableMonster): Monster {
   // R4-G7 §7.4 (a) under R4-G6 §9 invariant 7 · `monsterToEditable` DELETES a non-array value from the editable
   // under a section key, so nothing on the editable can carry it to the save. Its authored VALUE still has to
   // reach the note unchanged, so it is re-emitted from `extras`, which is where the copy site recorded it. The
-  // guard is ABSENCE on the editable, never falsiness: a section the user genuinely empties is an ARRAY (`[]`,
-  // written by `removeSection`), so a deliberate clear is never resurrected by the authored value. The managed
-  // writes below cannot clobber these keys either, since every one of their guards reads the same absent field.
+  // guard is ABSENCE on the editable, never falsiness, so a falsy value the editors themselves wrote is the user's
+  // and wins. A deliberate clear is never resurrected either, but that takes `removeSection` doing TWO things
+  // (R4-G7 T3 fix round 1): it writes `[]` when the key is defined, which is the array-authored section, and it
+  // deletes the carrier from `extras` when it is not, which is the scalar-authored one the copy site emptied.
+  // The managed writes below cannot clobber these keys either, since every one of their guards reads the same
+  // absent field.
   const sectionExtras = editable.extras ?? {};
   for (const k of Object.values(SECTION_KEY_MAP)) {
     if ((editable as unknown as Record<string, unknown>)[k] === undefined && sectionExtras[k] !== undefined) {
@@ -553,6 +556,13 @@ export class MonsterEditState {
     if ((this._current as unknown as Record<string, unknown>)[section] !== undefined) {
       (this._current as unknown as Record<string, unknown>)[section] = [];
     }
+    // R4-G7 T3 fix round 1 · and clear the CARRIER, which is the other half of "the section is not serialized on
+    // save" since §7.4 (a). A scalar-authored section has no key on the editable (the copy site deleted it), so the
+    // branch above is a no-op for it and `editableToMonster`'s re-emit would put the authored value straight back.
+    // Deleting the carrier is chosen over writing `[]` unconditionally because it leaves the ARRAY path byte
+    // identical (the key is defined there, so the branch above already wrote `[]`, and the re-emit was already
+    // skipped by presence) while leaving NO stale carrier behind for a later absence to resurrect.
+    delete this._current.extras[section];
     this._hasPendingChanges = true;
     this.onChange(this);
   }
