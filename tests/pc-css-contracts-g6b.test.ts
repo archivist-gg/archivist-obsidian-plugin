@@ -379,3 +379,40 @@ describe("R4-G6b CSS contracts · T13 live rider F-D · the feature-row tier vs 
     expect(narrow).toContain(".archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery");
   });
 });
+
+describe("R4-G6b CSS contracts · T13 live rider R-3 · the odd last rail panel at the two-column band (layout.css)", () => {
+  const TWO_COL = "pc-sheet (min-width: 500px) and (max-width: 715px)";
+
+  /** A `--pc-space-N` token's px value, read from the partial that defines it. */
+  const space = (n: number): number => {
+    const m = cssOf("tokens.css").match(new RegExp("--pc-space-" + n + ":\\s*(\\d+)px"));
+    expect(m, `--pc-space-${n} missing from tokens.css`).toBeTruthy();
+    return Number((m as RegExpMatchArray)[1]);
+  };
+
+  it("the band's upper edge is exactly the sheet width three 220 px rail columns need", () => {
+    // THE ARITHMETIC, from the shipped values rather than from the ruling's prose. The rail is
+    // `repeat(auto-fit, minmax(220px, 1fr))` with a `--pc-space-3` gap inside a body whose only
+    // horizontal padding is `--pc-space-4` on each side, and the sheet ITSELF has no horizontal
+    // padding (layout.css), so the `pc-sheet` container width IS the body's outer width. Three
+    // columns therefore need 3 * 220 + 2 * gap + 2 * padding, and one pixel below that the grid has
+    // TWO columns, which is where an odd last panel sits alone beside a blank cell (B8 D-1).
+    const rail = declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one .pc-sidebar"));
+    expect(rail["grid-template-columns"]).toBe("repeat(auto-fit, minmax(220px, 1fr))");
+    expect(rail["gap"]).toBe("var(--pc-space-3)");
+    expect(declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one"))["padding"])
+      .toBe("0 var(--pc-space-4) var(--pc-space-4)");
+    const threeColumns = 3 * 220 + 2 * space(3) + 2 * space(4);
+    expect(threeColumns).toBe(716);
+    expect(cssOf("layout.css")).toContain(`@container ${TWO_COL} {`);
+    expect(TWO_COL).toContain(`max-width: ${threeColumns - 1}px`);
+  });
+
+  it("an odd last rail panel spans the row instead of leaving a blank cell beside it", () => {
+    const block = containerBlock("layout.css", TWO_COL);
+    const decls = declsOf(ruleInText(block, ".archivist-pc-sheet .pc-body.pc-body-fit-one .pc-sidebar > :last-child:nth-child(odd)", TWO_COL));
+    expect(decls["grid-column"]).toBe("1 / -1");
+    // Scoped to the flipped rail alone: the sheet's OTHER two-column surfaces are untouched.
+    expect(block).not.toContain(".pc-content");
+  });
+});

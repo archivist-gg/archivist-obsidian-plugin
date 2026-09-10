@@ -86,6 +86,23 @@
   .archivist-pc-sheet .pc-body.pc-body-fit-one .pc-content { padding: var(--pc-space-3) 0 0; }
 }
 
+/* R4-G6b T13 live rider R-3 (B8 D-1): at the two-column band an ODD last rail panel spans the row.
+   Q-6's whole purpose is to remove an empty column, so a blank cell beside the last panel is a
+   defect and not the design: the live run measured the SrdFighter4 rail at 768 as two `auto-fit`
+   columns with PROFICIENCIES alone in row 2 column 1 and a ~310 x 300-490 px hole beside it,
+   mid-page, on 24 shots.
+   THE BAND, measured from the values above: the rail is `repeat(auto-fit, minmax(220px, 1fr))` with
+   a 12 px gap, the flipped body's only horizontal padding is 16 px a side, and the sheet itself has
+   no horizontal padding, so the `pc-sheet` container width IS the body's outer width and three
+   columns need 3 * 220 + 2 * 12 + 2 * 16 = 716 px. From 716 px up the rail's three panels fill one
+   row; at 715 px and below there are two columns and an odd last panel starts a row of its own.
+   `auto-fit` already collapses tracks that hold NO item, so the wide bands need no rule of their
+   own: at four possible tracks the rail's three panels collapse the fourth and read as three equal
+   columns. */
+@container pc-sheet (min-width: 500px) and (max-width: 715px) {
+  .archivist-pc-sheet .pc-body.pc-body-fit-one .pc-sidebar > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
 .archivist-pc-error {
   max-width: 600px;
   margin: var(--pc-space-5) auto;
