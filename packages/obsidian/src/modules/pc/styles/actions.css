@@ -511,21 +511,55 @@
     max-width: 100%;
   }
 
-  /* Weapons grid at a narrow container: relax the fixed range/hit/damage
-     min-widths (they overflowed a ~296px pane pre-existing) to flexible tracks
-     that shrink/wrap, so nothing overflows or overlaps. The Mastery cell drops
-     to a full-width line below the row (its column header is hidden, the chip
-     self-labels), so its longer gist has room without cramping the row. This
-     covers BOTH the base 5-col and the 6-col has-mastery layouts. */
+  /* Weapons grid at a narrow container. R4-G6b live rider F-C: the five flexible tracks this block
+     used to declare do not fit, and the live run measured the result at the 252 px content column
+     (`R4G6b BattleMaster3 S`, and identically on the OLD build's `R4G6b MonkArmed2024-1 S`, so the
+     breakage is PRE-EXISTING: G6b's always-present Unarmed Strike row is only what puts a Weapons
+     table in front of every character). The header read `RANGEHIT` as one word and the body cells
+     broke mid-word: `1+2 bludgeo` / `ning`, `Shortswo` / `rd`, `+4` / `to` / `hit` over three lines.
+
+     THE ARITHMETIC. At a 252 px column the row's content box is 244 px (`--pc-space-1` padding each
+     side). The five tracks took 56 px plus four 4 px gaps, leaving 172 px shared 1.4 : 0.8 : 0.6 : 1
+     between name, range, hit and damage: 63 / 36 / 27 / 45 px. A header label is one word and the
+     tracks floor at 0, so `RANGE` (about 38 px at `--pc-fs-label` with `--pc-ls-caps-md`) overflowed
+     its 36 px track into `HIT`. Keeping every cell WHOLE needs about 305 px of tracks (56 badge, 72
+     name, 26 range, 64 hit, 72 damage, plus the gaps and padding), which is more than the column
+     has, so the five columns cannot fit at all and the row stacks instead: the `.pc-weapon-mastery`
+     full-width precedent below, and the same answer RIDER-2 gave the feature rows.
+
+     TWO LINES over three tracks (56 / 90 / 90 at a 252 px column): the badge and the name on the
+     first, range, hit and damage on the second. Every cell is placed EXPLICITLY, the header's twin
+     named beside its body cell, so the header grid and the row grid keep identical tracks and the
+     labels stay over their columns. Reading at 252 px, by arithmetic (UNVERIFIED until the live
+     re-verify): `ACTION` in 56, `Unarmed Strike` in 184 on one line, `RANGE` and `5 ft` in 56,
+     `HIT` and `+4 to hit` in 90 on one line, `DAMAGE` in 90 and `1+2 bludgeoning` on two whole-word
+     lines. The Mastery cell keeps its own full-width line (its column header is hidden, the chip
+     self-labels). This covers BOTH the base 5-col and the 6-col has-mastery layouts. */
   .archivist-pc-sheet .pc-weapons-table .pc-action-row,
   .archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header,
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
-    grid-template-columns: 56px minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.6fr) minmax(0, 1fr);
+    grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--pc-space-1);
   }
-  .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: anywhere; }
-  .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-cost,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-cost { grid-column: 1; grid-row: 1; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-name,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-name { grid-column: 2 / -1; grid-row: 1; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-range,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-range { grid-column: 1; grid-row: 2; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-hit,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-hit { grid-column: 2; grid-row: 2; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-damage,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-damage { grid-column: 3; grid-row: 2; }
+  /* The base rule's `nowrap` would push a long `80/320 ft` out of the 56 px range track and back
+     into the HIT cell, which is the collision this rider removes. Wrapping breaks at the space
+     only: `80/320` carries no break opportunity, so the number stays whole. */
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-range { white-space: normal; }
+  /* `break-word`, not `anywhere` (the `.pc-spend-control` reading, rider 2 W-1): a word breaks only
+     when it alone cannot fit its line, so `bludgeoning` is never cut in half. */
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: break-word; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; grid-row: 3; }
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-mastery { display: none; }
 
   /* R4 {G5, G6} live rider 2, W-1 · rider 3, Z-7-2 · rider 4, Y2-2: below this tier a feature row

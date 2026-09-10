@@ -288,3 +288,48 @@ describe("R4-G6b CSS contracts · T13 live rider F-B · carrier 5's unit wraps (
     expect(cssOf("components.css")).not.toMatch(/\.pc-cap-unit[^{}]*\{[^}]*white-space:\s*normal/);
   });
 });
+
+describe("R4-G6b CSS contracts · T13 live rider F-C · the weapons table at the narrow tier (actions.css)", () => {
+  const NARROW = "pc-content (max-width: 499px)";
+
+  it("the row and its header drop to two lines over three tracks", () => {
+    // At the 252 px content column the five-track template left RANGE 36 px and HIT 27 px, so the
+    // header labels overflowed their tracks and printed as `RANGEHIT`, and the body cells (which
+    // carried `overflow-wrap: anywhere`) broke mid-word: `1+2 bludgeo` / `ning`, `Shortswo` / `rd`.
+    // The sum of the five cells' whole-word minimums is about 305 px, so five tracks cannot fit a
+    // 244 px content box at all: the row stacks, on the `.pc-weapon-mastery` full-width precedent.
+    const block = containerBlock("actions.css", NARROW);
+    const tpl = declsOf(ruleInText(block, ".archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery", NARROW));
+    expect(tpl["grid-template-columns"]).toBe("56px minmax(0, 1fr) minmax(0, 1fr)");
+    expect(block).toContain(".archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery");
+  });
+
+  it("every cell is placed explicitly, header twin and body cell together, so the two grids stay aligned", () => {
+    const block = containerBlock("actions.css", NARROW);
+    const at = (cls: string) => declsOf(ruleInText(block, `.archivist-pc-sheet .pc-weapons-table .${cls}`, NARROW));
+    expect(at("pc-weapon-cost")).toMatchObject({ "grid-column": "1", "grid-row": "1" });
+    expect(at("pc-weapon-name")).toMatchObject({ "grid-column": "2 / -1", "grid-row": "1" });
+    expect(at("pc-weapon-range")).toMatchObject({ "grid-column": "1", "grid-row": "2" });
+    expect(at("pc-weapon-hit")).toMatchObject({ "grid-column": "2", "grid-row": "2" });
+    expect(at("pc-weapon-damage")).toMatchObject({ "grid-column": "3", "grid-row": "2" });
+    expect(at("pc-weapon-mastery")).toMatchObject({ "grid-column": "1 / -1", "grid-row": "3" });
+    // The header's twins are named beside their body cells, so no rule reaches a header cell by position.
+    for (const twin of ["header-cost", "header-name", "header-range", "header-hit", "header-damage"]) {
+      expect(block).toContain(`.archivist-pc-sheet .pc-weapons-table .pc-weapon-${twin}`);
+    }
+    expect(block).not.toMatch(/nth-child/);
+  });
+
+  it("a body cell breaks between words, never mid-word", () => {
+    const block = containerBlock("actions.css", NARROW);
+    const cells = declsOf(ruleInText(block, ".archivist-pc-sheet .pc-weapons-table .pc-action-row > *", NARROW));
+    expect(cells["overflow-wrap"]).toBe("break-word");
+    // `anywhere` is what broke `bludgeoning` in half; it also drops min-content to one character.
+    expect(block).not.toMatch(/overflow-wrap:\s*anywhere/);
+    // The range cell sheds the base rule's `nowrap` here: in a 56 px track a long `80/320 ft` would
+    // otherwise overflow into the HIT cell, which is the collision this rider removes.
+    // Matched as literal text: `ruleInText` returns the FIRST rule for a selector, which here is the
+    // range cell's PLACEMENT rule above (the row 2 / column 1 pair the previous row asserts).
+    expect(block).toMatch(/\.archivist-pc-sheet \.pc-weapons-table \.pc-weapon-range \{ white-space: normal; \}/);
+  });
+});

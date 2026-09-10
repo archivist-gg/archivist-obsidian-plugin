@@ -40,10 +40,14 @@ export function renderWeaponsGroup(
   const header = list.createDiv({ cls: "pc-weapon-header" });
   if (hasMastery) header.addClass("has-mastery");
   header.createDiv({ cls: "pc-weapon-header-cost" }); // blank leading cell over the cost badge
-  header.createDiv({ cls: "pc-weapon-header-cell", text: "Name" });
-  header.createDiv({ cls: "pc-weapon-header-cell", text: "Range" });
-  header.createDiv({ cls: "pc-weapon-header-cell", text: "Hit" });
-  header.createDiv({ cls: "pc-weapon-header-cell", text: "Damage" });
+  // R4-G6b live rider F-C: each label carries its own class beside the shared one, completing the
+  // idiom `pc-weapon-header-cost` and `pc-weapon-header-mastery` already used. The narrow tier moves
+  // these cells onto a second grid line and needs to name them; a positional selector would read the
+  // header by source order, which no rule in this partial does.
+  header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-name", text: "Name" });
+  header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-range", text: "Range" });
+  header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-hit", text: "Hit" });
+  header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-damage", text: "Damage" });
   if (hasMastery) {
     header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-mastery", text: "Mastery" });
   }
