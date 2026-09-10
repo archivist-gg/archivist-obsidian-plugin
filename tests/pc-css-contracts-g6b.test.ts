@@ -416,3 +416,17 @@ describe("R4-G6b CSS contracts · T13 live rider R-3 · the odd last rail panel 
     expect(block).not.toContain(".pc-content");
   });
 });
+
+describe("R4-G6b CSS contracts · T13 live rider R-4 · the feature card's badge never paints over its title (components.css)", () => {
+  it("the badge takes part in flow as a right float, at the same offsets the absolute dress had", () => {
+    const decls = declsOf(ruleOf("components.css", ".archivist-pc-sheet .pc-resource-card .source-badge"));
+    // A float has WIDTH in flow, so the title's line boxes shorten by exactly the badge's own width
+    // whatever the badge text is; an absolutely positioned badge has none, which is why the 252 px
+    // column printed `SRD 2024` letter-on-letter over `Holy Nimbus` (B9 N-3).
+    expect(decls["float"]).toBe("right");
+    expect(decls["position"]).toBe("static");
+    // The shared dress is `top: 8px; right: 8px` on a block with no padding and no border, so these
+    // margins keep the badge exactly where it paints today at every width the eye pass judged clean.
+    expect(decls["margin"]).toBe("8px 8px 0 0");
+  });
+});

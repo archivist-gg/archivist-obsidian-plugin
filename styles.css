@@ -4449,6 +4449,23 @@ body.theme-light .archivist-tag-atk:hover {
 /* the shared block wrapper centers with wide gutters + 1.5em margin; tighten it
    for an inline list expand so the card sits snug under its row. */
 .archivist-pc-sheet .pc-resource-card.archivist-item-block-wrapper { width: 100%; margin: var(--pc-space-1) 0 var(--pc-space-2); }
+/* R4-G6b T13 live rider R-4 (B9 N-3; a PRE-G6b owner, fixed under the standing directive): the
+   card's source badge never paints over the card's title. The shared block dress
+   (`src/styles/archivist-dnd.css`) positions `.source-badge` ABSOLUTELY at `top: 8px; right: 8px`,
+   so it has no width in flow and the `<h3>` title's line box runs the full card width underneath
+   it; at the 252 px column the live run caught `SRD 2024` printed letter-on-letter over
+   `Holy Nimbus`.
+   The badge becomes a RIGHT FLOAT instead. A float DOES take part in flow, so the title's line
+   boxes shorten by exactly the badge's own width, whatever that text is (`SRD 2024`, `SRD 5e`) and
+   in whatever face the theme renders it: no width is hardcoded here, so the reserve can never be
+   the wrong size. The 8 px margins reproduce the absolute offsets exactly, because
+   `.archivist-item-block` carries no padding and no border and its content box IS its border box,
+   which is why the badge paints where it does today at the wide widths the eye pass judged clean.
+   Only the title's FIRST line is shortened: the float is about 15 px tall from y = 8 while the
+   23 px title's line box is 27.6 px, so the italic subtitle under it keeps the full width.
+   Scoped to the SHEET's feature card, the one surface the live run judged: the note-embedded
+   spell / item / race / feat / background / condition blocks keep the shared dress. */
+.archivist-pc-sheet .pc-resource-card .source-badge { position: static; float: right; margin: 8px 8px 0 0; }
 
 /* ---- recovery special ACTION (shown directly in the block, no extra button) ---- */
 .archivist-pc-sheet .pc-resource-actions { margin-top: var(--pc-space-3); padding-top: var(--pc-space-3); border-top: 1px solid var(--pc-tan-muted); }
