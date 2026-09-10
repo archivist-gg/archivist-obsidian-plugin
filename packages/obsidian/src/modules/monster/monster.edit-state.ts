@@ -351,6 +351,23 @@ export function editableToMonster(editable: EditableMonster): Monster {
 // recalculate (formerly src/dnd/recalculate.ts)
 // -----------------------------------------------------------------------------
 
+/**
+ * R4-G7 §7.4 · the ONLY `changedField` names whose edit re-derives `hp.average` from the hit dice. The MEASURED
+ * writers of those names, and the whole reason the set has four members:
+ * - `edit/combat-editor.ts:70-71` fires `updateField("hp.formula", …)` immediately followed by
+ *   `updateField("hp", hp)` carrying the PRE-edit average, so both names have to recompute or the second call
+ *   would put the stale average straight back;
+ * - `edit/combat-editor.ts:54-59` wires the override: `setOverride("hp", val)` + `updateField("hp", hp)` (the
+ *   `!overrides.has("hp")` guard below is what keeps that value), and the "(Auto)" restore routes through
+ *   `clearOverride("hp")` -> `recalculate(_, "hp")`, which is the ONE call that has to re-derive it;
+ * - the `size` branch above rewrites the formula's die size first, so `"size"` must recompute after it;
+ * - `edit/abilities-editor.ts:41` sends the whole `abilities` object under the single name `"abilities"` (no
+ *   `abilities.<key>` name reaches here from the app), so CON edits arrive as `"abilities"`.
+ * Every OTHER field (an AC, CR, speed, name, senses, saves or skills edit) leaves the authored average alone, so a
+ * formula's flat bonus survives the edit and an edit-then-revert compares unchanged under Q-2's save guard.
+ */
+const HP_FIELDS = new Set(["hp.formula", "hp", "size", "abilities"]);
+
 export function recalculate(monster: EditableMonster, changedField: string): EditableMonster {
   const result = { ...monster };
   const abilities = result.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
@@ -373,8 +390,8 @@ export function recalculate(monster: EditableMonster, changedField: string): Edi
     }
   }
 
-  // Recalculate HP from hit dice + CON mod
-  if (!result.overrides.has("hp") && result.hp?.formula) {
+  // Recalculate HP from hit dice + CON mod, for an HP_FIELDS edit only (R4-G7 §7.4)
+  if (HP_FIELDS.has(changedField) && !result.overrides.has("hp") && result.hp?.formula) {
     const parsed = parseHitDiceFormula(result.hp.formula);
     if (parsed) {
       const conMod = abilityModifier(abilities.con);

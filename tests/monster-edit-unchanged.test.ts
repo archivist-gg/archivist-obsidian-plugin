@@ -16,8 +16,10 @@ beforeEach(() => vi.mocked(Notice).mockClear());
  * The editors' fixture (T4 Step 4) with ONE number changed: every key a leg reads is PRESENT, and `hp.average` is
  * the value `recalculate` derives from the formula (MEASURED: `12d10+34` with CON 10 re-derives to 66, because
  * `parseHitDiceFormula` carries no flat bonus), so the fixture is a FIXED POINT of the editor's own recalculation
- * and the revert leg can compare equal. T4's `average: 100` is not a fixed point: any edit rewrites it to 66,
- * pre-existing behaviour this task does not touch (evidence `g6b-t5-hp-recalc-measurement.txt`).
+ * and the revert leg can compare equal. T4's `average: 100` is not a fixed point: a formula, size or
+ * abilities edit rewrites it to 66 (evidence `g6b-t5-hp-recalc-measurement.txt`). Since R4-G7 §7.4 an AC edit is
+ * no longer one of them, so the revert leg holds on a non-fixed-point fixture too
+ * (`tests/monster-edit-hp-average.test.ts`).
  */
 const monster = { name: "Aspect", ac: [{ ac: 17 }], hp: { average: 66, formula: "12d10+34" },
   speed: { walk: 30 }, abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
