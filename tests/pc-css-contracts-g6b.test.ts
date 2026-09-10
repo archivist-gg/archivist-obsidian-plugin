@@ -430,3 +430,22 @@ describe("R4-G6b CSS contracts · T13 live rider R-4 · the feature card's badge
     expect(decls["margin"]).toBe("8px 8px 0 0");
   });
 });
+
+describe("R4-G6b CSS contracts · T13 live rider R-5 · the feature card's prose is left-aligned (components.css)", () => {
+  it("the card's paragraphs read left-aligned at every width", () => {
+    const decls = declsOf(ruleOf("components.css", ".archivist-pc-sheet .pc-resource-card .description-paragraph"));
+    expect(decls["text-align"]).toBe("left");
+    // No tier: justification is wrong in a 252 px column and it is not what the sheet's own prose
+    // does at any width, so the rule carries no container query of its own.
+    expect(ruleOf("components.css", ".archivist-pc-sheet .pc-resource-card .description-paragraph")).not.toMatch(/@container/);
+  });
+
+  it("no pc partial justifies text", () => {
+    // The justification the card inherited comes from the SHARED block dress in
+    // `src/styles/archivist-dnd.css`, never from a sheet partial: every alignment the pc partials
+    // state is left, right, centre or inherit.
+    for (const partial of ["components.css", "actions.css", "layout.css", "spells.css", "blocks.css"]) {
+      expect(cssOf(partial)).not.toMatch(/text-align:\s*justify/);
+    }
+  });
+});

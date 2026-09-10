@@ -315,6 +315,15 @@
    Scoped to the SHEET's feature card, the one surface the live run judged: the note-embedded
    spell / item / race / feat / background / condition blocks keep the shared dress. */
 .archivist-pc-sheet .pc-resource-card .source-badge { position: static; float: right; margin: 8px 8px 0 0; }
+/* R4-G6b T13 live rider R-5 (B9 N-4; the same PRE-G6b owner): the card's prose reads left-aligned
+   at every width. The shared block dress justifies `.description-paragraph`
+   (`src/styles/archivist-dnd.css`, the one place in the plugin that does), which a magazine-width
+   item block can carry but a card in the sheet's 252 px column cannot: the live run caught word
+   gaps about four times the normal space on the Holy Nimbus card at w400. No tier, because
+   justification is not what the sheet's own prose does at ANY width; every alignment the pc
+   partials state is left, right, centre or inherit. The 1 em first-line indent stays: it is the
+   card's look, and it was not what broke. */
+.archivist-pc-sheet .pc-resource-card .description-paragraph { text-align: left; }
 
 /* ---- recovery special ACTION (shown directly in the block, no extra button) ---- */
 .archivist-pc-sheet .pc-resource-actions { margin-top: var(--pc-space-3); padding-top: var(--pc-space-3); border-top: 1px solid var(--pc-tan-muted); }
