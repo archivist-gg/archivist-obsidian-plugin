@@ -20,7 +20,9 @@
 
 /** Live inline edits, keyed by their input element. An entry exists exactly
  *  while the edit is ACTIVE: both commit() and cancel() delete it the moment
- *  `done` flips, so a committed-but-still-mounted input is not "active". */
+ *  `done` flips, before either touches the DOM, so the registry answers
+ *  "active?" on its own and never depends on whether the input is still
+ *  mounted (R4-G6b live rider F-A gave commit() a restore of its own). */
 const inlineCancels = new WeakMap<HTMLInputElement, () => void>();
 
 /** Cancel the active inline edit inside `root`, if any. Returns true only when
@@ -75,6 +77,16 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
     return n;
   };
 
+  // Restore the original value element in place of the input. We hold
+  // a reference to valueEl (it's still in memory, just detached from
+  // the DOM after valueEl.remove() during input setup), so re-inserting
+  // it preserves all event listeners that numberOverride/numberField
+  // attached. See Bug C.
+  const restoreValueEl = () => {
+    parent.insertBefore(valueEl, input);
+    input.remove();
+  };
+
   const commit = () => {
     if (done) return;
     done = true;
@@ -82,19 +94,23 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
     const parsed = parseInt(input.value, 10);
     const next = Number.isFinite(parsed) ? clamp(parsed) : opts.initial;
     opts.onCommit(next);
+    // R4-G6b live rider F-A. A consumer that re-renders has already detached this
+    // input by the time onCommit returns (the sheet's handleChange re-renders
+    // synchronously, and the two modals rebuild their own subtree), so the test
+    // is false and this is a no-op. A consumer that writes NOTHING for this value
+    // re-renders nothing, and without the restore the committed input stays
+    // mounted for ever: `done` is already true, so commit, cancel and Escape all
+    // early-return and the tile can never be edited again. The measured case is
+    // the HP tile's equal-value guard (hp-widget.ts, §6): pressing Enter without
+    // typing left a dead spinner where the number had been.
+    if (input.isConnected) restoreValueEl();
   };
 
   const cancel = () => {
     if (done) return;
     done = true;
     inlineCancels.delete(input);
-    // Restore the original value element in place of the input. We hold
-    // a reference to valueEl (it's still in memory, just detached from
-    // the DOM after valueEl.remove() during input setup), so re-inserting
-    // it preserves all event listeners that numberOverride/numberField
-    // attached. See Bug C.
-    parent.insertBefore(valueEl, input);
-    input.remove();
+    restoreValueEl();
     opts.onCancel();
   };
 

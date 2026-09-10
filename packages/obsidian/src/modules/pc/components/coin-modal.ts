@@ -115,9 +115,12 @@ class CoinModal extends PaneCenteredModal {
   }
 
   /** The ledger is REBUILT on every call — load-bearing: makeInlineInput
-   *  detaches the value element and does NOT restore it on commit (it relies
-   *  on a rerender, like Max-HP's full render()); the rebuild discards the
-   *  leftover input. The adjust section is NEVER touched here. */
+   *  detaches the value element on open and repaints the committed value from
+   *  the store, like Max-HP's full render(); the rebuild discards the
+   *  input. (Since R4-G6b live rider F-A the primitive also restores the value
+   *  element itself when a commit leaves the input connected, so a commit that
+   *  never reaches this rebuild no longer strands a spinner in the ledger.)
+   *  The adjust section is NEVER touched here. */
   private updateDynamic(): void {
     this.totalNumEl.setText(formatGpTotal(totalCp(this.currency())));
     this.ledgerEl.empty();

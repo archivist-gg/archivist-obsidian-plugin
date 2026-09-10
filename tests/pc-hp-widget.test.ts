@@ -435,6 +435,21 @@ describe("HpWidget — click-to-edit numerics (SP4b)", () => {
       input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
       expect(editState.setCurrentHp).not.toHaveBeenCalled();
     });
+    it("an untyped Enter gives the tile back: the input is gone and the value still reads 40", () => {  // rA-m's kill row
+      // R4-G6b live rider F-A: the guard above writes nothing, so the consumer re-renders nothing and
+      // `makeInlineInput` used to leave its committed input mounted for ever (`done` is already true, so
+      // commit, cancel and Escape all early-return and the tile could never be edited again). The
+      // primitive now restores the value element in place whenever the input is still connected after
+      // `onCommit`, which is a no-op for every consumer that re-renders.
+      const root = mountContainer(); const { ctx } = interactiveCtx({ current: 40, max: 28, temp: 0 });
+      new HpWidget().render(root, ctx);
+      const val = root.querySelector(".pc-hp-current .pc-hp-val") as HTMLElement;
+      val.click();
+      const input = root.querySelector(".pc-hp-current input")!;
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      expect(root.querySelector(".pc-hp-current input")).toBeNull();
+      expect(root.querySelector(".pc-hp-current .pc-hp-val")?.textContent).toBe("40");
+    });
     it("a typed 20 calls setCurrentHp with 20", () => {
       const root = mountContainer(); const { ctx, editState } = interactiveCtx({ current: 40, max: 28, temp: 0 });
       new HpWidget().render(root, ctx);
