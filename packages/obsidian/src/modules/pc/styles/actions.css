@@ -45,9 +45,13 @@
      2026-09-09 live (`g6b-t8-sep-width.txt`): the separator renders inside `.pc-charge-recovery`,
      italic 11px "Libre Baskerville", where `/ ` is 7.328 px, so the requirement is 9.328 px and the
      shipped `var(--pc-space-2)` (8 px) was 1.328 px SHORT. Raised by the clip margin to 10 px, which
-     clears it by 0.672 px: a deliberate 2 px change to this widget's spacing, witnessed live against
-     the OLD shot (§15 row 8). */
-  gap: calc(var(--pc-space-2) + var(--pc-cap-clip));
+     cleared it by 0.672 px: a deliberate 2 px change to this widget's spacing, witnessed live against
+     the OLD shot (§15 row 8).
+     T13 live rider R-2: 0.672 px is not AIR. The eye read the mark flush against the last pip on
+     every Passive shot (`[][][][][]/ Short Rest`: B5-1, B1 N-2, B2, B9 N-2) where the OLD build's
+     plain ` / ` text had a whole space (3.031 px at 11 px) on each side. The gap now carries the
+     9.328 px requirement plus 3 px of air: 13 px, which leaves the mark 3.672 px of left air. */
+  gap: calc(var(--pc-space-2) + var(--pc-cap-clip) + 3px);
   flex-wrap: wrap;
   row-gap: var(--pc-space-1);
 }
@@ -109,10 +113,15 @@
      declares no font of its own, so the mark renders in the sheet face at the widget size: measured
      2026-09-09 live (`g6b-t8-sep-width.txt`) `· ` is 6.344 px at 12 px and 7.406 px at 14 px, so the
      requirement is 8.344 px (9.406 px at 14 px) while the shipped `0.35em` is 4.2 px at 12 px, SHORT
-     by 4.14 px. Raised to 10 px, which clears both. A deliberate change to this widget's internal
+     by 4.14 px. Raised to 10 px, which cleared both. A deliberate change to this widget's internal
      spacing (the surface V-11 and RIDER-4 tuned) that §15 row 8 witnesses against the OLD build's shot
-     at 1200 and 252. */
-  gap: calc(var(--pc-space-2) + var(--pc-cap-clip));
+     at 1200 and 252.
+     T13 live rider R-2: 10 px left the mark 1.656 px of left air and the eye read the pool head as
+     `2 / 2 Sorcery Point·  Long Rest`, the dot hugging the word on its left (B9 N-1). The gap now
+     carries the requirement plus 3 px of air: 12 px, which leaves the mark 3.656 px at this widget's
+     12 px type (2.594 px at the 14 px variant). One pixel under the charge boxes' 13 px because the
+     `· ` box is one pixel narrower than `/ `. */
+  gap: calc(var(--pc-space-2) + var(--pc-cap-clip) + 2px);
   flex-wrap: wrap;
   row-gap: var(--pc-space-1);
 }

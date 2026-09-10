@@ -89,7 +89,7 @@ describe("R4-G6b CSS contracts · §10 the separated-caption primitive (componen
   it("the sheet declares the clip margin and the inter-part gap as tokens", () => {
     const block = ruleOf("components.css", ".archivist-pc-sheet");
     expect(block).toMatch(/--pc-cap-clip:\s*2px/);
-    expect(block).toMatch(/--pc-cap-gap:\s*0\.6em/);
+    expect(block).toMatch(/--pc-cap-gap:\s*0\.75em/);
   });
 
   it("the host clips horizontally ONLY, with the clip margin as slack", () => {
@@ -137,15 +137,22 @@ describe("R4-G6b CSS contracts · §10.2 the two flex hosts' raised gaps (action
   // Measured live 2026-09-09 (`g6b-t8-sep-width.txt`): the `/ ` box is 7.328 px in the caption face
   // at 11 px, so `.pc-charge-boxes` needs 9.328 px and its shipped 8 px was short; the `· ` box is
   // 6.344 px in the sheet face at 12 px, so `.pc-point-pool` needs 8.344 px and its shipped 0.35em
-  // (4.2 px at 12 px) was short. Both are now the 10 px `var(--pc-space-2) + var(--pc-cap-clip)`.
-  it("the charge boxes leave room for the recovery caption's out-of-flow separator", () => {
+  // (4.2 px at 12 px) was short.
+  //
+  // T13 live rider R-2: clearing the requirement is not enough. The 10 px
+  // `var(--pc-space-2) + var(--pc-cap-clip)` left the `/ ` mark 0.672 px of LEFT air where the OLD
+  // build's plain ` / ` text had a whole space (3.031 px) on each side, and the eye read the mark as
+  // glued to the last pip on every Passive shot (B5-1, B1 N-2, B2, B9 N-2). Both gaps now carry the
+  // requirement PLUS 3 px of air: 13 px on the charge boxes (3.672 px of air) and 12 px on the point
+  // pool (3.656 px at its 12 px type, 2.594 px at the 14 px variant).
+  it("the charge boxes leave the recovery caption's separator 3 px of air", () => {
     const block = ruleOf("actions.css", ".archivist-pc-sheet .pc-charge-boxes");
-    expect(block).toMatch(/gap:\s*calc\(var\(--pc-space-2\) \+ var\(--pc-cap-clip\)\)/);
+    expect(block).toMatch(/gap:\s*calc\(var\(--pc-space-2\) \+ var\(--pc-cap-clip\) \+ 3px\)/);
   });
 
-  it("the point pool leaves room for the reset caption's out-of-flow separator", () => {
+  it("the point pool leaves the reset caption's separator 3 px of air", () => {
     const block = ruleOf("actions.css", ".archivist-pc-sheet .pc-point-pool");
-    expect(block).toMatch(/gap:\s*calc\(var\(--pc-space-2\) \+ var\(--pc-cap-clip\)\)/);
+    expect(block).toMatch(/gap:\s*calc\(var\(--pc-space-2\) \+ var\(--pc-cap-clip\) \+ 2px\)/);
     expect(block).not.toMatch(/gap:\s*0\.35em/);
   });
 });

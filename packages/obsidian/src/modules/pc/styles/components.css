@@ -2244,12 +2244,19 @@
    absence asserted). The separator BOX measures `· ` 6.063 px and `/ ` 7.328 px at 11 px, and
    6.609 px / 7.984 px at 12 px; a plain space measures 3.031 px at 11 px. The required inter-part
    distance is the box plus `--pc-cap-clip`, so 6.063 + 2 = 8.063 px on an inline host at 11 px.
-   The distance an inline host supplies is the space's own advance plus `--pc-cap-gap`:
-   3.031 + 0.6em (6.6 px at 11 px) = 9.631 px, which clears the requirement by 1.568 px, and the
-   margin only grows with the type size (box and space are both em-proportional while the 2 px clip
-   is not). Every host on the live sheet measured `padding-left: 0px`, which is where `overflow`
-   clips. The two flex hosts state their own distance beside their own rules in `actions.css`. */
-.archivist-pc-sheet { --pc-cap-clip: 2px; --pc-cap-gap: 0.6em; }
+   The distance an inline host supplies is the space's own advance plus `--pc-cap-gap`.
+
+   T13 live rider R-2: clearing the requirement is not what the eye reads. At `0.6em` the distance
+   was 3.031 + 6.6 = 9.631 px, only 1.568 px more than the 8.063 px the box and its clip margin
+   occupy, so the mark sat about 1.6 px from the word on its left where the OLD build's plain ` · `
+   text had a whole space (3.031 px) there, and every inline carrier read as glued
+   (`Lay On Hands Healing Pool· Long Rest`, `Active· 1 minute`: B1 N-1, B9 N-1). At `0.75em` the
+   distance is 3.031 + 8.25 = 11.281 px, which leaves the mark 3.218 px of left air, the space the
+   OLD text had. The margin still only grows with the type size (box and space are both
+   em-proportional while the 2 px clip is not). Every host on the live sheet measured
+   `padding-left: 0px`, which is where `overflow` clips. The two flex hosts state their own distance
+   beside their own rules in `actions.css`. */
+.archivist-pc-sheet { --pc-cap-clip: 2px; --pc-cap-gap: 0.75em; }
 .archivist-pc-sheet .pc-cap-host { overflow-x: clip; overflow-y: visible; overflow-clip-margin: var(--pc-cap-clip); }
 .archivist-pc-sheet .pc-cap-spaced { word-spacing: var(--pc-cap-gap); }
 .archivist-pc-sheet .pc-cap-unit { position: relative; white-space: nowrap; word-spacing: normal; }
