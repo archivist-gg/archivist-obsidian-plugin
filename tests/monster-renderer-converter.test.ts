@@ -12,9 +12,14 @@ import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 /** R4-G6 §12.5 · converter monsters through the production chain (parse → resolve → render). The converter root comes
  *  from G6_CONVERTER_ROOT; an absent root FAILS loudly. Markdown-filled sections render as TEXT under the jsdom mock, so
  *  the zero-`[[` assertion runs on the block MINUS those containers (their strings are pinned in dnd5e). Since Q-11
- *  (R4-G7 spec §7.6) a feature's PROSE is markdown-rendered the same way, so `.archivist-feature-entry` joins that
- *  exclusion: 13 of the 20 samples carry a wikilink inside a feature entry (MEASURED, `g7-t4-owntext-measure.txt`),
- *  and what the assertion still guards is every part of the block the plugin builds itself, entry prose aside. */
+ *  (R4-G7 spec §7.6) a FEATURE CARD's prose is markdown-rendered the same way, so its entry joins that exclusion:
+ *  14 of the 20 samples carry a wikilink inside a feature entry (MEASURED, `g7-t4-owntext-measure-2.txt`). The
+ *  exclusion is narrowed to `.archivist-feature:not(.archivist-monster-spellcasting) .archivist-feature-entry`
+ *  because `renderSpellcastingEntry` draws its lines with the SAME entry class on a card of its own and still
+ *  resolves them through `renderTextWithInlineTags` (13 of the 20 samples carry a link in a spellcasting block), so
+ *  those lines stay INSIDE the guard. What the assertion guards is every part of the block the plugin builds itself:
+ *  the header, the property lines, the tab strip, the feature NAMES, the attack lines and the spellcasting card's
+ *  name AND its entry lines; only the routed feature prose is out. */
 const ROOT = process.env.G6_CONVERTER_ROOT ?? "/Users/shinoobi/w/archivist-import-5etools/output";
 const N = {
   tiamat: "Fizban's Treasury of Dragons/Monsters/Aspect of Tiamat.md",
@@ -55,7 +60,7 @@ function render(rel: string, columns = 1): HTMLElement {
 const typeLine = (b: HTMLElement) => b.querySelector(".monster-type")?.textContent ?? "";
 const prop = (b: HTMLElement, label: string) => Array.from(b.querySelectorAll(".property-line")).find((l) => l.querySelector("h4")?.textContent === label)?.querySelector("p")?.textContent ?? "";
 const tabs = (b: HTMLElement) => Array.from(b.querySelectorAll(".original-tab-button")).map((t) => t.textContent);
-const ownText = (b: HTMLElement) => { const c = b.cloneNode(true) as HTMLElement; c.querySelectorAll('[data-fill="markdown"], .archivist-feature-entry').forEach((n) => n.remove()); return c.textContent ?? ""; };
+const ownText = (b: HTMLElement) => { const c = b.cloneNode(true) as HTMLElement; c.querySelectorAll('[data-fill="markdown"], .archivist-feature:not(.archivist-monster-spellcasting) .archivist-feature-entry').forEach((n) => n.remove()); return c.textContent ?? ""; };
 const entriesIn = (b: HTMLElement, tab: string) => { const i = tabs(b).indexOf(tab); return Array.from(b.querySelectorAll(".original-tab-content"))[i]?.textContent ?? ""; };
 
 beforeAll(() => installObsidianDomHelpers());

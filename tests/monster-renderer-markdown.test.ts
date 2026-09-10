@@ -11,7 +11,9 @@ import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
  * formula context threaded, and `renderMonsterBlock` returns `{ el, ready }` so a caller can await the fills.
  * Rows 9, 10 and 11 of the spec's kill-power floor live here; rows 9 and 10 were RUN RED before the route landed
  * (evidence `g7-t4-red-rows-9-11.txt`), row 11 is the CONTROL and is green by construction, its three fragments
- * MEASURED at the pre-change tree `main@54e0f93c` (evidence `g7-t4-row11-pins.txt`).
+ * MEASURED at the pre-change tree `main@54e0f93c` (evidence `g7-t4-row11-pins.txt`). The row-11 guard added in fix
+ * round 1 covers the OTHER branch of `renderSection`: a markdown SECTION whose fill is dropped instead of joined
+ * into `ready` (mutant m14, `g7-t4-m14.txt`).
  */
 
 beforeAll(() => installObsidianDomHelpers());
@@ -133,5 +135,27 @@ describe("Q-11 · monster feature prose through the markdown path (spec §7.6)",
     expect(el.querySelector(".archivist-block-error")).toBeNull();
     const pane = el.querySelector('[data-fill="markdown"]');
     expect(pane?.textContent).toContain("The lair shifts.");
+  });
+
+  it("row 11 guard: `ready` collects the markdown SECTION fill too, not only the feature prose", async () => {
+    const seen: string[] = [];
+    // The same REAL macrotask row 9 uses, on the OTHER branch of `renderSection`: a markdown section whose promise
+    // is dropped instead of returned leaves this pane empty at the moment `ready` resolves.
+    const render = async (parent: HTMLElement, markdown: string): Promise<void> => {
+      await new Promise((r) => setTimeout(r, 0));
+      seen.push(markdown);
+      const p = parent.ownerDocument.createElement("p");
+      p.className = "g7-late-fill";
+      p.textContent = "late";
+      parent.appendChild(p);
+    };
+    const m = { name: "Lair", abilities: ABIL, lair_actions: ["The lair shifts."] } as unknown as Monster;
+
+    const { el, ready } = renderMonsterBlock(m, 1, undefined, { render });
+    await ready;
+
+    expect(el.querySelectorAll('[data-fill="markdown"] p.g7-late-fill').length).toBe(1);
+    expect(seen.length).toBe(1);
+    expect(seen[0]).toContain("The lair shifts.");
   });
 });

@@ -8,6 +8,7 @@ import type { StoragePort } from "@archivist-gg/core";
 import { dnd5ePack } from "@archivist-gg/dnd5e";
 import type { FormulaContext } from "@archivist-gg/dnd5e";
 import type { App, Component } from "obsidian";
+import { convert5eToolsTags } from "@archivist-gg/dnd5e/dnd/prose-tags";
 import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import { renderMonsterBlock } from "../../packages/obsidian/src/modules/monster/monster.renderer";
 import { renderMarkdownDescription } from "../../packages/obsidian/src/shared/rendering/markdown-description";
@@ -37,14 +38,17 @@ function memStorage(): StoragePort {
 function sha(s: string): string { return createHash("sha256").update(s).digest("hex"); }
 
 /**
- * The markdown stand-in the pins are measured through: it writes the markdown as text and wraps each backticked tag
- * in a `<code>` element, which is what real Obsidian emits and what `renderMarkdownDescription`'s walker replaces
- * with a widget. The jsdom mock's own `MarkdownRenderer.render` sets bare `textContent`, so without this the pinned
- * HTML would carry no widget at all for the 1,218 `atk:` / `dc:` tags of the corpus.
+ * The markdown stand-in the pins are measured through: it runs the production prose-to-tag decoration first
+ * (`convert5eToolsTags`, the same call `renderMarkdownDescription` and `renderTextWithInlineTags` both make, which
+ * turns `{@damage 8d6}` and bare prose dice into backticked tags), then writes the result as text with each
+ * backticked tag inside a `<code>` element, which is what real Obsidian emits and what `renderMarkdownDescription`'s
+ * walker replaces with a widget. The jsdom mock's own `MarkdownRenderer.render` sets bare `textContent`, so without
+ * this the pinned HTML would carry no widget at all for the 1,218 `atk:` / `dc:` tags of the corpus, and without the
+ * decoration step it would not cover the tags the corpus writes as 5etools prose.
  */
 async function codeEmittingRender(parent: HTMLElement, markdown: string, _app?: App, _component?: Component, monsterCtx?: FormulaContext): Promise<void> {
   const doc = parent.ownerDocument;
-  for (const part of markdown.split(/(`[^`]+`)/)) {
+  for (const part of convert5eToolsTags(markdown).split(/(`[^`]+`)/)) {
     if (part.length === 0) continue;
     if (part.startsWith("`") && part.endsWith("`")) {
       const code = doc.createElement("code");
