@@ -9,6 +9,7 @@ import { renderRowExpand as renderInventoryRowExpand } from "../inventory/invent
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderSituationalRows } from "../situational-rows";
 import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
+import { isRenderableDamageText } from "@archivist-gg/dnd5e/dnd/math";
 
 const attackDisSources = new Set([
   "blinded", "frightened", "poisoned", "prone", "restrained", "grappled", "exhaustion",
@@ -142,9 +143,19 @@ export function renderWeaponRow(
     false,
   );
   if (a.damageRiders?.length) {
+    // R4-G7 T6a E-4 (c): a damage chip is a ROLL, so only a dice expression or a number (optionally
+    // with a canonical damage type) may go inside the damage text. A rider whose amount is prose
+    // ("your Wisdom modifier", "half your fighter level") is collected here and printed as the row's
+    // CAPTION instead, beside the attack notes under the weapon name. The amount and the damage type
+    // arrive already resolved (the engine's merge site), so what is prose here is prose in the DATA.
+    const riderCaptions: string[] = [];
     for (const rider of a.damageRiders) {
-      dmgCell.appendText(" + ");
       const dice = rider.damage_type ? `${rider.amount} ${rider.damage_type}` : rider.amount;
+      if (!isRenderableDamageText(dice)) {
+        riderCaptions.push(`+ ${dice}${rider.source ? ` (${rider.source})` : ""}`);
+        continue;
+      }
+      dmgCell.appendText(" + ");
       renderTextWithInlineTags(`\`damage:${dice}\``, dmgCell, false);
       // Attribute the rider to its source on hover (source is NOT shown
       // inline — it disambiguates same-type chips, e.g. two necrotic riders).
@@ -153,6 +164,11 @@ export function renderWeaponRow(
         const chip = chips[chips.length - 1] as HTMLElement | undefined;
         if (chip) chip.title = chip.title ? `${chip.title} — ${rider.source}` : rider.source;
       }
+    }
+    // One caption line for every rider that could not be a chip, in the `.pc-weapon-note` idiom the
+    // attack notes already use (a muted line under the weapon name), joined by the same " · ".
+    if (riderCaptions.length) {
+      nameCell.createDiv({ cls: "pc-weapon-note", text: riderCaptions.join(" · ") });
     }
   }
   if (a.versatile?.damageDice) {
