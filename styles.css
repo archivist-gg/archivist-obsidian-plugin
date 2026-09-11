@@ -9873,9 +9873,18 @@ body.theme-light .archivist-tag-atk:hover {
    absolute `right: 13px` is measured from the padding box, while a float sits at the content edge,
    which is the 1px border plus `padding-right: 18px` in, so 13 - 18 = -5. `12px` left keeps a gap
    between the badge and the title text it now makes room for.
-   Owned cards (`bandRight`) render no corner badge at all (the source rides the sub-line), and their
-   `.pc-cb-bh.collapsible` is a flex container, which would not flow around a float anyway; so this
-   rule only ever reaches the race / background / browse preview cards it was measured on. */
+   WHERE THIS RULE REACHES, measured by reading every `renderChronicleBlock` call site rather than
+   assumed. FIVE call sites pass a `badge` with NO `bandRight`, so five surfaces render the corner badge:
+   the builder's `race-step.ts` and `background-step.ts` preview cards (both measured above), the
+   builder's `class-modal.ts` browse card, and the SHEET's own `passive/race-block.ts` and
+   `passive/background-block.ts`, which render inside an EXPANDED race or background row on the Passive
+   tab. No capture in this phase expands those two rows, which is why no sheet frame shows the collision;
+   the surface is on the sheet all the same, and `g7-t8-riders.md` records it.
+   Owned cards (`bandRight`) render no corner badge at all, because the source rides the sub-line instead.
+   `collapsible` and `bandRight` are independent options, so a `collapsible` card without `bandRight`
+   would put a float beside a flex `.pc-cb-bh`, which establishes its own formatting context and would be
+   pushed below the float; MEASURED, no such call site exists: `class-step.ts` is the only caller that
+   passes `collapsible: true` and it passes `bandRight` in the same object. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-badge {
   position: static; float: right; margin: -4px -5px 0 12px;
   font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
