@@ -7728,7 +7728,13 @@ body.theme-light .archivist-tag-atk:hover {
    name's 1fr) so the pip tracker has room to stay on one line instead of the
    name column hogging the slack and cramping the pips. */
 .archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px minmax(0, 3fr); }
-.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
+/* The Hit track is 72px, not 64px: MEASURED LIVE at R4-G7 S00 (the default 1024 x 800 window, the
+   sheet pane 700, `.pc-content` 620), `+6 to hit` needs 62px on one line and fits a 64px track while
+   `+11 to hit` needs 65px and misses by ONE pixel, so every character with a two-digit attack bonus
+   wrapped its Hit cell onto two lines and grew the weapon row. 72px is the Range track's own width,
+   so the two narrow tracks now read as one rhythm and the number keeps 7px of slack. An ADV / DIS
+   chip still takes its own line when present; that is deliberate, the number is what must not break. */
+.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px 72px minmax(120px, 1.2fr); }
 .archivist-pc-sheet .pc-action-range { color: var(--pc-text-soft); white-space: nowrap; }
 .archivist-pc-sheet .pc-action-charges { display: flex; justify-content: flex-start; }
 
@@ -7927,7 +7933,7 @@ body.theme-light .archivist-tag-atk:hover {
  * blank. */
 .archivist-pc-sheet .pc-weapons-table .pc-weapon-header {
   display: grid;
-  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr);
+  grid-template-columns: 66px minmax(0, 1fr) 72px 72px minmax(120px, 1.2fr);
   align-items: baseline;
   gap: var(--pc-space-2);
   padding: var(--pc-space-1);
@@ -7949,7 +7955,7 @@ body.theme-light .archivist-tag-atk:hover {
  * above stays for no-mastery groups. */
 .archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
 .archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
-  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(110px, 1.1fr) minmax(96px, 1.15fr);
+  grid-template-columns: 66px minmax(0, 1fr) 72px 72px minmax(110px, 1.1fr) minmax(96px, 1.15fr);
 }
 
 /* Inline italic dice tag override inside actions tab */
