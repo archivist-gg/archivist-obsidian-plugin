@@ -137,3 +137,47 @@ describe("R4-G7 CSS contracts · RIDER-5 two controls sharing the feature row's 
     expect(css).not.toMatch(/\.pc-feature-detail > \.pc-resource-die\s*\{[^}]*margin-right/);
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-3 RE-TAKEN at the cause (T7 fix round 1)", () => {
+  const CHRON = "chronicle.css";
+  // THE FIRST RIDER-3 DID NOT FIX THE DEFECT. Measured by the reviewer on the captured frames
+  // (2048 x 1600): the `.pc-dstrip-val` glyphs reach x 1941 before the rider and x 1940 after it, while
+  // the `.pc-dstrip-row` border sits at x 1905 in every one, so the value still escapes its row by about
+  // 35 px and is still cut by the card with NO ellipsis. The rider's CSS WAS live (the value's start
+  // moved right), so it was an ineffective fix, not an undeployed one.
+  //
+  // THE CAUSE IS ONE LEVEL UP. `.pc-dstrip-head` is `flex-basis: 100%; display: flex` and is itself a
+  // flex ITEM of the wrapping `.pc-dstrip-row`. A flex item's default `min-width: auto` refuses to shrink
+  // below its content, and the head's content includes the `white-space: nowrap` value, so the HEAD is
+  // what overflows: the val is never the box that runs out of room, and `text-overflow: ellipsis` on the
+  // val can therefore never fire. `min-width: 0` on the head lets it shrink to the row, which makes the
+  // val the flexible child, which is what the val's own (already shipped) `min-width: 0; overflow: hidden;
+  // text-overflow: ellipsis` needs to do its job.
+  //
+  // THIS TEST IS NOT THE WITNESS. jsdom computes no layout, so no CSS-text contract can fail on a layout
+  // bug: that is exactly how the first rider passed its contract while the defect stood. The witness is
+  // the LIVE geometry read now recorded per decision row by `builder-drive.mjs`
+  // (`geom.valWithinRow`, rolled up as `geomWitness.verdict`), teed on the pre-fix build and the post-fix
+  // build. This contract only pins the rule so it cannot be silently removed again.
+  // The selector is addressed with its FULL `:is(...)` prefix, which appears only in the rule itself.
+  // `ruleOf` takes the FIRST occurrence of the string, and the bare class name `.pc-dstrip-head` occurs
+  // first inside the comment above `.pc-dstrip-val`, so the bare name resolved to the WRONG block and the
+  // test failed for the wrong reason on its first run. Measured, not assumed: that first run failed on
+  // `flex-basis: 100%` (a val property it never had) instead of on the missing `min-width: 0`.
+  const HEAD = ":is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-head";
+  const VAL = ":is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-val";
+
+  it("the decision head can shrink, so the value inside it is the box that ellipsises", () => {
+    const block = ruleOf(CHRON, HEAD);
+    expect(block).toMatch(/min-width:\s*0/);
+    expect(block).toMatch(/flex-basis:\s*100%/);
+    expect(block).toMatch(/display:\s*flex/);
+  });
+
+  it("the value keeps the shrink and ellipsis rules the first rider gave it", () => {
+    const block = ruleOf(CHRON, VAL);
+    expect(block).toMatch(/min-width:\s*0/);
+    expect(block).toMatch(/overflow:\s*hidden/);
+    expect(block).toMatch(/text-overflow:\s*ellipsis/);
+  });
+});

@@ -141,8 +141,22 @@
    pill/bang/name/val/chevron on one baseline-aligned line and owns the collapse
    click + pointer. The nest is a SEPARATE row child below it, so nest clicks
    never reach this toggle. Layout matches the legacy direct-child row exactly. */
+/* R4-G7 T7 FIX ROUND 1, RIDER-3 RE-TAKEN AT THE CAUSE. The first rider put `min-width: 0` on the VALUE
+   and did not fix the defect: MEASURED on the captured frames (2048 x 1600), the value's glyphs reached
+   x 1941 before it and x 1940 after it while the row's border sat at x 1905 in every one, so the value
+   still escaped its row by about 35 px and was still cut with no ellipsis. The rider's CSS was live, so
+   it was an ineffective fix, not an undeployed one.
+   THE CAUSE IS THIS BOX. `.pc-dstrip-head` is itself a flex ITEM of the wrapping `.pc-dstrip-row`, and a
+   flex item's default `min-width: auto` refuses to shrink below its content; its content includes the
+   `white-space: nowrap` value, so the HEAD is what overflows and the value is never the box that runs out
+   of room, which is why `text-overflow: ellipsis` on the value could never fire. MEASURED LIVE at S05-fx1
+   part A on `conv-fighter2024-5-B`'s Class step, Weapon Mastery row: row right 953, head right 1017,
+   value right 1017, overflow 64 px, `min-width: auto` on the head and `0px` on the value.
+   `min-width: 0` lets the head shrink to its row, which makes the value the flexible child and lets the
+   value's own (already shipped) shrink-and-ellipsis rules do their job. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-head {
   flex-basis: 100%; display: flex; align-items: baseline; gap: 9px;
+  min-width: 0;
   cursor: pointer; border-radius: var(--pc-radius-sm);
 }
 /* Collapse chevron — fold/card idiom (crimson, ~12px), sits at the far right

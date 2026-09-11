@@ -20,7 +20,7 @@ describe("compactCastingTime", () => {
     expect(compactCastingTime("1hour")).toBe("1 hr");
     expect(compactCastingTime("hour")).toBe("1 hr");
     expect(compactCastingTime("8hours")).toBe("8 hr");
-    expect(compactCastingTime(undefined)).toBe("—");
+    expect(compactCastingTime(undefined)).toBe("\u2014");
     expect(compactCastingTime("weird")).toBe("weird"); // unknown passes through
   });
 
@@ -38,7 +38,7 @@ describe("compactCastingTime", () => {
     expect(compactCastingTime(" reaction ")).toBe("1R");
     // Still verbatim when nothing matches, and the placeholder is unchanged.
     expect(compactCastingTime("1 week")).toBe("1 week");
-    expect(compactCastingTime(undefined)).toBe("—");
+    expect(compactCastingTime(undefined)).toBe("\u2014");
   });
 });
 
@@ -49,7 +49,7 @@ describe("formatRange", () => {
     expect(formatRange("Self")).toBe("Self");
     expect(formatRange("Touch")).toBe("Touch");
     expect(formatRange("Special")).toBe("Special");
-    expect(formatRange(undefined)).toBe("—");
+    expect(formatRange(undefined)).toBe("\u2014");
   });
 });
 
@@ -106,7 +106,7 @@ describe("R4-G7 T7 live rider RIDER-4 · a PROSE reaction casting time", () => {
     expect(compactCastingTime("1 minute")).toBe("1 min");
     expect(compactCastingTime("1 week")).toBe("1 week");
     expect(compactCastingTime("weird")).toBe("weird");
-    expect(compactCastingTime(undefined)).toBe("—");
+    expect(compactCastingTime(undefined)).toBe("\u2014");
   });
 
   it("does not swallow a token that merely CONTAINS the word reaction", () => {
