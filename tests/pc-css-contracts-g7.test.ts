@@ -61,3 +61,32 @@ describe("R4-G7 CSS contracts · RIDER-1 the Weapons table's Hit column", () => 
     expect(hits).toHaveLength(0);
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-2 a list inside a monster trait", () => {
+  const DND = join(__dirname, "..", "packages", "obsidian", "src", "styles");
+  const dnd = (): string => readFileSync(join(DND, "archivist-dnd.css"), "utf8");
+
+  // MEASURED LIVE at S00 on `Compendium/Baldur's Gate_ Descent Into Avernus/Monsters/Burney the Barber.md`
+  // (the `- ` list inside `Bahamut's Blessings`, 4 items, and a second 2-item list inside `Acid Breath`):
+  // `.archivist-feature` sets `text-indent: -1em` for the stat block's hanging indent, and an `li` inside
+  // a feature entry INHERITS it, so the item's FIRST line is pulled 1em (13 px at the block's 13 px type)
+  // to the left, straight into the gutter the `list-style-position: outside` marker occupies. Measured:
+  // the li box starts at x 507 (its own 22.308 px left margin off the ul at 484.6) while the first text
+  // node starts at 493, a 14 px outdent, and the disc marker overprints the first character ("Unless",
+  // "Burney", "Once" each wear their bullet). The name's hang is deliberate; an item's is not.
+  it("a list item inside a feature entry does not inherit the stat block's hanging indent", () => {
+    const css = dnd();
+    const ix = css.indexOf(".archivist-feature-entry li");
+    expect(ix).toBeGreaterThan(-1);
+    const block = css.slice(css.indexOf("{", ix) + 1, css.indexOf("}", css.indexOf("{", ix)));
+    expect(block).toMatch(/text-indent:\s*0/);
+  });
+
+  it("the hanging indent that causes it is still declared on the feature itself", () => {
+    const css = dnd();
+    const ix = css.indexOf(".archivist-feature {");
+    expect(ix).toBeGreaterThan(-1);
+    const block = css.slice(css.indexOf("{", ix) + 1, css.indexOf("}", css.indexOf("{", ix)));
+    expect(block).toMatch(/text-indent:\s*-1em/);
+  });
+});

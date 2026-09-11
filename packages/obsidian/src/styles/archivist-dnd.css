@@ -1223,6 +1223,20 @@
   text-indent: 0;
 }
 
+/* R4-G7 T7 live rider RIDER-2. A converter trait may author a markdown list (Burney the Barber's
+   `Bahamut's Blessings` carries four `- ` items and its `Acid Breath` two), and Obsidian's
+   MarkdownRenderer emits a real `ul`/`li` inside the feature entry. `.archivist-feature` above sets
+   `text-indent: -1em` so a trait's BOLD NAME hangs into the left margin, which is the stat block's
+   shape; an `li` INHERITS that hang, and MEASURED LIVE at S00 it pulled each item's first line 14 px
+   (1em at the block's 13 px type) left of its own box, straight through the gutter the
+   `list-style-position: outside` disc occupies: the li box sat at x 507 with its 22.308 px margin off
+   the ul at 484.6 while the first glyphs started at 493, so the bullet overprinted the first character
+   of "Unless", "Burney" and "Once". The name's hang is deliberate; a list item's is not, so the item
+   resets it and keeps the ul's own gutter. */
+.archivist-monster-block .archivist-feature-entry li {
+  text-indent: 0;
+}
+
 /* 8. Tab Navigation (from monster stat block)
    ========================================================================== */
 
