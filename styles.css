@@ -9957,8 +9957,16 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-name {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body);
 }
+/* R4-G7 T7 live rider RIDER-3. The value is `nowrap` and `margin-left: auto` inside the
+   `.pc-dstrip-head` flex row, and a flex child's default `min-width: auto` refuses to shrink below its
+   content width, so a long resolved summary ran past the row and the card CUT it mid-word with no
+   ellipsis: WITNESSED LIVE at S00 on `conv-fighter2024-5-B`'s Class step, where a choose-4 Weapon
+   Mastery row read `Antimatter Rifle, Antimatter Rifle, Automatic Pistol, Automa` and stopped at the
+   card edge. `min-width: 0` lets it shrink, and the clip becomes an honest ellipsis; the name keeps its
+   space first because the value is the flexible end of the row. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-val {
   margin-left: auto; font-size: var(--pc-fs-small); font-weight: 700; white-space: nowrap;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis;
 }
 /* Header wrapper (SP2 Plan 5, smoke r5): a 100%-basis flex child that hosts the
    pill/bang/name/val/chevron on one baseline-aligned line and owns the collapse

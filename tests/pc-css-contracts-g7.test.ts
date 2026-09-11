@@ -90,3 +90,20 @@ describe("R4-G7 CSS contracts · RIDER-2 a list inside a monster trait", () => {
     expect(block).toMatch(/text-indent:\s*-1em/);
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-3 a long decision value on the builder's strip", () => {
+  // WITNESSED LIVE at S00 on `conv-fighter2024-5-B`'s Class step: the Weapon Mastery row's resolved
+  // summary read `✓ Antimatter Rifle, Antimatter Rifle, Automatic Pistol, Automa` and was CUT at the
+  // card's right edge, mid-word, with no ellipsis. The mechanism is in the rule itself:
+  // `.pc-dstrip-val` is `white-space: nowrap` with `margin-left: auto` inside the `.pc-dstrip-head`
+  // flex row and carries NO `min-width: 0`, so a flex child cannot shrink below its content width and
+  // the surplus runs past the row and is clipped by the card. A choose-4 row with real weapon names is
+  // long enough to reach it, so this is not an artefact of the driver's first picks.
+  it("the decision value can shrink inside its flex row and ellipsises instead of being cut", () => {
+    const block = ruleOf("chronicle.css", ".pc-dstrip-val");
+    expect(block).toMatch(/white-space:\s*nowrap/);
+    expect(block).toMatch(/min-width:\s*0/);
+    expect(block).toMatch(/overflow:\s*hidden/);
+    expect(block).toMatch(/text-overflow:\s*ellipsis/);
+  });
+});
