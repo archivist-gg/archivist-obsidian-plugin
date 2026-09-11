@@ -259,7 +259,10 @@ function renderRow(
   if (isRowExpanded(ctx, expandKey)) openBlock();
 
   // TIME / RANGE
-  tr.createDiv({ cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time) });
+  // RIDER-4: the compacted label is the cell, the FULL authored token is its tooltip, so a reaction
+  // that carries its trigger loses nothing by being shortened to `1R`.
+  tr.createDiv({ cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time),
+    attr: spell.entity.casting_time ? { title: spell.entity.casting_time } : {} });
   tr.createDiv({ cls: "pc-spell-range", text: formatRange(spell.entity.range) });
 
   // HIT / DC. A no-ability scroll (no own casting ability + no per-instance

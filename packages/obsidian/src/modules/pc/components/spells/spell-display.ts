@@ -88,7 +88,16 @@ export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo
  *  spelling fell through to the raw string. A token that matches nothing still passes through
  *  verbatim, and an absent one still reads as the placeholder. */
 export function compactCastingTime(token: string | undefined): string {
-  switch (token?.toLowerCase().replace(/[\s-]+/g, "")) {
+  const norm = token?.toLowerCase().replace(/[\s-]+/g, "");
+  // R4-G7 T7 live rider RIDER-4. A reaction may carry its TRIGGER in the same field
+  // (`reaction (which you take when you or a creature you can see within 60 feet of you falls)`), which
+  // the switch below cannot match, so it fell through verbatim into a column sized for `1A` and wrapped
+  // onto seven lines: WITNESSED at S00 on `conv-diviner2024-20`'s Spells tab (Feather Fall). MEASURED in
+  // the converter corpus: 24 distinct `casting_time` values, THIRTEEN of them this shape. The prefix is
+  // matched, never a bare `includes`, so `1 minute (reaction optional)` still passes through; the
+  // trigger is not lost, because both callers put the FULL token in the cell's `title`.
+  if (norm && norm.startsWith("reaction(")) return "1R";
+  switch (norm) {
     // The case labels are the NORMALISED forms (no hyphen, no space, lower case).
     case "action": return "1A";
     case "bonusaction": return "1BA";

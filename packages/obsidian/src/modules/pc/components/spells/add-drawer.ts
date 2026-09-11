@@ -119,7 +119,9 @@ function renderRow(
   if (e.ritual) nameTd.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
 
   tr.createDiv({ cls: "col-level", text: levelLabel(c.level) });
-  tr.createDiv({ cls: "col-time", text: compactCastingTime(e.casting_time) });
+  // RIDER-4: as in the cast view, the full authored token rides along as the cell's tooltip.
+  tr.createDiv({ cls: "col-time", text: compactCastingTime(e.casting_time),
+    attr: e.casting_time ? { title: e.casting_time } : {} });
   tr.createDiv({ cls: "col-school", text: e.school ?? "" });
   tr.createDiv({ cls: "col-range", text: formatRange(e.range) });
   tr.createDiv({ cls: "col-comp", text: componentLetters(e.components).letters.join(" ") });

@@ -87,3 +87,29 @@ describe("editionTag", () => {
     expect(editionTag(sp({}))).toBeNull(); // no edition → no tag
   });
 });
+
+describe("R4-G7 T7 live rider RIDER-4 · a PROSE reaction casting time", () => {
+  // WITNESSED LIVE at S00 on `conv-diviner2024-20`'s Spells tab: Feather Fall's time cell read
+  // `reaction (which you take when you or a creature you can see within 60 feet of you falls)` and
+  // wrapped onto SEVEN lines in a column sized for `1A`, making that one row about five times the
+  // height of its neighbours. MEASURED in the converter corpus: `casting_time` has 24 distinct values,
+  // of which THIRTEEN are this `reaction (...)` prose shape (Feather Fall, Absorb Elements, Shield,
+  // Counterspell, Silvery Barbs and their edition twins); the bare `reaction` token already compacts,
+  // so only the ones carrying their trigger fell through verbatim.
+  it("compacts a reaction that carries its trigger, and keeps every other token exactly as it was", () => {
+    expect(compactCastingTime("reaction (which you take when you or a creature you can see within 60 feet of you falls)")).toBe("1R");
+    expect(compactCastingTime("Reaction (which you take when you are hit by an attack)")).toBe("1R");
+    // the controls: nothing else moves
+    expect(compactCastingTime("reaction")).toBe("1R");
+    expect(compactCastingTime("action")).toBe("1A");
+    expect(compactCastingTime("bonus action")).toBe("1BA");
+    expect(compactCastingTime("1 minute")).toBe("1 min");
+    expect(compactCastingTime("1 week")).toBe("1 week");
+    expect(compactCastingTime("weird")).toBe("weird");
+    expect(compactCastingTime(undefined)).toBe("—");
+  });
+
+  it("does not swallow a token that merely CONTAINS the word reaction", () => {
+    expect(compactCastingTime("1 minute (reaction optional)")).toBe("1 minute (reaction optional)");
+  });
+});
