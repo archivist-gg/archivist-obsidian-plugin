@@ -180,4 +180,37 @@ describe("R4-G7 CSS contracts · RIDER-3 RE-TAKEN at the cause (T7 fix round 1)"
     expect(block).toMatch(/overflow:\s*hidden/);
     expect(block).toMatch(/text-overflow:\s*ellipsis/);
   });
+
+  // RIDER-6 (T7 fix round 1, found by this round's OWN eye pass on its own race frames, then measured).
+  // `.pc-cb-badge` is the chronicle card's corner source line. It was `position: absolute; top: 11px;
+  // right: 13px` inside the relatively positioned `.pc-cblock`, so it had NO width in flow and the
+  // card title (`.pc-cb-name`, an h3) ran the full card width underneath it. MEASURED live by the
+  // driver's new card-head witness on the pre-fix build: on the race preview card the badge box
+  // `l 753 · r 919 · t 1826 · b 1840` INTERSECTS the title box of `Goliath; Frost Giant Ancestry`, and
+  // on the background card the same happens with `Forgotten Realms: Heroes of Faerun · 2024` over
+  // `Ice Fisher`; the captured frame shows the grey source text printed through the title's glyphs.
+  // This is the same defect class R4-G6b's rider R-4 fixed for `.archivist-pc-sheet .pc-resource-card
+  // .source-badge`; that rider was scoped to the sheet's feature card, and the builder's chronicle card
+  // is a second surface of it. The card's own source already comments that the absolute badge collides
+  // with the band-right controls in owned-card mode, where it is moved INLINE; the race / background /
+  // browse cards (no `bandRight`) kept the corner badge and are the ones that collide with the TITLE.
+  //
+  // The fix is the same as R-4's: a RIGHT FLOAT takes part in flow, so the title's line boxes shorten by
+  // exactly the badge's own width, whatever that text is and in whatever face the theme renders it. The
+  // margins reproduce the old position rather than inventing a new one: `-4px` top because an absolute
+  // `top: 11px` is measured from the padding box while a float starts after the card's 15px padding-top,
+  // and `-5px` right because an absolute `right: 13px` is measured from the padding box while a float
+  // starts at the content edge, 18px of padding plus the 1px border in.
+  //
+  // THIS TEST IS NOT THE WITNESS, for the same reason as RIDER-3b above: jsdom computes no layout. The
+  // witness is the live card-head read in `builder-drive.mjs` (`cardHeadWitness.verdict`), FAIL on the
+  // pre-fix build and PASS after. This contract only pins the rule.
+  const BADGE = ":is(.archivist-pc-sheet, .archivist-modal) .pc-cb-badge";
+
+  it("the chronicle card's source badge takes part in flow, so it never paints over the title", () => {
+    const block = ruleOf(CHRON, BADGE);
+    expect(block).toMatch(/float:\s*right/);
+    expect(block).toMatch(/position:\s*static/);
+    expect(block).not.toMatch(/position:\s*absolute/);
+  });
 });
