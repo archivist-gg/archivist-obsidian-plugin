@@ -107,3 +107,33 @@ describe("R4-G7 CSS contracts · RIDER-3 a long decision value on the builder's 
     expect(block).toMatch(/text-overflow:\s*ellipsis/);
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-5 two controls sharing the feature row's detail slot", () => {
+  // WITNESSED LIVE at S00 on `conv-warrior-of-mercy2024-20`'s Passive & Features tab, page 4, the
+  // `Hand of Ultimate Mercy` row: the recovery track's `/ Long Rest` label and the
+  // `Spend 5 Focus Point` pill sit side by side and the pill's left border ABUTS the word `Rest`
+  // with zero air, so the two controls read as one run. The mechanism is in the rule itself:
+  // `.pc-feature-detail` is a wrapping flex row that declares `row-gap` and NO column gap, which is
+  // why R4-G5 had to patch ONE child (`> .pc-resource-die { margin-right }`) and why its own comment
+  // calls this "this gapless slot". A row reaches the pairing whenever a feature OWNS a resource
+  // (so the tracker takes the slot) while SPENDING a foreign one (so `controlInSlot` is true,
+  // `feature-rows.ts:157`); the Monk's Hand of Ultimate Mercy owns 1 / Long Rest and spends 5 Focus
+  // Points. `boon-rows.ts:97` reaches it too, with `.pc-boon-status` + tracker + `.pc-spend`.
+  // The fix is the container gap, NOT another per-child margin: the slot is `flex-wrap: wrap`, and a
+  // margin would still indent the control when it WRAPS onto its own line, which the R4-G5 comment
+  // above the rule records as the wanted reading ("each line starting at the slot's left edge").
+  // `column-gap` applies only between items that share a line. `--pc-space-2` is 8px, the exact value
+  // the retired `.pc-resource-die` margin carried, so the granted-die row's spacing is unchanged.
+  it("the detail slot separates two controls that share a line", () => {
+    const block = ruleOf("actions.css", ".archivist-pc-sheet .pc-feature-detail");
+    expect(block).toMatch(/column-gap:\s*var\(--pc-space-2\)/);
+    // the wrapped-line gap this rule already had is untouched
+    expect(block).toMatch(/row-gap:\s*var\(--pc-space-1\)/);
+    expect(block).toMatch(/flex-wrap:\s*wrap/);
+  });
+
+  it("the per-child margin the gapless slot needed is retired, so the die is not spaced twice", () => {
+    const css = read("actions.css");
+    expect(css).not.toMatch(/\.pc-feature-detail > \.pc-resource-die\s*\{[^}]*margin-right/);
+  });
+});

@@ -309,6 +309,16 @@
    `R4G5_Warlock7Ghostly_S__400x700__panel-actions__4.png` and `__768x600__panel-actions__1.png` show
    the same row wrapping the same way with the pill reading ACTIVE. The slot's width, not the pill's
    text, is what decides it, which is why the Z-7-2 rule below reads the cluster and not its state. */
+/* R4-G7 live rider R-5: the slot is no longer gapless. It has always been able to hold TWO controls on
+   one line · a feature that OWNS a resource keeps its tracker here and, when it SPENDS a foreign one,
+   `renderSpendControl` lands beside it (`feature-rows.ts`, `controlInSlot`), and a boon row puts its
+   provenance marker, its tracker and that same control here (`boon-rows.ts`). With `row-gap` alone the
+   pair abutted: witnessed at S00 on the Monk's `Hand of Ultimate Mercy`, whose `Spend 5 Focus Point`
+   pill sat with its left border against the `t` of the tracker's `/ Long Rest`.
+   `column-gap`, not a margin on a child: the slot WRAPS, and a margin would also indent a control that
+   fell onto its own line, which the note above says is the wanted reading. It therefore replaces the
+   R4-G5 `> .pc-resource-die { margin-right: var(--pc-space-2) }` patch VERBATIM in value (8px), so the
+   granted-die row keeps the spacing it had and every other pair gains the same. */
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;
   align-items: center;
@@ -316,10 +326,8 @@
   justify-content: flex-start;
   flex-wrap: wrap;
   row-gap: var(--pc-space-1);
+  column-gap: var(--pc-space-2);
 }
-/* The class feature row's granted die (R4-G5 §4.3.1) shares this gapless slot with the charge track, so
-   it abutted the first pip; the margin is on the die alone, since a boon row puts two children here. */
-.archivist-pc-sheet .pc-feature-detail > .pc-resource-die { margin-right: var(--pc-space-2); }
 .archivist-pc-sheet .pc-feature-attack-note {
   font-family: var(--pc-font-serif);
   font-style: italic;
