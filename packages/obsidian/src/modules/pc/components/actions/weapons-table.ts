@@ -66,7 +66,9 @@ export function renderWeaponsGroup(
  *
  * Everything display-only (cost badge, range, to-hit / damage inline tags,
  * condition/roll-modifier chips, damage riders, versatile, crit caption,
- * situational sub-line) is preserved verbatim from the former in-loop builder.
+ * situational sub-line) came verbatim from the former in-loop builder, with ONE
+ * later change: R4-G7 T6a routes a rider whose printed form cannot be a dice
+ * chip to the row's `.pc-weapon-note` caption instead of into the damage text.
  *
  * `hasMastery` is the group-level flag from `renderWeaponsGroup`: when set, the
  * row switches to the 6-col has-mastery grid and (for a row that actually has

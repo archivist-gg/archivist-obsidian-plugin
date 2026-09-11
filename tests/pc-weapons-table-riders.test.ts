@@ -47,7 +47,7 @@ const captions = (list: HTMLElement): string =>
   Array.from(list.querySelectorAll(".pc-weapon-note")).map((n) => n.textContent ?? "").join(" | ");
 const chips = (list: HTMLElement): number => list.querySelectorAll(".pc-weapon-damage .archivist-tag-damage").length;
 
-describe("renderWeaponRow — damage riders that cannot be a dice chip", () => {
+describe("renderWeaponRow · damage riders that cannot be a dice chip", () => {
   it("a PROSE amount never reaches the damage text and renders as the row's caption", () => {
     const list = renderRow(swordWith([{ amount: "your Wisdom modifier", damage_type: "necrotic", source: "Divine Strike" }]));
     expect(damageText(list)).not.toContain("your Wisdom modifier");
