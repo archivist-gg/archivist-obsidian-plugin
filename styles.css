@@ -4233,8 +4233,14 @@ body.theme-light .archivist-tag-atk:hover {
    cluster now shares the first line and its long fixture name and subtitle wrap to two lines each in 454 px. Below a 700 px sheet the
    floor has no job (the hero cluster is `width: 100%` there and never shares the first line) and it did harm: a floor wider than the
    room beside the avatar moved the whole block under it on every sheet under about 420 px, short names included (fix round 1, review
-   Important 1). The `@container pc-sheet (max-width: 699px)` block that wraps the hero cluster sets `min-width: 0`, later in this file. */
-.archivist-pc-sheet .pc-identity { flex: 1 1 0; min-width: min(100%, 320px); }
+   Important 1). The `@container pc-sheet (max-width: 699px)` block that wraps the hero cluster sets `min-width: 0`, later in this file.
+   Fix round 1, review Minor 1: a 320 px floor for EVERY identity made a short one need 320 px on the first line, so its hero cluster sat
+   alone on the second line where the earlier layout shared the first. Measured in a headless-Chrome replica of these rules (pc-sheet
+   container widths, 20 px steps): a 212 px identity at 920..1000 px, the Illrigger's 279 px identity at 1000..1020 px. The second
+   `min-width` is min(max-content, 320px) through calc-size() (Chromium 129 and up; Obsidian's is 132): a short identity floors at its
+   own width and a long one at 320 px, and at 700..1400 px all five measured identities put the hero cluster on the first line exactly
+   when the avatar, that floor and the hero cluster fit. An engine without calc-size() drops the declaration and keeps the plain floor. */
+.archivist-pc-sheet .pc-identity { flex: 1 1 0; min-width: min(100%, 320px); min-width: calc-size(max-content, min(size, 320px)); }
 .archivist-pc-sheet .pc-name {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-display);

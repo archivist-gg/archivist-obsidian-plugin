@@ -431,3 +431,18 @@ describe("R4-G7 fix round 1 · RIDER-27 below a 700 px sheet the identity keeps 
     expect(read("components.css")).not.toMatch(/takes its own line, as it always did there/);
   });
 });
+
+describe("R4-G7 fix round 1 · RIDER-27 at 700 px and up the floor is the identity's own width when that is under 320 px (review Minor 1; MEASURED in a headless replica)", () => {
+  // THIS TEST IS NOT THE WITNESS: jsdom lays nothing out. The witness is `evidence/g7-t8-wD1/lab/replica.mjs` over the generated
+  // styles.css (700..1400 px in 20 px steps, five identities) and the W-D2 live lab. A floor of 320 px for EVERY identity made a short
+  // one (max-content 212 px) need 320 px on the first line, so its hero cluster sat alone on the second line at 920..1000 px sheets
+  // where the pre-RIDER-27 layout shared the first line (the Illrigger's, 279 px: 1000..1020). `calc-size(max-content, min(size, 320px))`
+  // is min(max-content, 320px): a short identity keeps its own width as the floor, a long one keeps 320 px. The plain floor stays FIRST as
+  // the fallback an engine without calc-size() keeps (Obsidian's Chromium 132 has it; it shipped in Chromium 129).
+  it("the base identity rule declares the calc-size floor after the plain 320 px fallback", () => {
+    const css = read("components.css");
+    const at = css.indexOf(".archivist-pc-sheet .pc-identity {");
+    const block = css.slice(css.indexOf("{", at) + 1, css.indexOf("}", at));
+    expect(block).toMatch(/min-width:\s*min\(100%, 320px\);\s*min-width:\s*calc-size\(max-content, min\(size, 320px\)\);/);
+  });
+});
