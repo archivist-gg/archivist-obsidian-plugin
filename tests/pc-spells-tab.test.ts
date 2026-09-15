@@ -256,13 +256,13 @@ describe("SpellsTab · the multiclass spellcasting summary (R4-G7 T8 RIDER-18)",
   it("each summary keeps its bold values and its own class name span", () => {
     const row = render([paladin, warlock]);
     const entries = Array.from(row.querySelectorAll<HTMLElement>(".pc-spell-dc-entry"));
-    expect(entries.map((e) => Array.from(e.querySelectorAll("b")).map((b) => b.textContent))).toEqual([["14", "+6"], ["14", "+6"]]);
     expect(entries.map((e) => e.querySelector(".pc-spell-dc-class")?.textContent)).toEqual(["\u00a0(Paladin)", "\u00a0(Warlock)"]);
+    expect(entries.map((e) => Array.from(e.querySelectorAll("b")).map((b) => b.textContent))).toEqual([["14", "+6"], ["14", "+6"]]);
   });
   it("a single caster prints one unit with no separator and no class name (its text is unchanged)", () => {
     const row = render([wizardClass]);
-    expect(row.textContent).toBe("INT Save DC 15 · Atk +7");
     expect(row.querySelectorAll(".pc-cap-unit").length).toBe(1);
+    expect(row.textContent).toBe("INT Save DC 15 · Atk +7");
     expect(row.querySelector(".pc-cap-sep")).toBeNull();
   });
 });

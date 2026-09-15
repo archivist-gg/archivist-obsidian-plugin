@@ -370,7 +370,7 @@ describe("renderCastView · scrolls & consumables", () => {
     // The retired bespoke lozenge and its label are gone everywhere.
     expect(root.querySelector(".pc-spell-scroll")).toBeNull();
     expect(root.textContent).not.toContain("Cast (consume)");
-    // A consumable scroll must NOT show the "always" marker (alwaysPrepared is a
+    // A consumable scroll must NOT show the "Always prepared" marker (alwaysPrepared is a
     // resolver castability flag, not an "always ready" claim here).
     expect(scrollRow.querySelector(".pc-spell-always")).toBeNull();
 

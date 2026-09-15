@@ -105,7 +105,7 @@ describe("renderAddDrawer: known-set excludes scroll (source:item) spells (AC-S4
     // R4-G3b §6.2.3: the drawer's ✓ calls removeKnownSpell, a silent no-op for a row
     // that does not live in character.spells.known. The handler holds only the known
     // Set, so it re-reads the matching resolved spell's `persisted` flag; a grant has
-    // none, so the toggle does nothing at all (the "always" badge is the explanation).
+    // none, so the toggle does nothing at all (the "Always prepared" marker is the explanation).
     // RED FIRST before Task 7 (plugin 7bb5d39b): the handler called removeKnownSpell
     // unconditionally whenever known.has(slug).
     const root = mountContainer();
