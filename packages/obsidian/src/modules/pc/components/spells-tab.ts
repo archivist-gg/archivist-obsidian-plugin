@@ -37,8 +37,11 @@ export class SpellsTab implements SheetComponent {
       empty.createDiv({ cls: "pc-spells-empty-icon", text: "☆" });
       empty.createDiv({ cls: "pc-spells-empty-title", text: "No Spellcasting" });
       const name = ctx.resolved.definition.name;
-      const className = ctx.resolved.classes[0]?.entity?.name ?? "this class";
-      empty.createDiv({ cls: "pc-spells-empty-subtitle", text: `${name} is a ${className} with no spellcasting feature.` });
+      // R4-G7 T8 RIDER-28 (F-ARTICLE): the class name is DATA, so the sentence needs no indefinite article before it
+      // ("is a Illrigger" read wrong, and an a / an vowel rule is an English heuristic that fails on names).
+      const className = ctx.resolved.classes[0]?.entity?.name;
+      const classPhrase = className ? `the ${className} class` : "this class";
+      empty.createDiv({ cls: "pc-spells-empty-subtitle", text: `${name} has no spellcasting feature from ${classPhrase}.` });
       return;
     }
 
