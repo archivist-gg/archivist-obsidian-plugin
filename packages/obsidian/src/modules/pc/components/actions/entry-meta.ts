@@ -11,15 +11,16 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-feature.types";
 import { renderSeparated } from "../separated-caption";
+import { ACTION_COST_LONG_LABEL } from "../../../../shared/rendering/action-cost-label";
 
 /* The ECONOMY label for a pool row's sub-line and a block card's Cost meta. R4 {G5, G6} live rider 2,
  * X-1-13: the label names the economy and carries no amount. `1 Action` / `1 Bonus Action` beside a
  * sibling row's bare `Reaction` read as a quantity of actions, and on a narrow column the pair
  * `Passive · 1 Bonus Action` broke across lines with the stray `1` ending one. The amount a reader
- * can act on is the COST, which `consumeCost` still prints with its number. */
-export const COST_LABELS: Record<string, string> = {
-  action: "Action", "bonus-action": "Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
-};
+ * can act on is the COST, which `consumeCost` still prints with its number. R4-G7 T8 fix round 1 (W-D-D3): the five strings moved
+ * to the shared action-cost label table as its LONG form (`shared/rendering/action-cost-label.ts`), which the row caption now reads
+ * too; this name stays for its two readers (`metaSub` below, `pool-tab.ts`). */
+export const COST_LABELS: Record<string, string> = ACTION_COST_LONG_LABEL;
 
 /** Italic meta sub-line: "Passive", action cost, and consume cost.
  *

@@ -1,6 +1,6 @@
 import type { FeatureEffect } from "@archivist-gg/dnd5e/types/feature-effect";
 import { ROLL_MODE_WORD, ROLL_NOUN } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
-import { costLabel } from "../../../../shared/rendering/action-cost-label";
+import { costLongLabel } from "../../../../shared/rendering/action-cost-label";
 import { plainText } from "../../../../shared/rendering/plain-text";
 import { setTooltip } from "obsidian";
 import type { ComponentRenderContext } from "../component.types";
@@ -81,7 +81,8 @@ function captionFor(e: FeatureEffect): string | undefined {
   // Delegated, not duplicated: `restate`'s heal/temp-hp arm IS the self-subject caption, so the
   // self and non-self paths cannot drift into two spellings of the same line.
   if (e.kind === "heal" || e.kind === "temp-hp") return restate(e);
-  if (e.kind === "extra-action") return `+${e.count} ${costLabel(e.action_type)}`;
+  // R4-G7 T8 fix round 1 (W-D-D3): the LONG label; the short one cut `+1 Bonus Action` to `+1 Bonus` (the badge keeps the short form).
+  if (e.kind === "extra-action") return `+${e.count} ${costLongLabel(e.action_type)}`;
   // R4-G4 §9.4: the two SELF-subject kinds that carried a condition and no
   // caption. Both DO fold (a sense reaches the senses panel, a proficiency the
   // proficiencies panel), but the qualifier is dropped there, so the row is the

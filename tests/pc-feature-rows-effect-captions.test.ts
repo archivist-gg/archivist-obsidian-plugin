@@ -164,12 +164,15 @@ describe("renderEffectCaptions", () => {
     expect(span?.getAttribute("aria-label")).toBe("While Bloodied");
   });
 
-  it("renders extra-action through the shared action-cost label table", () => {
+  // R4-G7 T8 fix round 1 (W-D-D3, the W-D eye re-read, conv-assassin-5e-20 panel-passive__1): the caption read "+1 Bonus", cut where
+  // Action Surge reads "+1 Action". The caption names the economy in running text, so it takes the table's LONG form; the badge keeps
+  // the short "Bonus" (`tests/pc-actions-cost-badge.test.ts`).
+  it("renders extra-action through the shared action-cost label table's LONG form", () => {
     const { row } = renderOne({
       name: "Cunning Action", description: "x",
       effects: [{ kind: "extra-action", count: 1, action_type: "bonus-action", subject: "self" }],
     });
-    expect(captions(row)).toEqual(["+1 Bonus"]);
+    expect(captions(row)).toEqual(["+1 Bonus Action"]);
   });
 
   it("renders a NON-self imposition as a caption while the fold still refuses it", () => {
