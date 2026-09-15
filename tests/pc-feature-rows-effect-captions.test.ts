@@ -167,6 +167,16 @@ describe("renderEffectCaptions", () => {
   // R4-G7 T8 fix round 1 (W-D-D3, the W-D eye re-read, conv-assassin-5e-20 panel-passive__1): the caption read "+1 Bonus", cut where
   // Action Surge reads "+1 Action". The caption names the economy in running text, so it takes the table's LONG form; the badge keeps
   // the short "Bonus" (`tests/pc-actions-cost-badge.test.ts`).
+  // CHARACTERISATION PIN (R4-G7 fix round 1, W-D-D6): the CSS gives an EMPTY detail slot's track to the name through
+  // `.pc-feature-detail:empty`, which only matches a slot with NO child node at all (a whitespace text node would defeat it).
+  // A feature with no tracker, no spend control and no attack note leaves the slot that empty.
+  it("a row with nothing for its detail slot leaves the slot with no child node, so `:empty` matches it", () => {
+    const { row } = renderOne({ name: "Divine Intervention Improvement", description: "x" });
+    const detail = row.querySelector(":scope > .pc-feature-detail");
+    expect(detail?.childNodes.length).toBe(0);
+    expect(detail?.matches(":empty")).toBe(true);
+  });
+
   it("renders extra-action through the shared action-cost label table's LONG form", () => {
     const { row } = renderOne({
       name: "Cunning Action", description: "x",

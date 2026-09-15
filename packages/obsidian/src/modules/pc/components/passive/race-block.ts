@@ -70,8 +70,8 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
   nameCell.createDiv({ cls: "pc-action-row-name", text: race.name });
   if (race.size) nameCell.createDiv({ cls: "pc-action-row-sub", text: cap(race.size) });
 
-  // Detail column kept present-but-empty so the 3-col feature-row grid
-  // (name | detail | caret) stays aligned with its siblings.
+  // Detail column kept present-but-empty, the feature rows' (name | detail | caret) cell order. Being EMPTY, it leaves the
+  // grid and its track goes to the name (R4-G7 T8 wave D fix round 1, W-D-D6, `styles/actions.css` `.pc-feature-detail:empty`).
   row.createDiv({ cls: "pc-feature-detail" });
   row.createDiv({ cls: "pc-action-caret", text: "›" });
 

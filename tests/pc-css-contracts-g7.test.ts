@@ -460,3 +460,27 @@ describe("R4-G7 fix round 1 · RIDER-27 at 700 px and up the floor is the identi
     expect(block).toMatch(/min-width:\s*min\(100%, 320px\);\s*min-width:\s*calc-size\(max-content, min\(size, 320px\)\);/);
   });
 });
+
+describe("R4-G7 fix round 1 · W-D-D6 an EMPTY detail slot gives its track to the name (MEASURED LIVE in W-D2a)", () => {
+  // THIS TEST IS NOT THE WITNESS (jsdom lays nothing out); the witness is W-D2a's lab (`lab-W-D2a/passive-*.json`) and W-D2's frames.
+  // At the default 355.5 px column `conv-light-domain-5e-20`'s "Divine Intervention Improvement" (217.4 px on one line) sat in
+  // `209px 104.5px 18px`: its detail cell was EMPTY (0 child nodes) yet held the `minmax(min-content, 1fr)` third, so the name wrapped
+  // while "Channel Divinity: Radiance of the Dawn" (254.9 px), whose spend control sends its detail to its own grid row, read one line
+  // in 321.5 px. The same shape wrapped the Illrigger's "Forked Tongue Improvement" / "Infernal Conduit Improvement" and the
+  // battle-smith's race row at narrower columns. Injected live over 300..1000 px: 0 names that fit their row still wrapped.
+  const block = (selector: string): string => {
+    const css = read("actions.css");
+    const ix = css.indexOf(selector);
+    if (ix < 0) throw new Error(`no rule for ${selector} in actions.css`);
+    return css.slice(css.indexOf("{", ix) + 1, css.indexOf("}", ix));
+  };
+  it("the Actions-tab row with an empty detail keeps the badge, the name and the caret tracks only", () => {
+    expect(block(".archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail:empty) {")).toMatch(/grid-template-columns:\s*66px minmax\(0, 1fr\) 18px;/);
+  });
+  it("the Passive-tab row with an empty detail keeps the name and the caret tracks only", () => {
+    expect(block(".archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail:empty) {")).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\) 18px;/);
+  });
+  it("the empty detail cell itself leaves the grid", () => {
+    expect(block(".archivist-pc-sheet .pc-feature-list .pc-feature-row > .pc-feature-detail:empty {")).toMatch(/display:\s*none;/);
+  });
+});

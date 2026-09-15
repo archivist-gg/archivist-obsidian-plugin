@@ -301,6 +301,19 @@
 .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row {
   grid-template-columns: minmax(0, 2fr) minmax(min-content, 1fr) 18px;
 }
+/* R4-G7 T8 wave D fix round 1 (W-D-D6, the W-D eye re-read): a row whose detail slot is EMPTY gives that slot's track to the name.
+   The two templates above keep a `minmax(min-content, 1fr)` detail track on every row, and a slot with nothing in it (a class
+   feature with no tracker, control or note; the Race and Background rows, whose slot is created empty) still took that third.
+   MEASURED LIVE in W-D2a at the default 355.5 px column: `conv-light-domain-5e-20`'s "Divine Intervention Improvement" (217.4 px
+   on one line) sat in `209px 104.5px 18px` and wrapped, while the longer "Channel Divinity: Radiance of the Dawn" (254.9 px), whose
+   spend control sends its detail to its own grid row in the 787 px tier below, read one line in 321.5 px. Over 300..1000 px the same
+   shape wrapped the Illrigger's "Forked Tongue Improvement" and "Infernal Conduit Improvement" and the battle-smith's race row; with
+   these rules injected, no name that fits its row wrapped on any of the three. `:empty` matches only a slot with no child node, which
+   is how `renderFeatureRow`, `renderBoonRow` and the two passive blocks create it; the `:has()` argument lifts both templates over
+   the ones above, so the Passive tab restates its own. */
+.archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail:empty) { grid-template-columns: 66px minmax(0, 1fr) 18px; }
+.archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail:empty) { grid-template-columns: minmax(0, 1fr) 18px; }
+.archivist-pc-sheet .pc-feature-list .pc-feature-row > .pc-feature-detail:empty { display: none; }
 /* R4 {G5, G6} live rider N-2-7: the detail slot WRAPS too, with the same left-aligned lines. On
    `Warlock5Stranded S`'s Actions tab the Ghostly Gaze cluster ran out of room and the wrapped pill sat
    over the uses row aligned with nothing. With the slot wrapping and both axes stated, the group and

@@ -102,8 +102,8 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
   nameCell.createDiv({ cls: "pc-action-row-name", text: bg.name });
   if (bg.edition) nameCell.createDiv({ cls: "pc-action-row-sub", text: String(bg.edition) });
 
-  // Detail column kept present-but-empty so the 3-col feature-row grid
-  // (name | detail | caret) stays aligned with its siblings.
+  // Detail column kept present-but-empty, the feature rows' (name | detail | caret) cell order. Being EMPTY, it leaves the
+  // grid and its track goes to the name (R4-G7 T8 wave D fix round 1, W-D-D6, `styles/actions.css` `.pc-feature-detail:empty`).
   row.createDiv({ cls: "pc-feature-detail" });
   row.createDiv({ cls: "pc-action-caret", text: "›" });
 
