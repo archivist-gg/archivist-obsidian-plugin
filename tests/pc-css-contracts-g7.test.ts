@@ -502,3 +502,42 @@ describe("R4-G7 T8 wave E CSS contracts · B026-D1 the block children a markdown
     expect(block).toMatch(/text-indent:\s*0/);
   });
 });
+
+describe("R4-G7 T8 wave E CSS contracts · B026-D17 / B026-D21 the markdown fills' paragraphs", () => {
+  const DND = join(__dirname, "..", "packages", "obsidian", "src", "styles");
+  const dnd = (): string => readFileSync(join(DND, "archivist-dnd.css"), "utf8");
+  /** The declaration block of the first rule whose selector list contains `selector`, in archivist-dnd.css. */
+  const blockFor = (selector: string): string => {
+    const css = dnd();
+    const ix = css.indexOf(selector);
+    if (ix < 0) throw new Error(`no rule for ${selector}`);
+    return css.slice(css.indexOf("{", ix) + 1, css.indexOf("}", css.indexOf("{", ix)));
+  };
+
+  // MEASURED LIVE in W-Er (the deployed pair): paragraph pairs with a 0 px gap on Burney's Regional Effects (1) and
+  // Variants (5), Baphomet's Regional Effects (2) and the Turtle's Variants (5).
+  it("consecutive paragraphs in a block carry a gap, and so does a feature entry's later paragraph", () => {
+    const block = blockFor(".archivist-monster-block p + p");
+    expect(block).toMatch(/margin-top:\s*0\.5em/);
+    expect(dnd()).toContain(".archivist-monster-block .archivist-feature-entry > p");
+  });
+
+  // MEASURED LIVE in W-Er: the Turtle's Lair Actions and Regional Effects paragraphs computed 14px / 16.8px where the
+  // feature prose beside them computes 13px / 19.6px (`.archivist-feature`'s 1.4em resolved at the block's 14px).
+  it("a markdown-filled pane reads at the feature prose's line height and type size", () => {
+    const lh = blockFor('.archivist-monster-section[data-fill="markdown"] > :not(.actions-header, table)');
+    expect(lh).toMatch(/line-height:\s*19\.6px/);
+    const fs = blockFor('.archivist-monster-section[data-fill="markdown"] :is(p, li)');
+    expect(fs).toMatch(/font-size:\s*13px/);
+  });
+
+  // MEASURED LIVE in W-Er on five generated intros: margin-bottom 0px, font-size 14px, line-height 16.8px, because the
+  // block's `p` reset (0,1,1) outranked the bare `.archivist-legendary-intro` arm (0,1,0).
+  it("the legendary / reactions intro states its own type at a specificity the block's p reset cannot beat", () => {
+    expect(dnd()).toContain(".archivist-monster-block p.archivist-legendary-intro");
+    const block = blockFor(".archivist-monster-block .legendary-intro");
+    expect(block).toMatch(/margin:\s*0\.25em 0 0\.5em/);
+    expect(block).toMatch(/font-size:\s*13px/);
+    expect(block).toMatch(/line-height:\s*1\.4em/);
+  });
+});
