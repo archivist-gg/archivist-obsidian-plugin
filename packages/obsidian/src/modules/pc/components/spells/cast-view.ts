@@ -6,7 +6,7 @@ import { spellEffectPartsAtSlot, spellEffectAtCharacterLevel, upcastLevelsFor, t
 import { toggleSpellBlock } from "./spell-block-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
-import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters, EMPTY_CELL } from "./spell-display";
+import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters, EMPTY_CELL, ALWAYS_PREPARED_LABEL } from "./spell-display";
 import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
 import { confirm } from "../../../../shared/modals/ConfirmModal";
 
@@ -223,11 +223,12 @@ function renderRow(
   const nameTd = tr.createDiv({ cls: "pc-spell-namecell" });
   const nl = nameTd.createDiv({ cls: "pc-spell-nl" });
   nl.createSpan({ cls: "pc-spell-name", text: spell.entity.name });
-  // Always-prepared spells (feat, race and domain grants) carry the shared "always"
-  // marker used in the prepare view, so a free granted cast reads as always-ready.
-  // A scroll is flagged alwaysPrepared by the resolver only to make it castable;
-  // it is a one-shot consumable, not "always ready", so suppress the marker there.
-  if (spell.alwaysPrepared && !opts.scroll) nl.createSpan({ cls: "pc-spell-always", text: "always" });
+  // Always-prepared spells (feat, race and domain grants) carry the always-prepared
+  // marker the prepare view also prints (ONE label, RIDER-17), so a free granted cast
+  // reads as always-ready. A scroll is flagged alwaysPrepared by the resolver only to
+  // make it castable; it is a one-shot consumable, not "always ready", so suppress the
+  // marker there.
+  if (spell.alwaysPrepared && !opts.scroll) nl.createSpan({ cls: "pc-spell-always", text: ALWAYS_PREPARED_LABEL });
   if (spell.entity.concentration) nl.createSpan({ cls: "pc-spell-cr c", text: "C", attr: { title: "Concentration" } });
   if (spell.entity.ritual) nl.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
   if (opts.upcast) nl.createSpan({ cls: "pc-spell-up", text: `↑ ${ordinal(level)}` });

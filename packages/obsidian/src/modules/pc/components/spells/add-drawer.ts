@@ -104,7 +104,7 @@ function renderRow(
   // removeKnownSpell edits character.spells.known, so the ✓ may only fire for a row
   // that lives there. The handler holds just the known Set, so it re-reads the matching
   // resolved spell's `persisted` flag; on a grant the ✓ is inert (no new copy: the row's
-  // "always" badge in the Prepare list is the explanation).
+  // "Always prepared" marker in the Prepare list is the explanation).
   toggle.addEventListener("click", (ev) => {
     ev.stopPropagation();
     const existing = ctx.resolved.spells.find((s) => s.slug === c.slug);

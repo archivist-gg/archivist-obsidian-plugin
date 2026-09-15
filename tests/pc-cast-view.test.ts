@@ -579,3 +579,16 @@ describe("renderCastView · cantrips section (R4-G6b §9)", () => {
     expect(root.querySelector(".pc-spell-empty-row")).toBeNull();
   });
 });
+
+// R4-G7 T8 RIDER-17 (F-ALWAYS (a)): the always-prepared marker reads as words, from ONE label both spell views share.
+describe("renderCastView · the always-prepared marker (R4-G7 T8 RIDER-17)", () => {
+  it("an always-prepared row's marker reads `Always prepared`, never the bare lowercase `always`", () => {
+    const root = mountContainer();
+    const domain: ResolvedSpell = {
+      entity: { name: "Bless", level: 1 } as never, slug: "bless",
+      classSlug: "wizard", source: "class", prepared: true, alwaysPrepared: true,
+    };
+    renderCastView(root, ctxForScroll([domain]));
+    expect(sectionTableAfter(root, "1st Level").querySelector(".pc-spell-always")?.textContent).toMatch(/^Always prepared$/);
+  });
+});

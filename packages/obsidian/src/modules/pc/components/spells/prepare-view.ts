@@ -4,7 +4,7 @@ import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderAddDrawer } from "./add-drawer";
-import { editionTag } from "./spell-display";
+import { editionTag, ALWAYS_PREPARED_LABEL } from "./spell-display";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
 
 // Ephemeral Prepare-list filters. Module-scoped but reset at the top of
@@ -207,7 +207,7 @@ function renderPrepareRow(
   const name = nameWrap.createSpan({ cls: "pc-spell-name", text: spell.entity.name });
   const tag = editionTag(spell);
   if (tag) name.parentElement!.createSpan({ cls: `pc-spell-srctag ${tag.mod}`, text: tag.label });
-  if (spell.alwaysPrepared) name.createSpan({ cls: "pc-spell-always", text: "always" });
+  if (spell.alwaysPrepared) name.createSpan({ cls: "pc-spell-always", text: ALWAYS_PREPARED_LABEL });
   if (spell.entity.school) nameWrap.createDiv({ cls: "pc-spell-sub", text: spell.entity.school });
   // Prepare-view spells are never scrolls (the consumable section is filtered out
   // above), so entryIndex is absent → a stable `<slug>#` tail.
@@ -227,7 +227,7 @@ function renderPrepareRow(
 
   // Remove with inline two-tap confirm. removeKnownSpell edits character.spells.known,
   // so the control renders ONLY for a row that lives there (ResolvedSpell.persisted);
-  // on a grant it would be a silent no-op, and the "always" badge is the explanation.
+  // on a grant it would be a silent no-op, and the "Always prepared" marker is the explanation.
   if (spell.persisted) {
     const rm = row.createEl("button", { cls: "pc-spell-remove", text: "✕" });
     let armed = false;

@@ -245,3 +245,12 @@ describe("renderPrepareView — D1 spell-block persistence", () => {
     expect(root2.querySelector(".pc-spell-prep-row-host > .pc-spell-expand")).not.toBeNull();
   });
 });
+
+// R4-G7 T8 RIDER-17 (F-ALWAYS (a)): the Prepare view prints the SAME always-prepared label as the Cast view.
+describe("renderPrepareView · the always-prepared marker (R4-G7 T8 RIDER-17)", () => {
+  it("an always-prepared row's marker reads `Always prepared`, never the bare lowercase `always`", () => {
+    const root = mountContainer();
+    renderPrepareView(root, ctx([sp("Bless", 1, true, true)], { togglePrepared: vi.fn() }));
+    expect(root.querySelector(".pc-spell-prep-row .pc-spell-always")?.textContent).toMatch(/^Always prepared$/);
+  });
+});

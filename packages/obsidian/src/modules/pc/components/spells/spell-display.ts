@@ -13,6 +13,11 @@ export interface CastBadge { label: string; kind: "action" | "bonus" | "reaction
  *  choose · P8 owns the null-glyph ruling, and this constant is where that ruling will land. */
 export const EMPTY_CELL = "—";
 
+/** R4-G7 T8 RIDER-17 (F-ALWAYS (a)): the ONE label of the always-prepared marker (`.pc-spell-always`), printed by
+ *  BOTH spell views (the Cast table's name line and the Prepare list's name), so the two can never drift. It
+ *  replaced a bare lowercase `always` that read as a stray word beside the spell name. */
+export const ALWAYS_PREPARED_LABEL = "Always prepared";
+
 export function castingTimeBadge(token: string | undefined): CastBadge {
   switch (token) {
     case "action": return { label: "Action", kind: "action" };
