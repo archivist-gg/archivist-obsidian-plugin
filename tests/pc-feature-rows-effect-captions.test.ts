@@ -164,9 +164,6 @@ describe("renderEffectCaptions", () => {
     expect(span?.getAttribute("aria-label")).toBe("While Bloodied");
   });
 
-  // R4-G7 T8 fix round 1 (W-D-D3, the W-D eye re-read, conv-assassin-5e-20 panel-passive__1): the caption read "+1 Bonus", cut where
-  // Action Surge reads "+1 Action". The caption names the economy in running text, so it takes the table's LONG form; the badge keeps
-  // the short "Bonus" (`tests/pc-actions-cost-badge.test.ts`).
   // CHARACTERISATION PIN (R4-G7 fix round 1, W-D-D6): the CSS gives an EMPTY detail slot's track to the name through
   // `.pc-feature-detail:empty`, which only matches a slot with NO child node at all (a whitespace text node would defeat it).
   // A feature with no tracker, no spend control and no attack note leaves the slot that empty.
@@ -177,6 +174,10 @@ describe("renderEffectCaptions", () => {
     expect(detail?.matches(":empty")).toBe(true);
   });
 
+  // R4-G7 T8 fix round 1 (W-D-D3, the W-D eye re-read, conv-assassin-5e-20 panel-passive__1): the caption read "+1 Bonus", cut where
+  // Action Surge reads "+1 Action". The caption names the economy in running text, so it takes the table's LONG form; the badge keeps
+  // the short "Bonus" (`tests/pc-actions-cost-badge.test.ts`). [Moved here from above the `:empty` pin in R4-G7 T8 wave E: it had been
+  // written over the W-D-D6 test, which is about a different rider.]
   it("renders extra-action through the shared action-cost label table's LONG form", () => {
     const { row } = renderOne({
       name: "Cunning Action", description: "x",

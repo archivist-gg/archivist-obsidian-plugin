@@ -4340,7 +4340,10 @@ body.theme-light .archivist-tag-atk:hover {
    96 px avatar. A zero basis lets the line break read the identity as small, but ALONE it also let the hero cluster share the first
    line on wider sheets and squeezed the identity to 14 px (760 px sheet) and 154 px (900), the name on 5 to 7 lines, measured with
    the sheet width emulated. The floor is the fix for that: the identity's hypothetical size is at least min(100%, 320px), so the
-   hero cluster joins the first line only when the identity keeps 320 px. Measured on three notes: the default window reads beside,
+   hero cluster joins the first line only when the identity keeps 320 px. THAT SENTENCE IS THE FIRST WRITING'S HISTORY (R4-G7 T8 wave E,
+   truth maintenance): fix round 1's second `min-width` below narrows it, so a SHORT identity floors at its own max-content and only a
+   long one at 320 px; an engine without `calc-size()` drops that declaration and behaves exactly as this paragraph describes.
+   Measured on three notes: the default window reads beside,
    the battle-smith's subtitle on two lines; 760 and 900 px sheets read exactly as before; at 1200 px the battle-smith's hero
    cluster now shares the first line and its long fixture name and subtitle wrap to two lines each in 454 px. Below a 700 px sheet the
    floor has no job (the hero cluster is `width: 100%` there and never shares the first line) and it did harm: a floor wider than the
