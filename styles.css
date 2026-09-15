@@ -4221,7 +4221,18 @@ body.theme-light .archivist-tag-atk:hover {
    * so the img itself is a plain rectangle the host clips to a circle. */
   border-radius: 0;
 }
-.archivist-pc-sheet .pc-identity { flex: 1 1 auto; min-width: 0; }
+/* R4-G7 T8 RIDER-27 (F-IDENT) · the identity wraps its TEXT beside the avatar. `.pc-header-root` wraps its flex line, and with
+   `flex: 1 1 auto` the identity's flex base size was its one-line max-content width, so a subtitle wider than the room beside the
+   avatar moved the WHOLE block onto its own line under the avatar. MEASURED LIVE in W-Dr at the default 1024 x 800 window:
+   `conv-battle-smith-2024-efa-20`'s subtitle needs about 512 px, the room is 507.5 px, the block sat at [352.5, 241.9] under the
+   96 px avatar. A zero basis lets the line break read the identity as small, but ALONE it also let the hero cluster share the first
+   line on wider sheets and squeezed the identity to 14 px (760 px sheet) and 154 px (900), the name on 5 to 7 lines, measured with
+   the sheet width emulated. The floor is the fix for that: the identity's hypothetical size is at least min(100%, 320px), so the
+   hero cluster joins the first line only when the identity keeps 320 px. Measured on three notes: the default window reads beside,
+   the battle-smith's subtitle on two lines; 760 and 900 px sheets read exactly as before; at 1200 px the battle-smith's hero
+   cluster now shares the first line and its long fixture name and subtitle wrap to two lines each in 454 px. Below a sheet of about
+   420 px (the 64 px avatar tier) the floor no longer fits beside the avatar and the block takes its own line, as it always did there. */
+.archivist-pc-sheet .pc-identity { flex: 1 1 0; min-width: min(100%, 320px); }
 .archivist-pc-sheet .pc-name {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-display);

@@ -387,3 +387,17 @@ describe("R4-G7 CSS contracts · RIDER-26 an item row stacks below 500 px so its
     expect(b).toContain(".archivist-pc-sheet .pc-items-table .pc-action-charges { grid-column: 2; grid-row: 2; }");
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-27 the identity block wraps its text beside the avatar (MEASURED LIVE in W-Dr's lab)", () => {
+  // W-Dr (2026-09-15, the default 1024 x 800 window): with `flex: 1 1 auto` the identity's flex base size was its one-line
+  // max-content width, so `conv-battle-smith-2024-efa-20`'s 512 px subtitle, wider than the 507.5 px beside the 96 px avatar, moved
+  // the WHOLE block to its own line under the avatar (`identityBeside=false`). `flex: 1 1 0` alone fixed that and, at emulated sheet
+  // widths of 760 and 900 px, let the hero cluster share the first line and squeezed the identity to 14 / 154 px (the name on 5 to 7
+  // lines). The 320 px floor keeps the hero off the first line unless the identity keeps at least 320 px: the default window reads
+  // beside, subtitle on two lines; 760 and 900 read exactly as before on all three measured notes.
+  it("the identity grows from a zero basis with a min(100%, 320px) floor", () => {
+    const block = ruleOf("components.css", ".archivist-pc-sheet .pc-identity {");
+    expect(block).toMatch(/flex:\s*1 1 0;/);
+    expect(block).toMatch(/min-width:\s*min\(100%, 320px\);/);
+  });
+});
