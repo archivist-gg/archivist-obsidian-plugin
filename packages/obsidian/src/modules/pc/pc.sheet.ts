@@ -9,16 +9,6 @@ import { closeCoinModal } from "./components/coin-modal";
 import { closeProficiencyModal } from "./components/proficiency-edit-modal";
 import { closeDefenseTypePopover } from "./components/defense-type-popover";
 import { closeConditionsPopover } from "./components/conditions-popover";
-import { attachBodyFit, disposeBodyFit } from "./components/body-fit";
-
-/**
- * R4-G6b §8.1 (Q-6): the hysteresis band, in px, around the rail height inside which the body-fit observer HOLDS
- * its previous decision. The one feedback path the two-column measurement cannot exclude is external: a flip
- * changes the sheet height, which can add or remove `.view-content`'s vertical scrollbar, which changes the
- * sheet's inline size. The T0 probe measured that scrollbar as OVERLAY here (`offsetWidth - clientWidth` = 0 with
- * `overflow-y: scroll` forced), so no hysteresis is needed and the band is 0.
- */
-const BODY_FIT_BAND = 0;
 
 export interface RenderSheetOptions {
   root: HTMLElement;
@@ -56,19 +46,13 @@ export interface RenderSheetOptions {
 /**
  * DOM render of a resolved + derived PC into `root`. Clears the root first.
  * Top strip → ability row → combat stats → 2-col body. Warnings get a banner
- * at the very top. NOT a pure render: the sheet branch ends in
- * `attachBodyFit(root, body, BODY_FIT_BAND)`, which installs a live
- * `ResizeObserver` keyed on `root` in a module-level `WeakMap` that outlives
- * this call, so the CALLER MUST call `disposeBodyFit(root)` at teardown (the
- * four `pc.view.ts` sites: `setViewData`, `clear`, `onunload` and
- * `onLoadFile`). Re-entry is safe on its own: this function
- * disposes `root`'s previous observer before it empties the root.
+ * at the very top. The body is two columns (the rail left, the tabs right)
+ * whatever the active tab's height; only the pane's width stacks it, through
+ * the 499 tier in `styles/layout.css` (R4-G7 RIDER-7: the user reversed Q-6 on
+ * 2026-09-15, so the R4-G6b body-fit observer and its teardown are retired).
  */
 export function renderPCSheet(opts: RenderSheetOptions): void {
   const { root, resolved, derived, registry, services, app, warnings } = opts;
-  // R4-G6b §8: any observer from the previous render watches nodes this render is about to detach; the
-  // builder early-return below never reaches `attachBodyFit`, so disposing here covers that path too.
-  disposeBodyFit(root);
   const prevScroll = root.scrollTop;
   root.empty();
   const sheet = root.createDiv({ cls: "archivist-pc-sheet" });
@@ -164,7 +148,6 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
   }
   const content = body.createDiv({ cls: "pc-content" });
   safeRender(content, "pc-tabs", "tabs-container", registry, ctx, { wrap: false });
-  attachBodyFit(root, body, BODY_FIT_BAND);
 
   root.scrollTop = prevScroll;
 }
@@ -173,7 +156,6 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
  * Clear-render an error banner with a "Go to markdown" fallback button.
  */
 export function renderPCSheetError(root: HTMLElement, message: string, onFallback: () => void): void {
-  disposeBodyFit(root);
   root.empty();
   const err = root.createDiv({ cls: "archivist-pc-error" });
   err.createEl("h2", { text: "Cannot render character sheet" });

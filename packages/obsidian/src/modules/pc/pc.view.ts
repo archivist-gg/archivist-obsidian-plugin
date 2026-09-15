@@ -24,7 +24,6 @@ import { closeSpellAbilityModal } from "./components/spell-ability-modal";
 import { closeProficiencyModal } from "./components/proficiency-edit-modal";
 import { closeDefenseTypePopover } from "./components/defense-type-popover";
 import { closeConditionsPopover } from "./components/conditions-popover";
-import { disposeBodyFit } from "./components/body-fit";
 import type { PCModule } from "./pc.module";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -122,9 +121,6 @@ export class PCSheetView extends TextFileView {
     // no refresher at all and would otherwise survive indefinitely.
     closeDefenseTypePopover();
     closeConditionsPopover();
-    // R4-G6b §8.1 (Q-6): the body-fit ResizeObserver is torn down at every site the modals are, so no observer
-    // survives against detached nodes.
-    disposeBodyFit(this.contentEl);
     this.rawFileData = data;
     this.isDirty = false;
     this.lastWrittenData = null;
@@ -238,7 +234,6 @@ export class PCSheetView extends TextFileView {
     closeProficiencyModal();
     closeDefenseTypePopover();
     closeConditionsPopover();
-    disposeBodyFit(this.contentEl);
     this.character = null;
     this.derived = null;
     this.editState = null;
@@ -267,7 +262,6 @@ export class PCSheetView extends TextFileView {
     closeProficiencyModal();
     closeDefenseTypePopover();
     closeConditionsPopover();
-    disposeBodyFit(this.contentEl);
     super.onunload();
   }
 
@@ -285,7 +279,6 @@ export class PCSheetView extends TextFileView {
     closeProficiencyModal();
     closeDefenseTypePopover();
     closeConditionsPopover();
-    disposeBodyFit(this.contentEl);
     // Obsidian calls this when the view's underlying file changes. Reset all
     // SP4 mutation/persistence state so no stale references survive across
     // file switches (especially lastWrittenData, which would otherwise cause

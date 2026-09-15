@@ -9,6 +9,10 @@
  * The rows are added task by task: T6 owns the `.pc-hp-over` pair in `components.css` and CARRIES the four
  * `.pc-unarmed-card*` rules T2's fix round added to `actions.css`; T8 (the caption primitive), T9 (the sticky
  * rail) and T10 (the body-fit blocks) APPEND their own rows to this file.
+ *
+ * R4-G7 RIDER-7 RETIRED T10's body-fit rows (§8.2) and T13 rider R-3's odd-last-rail-panel rows: the user
+ * reversed Q-6 on 2026-09-15 ("it must always be on right"), so the rules they guarded are gone from
+ * `layout.css`. Their absence is pinned in `pc-css-contracts-g7.test.ts`.
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -183,7 +187,8 @@ describe("R4-G6b CSS contracts · §7 the sticky builder rail (layout.css, build
 });
 
 /**
- * T10 (spec §8.2) reads a selector INSIDE one `@container` block. `.archivist-pc-sheet .pc-sidebar` and
+ * Reads a selector INSIDE one `@container` block (written for T10, spec §8.2, whose rows RIDER-7 retired; the
+ * later rows below still use it). `.archivist-pc-sheet .pc-sidebar` and
  * `.archivist-pc-sheet .pc-content` exist BOTH as base rules and inside the 499 tier, and `ruleOf` returns the
  * FIRST match, which is the base rule: the 499 tier's own declarations are only reachable by slicing its block
  * first. `query` is the text between `@container` and the opening brace.
@@ -210,61 +215,6 @@ const declsOf = (block: string): Record<string, string> =>
       .filter((d) => d.includes(":"))
       .map((d) => [d.slice(0, d.indexOf(":")).trim(), d.slice(d.indexOf(":") + 1).trim()]),
   );
-
-describe("R4-G6b CSS contracts · §8.2 the body-fit collapse (layout.css)", () => {
-  const FIT_TIER = "pc-sheet (min-width: 500px)";
-  const NARROW_TIER = "pc-sheet (max-width: 499px)";
-
-  it("the measurement class keeps the two-column template and shrinks the cells to their content", () => {
-    const block = ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-measure");
-    // Fix round 1 (F-7): §8.1's stated property is EQUALITY with the base `.pc-body` template, not a particular pair
-    // of track values: the measurement must happen under the template the two-column dress actually uses. A literal
-    // matches both after a drift in only one of them, so the base rule is the expectation.
-    expect(declsOf(block)["grid-template-columns"])
-      .toBe(declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body"))["grid-template-columns"]);
-    // Without `start` both cells stretch to the row and the two rects would be EQUAL every time.
-    expect(block).toMatch(/align-items:\s*start/);
-  });
-
-  it("the fit class is one column with the narrow tier's body padding", () => {
-    const fit = declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one"));
-    const narrow = declsOf(ruleInText(containerBlock("layout.css", NARROW_TIER), ".archivist-pc-sheet .pc-body", NARROW_TIER));
-    expect(fit["grid-template-columns"]).toBe("1fr");
-    expect(fit.padding).toBe(narrow.padding);
-    expect(narrow["grid-template-columns"]).toBe("1fr");
-  });
-
-  it("the fit rail restates the 499 tier's sidebar declarations and flows the panels side by side", () => {
-    const fit = declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one .pc-sidebar"));
-    const narrow = declsOf(ruleInText(containerBlock("layout.css", NARROW_TIER), ".archivist-pc-sheet .pc-sidebar", NARROW_TIER));
-    // Only the SHARED properties are compared: the fit rail ALSO carries `display: grid`,
-    // `grid-template-columns` and `gap` (the side-by-side flow), which the 499 tier does not.
-    for (const prop of ["padding", "border-right", "border-bottom"]) {
-      expect(fit[prop], `${prop} must restate the 499 tier's value`).toBe(narrow[prop]);
-    }
-    // `.pc-sidebar` is `display: flex; flex-direction: column`, so the template alone would be inert.
-    expect(fit.display).toBe("grid");
-    expect(fit["grid-template-columns"]).toBe("repeat(auto-fit, minmax(220px, 1fr))");
-    expect(fit.gap).toBe("var(--pc-space-3)");
-  });
-
-  it("the fit content column restates the 499 tier's padding", () => {
-    const fit = declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one .pc-content"));
-    const narrow = declsOf(ruleInText(containerBlock("layout.css", NARROW_TIER), ".archivist-pc-sheet .pc-content", NARROW_TIER));
-    expect(fit.padding).toBe(narrow.padding);
-  });
-
-  it("both classes live under the min-width tier and carry the root prefix", () => {
-    const fitTier = containerBlock("layout.css", FIT_TIER);
-    expect(fitTier).toContain(".archivist-pc-sheet .pc-body.pc-body-measure");
-    expect(fitTier).toContain(".archivist-pc-sheet .pc-body.pc-body-fit-one");
-    // Below 500 px both classes are inert: the narrow tier never mentions them.
-    expect(containerBlock("layout.css", NARROW_TIER)).not.toContain("pc-body-fit-one");
-    // The prefix is what outranks the base `.archivist-pc-sheet .pc-body` rule: an UNPREFIXED
-    // `.pc-body.pc-body-fit-one` rule would tie on specificity and depend on source order.
-    expect(cssOf("layout.css")).not.toMatch(/(?:^|[};]|\n)\s*\.pc-body\.pc-body-(?:measure|fit-one)\s*\{/);
-  });
-});
 
 /**
  * The T13 LIVE riders. Each row guards a rule the live run's finding named; the finding's own
@@ -377,43 +327,6 @@ describe("R4-G6b CSS contracts · T13 live rider F-D · the feature-row tier vs 
     // The rest of that block is untouched by this rider.
     expect(narrow).toContain(".archivist-pc-sheet .pc-attack-table");
     expect(narrow).toContain(".archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery");
-  });
-});
-
-describe("R4-G6b CSS contracts · T13 live rider R-3 · the odd last rail panel at the two-column band (layout.css)", () => {
-  const TWO_COL = "pc-sheet (min-width: 500px) and (max-width: 715px)";
-
-  /** A `--pc-space-N` token's px value, read from the partial that defines it. */
-  const space = (n: number): number => {
-    const m = cssOf("tokens.css").match(new RegExp("--pc-space-" + n + ":\\s*(\\d+)px"));
-    expect(m, `--pc-space-${n} missing from tokens.css`).toBeTruthy();
-    return Number((m as RegExpMatchArray)[1]);
-  };
-
-  it("the band's upper edge is exactly the sheet width three 220 px rail columns need", () => {
-    // THE ARITHMETIC, from the shipped values rather than from the ruling's prose. The rail is
-    // `repeat(auto-fit, minmax(220px, 1fr))` with a `--pc-space-3` gap inside a body whose only
-    // horizontal padding is `--pc-space-4` on each side, and the sheet ITSELF has no horizontal
-    // padding (layout.css), so the `pc-sheet` container width IS the body's outer width. Three
-    // columns therefore need 3 * 220 + 2 * gap + 2 * padding, and one pixel below that the grid has
-    // TWO columns, which is where an odd last panel sits alone beside a blank cell (B8 D-1).
-    const rail = declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one .pc-sidebar"));
-    expect(rail["grid-template-columns"]).toBe("repeat(auto-fit, minmax(220px, 1fr))");
-    expect(rail["gap"]).toBe("var(--pc-space-3)");
-    expect(declsOf(ruleOf("layout.css", ".archivist-pc-sheet .pc-body.pc-body-fit-one"))["padding"])
-      .toBe("0 var(--pc-space-4) var(--pc-space-4)");
-    const threeColumns = 3 * 220 + 2 * space(3) + 2 * space(4);
-    expect(threeColumns).toBe(716);
-    expect(cssOf("layout.css")).toContain(`@container ${TWO_COL} {`);
-    expect(TWO_COL).toContain(`max-width: ${threeColumns - 1}px`);
-  });
-
-  it("an odd last rail panel spans the row instead of leaving a blank cell beside it", () => {
-    const block = containerBlock("layout.css", TWO_COL);
-    const decls = declsOf(ruleInText(block, ".archivist-pc-sheet .pc-body.pc-body-fit-one .pc-sidebar > :last-child:nth-child(odd)", TWO_COL));
-    expect(decls["grid-column"]).toBe("1 / -1");
-    // Scoped to the flipped rail alone: the sheet's OTHER two-column surfaces are untouched.
-    expect(block).not.toContain(".pc-content");
   });
 });
 

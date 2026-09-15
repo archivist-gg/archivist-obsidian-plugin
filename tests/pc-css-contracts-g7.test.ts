@@ -214,3 +214,31 @@ describe("R4-G7 CSS contracts · RIDER-3 RE-TAKEN at the cause (T7 fix round 1)"
     expect(block).not.toMatch(/position:\s*absolute/);
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-7 the per-tab body collapse is retired, the width tier stays (CLEANLINESS PIN)", () => {
+  // THIS TEST IS NOT THE WITNESS. The kill-power row is the jsdom render in `tests/pc-sheet.test.ts`
+  // (a short tab beside a tall rail never gets `pc-body-fit-one`), and the live witness is the W-A
+  // session's per-tab read of `.pc-body`'s class and the content / rail rects. This block only pins that
+  // no selector for the retired dress survives in a partial or in the generated `styles.css`, and that the
+  // ONE rule that still stacks the body reads the pane's width.
+  const ROOT_CSS = join(__dirname, "..", "styles.css");
+
+  it("no partial and not the generated styles.css carries a body-fit selector", () => {
+    const partials = ["layout.css", "components.css", "containers.css", "actions.css", "inventory.css"];
+    const hits = partials.filter((f) => /pc-body-(?:fit-one|measure)/.test(read(f)));
+    expect(hits).toEqual([]);
+    expect(readFileSync(ROOT_CSS, "utf8")).not.toMatch(/pc-body-(?:fit-one|measure)/);
+  });
+
+  it("the body stacks only under the pc-sheet 499 px width tier", () => {
+    const css = read("layout.css");
+    const head = "@container pc-sheet (max-width: 499px) {";
+    const at = css.indexOf(head);
+    expect(at).toBeGreaterThan(-1);
+    const tier = css.slice(at, css.indexOf("\n}", at));
+    expect(tier).toMatch(/\.archivist-pc-sheet \.pc-body \{\s*grid-template-columns: 1fr;/);
+    // exactly one one-column body template in the partial, and it is the one inside that tier
+    expect(css.match(/grid-template-columns:\s*1fr;/g) ?? []).toHaveLength(1);
+    expect(css).not.toContain("@container pc-sheet (min-width: 500px)");
+  });
+});
