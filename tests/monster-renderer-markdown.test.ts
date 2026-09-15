@@ -158,4 +158,55 @@ describe("Q-11 · monster feature prose through the markdown path (spec §7.6)",
     expect(seen.length).toBe(1);
     expect(seen[0]).toContain("The lair shifts.");
   });
+
+  /**
+   * R4-G7 T8 wave E, B026-D1 (the G7 regression of T4 `da091724`). Obsidian's MarkdownRenderer emits BLOCK children into
+   * the INLINE `span.archivist-feature-entry` (MEASURED live in W-Er: the entry's children read `p`, `#text("\n")`, `ul`),
+   * and a block child splits its inline parent: the prose started on the line BELOW its bold name and, with
+   * `.archivist-feature`'s -1em hanging indent inherited, its first line hung out to the card's own edge. The LEAD
+   * paragraph is unwrapped in place, so the prose is inline after the name again (Q-11 keeps everything else: a second
+   * paragraph, a list or a table stays the block it is). These read the EMITTED DOM, which is what the defect is about.
+   */
+  it("wave E B026-D1: the lead paragraph is unwrapped, so the prose is inline with the name and a later paragraph stays a block", async () => {
+    const render = (parent: HTMLElement): Promise<void> => {
+      const doc = parent.ownerDocument;
+      const p1 = doc.createElement("p"); p1.textContent = "One.";
+      const p2 = doc.createElement("p"); p2.textContent = "Two.";
+      parent.appendChild(p1);
+      parent.appendChild(doc.createTextNode("\n"));
+      parent.appendChild(p2);
+      return Promise.resolve();
+    };
+    const m = { name: "Twoer", abilities: ABIL, traits: [{ name: "Both", entries: ["One.", "Two."] }] } as unknown as Monster;
+
+    const { el, ready } = renderMonsterBlock(m, 1, undefined, { render });
+    await ready;
+
+    const entry = el.querySelector(".archivist-feature-entry") as HTMLElement;
+    expect(entry.firstChild?.nodeType).toBe(3);
+    expect(entry.firstChild?.textContent).toBe("One.");
+    expect(entry.querySelectorAll(":scope > p").length).toBe(1);
+    expect((entry.querySelector(":scope > p") as HTMLElement).textContent).toBe("Two.");
+    // the name is still the entry's SIBLING on the card, which is what the live witness measures against
+    expect((entry.previousElementSibling as HTMLElement).className).toBe("archivist-feature-name");
+  });
+
+  it("wave E B026-D1: an entry whose first block is a LIST keeps that list a block (only a lead paragraph is unwrapped)", async () => {
+    const render = (parent: HTMLElement): Promise<void> => {
+      const doc = parent.ownerDocument;
+      const ul = doc.createElement("ul");
+      const li = doc.createElement("li"); li.textContent = "a";
+      ul.appendChild(li);
+      parent.appendChild(ul);
+      return Promise.resolve();
+    };
+    const m = { name: "Lister", abilities: ABIL, traits: [{ name: "Bullets", entries: ["- a"] }] } as unknown as Monster;
+
+    const { el, ready } = renderMonsterBlock(m, 1, undefined, { render });
+    await ready;
+
+    const entry = el.querySelector(".archivist-feature-entry") as HTMLElement;
+    expect((entry.firstElementChild as HTMLElement).tagName).toBe("UL");
+    expect(entry.querySelectorAll(":scope > ul > li").length).toBe(1);
+  });
 });

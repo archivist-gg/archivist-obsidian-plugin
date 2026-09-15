@@ -95,6 +95,34 @@ function formatRechargeSuffix(r: FeatureRecharge | undefined): string {
 }
 
 /**
+ * B026-D1 (R4-G7 T8 wave E; the G7 regression of T4 `da091724`). Q-11 renders a feature's prose through the markdown
+ * path, and Obsidian's MarkdownRenderer emits BLOCK children into the INLINE `span.archivist-feature-entry`: MEASURED
+ * live in W-Er, a one-paragraph entry's children are exactly `[p]` and a two-block entry's are `[p, #text("\n"), ul]`.
+ * A block child splits its inline parent, so the prose started on the line BELOW its bold name, and `.archivist-feature`'s
+ * -1em hanging indent (which the name needs) was inherited by that `p`, pulling its FIRST line out to the card's own
+ * edge: the "hung continuation" the eye pass reported on all 24 notes with entries.
+ *
+ * The LEAD paragraph is therefore unwrapped in place: its child nodes take its position, so the first paragraph is inline
+ * after the name exactly as it was before Q-11, while everything else Q-11 gained stays what it is (a second paragraph, a
+ * list, a table). Nothing else is touched: a lead node that is NOT a paragraph (an entry that opens with a list) is left
+ * alone, and prose already inline (the injected renders of the pins and of the row-9 tests) has nothing to unwrap.
+ */
+function inlineLeadParagraph(entry: HTMLElement): void {
+  for (const node of Array.from(entry.childNodes)) {
+    // whitespace between blocks is what MarkdownRenderer leaves behind; real text means the prose is already inline
+    if (node.nodeType === 3) {
+      if (!/\S/.test(node.nodeValue ?? "")) continue;
+      return;
+    }
+    if (node.nodeType !== 1 || (node as Element).tagName !== "P") return;
+    const p = node as HTMLElement;
+    while (p.firstChild) entry.insertBefore(p.firstChild, p);
+    p.remove();
+    return;
+  }
+}
+
+/**
  * The feature cards of one section. Every card's DOM is built SYNCHRONOUSLY (the name with its recharge suffix, the
  * entry span, the attack lines), so the card order and the section's structure never depend on a fill; only each
  * feature's PROSE is asynchronous, because Q-11 (spec §7.6) renders it through the markdown path instead of through
@@ -120,7 +148,8 @@ async function renderFeatureBlock(
       // markdown, and a blank line is what keeps it one. `monsterCtx` rides along so the tags inside the prose still
       // resolve against this monster's abilities and proficiency bonus.
       const entryText = feature.entries.join("\n\n");
-      pending.push(render(entrySpan, entryText, app, undefined, monsterCtx));
+      // B026-D1: the fill settles first, then its LEAD paragraph is unwrapped so the prose is inline after the name.
+      pending.push(render(entrySpan, entryText, app, undefined, monsterCtx).then(() => inlineLeadParagraph(entrySpan)));
     } else if (feature.attacks && feature.attacks.length > 0) {
       const attacksWrap = el("span", {
         cls: "archivist-feature-attacks",

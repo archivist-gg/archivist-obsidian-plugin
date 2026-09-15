@@ -484,3 +484,21 @@ describe("R4-G7 fix round 1 · W-D-D6 an EMPTY detail slot gives its track to th
     expect(block(".archivist-pc-sheet .pc-feature-list .pc-feature-row > .pc-feature-detail:empty {")).toMatch(/display:\s*none;/);
   });
 });
+
+describe("R4-G7 T8 wave E CSS contracts · B026-D1 the block children a markdown entry can hold", () => {
+  const DND = join(__dirname, "..", "packages", "obsidian", "src", "styles");
+  const dnd = (): string => readFileSync(join(DND, "archivist-dnd.css"), "utf8");
+
+  // MEASURED LIVE in W-Er (the deployed pair d8f93568 / 04b3ebd4, the default 1024 x 800 window) on all nine battery
+  // notes: every one of the 79 non-spellcasting feature cards had its prose on the line BELOW its bold name, the
+  // paragraph's first line at x 470.6 (the card's edge, pulled by the inherited -1em hang) and its continuation lines at
+  // 484.6. The renderer unwraps the LEAD paragraph; the blocks that remain (a second paragraph, a blockquote, a table)
+  // keep their own line and must not inherit the hang the name needs.
+  it("a paragraph, blockquote or table inside a feature entry does not inherit the hanging indent", () => {
+    const css = dnd();
+    const ix = css.indexOf(".archivist-feature-entry :is(p, blockquote, table)");
+    expect(ix).toBeGreaterThan(-1);
+    const block = css.slice(css.indexOf("{", ix) + 1, css.indexOf("}", css.indexOf("{", ix)));
+    expect(block).toMatch(/text-indent:\s*0/);
+  });
+});
