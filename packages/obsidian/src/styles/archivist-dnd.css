@@ -484,8 +484,18 @@
 }
 
 /* Stat Block Interactive Tags (parchment theme) */
+/* R4-G7 T8 wave E, B026-D4: `nowrap` holds the icon to its value and the value together. The icon is an inline `<svg>`,
+   an ATOMIC INLINE, and Chromium allows a break before and after one whatever the neighbouring characters are: MEASURED
+   live in W-Er, Andir's Variants table broke ten of its ten tags across lines ("16 (" / icon / "3d8 + 3)") and the
+   Aboleth, Baphomet and the Turtle each broke one. The "(" that opens a tag is held by the shared wrapper below, which
+   the renderer puts around the two (`bindInlineTagPunctuation`, `shared/rendering/renderer-utils.ts`). */
 .archivist-stat-tag {
   display: inline;
+  white-space: nowrap;
+}
+/* The wrapper that binds a widget to the opening punctuation the PROSE owns (both tag families use it). */
+.archivist-tag-nobreak {
+  white-space: nowrap;
 }
 .archivist-stat-tag-icon {
   display: inline;
@@ -1512,8 +1522,15 @@
    ========================================================================== */
 
 /* Editor/Chat Inline Tags -- Warm Gold / Cool Teal / Soft Red */
+/* R4-G7 T8 wave E, B026-D4: the same `nowrap` as the stat-block widget above, for the same reason and on the same
+   evidence. This is the family the PC sheet's Weapons DAMAGE cell renders (`renderTextWithInlineTags(..., false)`):
+   MEASURED live in W-Er on the user's Illrigger, the Greatsword of Wounding row read "2d6 necrotic + [icon]" then "1d8"
+   then "necrotic" over three lines (two of its three tags in two fragments, one with its icon on another line than its
+   value); with this rule every tag of both rows is ONE fragment, icon and value together, and the widest of them still
+   ends 15.6 px inside the damage cell. */
 .archivist-tag {
   display: inline;
+  white-space: nowrap;
 }
 .archivist-tag-icon {
   display: inline;

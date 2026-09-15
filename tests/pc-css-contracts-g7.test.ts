@@ -541,3 +541,25 @@ describe("R4-G7 T8 wave E CSS contracts · B026-D17 / B026-D21 the markdown fill
     expect(block).toMatch(/line-height:\s*1\.4em/);
   });
 });
+
+describe("R4-G7 T8 wave E CSS contracts · B026-D4 the tag's own halves", () => {
+  const DND = join(__dirname, "..", "packages", "obsidian", "src", "styles");
+  const dnd = (): string => readFileSync(join(DND, "archivist-dnd.css"), "utf8");
+  const blockFor = (selector: string): string => {
+    const css = dnd();
+    const ix = css.indexOf(selector);
+    if (ix < 0) throw new Error(`no rule for ${selector}`);
+    return css.slice(css.indexOf("{", ix) + 1, css.indexOf("}", css.indexOf("{", ix)));
+  };
+
+  // MEASURED LIVE in W-Er (the deployed pair): Andir's Variants table broke 10 of its 10 tags across lines, the SRD
+  // Aboleth's Actions, Baphomet's Regional Effects and the Turtle's Legendary Actions one each; on the PC sheet the
+  // Illrigger's Greatsword row had two of three damage tags in two fragments, one with its icon on another line than
+  // its value. With `white-space: nowrap` injected live, every one of those tags read ONE fragment, icon and value
+  // together, and the widest still ended 15.6 px inside the damage cell.
+  it("both tag families are unbreakable, and so is the wrapper that binds one to its '('", () => {
+    expect(blockFor(".archivist-stat-tag {")).toMatch(/white-space:\s*nowrap/);
+    expect(blockFor(".archivist-tag {")).toMatch(/white-space:\s*nowrap/);
+    expect(blockFor(".archivist-tag-nobreak")).toMatch(/white-space:\s*nowrap/);
+  });
+});

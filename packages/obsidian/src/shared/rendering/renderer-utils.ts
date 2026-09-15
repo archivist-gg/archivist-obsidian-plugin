@@ -444,6 +444,40 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
 }
 
 /**
+ * B026-D4 (R4-G7 T8 wave E). A tag widget is `span > span.<icon> > svg` plus a text span, and an inline `<svg>` is an
+ * ATOMIC INLINE: Chromium allows a line break before and after one whatever the surrounding characters are, so a line
+ * could break between a prose "(" and the icon that follows it. MEASURED live in W-Er on the deployed pair: the Aspect
+ * of Tiamat's Mythic Actions, Burney's Legendary Actions and Andir's Actions each had a tag whose leading "(" sat on the
+ * previous line ("take 44 (" / the icon and "8d10)"), and the eye pass found the same on 13 of the 23 battery notes.
+ * `white-space: nowrap` on the widget itself (archivist-dnd.css) holds the icon to its value and the value together; it
+ * cannot hold the "(", because that character belongs to the PROSE, and the nearest common ancestor of the two is the
+ * paragraph. So the "(" joins the widget inside a nowrap wrapper.
+ *
+ * Only an OPENING punctuation run is moved. A closing ")" or a "." after the value needs no wrapper: UAX #14 forbids a
+ * break before closing punctuation (LB13), and no RED frame of the wave showed one orphaned; leaving it in the prose
+ * also leaves every rendered tag that ends a sentence byte-identical, which keeps the pins that measure them honest.
+ * Runs over an element that already holds wrapped widgets are no-ops (a widget inside a wrapper is skipped), so a caller
+ * that fills one parent in several passes (the PC sheet's damage cell, the monster HP line) can call it after each.
+ */
+export function bindInlineTagPunctuation(root: HTMLElement): void {
+  const doc = root.ownerDocument ?? activeDocument;
+  root.querySelectorAll(".archivist-stat-tag, .archivist-tag").forEach((tag) => {
+    const parent = tag.parentElement;
+    if (!parent || parent.classList.contains("archivist-tag-nobreak")) return;
+    const prev = tag.previousSibling;
+    if (!prev || prev.nodeType !== 3) return;
+    const text = prev.nodeValue ?? "";
+    const match = /[([{]+$/.exec(text);
+    if (!match) return;
+    const wrapper = doc.createElement("span");
+    wrapper.classList.add("archivist-tag-nobreak");
+    parent.insertBefore(wrapper, tag);
+    wrapper.appendChild((prev as Text).splitText(text.length - match[0].length));
+    wrapper.appendChild(tag);
+  });
+}
+
+/**
  * Render text that may contain inline tags like `roll:2d6+3` or `dc:15`.
  * Inside stat blocks, tags render as subtle inline text matching the parchment theme.
  * Outside stat blocks (body text), tags render as colorful pill badges.
@@ -494,6 +528,9 @@ export function renderTextWithInlineTags(
   if (lastIndex < converted.length) {
     appendMarkdownText(converted.slice(lastIndex), parent);
   }
+
+  // B026-D4: a widget and the "(" that opens it are one unbreakable unit.
+  bindInlineTagPunctuation(parent);
 }
 
 /**

@@ -2,7 +2,7 @@ import { MarkdownRenderer, Component, type App } from "obsidian";
 import { parseInlineTag } from "@archivist-gg/dnd5e/inline-tag-parser";
 import { convert5eToolsTags } from "@archivist-gg/dnd5e/dnd/prose-tags";
 import type { FormulaContext } from "@archivist-gg/dnd5e";
-import { renderStatBlockTag } from "./renderer-utils";
+import { bindInlineTagPunctuation, renderStatBlockTag } from "./renderer-utils";
 
 /**
  * Render a markdown string into `parent` using Obsidian's native renderer,
@@ -91,4 +91,8 @@ export async function renderMarkdownDescription(
     const widget = renderStatBlockTag(parsed, monsterCtx, doc);
     code.replaceWith(widget);
   });
+
+  // B026-D4 (R4-G7 T8 wave E): the widgets are in place, so bind each to the "(" that opens it. The tag itself is held
+  // together by `white-space: nowrap`; the opening punctuation belongs to the prose and needs the shared wrapper.
+  bindInlineTagPunctuation(parent);
 }
