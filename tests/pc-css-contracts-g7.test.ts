@@ -401,3 +401,33 @@ describe("R4-G7 CSS contracts · RIDER-27 the identity block wraps its text besi
     expect(block).toMatch(/min-width:\s*min\(100%, 320px\);/);
   });
 });
+
+describe("R4-G7 fix round 1 · RIDER-27 below a 700 px sheet the identity keeps no floor (review Important 1; MEASURED in a headless replica)", () => {
+  // The 320 px floor above has a job only where the hero cluster can share the first line. Inside
+  // `@container pc-sheet (max-width: 699px)` the hero cluster is `width: 100%`, so it never does, and a floor wider than the room
+  // beside the avatar (sheet - 100 px in the 499 tier) moved the WHOLE identity under the avatar on every sheet narrower than about
+  // 420 px, short names included. The tier zeroes the floor. It wins by SOURCE ORDER only (the same specificity as the base rule),
+  // so it must sit in that later block. Two blocks in components.css share the query (the stats band's, then the hero cluster's) and
+  // `containerBlockIn` returns the first, so the pin walks every block with the query and reads the hero cluster's.
+  const tiers = (css: string, query: string): { at: number; text: string }[] => {
+    const out: { at: number; text: string }[] = [];
+    for (let from = 0; ; ) {
+      const text = containerBlockIn(css.slice(from), query);
+      if (text === null) return out;
+      const at = css.indexOf(text, from);
+      out.push({ at, text });
+      from = at + text.length;
+    }
+  };
+
+  it("the pc-sheet 699 tier that wraps the hero cluster sets the identity's min-width to 0, after the base rule", () => {
+    const css = read("components.css");
+    const heroTier = tiers(css, "pc-sheet (max-width: 699px)").find((b) => b.text.includes(".archivist-pc-sheet .pc-hero-right {"));
+    expect(heroTier?.text ?? "").toContain(".archivist-pc-sheet .pc-identity { min-width: 0; }");
+    expect((heroTier as { at: number }).at).toBeGreaterThan(css.indexOf(".archivist-pc-sheet .pc-identity {"));
+  });
+
+  it("the base rule's comment no longer claims the narrow tier drops the block below the avatar 'as it always did'", () => {
+    expect(read("components.css")).not.toMatch(/takes its own line, as it always did there/);
+  });
+});

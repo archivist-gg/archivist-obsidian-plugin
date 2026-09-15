@@ -88,8 +88,10 @@
    the sheet width emulated. The floor is the fix for that: the identity's hypothetical size is at least min(100%, 320px), so the
    hero cluster joins the first line only when the identity keeps 320 px. Measured on three notes: the default window reads beside,
    the battle-smith's subtitle on two lines; 760 and 900 px sheets read exactly as before; at 1200 px the battle-smith's hero
-   cluster now shares the first line and its long fixture name and subtitle wrap to two lines each in 454 px. Below a sheet of about
-   420 px (the 64 px avatar tier) the floor no longer fits beside the avatar and the block takes its own line, as it always did there. */
+   cluster now shares the first line and its long fixture name and subtitle wrap to two lines each in 454 px. Below a 700 px sheet the
+   floor has no job (the hero cluster is `width: 100%` there and never shares the first line) and it did harm: a floor wider than the
+   room beside the avatar moved the whole block under it on every sheet under about 420 px, short names included (fix round 1, review
+   Important 1). The `@container pc-sheet (max-width: 699px)` block that wraps the hero cluster sets `min-width: 0`, later in this file. */
 .archivist-pc-sheet .pc-identity { flex: 1 1 0; min-width: min(100%, 320px); }
 .archivist-pc-sheet .pc-name {
   font-family: var(--pc-font-serif);
@@ -1092,6 +1094,10 @@
   }
   .archivist-pc-sheet .pc-hp-widget { min-width: 0; flex: 1 1 280px; }
   .archivist-pc-sheet .pc-hd-widget { min-width: 0; flex: 1 1 160px; }
+  /* R4-G7 T8 RIDER-27 fix round 1 (review Important 1): the hero cluster above takes its own line, so the identity's 320 px floor
+     (the base rule near the top of this file) has nothing to keep off the first line here; zeroed, the identity stays beside the
+     avatar and wraps its text at every sheet width of this tier. Same specificity as the base rule: it wins by source order. */
+  .archivist-pc-sheet .pc-identity { min-width: 0; }
 
   .archivist-pc-sheet .pc-ability-row {
     row-gap: 18px;
