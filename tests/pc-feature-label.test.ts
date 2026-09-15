@@ -8,14 +8,16 @@ import type { ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 // "srd-5e_", …) that must be stripped so labels read cleanly ("Illrigger 3",
 // not "Mcdm_illrigger 3"). Real format (confirmed against source):
 //   class/subclass → `${name} ${level}`   race → bare name
-//   background     → `Background: ${name}` feat → `Feat: ${name}`
+//   background     → `Background: ${name}`
+//   feat           → its `via` through the class / background arm, else `Feat` (R4-G7 T8 RIDER-23; the feat's own
+//                    name is the row's title, so the line never repeats it)
 describe("source label cleanup", () => {
   it("strips compendium namespace and title-cases", () => {
     expect(formatSourceLabel({ kind: "class", slug: "mcdm_illrigger", level: 3 })).toBe("Illrigger 3");
     expect(formatSourceLabel({ kind: "subclass", slug: "mcdm_hellspeaker", level: 3 })).toBe("Hellspeaker 3");
     expect(formatSourceLabel({ kind: "race", slug: "eberron_kalashtar" })).toBe("Kalashtar");
-    expect(formatSourceLabel({ kind: "feat", slug: "srd-2024_ability-score-improvement" }))
-      .toBe("Feat: Ability Score Improvement");
+    expect(formatSourceLabel({ kind: "feat", slug: "srd-2024_ability-score-improvement", via: { kind: "class", slug: "srd-2024_fighter", level: 4 } }))
+      .toBe("Fighter 4");
     expect(formatSourceLabel({ kind: "class", slug: "srd-5e_barbarian", level: 2 })).toBe("Barbarian 2");
     expect(formatSourceLabel({ kind: "background", slug: "srd-2024_soldier" })).toBe("Background: Soldier");
   });
@@ -23,8 +25,8 @@ describe("source label cleanup", () => {
   it("strips the type token from a 3-part type-namespaced slug", () => {
     expect(formatSourceLabel({ kind: "class", slug: "mcdm_class_illrigger", level: 3 })).toBe("Illrigger 3");
     expect(formatSourceLabel({ kind: "subclass", slug: "mcdm_subclass_hellspeaker", level: 3 })).toBe("Hellspeaker 3");
-    expect(formatSourceLabel({ kind: "feat", slug: "srd-2024_feat_ability-score-improvement" }))
-      .toBe("Feat: Ability Score Improvement");
+    expect(formatSourceLabel({ kind: "feat", slug: "srd-2024_feat_ability-score-improvement", via: { kind: "class", slug: "srd-2024_class_fighter", level: 4 } }))
+      .toBe("Fighter 4");
     expect(formatSourceLabel({ kind: "background", slug: "srd-2024_background_soldier" })).toBe("Background: Soldier");
   });
 
@@ -48,7 +50,8 @@ describe("source label cleanup", () => {
     expect(formatSourceLabel({ kind: "race", slug: "phb-2024_race_wood-elf-2024-xphb" }, resolved)).toBe("Wood Elf");
     expect(formatSourceLabel({ kind: "background", slug: "phb-2024_background_acolyte-2024-xphb" }, resolved))
       .toBe("Background: Acolyte");
-    expect(formatSourceLabel({ kind: "feat", slug: "phb-2024_feat_alert-2024-xphb" }, resolved)).toBe("Feat: Alert");
+    expect(formatSourceLabel({ kind: "feat", slug: "phb-2024_feat_alert-2024-xphb", via: { kind: "background", slug: "phb-2024_background_acolyte-2024-xphb" } }, resolved))
+      .toBe("Background: Acolyte");
     // A slug the character does not carry keeps the title-cased fallback, and so does every call with
     // no resolved character at all (every assertion above this test).
     expect(formatSourceLabel({ kind: "subclass", slug: "mcdm_subclass_hellspeaker", level: 3 }, resolved)).toBe("Hellspeaker 3");

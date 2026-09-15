@@ -353,6 +353,11 @@ function renderUsesRecovery(block: HTMLElement, resource: Resource, rec: Resourc
  *  every caller that passes no character (the test suite's direct calls, and any future one). */
 export function formatSourceLabel(source: FeatureSource | undefined, resolved?: ResolvedCharacter): string {
   if (!source) return "";
+  // R4-G7 T8 RIDER-23 (F-FEATSRC): a feat's row is TITLED with the feat's own name (the resolver synthesizes one feature
+  // per feat), so `Feat: <that name>` repeated the title on every feat row. The line names the SLOT instead: dnd5e's
+  // `via` is a class or a background source, formatted by its own arm ("Cleric 4", "Background: Soldier"); with no `via`
+  // the line is the bare kind, never the feat's name.
+  if (source.kind === "feat") return source.via ? formatSourceLabel(source.via, resolved) : "Feat";
   const name = sourceEntityName(source, resolved) ?? capitalizeSlug(source.slug);
   switch (source.kind) {
     case "class":
@@ -362,8 +367,6 @@ export function formatSourceLabel(source: FeatureSource | undefined, resolved?: 
       return name;
     case "background":
       return `Background: ${name}`;
-    case "feat":
-      return `Feat: ${name}`;
     default:
       return "";
   }
@@ -382,7 +385,8 @@ function sourceEntityName(source: FeatureSource, resolved: ResolvedCharacter | u
     : source.kind === "subclass" ? (resolved.classes ?? []).map((c) => c.subclass)
     : source.kind === "race" ? [resolved.race]
     : source.kind === "background" ? [resolved.background]
-    : (resolved.feats ?? []);
+    // A feat never reaches this lookup: `formatSourceLabel` formats its `via` or prints "Feat" (R4-G7 T8 RIDER-23).
+    : [];
   return candidates.find((e) => e?.slug === source.slug)?.name;
 }
 

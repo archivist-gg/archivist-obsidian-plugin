@@ -260,7 +260,8 @@ describe("relocated helpers", () => {
     expect(formatSourceLabel({ kind: "class", slug: "battle-master", level: 3 })).toBe("Battle Master 3");
     expect(formatSourceLabel({ kind: "race", slug: "hill-folk" })).toBe("Hill Folk");
     expect(formatSourceLabel({ kind: "background", slug: "drifter" })).toBe("Background: Drifter");
-    expect(formatSourceLabel({ kind: "feat", slug: "sure-step" })).toBe("Feat: Sure Step");
+    // R4-G7 T8 RIDER-23: a feat source with no `via` is the bare kind, never the feat's own name (the row's title).
+    expect(formatSourceLabel({ kind: "feat", slug: "sure-step" })).toBe("Feat");
     expect(formatSourceLabel(undefined)).toBe("");
   });
 
