@@ -6,6 +6,19 @@
 /* position: relative anchors the absolutely-positioned situational stat tooltip. */
 .archivist-pc-sheet .pc-spell-dc-row { font-size: var(--pc-fs-body); color: var(--pc-text-soft); position: relative; }
 .archivist-pc-sheet .pc-spell-dc-row b { color: var(--pc-text-primary); }
+/* R4-G7 T8 RIDER-18 (F-CASTSUM): the summaries are the units of a separated caption (`renderSeparated`, sep `/`)
+   inside `.pc-spell-dc-list`, the clipping host (a DIV: `overflow` does not apply to an inline box). A unit is an
+   INLINE-BLOCK: a summary that does not fit at the end of a line moves to the next line WHOLE, and only a summary
+   wider than the whole row wraps inside itself (`max-width: 100%`, `white-space: normal`), where the no-break space
+   keeps its class name on its attack value, never alone on a line and never cut by the host's clip (a `nowrap`
+   unit wider than its host is CUT: live rider F-B, `actions.css`). The separator stays anchored to the unit's box,
+   so a unit that starts a line hides its `/` exactly as every other carrier does. `--pc-cap-gap` is 1em here, not
+   the 0.75em default: the `/ ` box is wider than `· ` (7.594 px against 6.344 px in the sheet face at 12 px, space
+   3.125 px, G6b `g6b-t8-sep-width.txt`), so at 0.75em the mark keeps 3.125 + 9 - (7.594 + 2) = 2.5 px of air on its
+   left, and at 1em 5.5 px, about the 5.1 px its own trailing space and the clip margin give it on its right. Not live
+   measured in this wave: S03 is the geometry witness. */
+.archivist-pc-sheet .pc-spell-dc-list { --pc-cap-gap: 1em; }
+.archivist-pc-sheet .pc-spell-dc-list .pc-cap-unit { display: inline-block; max-width: 100%; white-space: normal; }
 .archivist-pc-sheet .pc-spell-viewtoggle {
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); color: var(--pc-crimson);
   border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 2px 9px; cursor: pointer;

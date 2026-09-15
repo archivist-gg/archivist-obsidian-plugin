@@ -223,3 +223,46 @@ describe("SpellsTab", () => {
     expect(c.querySelector(".pc-conc-banner")).toBeNull();
   });
 });
+
+// R4-G7 T8 RIDER-18 (F-CASTSUM): a multiclass caster's spellcasting summary ran the classes together with no separator
+// ("CHA Save DC 14 · Atk +6 (Paladin) CHA Save DC 14 · Atk +6" with "(Warlock)" wrapped alone, live frame W-A2
+// `conv-paladin5e5-warlock5e5/panel-spells__1.png`). Each class's summary is now ONE unit of the shipped separated
+// caption (`renderSeparated`), its class name glued to its values by a no-break space, and a `/` between units (the
+// unit already carries a `·` between its DC and its attack). The geometry (a unit never splitting) is S03's.
+describe("SpellsTab · the multiclass spellcasting summary (R4-G7 T8 RIDER-18)", () => {
+  const paladin: SpellcastingClassInfo = { classSlug: "paladin", className: "Paladin", ability: "cha", defaultAbility: "cha", saveDC: 14, attackBonus: 6, casterType: "half", preparation: "prepared" };
+  const warlock: SpellcastingClassInfo = { classSlug: "warlock", className: "Warlock", ability: "cha", defaultAbility: "cha", saveDC: 14, attackBonus: 6, casterType: "pact", preparation: "known" };
+  const render = (casters: SpellcastingClassInfo[]): HTMLElement => {
+    const c = mountContainer();
+    new SpellsTab().render(c, { resolved: resolved([spell("Bless", 1)]), derived: derived({ spellcastingClasses: casters }), services: {} as never, app: {} as never, editState: null });
+    return c.querySelector<HTMLElement>(".pc-spell-dc-row")!;
+  };
+  it("two casters read as two separated summaries, each class name glued to its own values", () => {
+    const row = render([paladin, warlock]);
+    expect(row.textContent).toBe("CHA Save DC 14 · Atk +6\u00a0(Paladin) / CHA Save DC 14 · Atk +6\u00a0(Warlock)");
+    const units = Array.from(row.querySelectorAll(".pc-cap-unit"));
+    expect(units.length).toBe(2);
+    expect(units.map((u) => u.querySelector(".pc-spell-dc-entry.pc-edit-click")?.textContent)).toEqual([
+      "CHA Save DC 14 · Atk +6\u00a0(Paladin)", "CHA Save DC 14 · Atk +6\u00a0(Warlock)",
+    ]);
+    expect(units[0].querySelector(".pc-cap-sep")).toBeNull();
+    expect(units[1].querySelector(":scope > .pc-cap-sep")?.textContent).toBe("/ ");
+  });
+  it("the clipping caption host is a CHILD of the DC row, so the row's situational tooltip is never clipped", () => {
+    const row = render([paladin, warlock]);
+    expect(row.querySelector(":scope > .pc-spell-dc-list")?.classList.contains("pc-cap-host")).toBe(true);
+    expect(row.classList.contains("pc-cap-host")).toBe(false);
+  });
+  it("each summary keeps its bold values and its own class name span", () => {
+    const row = render([paladin, warlock]);
+    const entries = Array.from(row.querySelectorAll<HTMLElement>(".pc-spell-dc-entry"));
+    expect(entries.map((e) => Array.from(e.querySelectorAll("b")).map((b) => b.textContent))).toEqual([["14", "+6"], ["14", "+6"]]);
+    expect(entries.map((e) => e.querySelector(".pc-spell-dc-class")?.textContent)).toEqual(["\u00a0(Paladin)", "\u00a0(Warlock)"]);
+  });
+  it("a single caster prints one unit with no separator and no class name (its text is unchanged)", () => {
+    const row = render([wizardClass]);
+    expect(row.textContent).toBe("INT Save DC 15 · Atk +7");
+    expect(row.querySelectorAll(".pc-cap-unit").length).toBe(1);
+    expect(row.querySelector(".pc-cap-sep")).toBeNull();
+  });
+});

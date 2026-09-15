@@ -7,6 +7,7 @@ import { attachStatTooltip } from "./stat-tooltip";
 import { renderSituationalRows } from "./situational-rows";
 import { characterHasOwnSpellcastingAbility } from "./inventory/scroll-spell-picker";
 import { openSpellAbilityModal, refreshSpellAbilityModal } from "./spell-ability-modal";
+import { renderSeparated } from "./separated-caption";
 
 type SpellsMode = "cast" | "prepare";
 
@@ -47,15 +48,30 @@ export class SpellsTab implements SheetComponent {
 
     const header = root.createDiv({ cls: "pc-spell-header" });
     const dcRow = header.createDiv({ cls: "pc-spell-dc-row" });
-    casters.forEach((c, i) => {
-      if (i > 0) dcRow.createSpan({ text: "   " });
-      const entry = dcRow.createSpan({ cls: "pc-spell-dc-entry pc-edit-click" });
+    // R4-G7 T8 RIDER-18 (F-CASTSUM): each class's summary is ONE unit of the separated caption, so a multiclass
+    // caster's summaries read "... (Paladin) / ... (Warlock)" and a summary never breaks away from its class name
+    // (the name is glued to the attack value by a no-break space). `/` separates the units because a unit already
+    // carries a `·` between its DC and its attack. The clipping caption host is a CHILD div, never the row itself:
+    // the row is the anchor the situational tooltip mounts INSIDE, and a `pc-cap-host` clips horizontally.
+    const multiclass = casters.length > 1;
+    const atk = (c: (typeof casters)[number]): string => `${c.attackBonus >= 0 ? "+" : ""}${c.attackBonus}`;
+    const classTail = (c: (typeof casters)[number]): string => (multiclass ? `\u00a0(${c.className})` : "");
+    const units = renderSeparated(
+      dcRow.createDiv({ cls: "pc-spell-dc-list" }),
+      casters.map((c) => `${c.ability.toUpperCase()} Save DC ${c.saveDC} · Atk ${atk(c)}${classTail(c)}`),
+      { sep: "/", segCls: "pc-spell-dc-entry pc-edit-click" },
+    );
+    units.forEach((unit, i) => {
+      const c = casters[i];
+      // The segment is re-filled with the bold values; its text is byte-identical to the part string above.
+      const entry = unit.querySelector<HTMLElement>(".pc-spell-dc-entry")!;
+      entry.empty();
       entry.createSpan({ text: `${c.ability.toUpperCase()} ` });
       entry.createSpan({ text: "Save DC " });
       entry.createEl("b", { text: `${c.saveDC}` });
       entry.createSpan({ text: " · Atk " });
-      entry.createEl("b", { text: `${c.attackBonus >= 0 ? "+" : ""}${c.attackBonus}` });
-      if (casters.length > 1) entry.createSpan({ cls: "pc-spell-dc-class", text: ` (${c.className})` });
+      entry.createEl("b", { text: atk(c) });
+      if (multiclass) entry.createSpan({ cls: "pc-spell-dc-class", text: classTail(c) });
       entry.addEventListener("click", () => openSpellAbilityModal(ctx));
     });
 

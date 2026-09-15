@@ -329,3 +329,20 @@ describe("R4-G7 CSS contracts · RIDER-9 an inventory row stays one row in the r
     expect(block(399)).not.toContain("grid-template-areas");
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-18 a multiclass spellcasting summary is one unit per class (CLEANLINESS PIN, NOT live measured: S03)", () => {
+  // The separated caption's default unit is `white-space: nowrap`, and a nowrap unit wider than its clipping host is
+  // CUT (live rider F-B, `actions.css`). A summary unit is an inline-block instead: it moves to the next line WHOLE
+  // when it does not fit at a line end, and wraps inside itself only when it is wider than the whole row. jsdom does
+  // no layout, so the partial's text is the contract; the numbers of the gap are derived from G6b's live separator
+  // widths, and the line geometry is S03's witness.
+  it("the summary unit is an inline-block capped at the row width that may wrap inside itself", () => {
+    const block = ruleOf("spells.css", ".archivist-pc-sheet .pc-spell-dc-list .pc-cap-unit");
+    expect(block).toMatch(/display:\s*inline-block/);
+    expect(block).toMatch(/max-width:\s*100%/);
+    expect(block).toMatch(/white-space:\s*normal/);
+  });
+  it("the summary host widens the inter-unit gap to 1em for the wider `/ ` separator box", () => {
+    expect(ruleOf("spells.css", ".archivist-pc-sheet .pc-spell-dc-list {")).toMatch(/--pc-cap-gap:\s*1em/);
+  });
+});
