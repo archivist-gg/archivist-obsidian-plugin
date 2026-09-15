@@ -31,7 +31,7 @@ interface CtxOpts {
 
 const ctxFactory = (opts: CtxOpts = {}): ComponentRenderContext => ({
   resolved: {
-    definition: { equipment: opts.equipment ?? [] }, race: null, classes: opts.classes ?? [], background: null,
+    definition: { equipment: opts.equipment ?? [], edition: "2024" }, race: null, classes: opts.classes ?? [], background: null,
     feats: [], totalLevel: 1, features: opts.features ?? [], pools: [], state: {} as never,
   } as unknown as ResolvedCharacter,
   derived: { attacks: opts.attacks ?? [], attacksPerAction: opts.attacksPerAction } as DerivedStats,
