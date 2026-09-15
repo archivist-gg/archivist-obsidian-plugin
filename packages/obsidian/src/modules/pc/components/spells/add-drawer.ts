@@ -1,5 +1,6 @@
 import type { ComponentRenderContext } from "../component.types";
 import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
+import { attributeUnclassedSpell } from "@archivist-gg/dnd5e/pc/pc.spellcasting";
 import { classSpellCandidates, type SpellCandidate } from "@archivist-gg/dnd5e/spell/spell.access";
 import { renderSpellBlock } from "../../../spell/spell.renderer";
 import { compactCastingTime, formatRange, componentLetters, abbrAbility } from "./spell-display";
@@ -96,7 +97,6 @@ function renderRow(
 ): void {
   const e = c.entity;
   const isKnown = known.has(c.slug);
-  const firstClass = ctx.derived.spellcastingClasses[0]?.classSlug;
   const tr = body.createDiv({ cls: "pc-spell-add-row" });
 
   const addTd = tr.createDiv({ cls: "col-add" });
@@ -110,7 +110,13 @@ function renderRow(
     const existing = ctx.resolved.spells.find((s) => s.slug === c.slug);
     if (known.has(c.slug)) {
       if (existing?.persisted) ctx.editState?.removeKnownSpell(c.slug);
-    } else ctx.editState?.addKnownSpell(c.slug, { class: firstClass });
+    } else {
+      // R4-G7 T8 RIDER-19 fix round 1 (I-1): the saved `class:` is the engine's ONE attribution rule, the one the resolver
+      // applies to an un-classed entry, so a Paladin-first Paladin / Warlock saves Armor of Agathys as the Warlock's while
+      // an Eldritch Knight first keeps Shield. Rows without a `spellList` read as an unobservable list (the first caster).
+      const casters = ctx.derived.spellcastingClasses.map((k) => ({ classSlug: k.classSlug, spellList: k.spellList ?? null }));
+      ctx.editState?.addKnownSpell(c.slug, { class: attributeUnclassedSpell(e.classes, casters, ctx.services.entities) ?? undefined });
+    }
   });
 
   const nameTd = tr.createDiv({ cls: "col-name" });

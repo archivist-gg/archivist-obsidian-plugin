@@ -149,3 +149,45 @@ describe("renderAddDrawer: hidden compendiums filtered, known-exempt (F3)", () =
     expect(names).toContain("Known Hidden Spell");      // hidden compendium but known: exempt
   });
 });
+
+// R4-G7 T8 RIDER-19 fix round 1 (review I-1): the drawer saves the `class:` the engine's ONE attribution rule
+// (`attributeUnclassedSpell`, the resolver's rule for an un-classed entry) picks, never the first caster blindly. An explicit
+// `class:` wins at resolve time, so a wrong pick here would be persisted for good.
+describe("renderAddDrawer: the class an added spell is saved under follows the engine's attribution rule (R4-G7 T8 RIDER-19 fix round 1, I-1)", () => {
+  const MC_REG = buildMockRegistry([
+    { slug: "players-handbook-2024_spell_armor-of-agathys", name: "Armor of Agathys", entityType: "spell", data: { name: "Armor of Agathys", level: 1, classes: ["warlock"] } },
+    { slug: "players-handbook-2024_spell_bless", name: "Bless", entityType: "spell", data: { name: "Bless", level: 1, classes: ["cleric", "paladin"] } },
+    { slug: "x_spell_shield", name: "Shield", entityType: "spell", data: { name: "Shield", level: 1, classes: ["sorcerer", "wizard"] } },
+    // Names `fighter`, so only the Fighter's null spellList (guard (i)) keeps Shield on the Eldritch Knight below.
+    { slug: "x_spell_homebrew-ward", name: "Homebrew Ward", entityType: "spell", data: { name: "Homebrew Ward", level: 1, classes: ["fighter"] } },
+  ]);
+  const ctxMC = (spellcastingClasses: { classSlug: string; spellList: string | null }[], addKnownSpell = vi.fn()): ComponentRenderContext => ({
+    resolved: { spells: [] } as never,
+    derived: { spellcastingClasses, derivedSpellSlots: { 1: 4 }, pactMagic: { level: 1 } } as never,
+    services: { entities: MC_REG } as never, app: {} as never, editState: { addKnownSpell, removeKnownSpell: vi.fn() } as never,
+  });
+
+  it("a Paladin 2024-first Paladin / Warlock adding Armor of Agathys saves it as the Warlock's (and Bless as the Paladin's)", () => {
+    const root = mountContainer();
+    const addKnownSpell = vi.fn();
+    renderAddDrawer(root, ctxMC([
+      { classSlug: "players-handbook-2024_class_paladin", spellList: "paladin" },
+      { classSlug: "players-handbook-2024_class_warlock", spellList: "warlock" },
+    ], addKnownSpell));
+    toggleFor(root, "Armor of Agathys").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(addKnownSpell).toHaveBeenLastCalledWith("players-handbook-2024_spell_armor-of-agathys", { class: "players-handbook-2024_class_warlock" });
+    toggleFor(root, "Bless").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(addKnownSpell).toHaveBeenLastCalledWith("players-handbook-2024_spell_bless", { class: "players-handbook-2024_class_paladin" });
+  });
+
+  it("control: an Eldritch Knight-first Fighter / Sorcerer adding Shield saves it as the Fighter's (the EK names no list)", () => {
+    const root = mountContainer();
+    const addKnownSpell = vi.fn();
+    renderAddDrawer(root, ctxMC([
+      { classSlug: "x_class_fighter", spellList: null },
+      { classSlug: "x_class_sorcerer", spellList: "sorcerer" },
+    ], addKnownSpell));
+    toggleFor(root, "Shield").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(addKnownSpell).toHaveBeenCalledWith("x_spell_shield", { class: "x_class_fighter" });
+  });
+});
