@@ -592,3 +592,28 @@ describe("renderCastView · the always-prepared marker (R4-G7 T8 RIDER-17)", () 
     expect(sectionTableAfter(root, "1st Level").querySelector(".pc-spell-always")?.textContent).toMatch(/^Always prepared$/);
   });
 });
+
+// R4-G7 T8 RIDER-19 (F-PACT), the plugin half: a CHARACTERISATION pin, green by construction. The Cast view already routes
+// a pact class's levelled spells to the Pact Magic block and keeps them out of the owned-slot blocks (base AND upcast);
+// the live "No spells." under PACT MAGIC was the engine attributing every un-classed spell to the first caster (dnd5e
+// `pc.resolver.ts`, fixed there). This pins the routing a correctly attributed Paladin / Warlock sheet relies on.
+describe("renderCastView · a Paladin / Warlock multiclass routes the Warlock's spells to Pact Magic (R4-G7 T8 RIDER-19)", () => {
+  it("the Warlock's spell lists under PACT MAGIC once, the Paladin's under 1st Level, and the pact block claims no emptiness", () => {
+    const root = mountContainer();
+    const pal = (name: string): ResolvedSpell => ({ ...sp(name, 1), classSlug: "players-handbook-2014_class_paladin" });
+    const war = (name: string, extra: Partial<ResolvedSpell["entity"]> = {}): ResolvedSpell => ({ ...sp(name, 1, extra), classSlug: "players-handbook-2014_class_warlock" });
+    const ctx = ctxFor([pal("Bless"), war("Armor of Agathys", { casting_options: [{ type: "slot_level_2", desc: "You gain 10 temporary hit points." }] as never })]);
+    (ctx.derived as unknown as Record<string, unknown>).spellcastingClasses = [
+      { classSlug: "players-handbook-2014_class_paladin", className: "Paladin", ability: "cha", saveDC: 14, attackBonus: 6, casterType: "half", preparation: "prepared" },
+      { classSlug: "players-handbook-2014_class_warlock", className: "Warlock", ability: "cha", saveDC: 14, attackBonus: 6, casterType: "pact", preparation: "known" },
+    ];
+    (ctx.derived as unknown as Record<string, unknown>).derivedSpellSlots = { 1: 4, 2: 2 };
+    (ctx.derived as unknown as Record<string, unknown>).pactMagic = { level: 3, total: 2 };
+    renderCastView(root, ctx);
+    const names = (label: string) => Array.from(sectionTableAfter(root, label).querySelectorAll(".pc-spell-name")).map((n) => n.textContent);
+    expect(names("Pact Magic (L3)")).toEqual(["Armor of Agathys"]);
+    expect(names("1st Level")).toEqual(["Bless"]);
+    expect(names("2nd Level")).not.toContain("Armor of Agathys");
+    expect(sectionTableAfter(root, "Pact Magic (L3)").querySelector(".pc-spell-empty-row")).toBeNull();
+  });
+});
