@@ -972,6 +972,29 @@
   background: rgba(217, 196, 132, 0.35);
 }
 
+/* R4-G7 T8 wave E, B026-D8 (the reader half; the engine half is `entriesToMarkdown`'s alignment row). The shared brick
+   rules above centre every cell, which was written for the short spell and item tables; a MARKDOWN section's table is
+   authored prose, and Andir Valmakos's New Features column (nine-line paragraphs) rendered centred line by line. These
+   arms are scoped to the markdown sections, so the programmatic tables keep their look: a cell takes its column's own
+   alignment, which Obsidian writes as an `align` ATTRIBUTE (MEASURED in the W-Er table lab: `:---:` emits
+   `align="center"`, `---:` emits `align="right"`, a plain column emits none), and an unaligned column reads start.
+   The first column also stops breaking: with `table-layout: auto` and a long second column it shrank to its min-content
+   and Baphomet's `01–20` broke after its en dash (MEASURED live: 2 lines per cell in that column). The corpus says that
+   is safe: over all 31 entry-tree tables the longest first-column cell is 5 characters (`01–20`, `01–05`). */
+.archivist-monster-block .archivist-monster-section table.archivist-table td,
+.archivist-monster-block .archivist-monster-section table.archivist-table th {
+  text-align: start;
+}
+.archivist-monster-block .archivist-monster-section table.archivist-table :is(td, th)[align="center"] {
+  text-align: center;
+}
+.archivist-monster-block .archivist-monster-section table.archivist-table :is(td, th)[align="right"] {
+  text-align: right;
+}
+.archivist-monster-block .archivist-monster-section table.archivist-table td:first-child {
+  white-space: nowrap;
+}
+
 /* 5. Magic Item Block (reuses spell block pattern)
    ========================================================================== */
 

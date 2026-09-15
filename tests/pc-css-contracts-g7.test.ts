@@ -563,3 +563,35 @@ describe("R4-G7 T8 wave E CSS contracts · B026-D4 the tag's own halves", () => 
     expect(blockFor(".archivist-tag-nobreak")).toMatch(/white-space:\s*nowrap/);
   });
 });
+
+describe("R4-G7 T8 wave E CSS contracts · B026-D8 a markdown section's table cells", () => {
+  const DND = join(__dirname, "..", "packages", "obsidian", "src", "styles");
+  const dnd = (): string => readFileSync(join(DND, "archivist-dnd.css"), "utf8");
+  const blockFor = (selector: string): string => {
+    const css = dnd();
+    const ix = css.indexOf(selector);
+    if (ix < 0) throw new Error(`no rule for ${selector}`);
+    return css.slice(css.indexOf("{", ix) + 1, css.indexOf("}", css.indexOf("{", ix)));
+  };
+
+  // MEASURED LIVE in W-Er: Andir's Variants table computed `left, center, center` while the note asks `text-center` for
+  // the Level column only, and Baphomet's Regional table's first column read 2 lines per cell (`01–` over `20`). The
+  // alignment arrives as an `align` attribute (the W-Er table lab). Corpus: the longest first-column cell in all 31
+  // entry-tree tables is 5 characters.
+  it("a section table's cells read start, take their column's align attribute, and the first column does not break", () => {
+    expect(blockFor(".archivist-monster-section table.archivist-table td,")).toMatch(/text-align:\s*start/);
+    expect(blockFor('.archivist-monster-section table.archivist-table :is(td, th)[align="center"]')).toMatch(/text-align:\s*center/);
+    expect(blockFor('.archivist-monster-section table.archivist-table :is(td, th)[align="right"]')).toMatch(/text-align:\s*right/);
+    expect(blockFor(".archivist-monster-section table.archivist-table td:first-child")).toMatch(/white-space:\s*nowrap/);
+  });
+
+  // the shared brick rule the arms above override must still be the one the spell and item tables read
+  it("the programmatic tables keep the centred cells the brick rule gives them", () => {
+    const css = dnd();
+    const ix = css.indexOf(".archivist-monster-block table.archivist-table td {");
+    expect(ix).toBeGreaterThan(-1);
+    expect(css.slice(css.indexOf("{", ix) + 1, css.indexOf("}", css.indexOf("{", ix)))).toMatch(/text-align:\s*center/);
+    // and the section arms come AFTER it, which is what makes them win at equal specificity
+    expect(css.indexOf(".archivist-monster-section table.archivist-table td,")).toBeGreaterThan(ix);
+  });
+});
