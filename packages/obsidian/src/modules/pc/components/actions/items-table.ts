@@ -39,7 +39,8 @@ export function renderItemRow(
   // Cost · the Passive tab renders no FREE badge (all passive costs are
   // unmarked); the cell div stays for the shared 4-col grid, and "special"
   // keeps its badge there.
-  const badgeCell = row.createDiv();
+  // R4-G7 T8 RIDER-26: the cell carries a name so the narrow tier (`actions.css`) places it by name, never by source order.
+  const badgeCell = row.createDiv({ cls: "pc-item-cost" });
   if (!(passive && action.cost === "free")) renderCostBadge(badgeCell, action.cost);
 
   const ce = ctx.derived.conditionEffects;

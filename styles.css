@@ -8181,6 +8181,20 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: break-word; }
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; grid-row: 3; }
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-mastery { display: none; }
+
+  /* R4-G7 T8 RIDER-26 (F-ITEMROW) · the Items table stacks the way the Weapons table above does. At this tier the base
+     template (`66px minmax(0, 1fr) 72px minmax(0, 3fr)`) gives the NAME a quarter of what the badge and range tracks leave:
+     MEASURED LIVE at the default 1024 x 800 window (W-Dr, `.pc-content` 355.5 px, the user's Illrigger, REACTIONS > ITEMS) it
+     resolved to `66px 46.375px 72px 139.125px` and set "Ring of Evasion" one word per line, a 75 px row beside a half-empty
+     tracker column. TWO LINES over two tracks, every cell placed by its class: the badge and the name on the first, the range
+     under the badge and the tracker (charge boxes, their recovery caption) under the name, the feature rows' stacked shape a
+     row above it. The same candidate injected live resolved to `66px 273.5px`: the name on ONE line, row 85.9 px, 0
+     overlapping cells. Both tabs that list items (Actions, Passive) share it. */
+  .archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr); row-gap: var(--pc-space-1); }
+  .archivist-pc-sheet .pc-items-table .pc-item-cost { grid-column: 1; grid-row: 1; }
+  .archivist-pc-sheet .pc-items-table .pc-action-namecell { grid-column: 2; grid-row: 1; }
+  .archivist-pc-sheet .pc-items-table .pc-action-range { grid-column: 1; grid-row: 2; }
+  .archivist-pc-sheet .pc-items-table .pc-action-charges { grid-column: 2; grid-row: 2; }
 }
 
 /* R4-G6b live rider F-D · the feature-row tier vs Q-6's one-column flip. The stacked tier below used

@@ -46,6 +46,15 @@ function renderItems(root: HTMLElement, items: ItemEntry[], c: ComponentRenderCo
 }
 
 describe("renderItemRow", () => {
+  // R4-G7 T8 RIDER-26 (F-ITEMROW): the narrow tier in `actions.css` places each of the row's four cells by NAME (the Weapons
+  // table's F-C rule: a positional selector reads the row by source order). The badge cell was the one unnamed cell.
+  it("names all four grid cells, the cost badge cell included, in source order", () => {
+    const root = mountContainer();
+    renderItems(root, [itemEntry()], rowCtx());
+    const row = root.querySelector(".pc-action-row")!;
+    expect(Array.from(row.children).map((c) => c.className)).toEqual(["pc-item-cost", "pc-action-namecell", "pc-action-range", "pc-action-charges"]);
+  });
+
   it("renders a .pc-action-row (div) carrying the item name + rarity sub", () => {
     const root = mountContainer();
     renderItems(root, [itemEntry()], rowCtx());

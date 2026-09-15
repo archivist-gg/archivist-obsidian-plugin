@@ -365,3 +365,25 @@ describe("R4-G7 CSS contracts · RIDER-25 the crit caption is a block line with 
     expect(block).toMatch(/margin-top:\s*2px/);
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-26 an item row stacks below 500 px so its name holds a line (MEASURED LIVE in W-Dr's lab)", () => {
+  // W-Dr (2026-09-15, the default 1024 x 800 window, `.pc-content` 355.5 px, the user's Illrigger, REACTIONS > ITEMS): the base
+  // template `66px minmax(0, 1fr) 72px minmax(0, 3fr)` resolved to `66px 46.375px 72px 139.125px` and broke "Ring of Evasion" one
+  // word per line (3 lines, row 75 px). The stacked candidate injected live resolved to `66px 273.5px`: the name on ONE line, the
+  // range under the badge and the tracker under the name, row 85.9 px, 0 overlapping cells.
+  const block = (): string => {
+    const b = containerBlockIn(readFileSync(join(PARTIALS, "actions.css"), "utf8"), "pc-content (max-width: 499px)");
+    if (!b) throw new Error("no 499 block in actions.css");
+    return b;
+  };
+  it("the row is two tracks, the badge's and the name's", () => {
+    expect(block()).toContain(".archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr); row-gap: var(--pc-space-1); }");
+  });
+  it("every cell is placed by name: badge and name on line 1, range under the badge, tracker under the name", () => {
+    const b = block();
+    expect(b).toContain(".archivist-pc-sheet .pc-items-table .pc-item-cost { grid-column: 1; grid-row: 1; }");
+    expect(b).toContain(".archivist-pc-sheet .pc-items-table .pc-action-namecell { grid-column: 2; grid-row: 1; }");
+    expect(b).toContain(".archivist-pc-sheet .pc-items-table .pc-action-range { grid-column: 1; grid-row: 2; }");
+    expect(b).toContain(".archivist-pc-sheet .pc-items-table .pc-action-charges { grid-column: 2; grid-row: 2; }");
+  });
+});
