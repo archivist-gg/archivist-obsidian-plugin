@@ -595,3 +595,30 @@ describe("R4-G7 T8 wave E CSS contracts · B026-D8 a markdown section's table ce
     expect(css.indexOf(".archivist-monster-section table.archivist-table td,")).toBeGreaterThan(ix);
   });
 });
+
+describe("R4-G7 T8 wave E CSS contracts · B026-D7 / B026-D5 the theme accent inside a block", () => {
+  const DND = join(__dirname, "..", "packages", "obsidian", "src", "styles");
+  const dnd = (): string => readFileSync(join(DND, "archivist-dnd.css"), "utf8");
+  const blockFor = (selector: string): string => {
+    const css = dnd();
+    const ix = css.indexOf(selector);
+    if (ix < 0) throw new Error(`no rule for ${selector}`);
+    return css.slice(css.indexOf("{", ix) + 1, css.indexOf("}", css.indexOf("{", ix)));
+  };
+
+  // MEASURED LIVE in W-Er: the inset rule read `rgb(138, 92, 245) 2px` on Burney's, Andir's and the Turtle's Variants
+  // panes (Obsidian's `--blockquote-border-color`, the interactive accent).
+  it("an inset's left rule is the stat block's own red", () => {
+    expect(blockFor(".archivist-monster-section blockquote")).toMatch(/border-inline-start-color:\s*var\(--stat-block-header\)/);
+  });
+
+  // MEASURED LIVE in W-Er on Andir's Armor Class link: color rgb(166, 138, 249), decoration
+  // oklch(0.60342 0.217199 292.488 / 0.3), opacity 0.7, against the block's own #7a200d.
+  it("an unresolved link inside a block keeps the block's brick colour and underlines in it", () => {
+    const block = blockFor(".archivist-monster-block a.internal-link.is-unresolved {");
+    expect(block).toMatch(/color:\s*#7a200d/);
+    expect(block).toMatch(/text-decoration-color:\s*currentColor/);
+    expect(block).toMatch(/text-decoration-style:\s*dashed/);
+    expect(dnd()).toContain(".archivist-monster-block a.internal-link.is-unresolved:hover");
+  });
+});

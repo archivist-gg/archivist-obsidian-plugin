@@ -811,13 +811,30 @@
    unresolved treatment, so the block states it in its own palette: the same brick, faded through
    Obsidian's `--link-unresolved-opacity` where the theme defines one, with a dashed underline against
    the resolved link's dotted one. The class itself is Obsidian's and is written by the shared
-   renderer's wikilink arm when the injected resolver finds no note. */
+   renderer's wikilink arm when the injected resolver finds no note.
+   R4-G7 T8 wave E, B026-D5: that sentence was FALSE on the shipped cascade until the two colour
+   declarations below were added. Obsidian 1.13.7 ships `.markdown-rendered .internal-link.is-unresolved`
+   with `color: var(--link-unresolved-color)` and its own decoration colour at (0,3,0), which beats the
+   brick rule above at (0,2,1), so only this rule can state the colour: it is (0,3,1). MEASURED live in
+   W-Er on Andir Valmakos's Armor Class link (the dangling `Magic Items/Leather Armor`, DATA-9):
+   `color: rgb(166, 138, 249)`, decoration `oklch(0.60342 0.217199 292.488 / 0.3)`, `opacity: 0.7` (the
+   theme's lavender accent) where the block's own links read `#7a200d`. The hover arm is (0,4,1) because
+   Obsidian's hover rule is (0,4,0) and repaints `--link-color-hover`. */
 .archivist-spell-block a.internal-link.is-unresolved,
 .archivist-item-block a.internal-link.is-unresolved,
 .archivist-class-block a.internal-link.is-unresolved,
 .archivist-monster-block a.internal-link.is-unresolved {
+  color: #7a200d;
   opacity: var(--link-unresolved-opacity, 0.55);
   text-decoration-style: dashed;
+  text-decoration-color: currentColor;
+}
+.archivist-spell-block a.internal-link.is-unresolved:hover,
+.archivist-item-block a.internal-link.is-unresolved:hover,
+.archivist-class-block a.internal-link.is-unresolved:hover,
+.archivist-monster-block a.internal-link.is-unresolved:hover {
+  color: #5a1808;
+  text-decoration-color: currentColor;
 }
 
 /* Mechanical summary — appears under the item card in inventory expand */
@@ -963,6 +980,16 @@
 .archivist-class-block table.archivist-table tbody tr:nth-child(even) td,
 .archivist-monster-block table.archivist-table tbody tr:nth-child(even) td {
   background: rgba(217, 196, 132, 0.35);
+}
+
+/* R4-G7 T8 wave E, B026-D7. An inset (`inset` / `variant*` nodes) renders as a `> ` blockquote, and Obsidian 1.13.7's
+   `.markdown-rendered blockquote` paints its left rule with `var(--blockquote-border-color)`, which is the theme's
+   interactive accent: MEASURED live in W-Er on Burney's, Andir's and the Turtle's Variants panes,
+   `border-inline-start-color: rgb(138, 92, 245)` at 2 px. The block's only reset is `.archivist-monster-block *
+   { border-color: transparent }` (0,1,0), which loses to Obsidian's (0,1,1); this arm is (0,3,1) and states the block's
+   own red instead, the same token the section headers and the card rules use. */
+.archivist-monster-block .archivist-monster-section blockquote {
+  border-inline-start-color: var(--stat-block-header);
 }
 
 /* R4-G7 T8 wave E, B026-D8 (the reader half; the engine half is `entriesToMarkdown`'s alignment row). The shared brick
