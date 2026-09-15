@@ -148,8 +148,9 @@ export function hitDcDescriptor(spell: ResolvedSpell, saveDC: number, atk?: numb
 }
 
 /** Structured-only effect descriptor. Base damage dice are NOT in the model,
- *  so this returns the damage TYPE word only (or null). Upcast dice come from
- *  spellEffectAtSlot, not here. */
+ *  so this returns the damage TYPE word only (or null). Scaled dice come from
+ *  dnd5e `spell.scaling`, not here: spellEffectAtSlot for a slot row,
+ *  spellEffectAtCharacterLevel for a cantrip (R4-G7 T8 RIDER-15). */
 export function effectDescriptor(spell: ResolvedSpell): { damageType: string | null } {
   return { damageType: spell.entity.damage?.types?.[0] ?? null };
 }

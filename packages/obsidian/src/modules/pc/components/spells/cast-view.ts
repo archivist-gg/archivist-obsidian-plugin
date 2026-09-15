@@ -2,7 +2,7 @@ import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
 import { renderChargeBoxes } from "../actions/charge-boxes";
-import { spellEffectAtSlot, upcastLevelsFor } from "@archivist-gg/dnd5e/spell/spell.scaling";
+import { spellEffectAtSlot, spellEffectAtCharacterLevel, upcastLevelsFor } from "@archivist-gg/dnd5e/spell/spell.scaling";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
@@ -294,7 +294,10 @@ function renderRow(
   // EFFECT
   const effTd = tr.createDiv({ cls: "pc-spell-effcell" });
   const eff = effectDescriptor(spell);
-  const scaled = (opts.upcast || opts.pact) ? spellEffectAtSlot(spell.entity, level) : null;
+  // RIDER-15: a cantrip scales with the character's TOTAL level (`player_level_<N>`), a slot row with its slot.
+  const scaled = opts.cantrip
+    ? spellEffectAtCharacterLevel(spell.entity, ctx.derived.totalLevel)
+    : (opts.upcast || opts.pact) ? spellEffectAtSlot(spell.entity, level) : null;
   if (scaled) {
     const chip = effTd.createSpan({ cls: "pc-spell-eff" });
     if (eff.damageType && hasDamageTypeIcon(eff.damageType)) {

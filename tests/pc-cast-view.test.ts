@@ -134,6 +134,37 @@ describe("renderCastView", () => {
   });
 });
 
+// R4-G7 T8 RIDER-15 (F-NODICE (a)): a cantrip row prints its damage at the character's TOTAL level, in the same
+// `.pc-spell-eff` chip an upcast row prints. The Fire Bolt is the PHB 2024 shape (5 / 11 / 17 only).
+describe("renderCastView · a cantrip's damage at the character's level (R4-G7 T8 RIDER-15)", () => {
+  const fireBolt = () => sp("Fire Bolt", 0, {
+    damage: { types: ["fire"] } as never,
+    casting_options: [
+      { type: "player_level_5", damage_roll: "2d10" },
+      { type: "player_level_11", damage_roll: "3d10" },
+      { type: "player_level_17", damage_roll: "4d10" },
+    ] as never,
+  });
+  const atLevel = (totalLevel: number): HTMLElement => {
+    const root = mountContainer();
+    const ctx = ctxFor([fireBolt()]);
+    (ctx.derived as unknown as { totalLevel: number }).totalLevel = totalLevel;
+    renderCastView(root, ctx);
+    return sectionTableAfter(root, "Cantrips").querySelector(".pc-spell-cast-row") as HTMLElement;
+  };
+  it("a level-20 caster's Fire Bolt row carries the 4d10 chip with the damage icon, the type word under it", () => {
+    const row = atLevel(20);
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("4d10");
+    expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).not.toBeNull();
+    expect(row.querySelector(".pc-spell-dtype")?.textContent).toBe("fire");
+  });
+  it("a level-4 caster's Fire Bolt row has no chip (the base roll is not in the data), the type word keeps its icon", () => {
+    const row = atLevel(4);
+    expect(row.querySelector(".pc-spell-eff")).toBeNull();
+    expect(row.querySelector(".pc-spell-dtype .pc-spell-dtype-icon")).not.toBeNull();
+  });
+});
+
 // ---- pact casters ----
 function pactSp(name: string, level: number): ResolvedSpell {
   return { entity: { name, level } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),
