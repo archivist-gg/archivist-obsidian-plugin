@@ -6,6 +6,9 @@
  * It read "Baelor Nightwarden is a Illrigger with no spellcasting feature.": the class name is DATA, and an a / an rule is an
  * English heuristic that fails on names (a vowel letter is not a vowel sound), so the sentence is rewritten to need no
  * article at all rather than choosing one.
+ *
+ * Fix round 1 (review Minor 5, ruled): the sentence names NO class. "from the Fighter class" on a Fighter / Barbarian named only the
+ * first class entry and read as if another class might grant spellcasting; the empty state already means none of them does.
  */
 import { describe, it, expect, beforeAll } from "vitest";
 import { SpellsTab } from "../packages/obsidian/src/modules/pc/components/spells-tab";
@@ -26,19 +29,23 @@ function subtitleFor(name: string, classes: object[]): string {
   return c.querySelector(".pc-spells-empty-subtitle")?.textContent ?? "";
 }
 
-describe("RIDER-28 · the no-spellcasting sentence carries no indefinite article", () => {
-  it("names the character and the class without an article (the user's Illrigger)", () => {
+describe("RIDER-28 · the no-spellcasting sentence carries no indefinite article and names no class", () => {
+  it("names the character only (the user's Illrigger)", () => {
     const text = subtitleFor("Baelor Nightwarden", [{ entity: { slug: "mcdm_class_illrigger", name: "Illrigger" }, level: 12 }]);
-    expect(text).toBe("Baelor Nightwarden has no spellcasting feature from the Illrigger class.");
+    expect(text).toBe("Baelor Nightwarden has no spellcasting feature.");
     expect(text).not.toMatch(/\ban? Illrigger\b/);
   });
 
-  it("a class name starting with a consonant reads the same way", () => {
-    expect(subtitleFor("Tordek", [{ entity: { slug: "fighter", name: "Fighter" }, level: 3 }]))
-      .toBe("Tordek has no spellcasting feature from the Fighter class.");
+  it("a multiclass character reads the same sentence, naming neither class", () => {
+    const text = subtitleFor("Tordek", [
+      { entity: { slug: "fighter", name: "Fighter" }, level: 3 },
+      { entity: { slug: "barbarian", name: "Barbarian" }, level: 2 },
+    ]);
+    expect(text).toBe("Tordek has no spellcasting feature.");
+    expect(text).not.toMatch(/Fighter|Barbarian/);
   });
 
-  it("a character whose class entity did not resolve still reads a whole sentence", () => {
-    expect(subtitleFor("Tordek", [{ entity: null, level: 3 }])).toBe("Tordek has no spellcasting feature from this class.");
+  it("a character whose class entity did not resolve reads the same whole sentence", () => {
+    expect(subtitleFor("Tordek", [{ entity: null, level: 3 }])).toBe("Tordek has no spellcasting feature.");
   });
 });

@@ -37,11 +37,10 @@ export class SpellsTab implements SheetComponent {
       empty.createDiv({ cls: "pc-spells-empty-icon", text: "☆" });
       empty.createDiv({ cls: "pc-spells-empty-title", text: "No Spellcasting" });
       const name = ctx.resolved.definition.name;
-      // R4-G7 T8 RIDER-28 (F-ARTICLE): the class name is DATA, so the sentence needs no indefinite article before it
-      // ("is a Illrigger" read wrong, and an a / an vowel rule is an English heuristic that fails on names).
-      const className = ctx.resolved.classes[0]?.entity?.name;
-      const classPhrase = className ? `the ${className} class` : "this class";
-      empty.createDiv({ cls: "pc-spells-empty-subtitle", text: `${name} has no spellcasting feature from ${classPhrase}.` });
+      // R4-G7 T8 RIDER-28 (F-ARTICLE): no indefinite article before a data name ("is a Illrigger" read wrong, and an a / an vowel
+      // rule is an English heuristic that fails on names). Fix round 1 (review Minor 5): no class named either; the first class
+      // alone ("from the Fighter class") on a multiclass read as if another class might grant spellcasting.
+      empty.createDiv({ cls: "pc-spells-empty-subtitle", text: `${name} has no spellcasting feature.` });
       return;
     }
 
