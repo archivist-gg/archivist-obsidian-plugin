@@ -1371,7 +1371,7 @@ describe("renderDecisionStrip · the `from` pool-synth arm (R4-G5 §3.2.1-§3.2.
     const c = draw(one, mkCtx({ setChoice }));
     c.querySelectorAll<HTMLElement>(".pc-bchoice-chip")[0].click();
     expect(setChoice).toHaveBeenCalledWith(0, 3, "battle-master-maneuvers", ["mv-0"]);
-    // The control: a `feat` pick keeps the STRING shape `collectFeatSlugs` reads (`typeof feat === "string"`).
+    // The control: a `feat` pick keeps the STRING shape dnd5e `collectFeatPicks` reads (`typeof feat === "string"`).
     const setChoice2 = vi.fn();
     const feat = item({
       key: "feat", source: { kind: "class" } as never, level: 19, featureName: "Epic Boon",

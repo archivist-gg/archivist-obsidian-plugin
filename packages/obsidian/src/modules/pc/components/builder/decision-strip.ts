@@ -438,7 +438,7 @@ function writeValue(
  *  because that is the shape `PoolTab.row` persists on the identical `setChoice(classIndex,
  *  anchorLevel, pool.id, …)` key and the two surfaces must not write the same key two ways (measured
  *  divergence D6: a count-1 pool synth wrote a bare string). Every other pick keeps the shipped shape,
- *  a string at count 1, which is what `collectFeatSlugs` reads (`typeof feat === "string"`). */
+ *  a string at count 1, which is what dnd5e `collectFeatPicks` reads (`typeof feat === "string"`). */
 function pickValue(item: DecisionItem, slugs: string[], need: number): unknown {
   if (item.pool) return [...slugs];
   return need === 1 ? (slugs[0] ?? null) : [...slugs];
