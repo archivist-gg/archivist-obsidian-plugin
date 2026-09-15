@@ -6613,7 +6613,11 @@ body.theme-light .archivist-tag-atk:hover {
   /* Form C — fixed cells for icons, fluid name, intrinsic trailing meta.
    * Areas let the trailing cells reflow below the name at narrow widths
    * without dropping content. */
-  grid-template-columns: 18px 18px minmax(0, 1fr) 96px 42px 56px;
+  /* R4-G7 RIDER-9 fix round 1 (review Minor 2): the weight track is a FLOOR at the widest corpus weight, the same
+   * measurement as the narrow tier below (`0.0625 lb` renders 52.2 px). The fixed 42 px track let it spill 10 px past
+   * the track into the quantity cell at 500 and 856 px (the inventory lab with the widest values written into a row:
+   * `pc-inv-weight 52 > 42`); with the floor, 0 spills from 288 to 856 px. */
+  grid-template-columns: 18px 18px minmax(0, 1fr) 96px minmax(53px, auto) 56px;
   grid-template-areas: "toggle icon name stat weight qty";
   gap: var(--pc-space-2);
   align-items: center;
@@ -7446,6 +7450,13 @@ body.theme-light .archivist-tag-atk:hover {
     grid-template-areas: "toggle icon name stat weight qty";
     column-gap: var(--pc-space-1);
   }
+  /* R4-G7 RIDER-9 fix round 1 (controller ruling 2026-09-15): in this narrower name track the name WRAPS, whole,
+   * instead of the base dress's one-line ellipsis. MEASURED on the Illrigger's rows (inventory lab, the RIDER-1
+   * method: line counts from height over line height): at 355.5 px `Greatsword of Wounding` read
+   * `Greatsword of Woundi...` (1 line, cut); now 2 lines x 14.4 px beside a 4-line sub-line, row 91 px, the meta
+   * cells still one line each in their tracks. From 288 to 499 px 0 names are cut. `overflow-wrap: anywhere` only
+   * breaks a word wider than the whole track (the 67 px track at 288 px). */
+  .archivist-pc-sheet .pc-inv-name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
 }
 
 /* R4-G7 RIDER-9: the reflow the tier above used to start at 499 px, now reached only where one row would

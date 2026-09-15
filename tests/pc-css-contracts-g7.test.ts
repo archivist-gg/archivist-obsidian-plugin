@@ -313,6 +313,16 @@ describe("R4-G7 CSS contracts · RIDER-9 an inventory row stays one row in the r
     expect(b).not.toContain('".      .    weight qty"');
   });
 
+  it("fix round 1: below 500 px the item name WRAPS inside its track instead of ellipsising", () => {
+    const b = block(499);
+    expect(b).toContain(".archivist-pc-sheet .pc-inv-name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }");
+  });
+
+  it("fix round 1: the wide template's weight track is floored at the widest corpus weight too (0.0625 lb, 52.2 px)", () => {
+    const base = ruleOf("inventory.css", ".archivist-pc-sheet .pc-inv-row {");
+    expect(base).toMatch(/grid-template-columns: 18px 18px minmax\(0, 1fr\) 96px minmax\(53px, auto\) 56px;/);
+  });
+
   it("the two-row reflow starts at 287 px and the four-line stack at 191 px, never at 399", () => {
     expect(block(287)).toContain('".      .    weight qty"');
     expect(block(191)).toContain('".      .    qty"');
