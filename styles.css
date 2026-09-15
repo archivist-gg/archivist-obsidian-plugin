@@ -6151,13 +6151,19 @@ body.theme-light .archivist-tag-atk:hover {
  * vault and the sweep's multiclass rows first holds one line at:
  *   five tabs   Elemental Disciplines                          489 px
  *   six tabs    Fighting Style + Champion Fighting Style       618 px
- *   seven tabs  Fighting Style + Eldritch Invocations + Pact Boon (2014 Paladin / Warlock)   678 px
+ *   seven tabs  Fighting Style + Eldritch Invocations + Pact Boon (2014 Paladin / Warlock)   678 px (rows only; 769 px
+ *               gated on scrollWidth, see the fix-round note below)
  * so each length switches to the declared short labels one pixel below its own measurement. The short
  * dress drops the letter-spacing and one pixel of padding a side against the 299 px tier, because at
  * 355.5 px that tier's dress still wrapped Elemental Disciplines (357.7 px of buttons): in this dress the
  * widest five-tab strip is 346.7 px and every five-tab strip in the corpus holds one line from 347 px
- * up. Six and seven tabs hold one line from 455 px and 505 px up (measured); below that `flex-wrap`
- * above stays the fallback. A strip of four tabs never matches these rules and keeps its full labels. */
+ * up. Six and seven tabs FIT one line from 455 px and 505 px up (measured); below the width at which a strip
+ * of any length fits, the EVEN GRID blocks after these take over (fix round 1). A strip of four tabs never
+ * matches these short-label rules and keeps its full labels.
+ * FIX ROUND 1 (review Minor 3): the first scan counted rows only, and above 699 px the base strip does not
+ * wrap, it scrolls sideways under a hidden scrollbar. Gated on `scrollWidth <= clientWidth`, the widest
+ * seven-tab strip FITS with full labels only at 678..699 and from 769 px up: at 700..768 the base dress is
+ * 769 px of buttons in the bar. The seven-tab threshold is therefore 768, not 677. */
 @container pc-content (max-width: 488px) {
   .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
   .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
@@ -6166,9 +6172,44 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
   .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
 }
-@container pc-content (max-width: 677px) {
+@container pc-content (max-width: 768px) {
   .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
   .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+
+/* R4-G7 RIDER-8 FIX ROUND 1 (controller ruling 2026-09-15): the strip never leaves a tab alone on a line. Where a
+ * strip would wrap, it lays out as an EVEN GRID of ceil(n / 2) equal columns instead: 4 tabs 2 x 2, 5 tabs 3 + 2,
+ * 6 tabs 3 x 2, 7 tabs (and more) 4 + 3. A label wraps inside its own centred cell; the cell stretches, so the
+ * active highlight fills it; the type stays the short-label dress above (10 px). Each block starts ONE pixel below
+ * the content width at which the widest measured strip of that length first FITS one line (one row AND
+ * `scrollWidth <= clientWidth`), read by `evidence/g7-live/wa-strip-lab.js` over every corpus strip from 204 to
+ * 1000 px on build pair I:
+ *   four   229 px   (Actions / Passive & Features / Spells / Inventory; the 299 px tier's short dress)
+ *   five   347 px   (+ Elemental Disciplines)
+ *   six    455 px   (+ Fighting Style + Champion Fighting Style)
+ *   seven  505 px   (+ Fighting Style + Eldritch Invocations + Pact Boon, the 2014 Paladin / Warlock)
+ * The same scan found orphans, a row holding ONE tab, at 204..228 (four), 215..346 (five), 306..454 (six) and
+ * 437..504 (seven). With these blocks the scan reads 0 orphan widths and every strip fits contiguously from its
+ * threshold to 1000 px. The selectors count EXACTLY (`:nth-child(n):last-child`), because `:has(> :nth-child(5))`
+ * alone also matches every longer strip; seven is "seven or more". `overflow-wrap: anywhere` lets a word wider than
+ * its cell break inside it rather than paint over the neighbour: MEASURED, `break-word` did not (the `::before`
+ * flex item keeps its min-content width), and seven tabs at 204..283 px overflowed their cells with it; with
+ * `anywhere` 0 cells overflow at any width and no word breaks at the default window's 355.5 px column. */
+@container pc-content (max-width: 228px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(4):last-child) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(4):last-child) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
+}
+@container pc-content (max-width: 346px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5):last-child) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5):last-child) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
+}
+@container pc-content (max-width: 454px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6):last-child) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6):last-child) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
+}
+@container pc-content (max-width: 504px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
 }
 
 /* Portrait picker modal (two-stage: grid + crop) */

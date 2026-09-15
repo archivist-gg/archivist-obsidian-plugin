@@ -260,7 +260,10 @@ describe("R4-G7 CSS contracts · RIDER-8 a strip with a pool tab reaches the sho
 
   it("each strip length switches to the declared short labels one pixel below its own measurement", () => {
     const css = read("components.css");
-    for (const [px, n] of [[488, 5], [617, 6], [677, 7]] as const) {
+    // Fix round 1: the seven-tab threshold moved 677 -> 768. The rows-only scan missed that at 700..768 px the base dress
+    // runs 769 px of buttons in the bar under a hidden scrollbar; gated on scrollWidth <= clientWidth the widest seven-tab
+    // strip first FITS with full labels at 769 px.
+    for (const [px, n] of [[488, 5], [617, 6], [768, 7]] as const) {
       const block = tier(css, px);
       const sel = `.archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(${n})) .pc-tab-btn`;
       expect(block).toContain(`${sel} { padding: 5px 4px; font-size: 0; letter-spacing: 0; }`);
@@ -268,9 +271,29 @@ describe("R4-G7 CSS contracts · RIDER-8 a strip with a pool tab reaches the sho
     }
   });
 
-  it("the four-tab strip's own tiers are untouched: the 299 px short-label block still reads every strip", () => {
+  it("the 299 px short-label block still reads every strip, whatever its length", () => {
     const block = tier(read("components.css"), 299);
     expect(block).toMatch(/\.archivist-pc-sheet \.pc-tab-btn::before \{\s*content: attr\(data-short\);\s*font-size: 10px;\s*letter-spacing: 0\.2px;/);
+  });
+});
+
+describe("R4-G7 CSS contracts · RIDER-8 fix round 1 a wrapping strip is an EVEN GRID, never an orphan (CLEANLINESS PIN)", () => {
+  // Controller ruling 2026-09-15: the strip never leaves a tab alone on a line. Below the content width at which a strip
+  // of n tabs FITS one line (measured by the gated strip lab: four 229, five 347, six 455, seven 505 px), it lays out as
+  // ceil(n / 2) equal columns (4 tabs 2 x 2, 5 tabs 3 + 2, 6 tabs 3 x 2, 7 tabs 4 + 3), a label wraps inside its cell.
+  // NOT THE WITNESS: the lab's orphan scan and the W-A2 live read are.
+  const grid = (px: number): string => {
+    const block = containerBlockIn(read("components.css"), `pc-content (max-width: ${px}px)`);
+    expect(block, `@container pc-content (max-width: ${px}px)`).not.toBeNull();
+    return block as string;
+  };
+
+  it("each strip length becomes an even grid one pixel below the width at which it first fits", () => {
+    for (const [px, has, columns] of [[228, "nth-child(4):last-child", 2], [346, "nth-child(5):last-child", 3], [454, "nth-child(6):last-child", 3], [504, "nth-child(7)", 4]] as const) {
+      const bar = `.archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:${has})`;
+      expect(grid(px)).toContain(`${bar} { display: grid; grid-template-columns: repeat(${columns}, minmax(0, 1fr)); }`);
+      expect(grid(px)).toContain(`${bar} > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }`);
+    }
   });
 });
 
