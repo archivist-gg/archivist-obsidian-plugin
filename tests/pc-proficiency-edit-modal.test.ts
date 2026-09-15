@@ -449,6 +449,20 @@ describe("ProficiencyEditModal addable list", () => {
       .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(editState.addProficiency).toHaveBeenCalledWith("tools", "Runic Cipher");
   });
+
+  it("a suppressed off-vocabulary PROSE grant's row reads exactly like the chip it was (R4-G7 T8 RIDER-14)", () => {
+    // The engine now labels authored prose as authored ("Choose three Musical Instruments", dnd5e
+    // `proficiencyLabel`); the candidate row must print the SAME label, or suppressing a chip and finding it in
+    // the list shows two spellings of one grant. The PHB 2024 Bard's shipped tool grant, off-vocabulary.
+    const bard = { entity: { slug: "bard", name: "Bard", proficiencies: { tools: { fixed: ["Choose three Musical Instruments"] } } }, level: 1, choices: {} };
+    const { el: shown } = openFor("tools", { classes: [bard] });
+    const chipLabel = chips(shown).find((c) => c.getAttribute("data-prof") === "Choose three Musical Instruments")?.firstChild?.textContent;
+    closeProficiencyModal();
+    const { el } = openFor("tools", { classes: [bard], overrides: { tools: { remove: ["Choose three Musical Instruments"] } } });
+    const row = el.querySelector('.pc-prof-modal-row[data-prof="Choose three Musical Instruments"]');
+    expect(row?.querySelector(".pc-prof-modal-name")?.textContent).toBe(chipLabel);
+    expect(chipLabel).toBe("Choose three Musical Instruments");
+  });
 });
 
 describe("ProficiencyEditModal filtering", () => {

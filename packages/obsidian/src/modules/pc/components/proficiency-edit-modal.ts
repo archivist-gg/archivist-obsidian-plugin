@@ -6,7 +6,7 @@ import type { CharacterEditState } from "../pc.edit-state";
 import type { ProficiencyTri } from "@archivist-gg/dnd5e/pc/pc.types";
 import { aggregateProficiencies } from "@archivist-gg/dnd5e/pc/pc.proficiencies";
 import type { ProficiencyEntry } from "@archivist-gg/dnd5e/pc/pc.proficiencies";
-import { humanizeProficiency, toProfSlug } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
+import { proficiencyLabel, toProfSlug } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
 import {
   ALL_LANGUAGES, ARTISANS_TOOLS, MUSICAL_INSTRUMENTS, GAMING_SETS, OTHER_TOOLS,
 } from "@archivist-gg/dnd5e/types/choice";
@@ -372,14 +372,16 @@ export class ProficiencyEditModal extends PaneCenteredModal {
     /** Collect one section, skipping anything effective or already claimed by an
      *  earlier section. The label matches what the engine composes for a GRANT of
      *  the same value (pc.decision-engine.ts' proficiencyEntryFor), so a row and
-     *  the chip it turns into read identically. */
+     *  the chip it turns into read identically: both call dnd5e's `proficiencyLabel`
+     *  on the RAW value, which keeps authored prose casing (R4-G7 T8 RIDER-14) and is
+     *  the slug humanizer for every vocabulary slug. */
     const section = (raws: string[], group: string | null): AddableRow[] => {
       const rows: AddableRow[] = [];
       for (const raw of raws) {
         const slug = toProfSlug(raw);
         if (effective.has(slug) || seen.has(slug)) continue;
         seen.add(slug);
-        rows.push({ value: raw, label: humanizeProficiency(slug), group });
+        rows.push({ value: raw, label: proficiencyLabel(raw), group });
       }
       return sortByLabel(rows);
     };
