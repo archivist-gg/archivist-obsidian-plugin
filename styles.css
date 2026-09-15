@@ -8966,6 +8966,10 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-dtype-icon { display: inline-flex; width: 13px; height: 13px; flex-shrink: 0; }
 .archivist-pc-sheet .pc-spell-dtype-icon svg { width: 100%; height: 100%; fill: currentColor; }
 .archivist-pc-sheet .pc-spell-dtype-icon.dmg { color: var(--pc-crimson); }
+/* R4-G7 T8 RIDER-16: a scaled value authored as a SENTENCE (`casting_options[].desc`, e.g. "You gain 2d4 + 9
+   temporary hit points.") is a muted caption line in the effect cell, never the value chip: the chip is for a roll
+   or a count, and a sentence poured into it stretched it to the cell edge and wrapped it over two or three lines. */
+.archivist-pc-sheet .pc-spell-eff-note { margin-top: 2px; font-size: var(--pc-fs-small); font-style: italic; color: var(--pc-text-muted); line-height: 1.35; }
 .archivist-pc-sheet .pc-spell-comp { font-size: var(--pc-fs-small); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spell-dur { color: var(--pc-text-soft); }
 

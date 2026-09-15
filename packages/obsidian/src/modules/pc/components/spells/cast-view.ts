@@ -2,7 +2,7 @@ import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
 import { renderChargeBoxes } from "../actions/charge-boxes";
-import { spellEffectAtSlot, spellEffectAtCharacterLevel, upcastLevelsFor } from "@archivist-gg/dnd5e/spell/spell.scaling";
+import { spellEffectPartsAtSlot, spellEffectAtCharacterLevel, upcastLevelsFor, type SpellEffectParts } from "@archivist-gg/dnd5e/spell/spell.scaling";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
@@ -294,24 +294,30 @@ function renderRow(
   // EFFECT
   const effTd = tr.createDiv({ cls: "pc-spell-effcell" });
   const eff = effectDescriptor(spell);
-  // RIDER-15: a cantrip scales with the character's TOTAL level (`player_level_<N>`), a slot row with its slot.
-  const scaled = opts.cantrip
-    ? spellEffectAtCharacterLevel(spell.entity, ctx.derived.totalLevel)
-    : (opts.upcast || opts.pact) ? spellEffectAtSlot(spell.entity, level) : null;
-  if (scaled) {
+  // RIDER-15: a cantrip scales with the character's TOTAL level (`player_level_<N>`, a roll), a slot row with its slot.
+  const cantripRoll = opts.cantrip ? spellEffectAtCharacterLevel(spell.entity, ctx.derived.totalLevel) : null;
+  const scaled: SpellEffectParts | null = cantripRoll
+    ? { field: "damage_roll", value: cantripRoll }
+    : (opts.upcast || opts.pact) ? spellEffectPartsAtSlot(spell.entity, level) : null;
+  // RIDER-16: where the value prints is decided by its FIELD, never by a spell list. A roll is the chip wearing the
+  // damage icon; a target count is a plain chip; a duration replaces the duration text below; an authored sentence
+  // is a caption line under the type word, never the chip.
+  const damageChip = scaled?.field === "damage_roll";
+  if (scaled && (damageChip || scaled.field === "target_count")) {
     const chip = effTd.createSpan({ cls: "pc-spell-eff" });
-    if (eff.damageType && hasDamageTypeIcon(eff.damageType)) {
+    if (damageChip && eff.damageType && hasDamageTypeIcon(eff.damageType)) {
       setDamageTypeIcon(chip.createSpan({ cls: "pc-spell-dtype-icon dmg" }), eff.damageType);
     }
-    chip.createSpan({ text: scaled });
+    chip.createSpan({ text: scaled.value });
   }
   if (eff.damageType) {
     const dt = effTd.createSpan({ cls: "pc-spell-dtype" });
-    if (!scaled && hasDamageTypeIcon(eff.damageType)) {
+    if (!damageChip && hasDamageTypeIcon(eff.damageType)) {
       setDamageTypeIcon(dt.createSpan({ cls: "pc-spell-dtype-icon dmg" }), eff.damageType);
     }
     dt.appendText(eff.damageType);
   }
+  if (scaled?.field === "desc" && scaled.value) effTd.createDiv({ cls: "pc-spell-eff-note", text: scaled.value });
 
   // COMPONENTS / duration
   const comp = tr.createDiv({ cls: "pc-spell-comp" });
@@ -328,8 +334,10 @@ function renderRow(
     // prints for an absent range · one constant, one glyph, and P8 still owns which glyph that is.
     comp.createDiv({ text: EMPTY_CELL });
   }
-  if (spell.entity.duration) {
-    const d = spell.entity.concentration ? `Conc · ${spell.entity.duration}` : spell.entity.duration;
+  // RIDER-16: a `duration` value at this slot IS the row's duration, so it replaces the base one.
+  const duration = scaled?.field === "duration" ? scaled.value : spell.entity.duration;
+  if (duration) {
+    const d = spell.entity.concentration ? `Conc · ${duration}` : duration;
     comp.createDiv({ cls: "pc-spell-dur", text: d });
   }
 }

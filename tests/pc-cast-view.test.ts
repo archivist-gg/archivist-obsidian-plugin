@@ -165,6 +165,60 @@ describe("renderCastView · a cantrip's damage at the character's level (R4-G7 T
   });
 });
 
+// R4-G7 T8 RIDER-16 (F-CHIP (a)): where a scaled value prints is decided by the FIELD it came from, never by a spell
+// list: `damage_roll` -> the chip with the damage icon; `target_count` -> a plain chip; `duration` -> no chip, it
+// REPLACES the row's duration text at that slot; `desc` -> a muted caption line in the effect cell, never the chip.
+describe("renderCastView · the scaled value prints where its FIELD says (R4-G7 T8 RIDER-16)", () => {
+  const upcastRow = (spell: ResolvedSpell, slots: Record<number, number>, name: string): HTMLElement => {
+    const root = mountContainer();
+    const ctx = ctxFor([spell]);
+    (ctx.derived as unknown as { derivedSpellSlots: Record<number, number> }).derivedSpellSlots = slots;
+    renderCastView(root, ctx);
+    return Array.from(root.querySelectorAll<HTMLElement>(".pc-spell-cast-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === name && r.querySelector(".pc-spell-up"))!;
+  };
+  it("a DURATION value (PHB 2014 Bestow Curse at 4th) replaces the duration text and is never a chip", () => {
+    const bestow = sp("Bestow Curse", 3, {
+      duration: "1 minute", concentration: true, damage: { types: ["necrotic"] } as never,
+      casting_options: [{ type: "slot_level_4", duration: "10 minutes" }] as never,
+    });
+    const row = upcastRow(bestow, { 3: 3, 4: 2 }, "Bestow Curse");
+    expect(row.querySelector(".pc-spell-dur")?.textContent).toBe("Conc · 10 minutes");
+    expect(row.querySelector(".pc-spell-eff")).toBeNull();
+    // with no damage chip carrying it, the type word keeps its icon
+    expect(row.querySelector(".pc-spell-dtype .pc-spell-dtype-icon")).not.toBeNull();
+  });
+  it("a DESC value (PHB 2024 False Life at 2nd) prints as a caption line in the effect cell, never the chip", () => {
+    const falseLife = sp("False Life", 1, {
+      duration: "1 hour", casting_options: [{ type: "slot_level_2", desc: "You gain 2d4 + 9 temporary hit points." }] as never,
+    });
+    const row = upcastRow(falseLife, { 1: 4, 2: 3 }, "False Life");
+    expect(row.querySelector(".pc-spell-effcell .pc-spell-eff-note")?.textContent).toBe("You gain 2d4 + 9 temporary hit points.");
+    expect(row.querySelector(".pc-spell-eff")).toBeNull();
+    expect(row.querySelector(".pc-spell-dur")?.textContent).toBe("1 hour");
+  });
+  it("a TARGET_COUNT value (Magic Missile at 2nd) is a plain chip: no damage icon inside it, the type word keeps its icon", () => {
+    const mm = sp("Magic Missile", 1, {
+      damage: { types: ["force"] } as never, casting_options: [{ type: "slot_level_2", target_count: 4 }] as never,
+    });
+    const row = upcastRow(mm, { 1: 4, 2: 3 }, "Magic Missile");
+    expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).toBeNull();
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("4 targets");
+    expect(row.querySelector(".pc-spell-dtype .pc-spell-dtype-icon")).not.toBeNull();
+  });
+  it("a DAMAGE_ROLL value keeps today's chip with the damage icon and a bare type word (characterisation)", () => {
+    const fireball = sp("Fireball", 3, {
+      duration: "instantaneous", damage: { types: ["fire"] } as never, casting_options: [{ type: "slot_level_4", damage_roll: "9d6" }] as never,
+    });
+    const row = upcastRow(fireball, { 3: 3, 4: 2 }, "Fireball");
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("9d6");
+    expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).not.toBeNull();
+    expect(row.querySelector(".pc-spell-dtype .pc-spell-dtype-icon")).toBeNull();
+    expect(row.querySelector(".pc-spell-eff-note")).toBeNull();
+    expect(row.querySelector(".pc-spell-dur")?.textContent).toBe("instantaneous");
+  });
+});
+
 // ---- pact casters ----
 function pactSp(name: string, level: number): ResolvedSpell {
   return { entity: { name, level } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),
