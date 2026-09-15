@@ -438,14 +438,19 @@ export function renderMonsterBlock(
     richLine("Challenge", ch);
   }
 
-  // 8. SVG Bar (only if secondary props exist)
-  if (hasSecondary) {
+  // 9. Sections: ONE list (the UNION of the native arrays, the placed spellcasting blocks and the entry trees, in
+  // the fixed print order of spec §8.1) drives the tab strip in one column and the flowing headers in two. It is
+  // COMPUTED here, above bar 8, because bar 8 only exists to open it (B026-D14 below); `buildSections` is pure, so
+  // nothing about the DOM order changes by asking it earlier.
+  const activeSections = buildSections(monster);
+
+  // 8. SVG Bar (only if secondary props exist AND there is a section for it to open). R4-G7 T8 wave E, B026-D14: the
+  // bar was drawn from `hasSecondary` alone, before the sections were known, so a monster with a Senses or Challenge
+  // line and NO traits, actions or reactions closed its card with a heavy red divider that opened nothing. MEASURED
+  // live in W-Er on the SRD Donkey: 4 `.stat-block-bar` with 0 sections.
+  if (hasSecondary && activeSections.length > 0) {
     createSvgBar(contentTarget);
   }
-
-  // 9. Sections: ONE list (the UNION of the native arrays, the placed spellcasting blocks and the entry trees, in
-  // the fixed print order of spec §8.1) drives the tab strip in one column and the flowing headers in two.
-  const activeSections = buildSections(monster);
 
   /**
    * One section body, drawn identically in both column modes: the intro lines, the legendary / mythic boxes, the

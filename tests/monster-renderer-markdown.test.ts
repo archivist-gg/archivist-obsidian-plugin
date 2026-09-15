@@ -191,6 +191,44 @@ describe("Q-11 · monster feature prose through the markdown path (spec §7.6)",
     expect((entry.previousElementSibling as HTMLElement).className).toBe("archivist-feature-name");
   });
 
+  /**
+   * R4-G7 T8 wave E, B026-D14: the fourth section rule is drawn only when a section follows it. Bar 8 was drawn from
+   * `hasSecondary` alone, before `buildSections` was called, so the SRD Donkey (Senses + Challenge, no traits, no
+   * actions, no reactions) closed its card with a heavy red divider that opened nothing (MEASURED live in W-Er: 4
+   * `.stat-block-bar` with 0 sections).
+   */
+  it("wave E B026-D14: a monster with no sections draws no section rule under its last property line", async () => {
+    const m = { name: "Donkey", abilities: ABIL, passive_perception: 10, cr: "0" } as unknown as Monster;
+
+    const { el, ready } = renderMonsterBlock(m, 1);
+    await ready;
+
+    expect(el.querySelectorAll(".stat-block-bar").length).toBe(3);
+    expect(el.querySelectorAll(".original-tab-content").length).toBe(0);
+  });
+
+  it("wave E B026-D14: the same monster WITH a trait keeps the rule that opens its section", async () => {
+    const m = { name: "Donkey", abilities: ABIL, passive_perception: 10, cr: "0", traits: [{ name: "Beast of Burden", entries: ["It counts as a Large animal."] }] } as unknown as Monster;
+
+    const { el, ready } = renderMonsterBlock(m, 1);
+    await ready;
+
+    expect(el.querySelectorAll(".stat-block-bar").length).toBe(4);
+    expect(el.querySelectorAll(".original-tab-content").length).toBe(1);
+  });
+
+  it("wave E B026-D14: a monster with sections but NO secondary property line still draws no rule there", async () => {
+    // `hasSecondary` is the other half of the condition: with no Saving Throws / Skills / Senses / Languages / Gear /
+    // Challenge line there is no secondary property BLOCK for a rule to close, and there never was one.
+    const m = { name: "Bare", abilities: ABIL, traits: [{ name: "Trait", entries: ["Prose."] }] } as unknown as Monster;
+
+    const { el, ready } = renderMonsterBlock(m, 1);
+    await ready;
+
+    expect(el.querySelectorAll(".stat-block-bar").length).toBe(3);
+    expect(el.querySelectorAll(".original-tab-content").length).toBe(1);
+  });
+
   it("wave E B026-D1: an entry whose first block is a LIST keeps that list a block (only a lead paragraph is unwrapped)", async () => {
     const render = (parent: HTMLElement): Promise<void> => {
       const doc = parent.ownerDocument;
