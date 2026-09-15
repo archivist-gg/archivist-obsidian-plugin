@@ -269,3 +269,28 @@ describe("R4-G7 CSS contracts · RIDER-8 a strip with a pool tab reaches the sho
     expect(block).toMatch(/\.archivist-pc-sheet \.pc-tab-btn::before \{\s*content: attr\(data-short\);\s*font-size: 10px;\s*letter-spacing: 0\.2px;/);
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-9 an inventory row stays one row in the right column (CLEANLINESS PIN)", () => {
+  // THIS TEST IS NOT THE WITNESS: the W-A live read (meta cells below the name cell, per row) and the off-screen
+  // inventory lab (`evidence/g7-live/wa-inv-lab.js`) are. The floors are the corpus's widest rendered values.
+  const block = (px: number): string => {
+    const css = read("inventory.css");
+    const head = `@container pc-content (max-width: ${px}px) {`;
+    const at = css.indexOf(head);
+    expect(at, head).toBeGreaterThan(-1);
+    return css.slice(at, css.indexOf("\n}", at));
+  };
+
+  it("below 500 px the row keeps all six tracks on one line, the meta tracks floored at their measured widths", () => {
+    const b = block(499);
+    expect(b).toMatch(/grid-template-columns: 18px 18px minmax\(0, 1fr\) minmax\(67px, auto\) minmax\(53px, auto\) minmax\(35px, auto\);/);
+    expect(b).toMatch(/grid-template-areas: "toggle icon name stat weight qty";/);
+    expect(b).not.toContain('".      .    weight qty"');
+  });
+
+  it("the two-row reflow starts at 287 px and the four-line stack at 191 px, never at 399", () => {
+    expect(block(287)).toContain('".      .    weight qty"');
+    expect(block(191)).toContain('".      .    qty"');
+    expect(block(399)).not.toContain("grid-template-areas");
+  });
+});
