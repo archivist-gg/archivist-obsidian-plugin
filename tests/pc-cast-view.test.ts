@@ -348,7 +348,7 @@ function flush(): Promise<void> {
 describe("renderCastView · scrolls & consumables", () => {
   beforeEach(() => confirmMock.mockReset());
 
-  it("scroll row reuses the real CAST button (not the retired lozenge) and shows no 'always' marker", () => {
+  it("scroll row reuses the real CAST button (not the retired lozenge) and shows no Always prepared marker", () => {
     const root = mountContainer();
     // A Wizard who KNOWS Fireball at L3 and also carries a Fireball scroll (entry 0).
     renderCastView(root, ctxForScroll([
@@ -380,7 +380,7 @@ describe("renderCastView · scrolls & consumables", () => {
     expect(l3Fireballs.length).toBe(1);
   });
 
-  it("still renders the 'always' marker for a non-scroll always-prepared spell (guard: only scrolls are suppressed)", () => {
+  it("still renders the Always prepared marker for a non-scroll always-prepared spell (guard: only scrolls are suppressed)", () => {
     const root = mountContainer();
     const domain: ResolvedSpell = {
       entity: { name: "Bless", level: 1 } as never, slug: "bless",
