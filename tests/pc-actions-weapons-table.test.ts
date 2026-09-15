@@ -4,6 +4,7 @@ import { renderWeaponRow } from "../packages/obsidian/src/modules/pc/components/
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { AttackRow } from "@archivist-gg/dnd5e/pc/pc.types";
+import { extractDiceNotation } from "../packages/obsidian/src/shared/rendering/renderer-utils";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -364,8 +365,10 @@ describe("renderWeaponRow — D1 expand persistence", () => {
   });
 });
 
+// `damageDice: "4"` is the engine's evaluated flat base (1 + STR 3) since R4-G7 T8 RIDER-10; "1+3" is no longer an
+// output the engine can produce.
 const unarmed = (): AttackRow => ({
-  id: "unarmed-strike", name: "Unarmed Strike", unarmed: true, range: "5 ft", toHit: 5, damageDice: "1+3",
+  id: "unarmed-strike", name: "Unarmed Strike", unarmed: true, range: "5 ft", toHit: 5, damageDice: "4",
   damageType: "bludgeoning", properties: [], proficient: true, subLabel: "Unarmed", actionCost: "action",
   breakdown: { toHit: [{ source: "STR modifier", amount: 3, kind: "ability" }, { source: "Proficiency bonus", amount: 2, kind: "ability" }],
                damage: [{ source: "Base damage", amount: 0, kind: "ability" }, { source: "STR modifier", amount: 3, kind: "ability" }] },
@@ -382,5 +385,21 @@ describe("the Unarmed Strike row's expand (R4-G6b §5.5)", () => {
     expect(card?.querySelectorAll(".pc-unarmed-card-head").length).toBe(2);
     expect(card?.textContent).toContain("Proficiency bonus");
     expect(card?.textContent).toContain("+2");
+  });
+
+  // CHARACTERISATION (spec §14.7), green by construction: the engine now prints a flat Unarmed Strike base EVALUATED
+  // and floored at 0 (dnd5e `buildUnarmedRow`, R4-G7 T8 RIDER-10), so a STR 8 character's row reads `0`. This
+  // proves the one reader of that string turns a bare `0` into a real rollable damage tag, never the `<code>`
+  // fallback `renderTextWithInlineTags` uses for text it cannot parse.
+  it("a flat `0` damage row renders a rollable damage tag whose roll notation is `0`", () => {
+    const root = mountContainer();
+    const zero = { ...unarmed(), toHit: 1, damageDice: "0" };
+    renderWeapons(root, [zero], ctxWithAttacks([zero]));
+    const tag = root.querySelector(".pc-weapon-damage .archivist-tag-damage") as HTMLElement | null;
+    expect(tag).not.toBeNull();
+    expect(tag?.textContent).toBe("0 bludgeoning");
+    expect(root.querySelector(".pc-weapon-damage code")).toBeNull();
+    expect(tag?.getAttribute("data-dice-type")).toBe("damage");
+    expect(extractDiceNotation({ type: "damage", content: tag?.getAttribute("data-dice-notation") ?? "" })).toBe("0");
   });
 });
