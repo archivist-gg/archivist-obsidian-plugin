@@ -97,3 +97,40 @@ describe("renderWeaponRow · damage riders that cannot be a dice chip", () => {
     expect(chips(list)).toBe(2);
   });
 });
+
+/**
+ * R4-G7 T8 RIDER-12 (F-RIDER (a)) · a rider that carries a `condition` is not damage on every hit.
+ *
+ * The engine now carries the source effect's `condition` on the rider (dnd5e `computeFeatureEffects`). A conditional
+ * rider leaves the damage cell and prints in the row's caption with its condition, in the T6a E-4 (c) caption idiom:
+ * `+ 2d8 radiant (Divine Smite: for a 1st-level spell slot)`. The damage cell keeps the unconditional riders only, so
+ * a 5e Paladin reads `1d8 radiant` there instead of `2d8 radiant + 1d8 radiant + 1d8 radiant`. The policy is by FIELD,
+ * never by prose: an always-on scope authored as a condition (PHB 2024 Radiant Strikes) moves too (the ruling).
+ */
+describe("renderWeaponRow · RIDER-12: a rider with a condition prints in the caption, never in the damage cell", () => {
+  it("the Divine Smite shape: the conditional 2d8 leaves the damage cell, the unconditional 1d8 stays a chip", () => {
+    const list = renderRow(swordWith([
+      { amount: "2d8", damage_type: "radiant", source: "Divine Smite", condition: "for a 1st-level spell slot" },
+      { amount: "1d8", damage_type: "radiant", source: "Improved Divine Smite" },
+    ]));
+    expect(damageText(list)).not.toContain("2d8");
+    expect(damageText(list)).toContain("1d8 radiant");
+    expect(chips(list)).toBe(2); // the base damage + the unconditional rider
+    expect(captions(list)).toBe("+ 2d8 radiant (Divine Smite: for a 1st-level spell slot)");
+  });
+
+  it("a conditional rider with no source captions its condition alone", () => {
+    const list = renderRow(swordWith([{ amount: "1d6", damage_type: "fire", condition: "while raging" }]));
+    expect(damageText(list)).not.toContain("1d6 fire");
+    expect(captions(list)).toBe("+ 1d6 fire (while raging)");
+  });
+
+  it("a conditional PROSE amount and an unconditional prose amount share the one caption line", () => {
+    const list = renderRow(swordWith([
+      { amount: "your Charisma modifier", damage_type: "force", source: "Agonizing Blast", condition: "When you cast eldritch blast" },
+      { amount: "half your fighter level", damage_type: "slashing", source: "Brute" },
+    ]));
+    expect(captions(list)).toBe("+ your Charisma modifier force (Agonizing Blast: When you cast eldritch blast) · + half your fighter level slashing (Brute)");
+    expect(chips(list)).toBe(1);
+  });
+});

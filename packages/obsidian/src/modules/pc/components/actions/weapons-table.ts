@@ -66,9 +66,10 @@ export function renderWeaponsGroup(
  *
  * Everything display-only (cost badge, range, to-hit / damage inline tags,
  * condition/roll-modifier chips, damage riders, versatile, crit caption,
- * situational sub-line) came verbatim from the former in-loop builder, with ONE
- * later change: R4-G7 T6a routes a rider whose printed form cannot be a dice
- * chip to the row's `.pc-weapon-note` caption instead of into the damage text.
+ * situational sub-line) came verbatim from the former in-loop builder, with TWO
+ * later changes: R4-G7 T6a routes a rider whose printed form cannot be a dice
+ * chip to the row's `.pc-weapon-note` caption instead of into the damage text,
+ * and R4-G7 T8 RIDER-12 routes a rider that carries a `condition` there too.
  *
  * `hasMastery` is the group-level flag from `renderWeaponsGroup`: when set, the
  * row switches to the 6-col has-mastery grid and (for a row that actually has
@@ -150,11 +151,14 @@ export function renderWeaponRow(
     // ("your Wisdom modifier", "half your fighter level") is collected here and printed as the row's
     // CAPTION instead, beside the attack notes under the weapon name. The amount and the damage type
     // arrive already resolved (the engine's merge site), so what is prose here is prose in the DATA.
+    // R4-G7 T8 RIDER-12: a rider that carries a `condition` is not damage on every hit, so it goes to the
+    // caption as well, with its condition after its source, whatever its amount: the decision is the
+    // FIELD, never the condition's wording. The damage cell keeps the unconditional riders only.
     const riderCaptions: string[] = [];
     for (const rider of a.damageRiders) {
       const dice = rider.damage_type ? `${rider.amount} ${rider.damage_type}` : rider.amount;
-      if (!isRenderableDamageText(dice)) {
-        riderCaptions.push(`+ ${dice}${rider.source ? ` (${rider.source})` : ""}`);
+      if (rider.condition || !isRenderableDamageText(dice)) {
+        riderCaptions.push(riderCaption(dice, rider.source, rider.condition));
         continue;
       }
       dmgCell.appendText(" + ");
@@ -264,6 +268,14 @@ export function renderWeaponRow(
 
 function formatSigned(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
+}
+
+/** One rider caption in the T6a E-4 (c) idiom: `+ <amount and type>`, then in parentheses the source and, after a
+ *  colon, the rider's condition (R4-G7 T8 RIDER-12): `+ 2d8 radiant (Divine Smite: for a 1st-level spell slot)`.
+ *  Either half may be absent; with neither there are no parentheses. */
+function riderCaption(dice: string, source: string | undefined, condition: string | undefined): string {
+  const note = [source, condition].filter((s): s is string => !!s).join(": ");
+  return `+ ${dice}${note ? ` (${note})` : ""}`;
 }
 
 /** The unarmed row's expand: the two term lists, source + signed amount per row (R4-G6b §5.5). */
