@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { containerBlockIn } from "./fixtures/pc/css-contract-helpers";
 
 /**
  * R4-G7 CSS contracts · the live riders of the T7 rehearsal (S00).
@@ -233,13 +234,17 @@ describe("R4-G7 CSS contracts · RIDER-7 the per-tab body collapse is retired, t
   it("the body stacks only under the pc-sheet 499 px width tier", () => {
     const css = read("layout.css");
     const head = "@container pc-sheet (max-width: 499px) {";
-    const at = css.indexOf(head);
-    expect(at).toBeGreaterThan(-1);
-    const tier = css.slice(at, css.indexOf("\n}", at));
+    expect(css.indexOf(head)).toBeGreaterThan(-1);
+    const tier = containerBlockIn(css, "pc-sheet (max-width: 499px)") as string;
     expect(tier).toMatch(/\.archivist-pc-sheet \.pc-body \{\s*grid-template-columns: 1fr;/);
     // exactly one one-column body template in the partial, and it is the one inside that tier
     expect(css.match(/grid-template-columns:\s*1fr;/g) ?? []).toHaveLength(1);
     expect(css).not.toContain("@container pc-sheet (min-width: 500px)");
+  });
+
+  it("fix round 1: layout.css no longer claims the sheet has no horizontal padding (measured 24 px a side)", () => {
+    // matched across the comment's line breaks and its ` * ` gutters (the clause is wrapped over two lines)
+    expect(read("layout.css")).not.toMatch(/has\s+no\s+(?:\*\s*)?horizontal\s+(?:\*\s*)?padding/);
   });
 });
 
@@ -248,10 +253,9 @@ describe("R4-G7 CSS contracts · RIDER-8 a strip with a pool tab reaches the sho
   // deployed pair) and the off-screen strip lab (`evidence/g7-live/wa-strip-lab.js`), which measured the thresholds
   // pinned here: the widest five / six / seven tab strip first holds one line at 489 / 618 / 678 px with full labels.
   const tier = (css: string, px: number): string => {
-    const head = `@container pc-content (max-width: ${px}px) {`;
-    const at = css.indexOf(head);
-    expect(at, head).toBeGreaterThan(-1);
-    return css.slice(at, css.indexOf("\n}", at));
+    const block = containerBlockIn(css, `pc-content (max-width: ${px}px)`);
+    expect(block, `@container pc-content (max-width: ${px}px)`).not.toBeNull();
+    return block as string;
   };
 
   it("each strip length switches to the declared short labels one pixel below its own measurement", () => {
@@ -274,11 +278,9 @@ describe("R4-G7 CSS contracts · RIDER-9 an inventory row stays one row in the r
   // THIS TEST IS NOT THE WITNESS: the W-A live read (meta cells below the name cell, per row) and the off-screen
   // inventory lab (`evidence/g7-live/wa-inv-lab.js`) are. The floors are the corpus's widest rendered values.
   const block = (px: number): string => {
-    const css = read("inventory.css");
-    const head = `@container pc-content (max-width: ${px}px) {`;
-    const at = css.indexOf(head);
-    expect(at, head).toBeGreaterThan(-1);
-    return css.slice(at, css.indexOf("\n}", at));
+    const found = containerBlockIn(read("inventory.css"), `pc-content (max-width: ${px}px)`);
+    expect(found, `@container pc-content (max-width: ${px}px)`).not.toBeNull();
+    return found as string;
   };
 
   it("below 500 px the row keeps all six tracks on one line, the meta tracks floored at their measured widths", () => {

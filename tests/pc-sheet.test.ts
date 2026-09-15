@@ -28,10 +28,9 @@ function fullRegistry(): ComponentRegistry {
 /** The tests/pc-builder-selection-table.test.ts idiom; the R4-G7 RIDER-7 row fires `cb` on every instance
  *  the render constructed. */
 class FakeResizeObserver {
-  observed: Element[] = []; disconnected = false;
   constructor(public cb: ResizeObserverCallback) {}
-  observe(el: Element): void { this.observed.push(el); }
-  disconnect(): void { this.disconnected = true; }
+  observe(_el: Element): void {}
+  disconnect(): void {}
 }
 
 const resolved = { state: {}, definition: { class: [{}] } } as unknown as ResolvedCharacter;

@@ -17,6 +17,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { containerBlockIn } from "./fixtures/pc/css-contract-helpers";
 
 const STYLES_DIR = resolve(__dirname, "../packages/obsidian/src/modules/pc/styles");
 
@@ -194,16 +195,9 @@ describe("R4-G6b CSS contracts · §7 the sticky builder rail (layout.css, build
  * first. `query` is the text between `@container` and the opening brace.
  */
 const containerBlock = (cssPath: string, query: string): string => {
-  const css = readFileSync(resolve(STYLES_DIR, cssPath), "utf8");
-  const head = `@container ${query} {`;
-  const start = css.indexOf(head);
-  expect(start, `@container ${query} missing from ${cssPath}`).toBeGreaterThan(-1);
-  let depth = 0;
-  for (let i = start + head.length - 1; i < css.length; i++) {
-    if (css[i] === "{") depth++;
-    else if (css[i] === "}" && --depth === 0) return css.slice(start, i + 1);
-  }
-  throw new Error(`@container ${query} is unterminated in ${cssPath}`);
+  const block = containerBlockIn(readFileSync(resolve(STYLES_DIR, cssPath), "utf8"), query);
+  expect(block, `@container ${query} missing from ${cssPath}`).not.toBeNull();
+  return block as string;
 };
 
 /** One block's declarations as a property map, so two blocks can be compared property by property. */
