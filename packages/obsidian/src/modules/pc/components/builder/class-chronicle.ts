@@ -7,6 +7,7 @@ import { recognizeDecision } from "@archivist-gg/dnd5e/pc/decision-recognizer";
 import { renderChronicleBlock, renderSectionRule, firstSentence } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";
 import { humanizeSlug, fixedGrantLines } from "../../../../shared/rendering/renderer-utils";
+import { proficiencyLabel } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
 
 /** Structural view of the class runtime entity (class.types.ts). */
 export interface ClassData {
@@ -445,10 +446,13 @@ function renderFeatureTimeline(host: HTMLElement, ctx: ComponentRenderContext, d
 
 export function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
   if (d.saving_throws?.length) prop(host, "Saving Throws", d.saving_throws.map((s) => ABILITY_NAME[s] ?? s.toUpperCase()).join(", "));
+  // R4-G7 T8 RIDER-30: weapon and armor values print through dnd5e's `proficiencyLabel`, the ONE rule the sheet's proficiency
+  // rail uses (RIDER-14): authored prose ("Martial weapons that have the Light property") prints as authored instead of being
+  // title-cased word by word here while the sheet printed it as written.
   const w = d.proficiencies?.weapons;
-  const weapons = [...(w?.categories ?? []), ...(w?.fixed ?? [])].map(humanizeSlug).join(", ");
+  const weapons = [...(w?.categories ?? []), ...(w?.fixed ?? [])].map(proficiencyLabel).join(", ");
   if (weapons) prop(host, "Weapons", weapons);
-  if (d.proficiencies?.armor?.length) prop(host, "Armor", d.proficiencies.armor.map(humanizeSlug).join(", "));
+  if (d.proficiencies?.armor?.length) prop(host, "Armor", d.proficiencies.armor.map(proficiencyLabel).join(", "));
   if (d.skill_choices) {
     const from = d.skill_choices.from.map(humanizeSlug);
     const shown = from.slice(0, 6).join(", ");
