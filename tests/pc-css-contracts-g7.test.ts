@@ -366,18 +366,29 @@ describe("R4-G7 CSS contracts · RIDER-25 the crit caption is a block line with 
   });
 });
 
-describe("R4-G7 CSS contracts · RIDER-26 an item row stacks below 500 px so its name holds a line (MEASURED LIVE in W-Dr's lab)", () => {
+describe("R4-G7 CSS contracts · RIDER-26 an item row stacks while its name track is under the one-line floor (MEASURED LIVE in W-Dr and W-D2a)", () => {
   // W-Dr (2026-09-15, the default 1024 x 800 window, `.pc-content` 355.5 px, the user's Illrigger, REACTIONS > ITEMS): the base
   // template `66px minmax(0, 1fr) 72px minmax(0, 3fr)` resolved to `66px 46.375px 72px 139.125px` and broke "Ring of Evasion" one
   // word per line (3 lines, row 75 px). The stacked candidate injected live resolved to `66px 273.5px`: the name on ONE line, the
   // range under the badge and the tracker under the name, row 85.9 px, 0 overlapping cells.
+  // Fix round 1 (review Minor 4, ruled): the tier is DERIVED from measured widths, not "below 500 px". W-D2a measured "Ring of
+  // Evasion" on one line at 99.4 px (700 12px Libre Baskerville) and the row's 4 px side paddings and 8 px gaps, so the base name
+  // track is (C - 66 - 72 - 8 - 3 * 8) / 4 = (C - 170) / 4: 82.5 at C = 500 and 97.5 at 560 (2 lines each, the rule shipped by
+  // RIDER-26 left both), 100 at 570 (1 line). The floor rounds UP to 100 px so a fractional column just above the tier still holds
+  // the name; the row stacks while (C - 170) / 4 < 100, i.e. up to C = 569. The candidate injected over C = 300..1000 set the name on
+  // one line at every width.
+  const ONE_LINE = 99.4;
+  const FLOOR = Math.ceil(ONE_LINE);
+  const TIER = 66 + 72 + 8 + 3 * 8 + 4 * FLOOR - 1;
+  const actions = (): string => readFileSync(join(PARTIALS, "actions.css"), "utf8");
   const block = (): string => {
-    const b = containerBlockIn(readFileSync(join(PARTIALS, "actions.css"), "utf8"), "pc-content (max-width: 499px)");
-    if (!b) throw new Error("no 499 block in actions.css");
+    const b = containerBlockIn(actions(), `pc-content (max-width: ${TIER}px)`);
+    if (!b) throw new Error(`no pc-content (max-width: ${TIER}px) block in actions.css`);
     return b;
   };
-  it("the row is two tracks, the badge's and the name's", () => {
+  it("the derived tier is 569 px and holds the two-track items row", () => {
     expect(block()).toContain(".archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr); row-gap: var(--pc-space-1); }");
+    expect(TIER).toBe(569);
   });
   it("every cell is placed by name: badge and name on line 1, range under the badge, tracker under the name", () => {
     const b = block();
@@ -385,6 +396,9 @@ describe("R4-G7 CSS contracts · RIDER-26 an item row stacks below 500 px so its
     expect(b).toContain(".archivist-pc-sheet .pc-items-table .pc-action-namecell { grid-column: 2; grid-row: 1; }");
     expect(b).toContain(".archivist-pc-sheet .pc-items-table .pc-action-range { grid-column: 1; grid-row: 2; }");
     expect(b).toContain(".archivist-pc-sheet .pc-items-table .pc-action-charges { grid-column: 2; grid-row: 2; }");
+  });
+  it("the items row is stacked by that tier alone: the 499 px block no longer carries an items-table rule", () => {
+    expect(containerBlockIn(actions(), "pc-content (max-width: 499px)") ?? "").not.toContain(".pc-items-table");
   });
 });
 
