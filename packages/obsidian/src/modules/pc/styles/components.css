@@ -1859,6 +1859,10 @@
   text-transform: none;
   letter-spacing: 0.03em;
 }
+/* R4-G7 T8 RIDER-20 (F-ADV) · a CONDITIONAL tag (the entry carries a condition, or a scope the normaliser could not map).
+   Its TEXT already carries dnd5e's CONDITIONAL_TAG_MARK (`ADV*`); the dashed border repeats the reading for an eye that
+   scans the rail's shapes rather than its letters. Colour stays the mode's own, so ADV* is still advantage-blue. */
+.archivist-pc-sheet .pc-cond-tag-conditional { border-style: dashed; }
 /* Used when the save chip swaps its numeric bonus for an AUTO-FAIL tag. */
 .archivist-pc-sheet .pc-save-bn.is-hidden { display: none; }
 

@@ -346,3 +346,11 @@ describe("R4-G7 CSS contracts · RIDER-18 a multiclass spellcasting summary is o
     expect(ruleOf("spells.css", ".archivist-pc-sheet .pc-spell-dc-list {")).toMatch(/--pc-cap-gap:\s*1em/);
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-20 a conditional roll tag is dashed (CLEANLINESS PIN; the tag TEXT carries the mark)", () => {
+  it("the conditional class draws a dashed border and keeps the mode's colour", () => {
+    const block = ruleOf("components.css", ".archivist-pc-sheet .pc-cond-tag-conditional {");
+    expect(block).toMatch(/border-style:\s*dashed/);
+    expect(block).not.toMatch(/color:/);
+  });
+});

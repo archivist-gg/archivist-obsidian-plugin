@@ -233,7 +233,8 @@ describe("renderWeaponRow", () => {
     const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
     const adv = hitCell.querySelector(".pc-cond-tag.pc-cond-tag-adv");
     expect(adv).not.toBeNull();
-    expect(adv?.textContent).toBe("ADV");
+    // R4-G7 T8 RIDER-20: this entry carries a `condition`, so the tag is marked conditional (`ADV` + dnd5e's mark).
+    expect(adv?.textContent).toBe("ADV*");
   });
 
   it("renders a DIS chip for an attack-scope disadvantage roll-modifier", () => {

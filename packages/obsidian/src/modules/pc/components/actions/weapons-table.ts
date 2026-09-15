@@ -1,7 +1,7 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { ACTerm, AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { ActionEntry } from "./action-model";
-import { renderConditionTag, MODE_CLASS } from "../condition-tag";
+import { renderConditionTags, rollModifierTagSpec, type ConditionTagSpec } from "../condition-tag";
 import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import type { ActionCost } from "@archivist-gg/dnd5e/types/resource";
 import { renderCostBadge } from "./cost-badge";
@@ -116,28 +116,33 @@ export function renderWeaponRow(
   const hitCell = row.createDiv({ cls: "pc-weapon-hit" });
   renderTextWithInlineTags(`\`atk:${formatSigned(a.toHit)}\``, hitCell, false);
 
+  // R4-G7 T8 RIDER-20: the HIT cell's tags are collected, then rendered once so same-text tags merge.
+  const specs: ConditionTagSpec[] = [];
   const ce = ctx.derived.conditionEffects;
   if (ce) {
     if (ce.attack_disadvantage) {
       const sources = ce.sources
         .filter((s) => attackDisSources.has(s.condition))
         .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
-      renderConditionTag(hitCell, "dis", ROLL_MODE_TAG.disadvantage, `Disadvantage from ${sources.join(", ")}`);
+      specs.push({ kindClass: "dis", text: ROLL_MODE_TAG.disadvantage, tooltip: `Disadvantage from ${sources.join(", ")}` });
     }
     if (ce.attack_advantage) {
-      renderConditionTag(hitCell, "adv", ROLL_MODE_TAG.advantage, `Advantage from invisible`);
+      specs.push({ kindClass: "adv", text: ROLL_MODE_TAG.advantage, tooltip: `Advantage from invisible` });
     }
     const isAction = cost === "action" || cost === "reaction" || cost === "bonus-action";
     if (isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
   }
 
   // Structured roll-modifier effects scoped to attacks (feature-granted
-  // advantage/disadvantage). Order-preserving; one chip per matching entry.
+  // advantage/disadvantage). Order-preserving; one spec per entry. The cell matches no
+  // scope (every weapon row carries every attack entry), so R4-G7 T8 RIDER-20 reads `scope`
+  // for the mark only: the converter left the attack qualifier IN `scope` ("your next attack
+  // roll on the current turn"), and an unmapped scope marks the tag conditional.
   for (const rm of ctx.derived.rollModifiers ?? []) {
     if (rm.roll !== "attack") continue;
-    const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-    renderConditionTag(hitCell, MODE_CLASS[rm.mode], ROLL_MODE_TAG[rm.mode], tip);
+    specs.push(rollModifierTagSpec(rm));
   }
+  renderConditionTags(() => hitCell, specs);
 
   // Damage (inline italic; versatile shows both stacked)
   const dmgCell = row.createDiv({ cls: "pc-weapon-damage" });

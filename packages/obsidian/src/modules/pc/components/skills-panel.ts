@@ -3,7 +3,7 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { ALL_SKILLS } from "@archivist-gg/dnd5e/dnd/constants";
 import { formatModifier } from "@archivist-gg/dnd5e/dnd/math";
 import type { SkillSlug } from "@archivist-gg/dnd5e";
-import { renderConditionTag, MODE_CLASS } from "./condition-tag";
+import { renderConditionTags, rollModifierTagSpec, type ConditionTagSpec } from "./condition-tag";
 import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { numberOverride } from "./edit-primitives";
 
@@ -53,13 +53,15 @@ export class SkillsPanel implements SheetComponent {
       row.createSpan({ cls: toggleClasses.join(" ") });
       const bonusEl = row.createSpan({ cls: "pc-skill-bonus", text: formatModifier(entry.bonus) });
       row.createSpan({ cls: "pc-skill-name", text: SKILL_DISPLAY_NAMES[skillSlug] ?? display });
+      // R4-G7 T8 RIDER-20: the row's tags are collected, then rendered once so same-text tags merge.
+      const specs: ConditionTagSpec[] = [];
       const ce = ctx.derived.conditionEffects;
       if (ce) {
         if (ce.ability_check_disadvantage) {
           const sources = ce.sources
             .filter((s) => skillDisSources.has(s.condition))
             .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
-          renderConditionTag(row, "dis", ROLL_MODE_TAG.disadvantage, `Disadvantage on ability checks from ${sources.join(", ")}`);
+          specs.push({ kindClass: "dis", text: ROLL_MODE_TAG.disadvantage, tooltip: `Disadvantage on ability checks from ${sources.join(", ")}` });
         }
         if (ce.d20_test_penalty !== 0) {
           const baseBonus = entry.bonus - ce.d20_test_penalty;
@@ -77,13 +79,13 @@ export class SkillsPanel implements SheetComponent {
       // not to a skill). `entry.ability` is the row's own already-resolved key:
       // SKILL_ABILITY is keyed by space-separated display names and returns
       // undefined for `animal-handling` / `sleight-of-hand`, so it is the wrong
-      // map here. Order-preserving; one chip per matching entry.
+      // map here. Order-preserving; one spec per matching entry (a conditional one is marked, RIDER-20).
       for (const rm of ctx.derived.rollModifiers ?? []) {
         if (rm.roll !== "ability-check") continue;
         if (rm.scope && rm.scope !== skillSlug && rm.scope !== entry.ability) continue;
-        const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-        renderConditionTag(row, MODE_CLASS[rm.mode], ROLL_MODE_TAG[rm.mode], tip);
+        specs.push(rollModifierTagSpec(rm));
       }
+      renderConditionTags(() => row, specs);
       if (ctx.editState) {
         row.addEventListener("click", () => ctx.editState!.cycleSkill(skillSlug));
         bonusEl.addEventListener("click", (e) => e.stopPropagation());
