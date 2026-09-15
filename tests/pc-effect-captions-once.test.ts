@@ -48,4 +48,26 @@ describe("RIDER-21 · an identical caption text is emitted once per line", () =>
     expect(spans.length).toBe(1);
     expect(spans[0].getAttribute("aria-label")).toBe("once per turn\nwhile raging");
   });
+
+  // Fix round 1 (review Minor 2, ruled): the kept caption's conditional look (its qualifier tooltip) comes from its OWN copy only. A
+  // repeat's different qualifier is a tooltip LINE on a caption that already carries its own; on an unqualified caption it would be
+  // the only tooltip and the caption would read as conditional though one copy is not.
+  it("an UNqualified kept caption takes no tooltip from a qualified repeat", () => {
+    const spans = captions([
+      { kind: "heal", amount: "1d8" },
+      { kind: "heal", amount: "1d8", condition: "while raging" },
+    ]);
+    expect(spans[0].getAttribute("aria-label")).toBeNull();
+    expect(spans.length).toBe(1);
+    expect(spans[0].textContent).toBe("Heals 1d8");
+  });
+
+  it("characterisation: a qualified kept caption keeps its own qualifier when an unqualified copy repeats it", () => {
+    const spans = captions([
+      { kind: "heal", amount: "1d8", condition: "while raging" },
+      { kind: "heal", amount: "1d8" },
+    ]);
+    expect(spans.length).toBe(1);
+    expect(spans[0].getAttribute("aria-label")).toBe("while raging");
+  });
 });

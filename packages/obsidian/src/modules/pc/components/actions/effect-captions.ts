@@ -96,7 +96,8 @@ function captionFor(e: FeatureEffect): string | undefined {
 
 /**
  * Append the caption line to `host` (a row's NAME cell), one span per distinct caption TEXT (R4-G7 T8 RIDER-21: a
- * repeated text, the folded copies' identical effects, prints once).
+ * repeated text, the folded copies' identical effects, prints once; a repeat's different qualifier becomes a tooltip line only
+ * on a span whose own copy is qualified).
  * TWO callers, each passing its own raw array (R4-G4 §10): `renderFeatureRow` (`feature-rows.ts`)
  * passes `rf.feature.effects`, `renderBoonRow` (`boon-rows.ts`) passes `entry.entity.effects`. The
  * parameter is the ARRAY rather than the carrier because those two carriers share no supertype.
@@ -125,7 +126,9 @@ export function renderEffectCaptions(
   // R4-G7 T8 RIDER-21 (F-FOLDCAP): the caption TEXTS already emitted on this line, each with its span and its tooltip lines.
   // A folded feature carries every copy's effects (PHB 2024 Action Surge authors `extra-action {count: 1}` at 2 and at 17),
   // so the same caption arrived twice and read "+1 Action +1 Action". A repeat prints nothing; a qualifier it carries that the
-  // kept span does not yet show joins that span's tooltip on its own line, so no qualifier is lost with the repeat.
+  // kept span does not yet show joins that span's tooltip on its own line. Fix round 1 (review Minor 2, ruled): only on a span whose
+  // OWN copy set a tooltip. The tooltip is the caption's conditional look, so on an unqualified span a repeat's qualifier would be its
+  // only tooltip and the caption would read as conditional though one copy is not; the text already prints true without it.
   const emitted = new Map<string, { span: HTMLElement; tips: string[] }>();
   for (const e of effects) {
     const text = captionFor(e);
@@ -134,7 +137,7 @@ export function renderEffectCaptions(
     const tip = qualifier && !text.includes(qualifier) ? qualifier : "";
     const seen = emitted.get(text);
     if (seen) {
-      if (tip && !seen.tips.includes(tip)) { seen.tips.push(tip); setTooltip(seen.span, seen.tips.join("\n")); }
+      if (tip && seen.tips.length > 0 && !seen.tips.includes(tip)) { seen.tips.push(tip); setTooltip(seen.span, seen.tips.join("\n")); }
       continue;
     }
     line ??= host.createDiv({ cls: "pc-feature-effect-line" });
