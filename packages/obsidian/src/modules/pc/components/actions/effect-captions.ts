@@ -95,7 +95,8 @@ function captionFor(e: FeatureEffect): string | undefined {
 }
 
 /**
- * Append the caption line to `host` (a row's NAME cell), one span per captioned effect.
+ * Append the caption line to `host` (a row's NAME cell), one span per distinct caption TEXT (R4-G7 T8 RIDER-21: a
+ * repeated text, the folded copies' identical effects, prints once).
  * TWO callers, each passing its own raw array (R4-G4 §10): `renderFeatureRow` (`feature-rows.ts`)
  * passes `rf.feature.effects`, `renderBoonRow` (`boon-rows.ts`) passes `entry.entity.effects`. The
  * parameter is the ARRAY rather than the carrier because those two carriers share no supertype.
@@ -121,12 +122,24 @@ export function renderEffectCaptions(
   _ctx: ComponentRenderContext,
 ): void {
   let line: HTMLElement | null = null;
+  // R4-G7 T8 RIDER-21 (F-FOLDCAP): the caption TEXTS already emitted on this line, each with its span and its tooltip lines.
+  // A folded feature carries every copy's effects (PHB 2024 Action Surge authors `extra-action {count: 1}` at 2 and at 17),
+  // so the same caption arrived twice and read "+1 Action +1 Action". A repeat prints nothing; a qualifier it carries that the
+  // kept span does not yet show joins that span's tooltip on its own line, so no qualifier is lost with the repeat.
+  const emitted = new Map<string, { span: HTMLElement; tips: string[] }>();
   for (const e of effects) {
     const text = captionFor(e);
     if (!text) continue;
+    const qualifier = e.condition && !CONDITION_IS_NAME.has(e.kind) ? plainText(e.condition) : "";
+    const tip = qualifier && !text.includes(qualifier) ? qualifier : "";
+    const seen = emitted.get(text);
+    if (seen) {
+      if (tip && !seen.tips.includes(tip)) { seen.tips.push(tip); setTooltip(seen.span, seen.tips.join("\n")); }
+      continue;
+    }
     line ??= host.createDiv({ cls: "pc-feature-effect-line" });
     const span = line.createSpan({ cls: "pc-feature-effect", text });
-    const qualifier = e.condition && !CONDITION_IS_NAME.has(e.kind) ? plainText(e.condition) : "";
-    if (qualifier && !text.includes(qualifier)) setTooltip(span, qualifier);
+    emitted.set(text, { span, tips: tip ? [tip] : [] });
+    if (tip) setTooltip(span, tip);
   }
 }
