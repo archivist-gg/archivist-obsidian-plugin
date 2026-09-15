@@ -65,16 +65,20 @@ export async function renderMarkdownDescription(
   // Both branches use renderStatBlockTag so widgets match at_higher_levels.
   const doc = parent.ownerDocument ?? activeDocument;
   parent.querySelectorAll("span.archivist-tag").forEach((oldWidget) => {
-    const tagType = oldWidget.getAttribute("data-dice-type");
-    const tagContent = oldWidget.getAttribute("data-dice-notation");
+    // R4-G7 T8 wave E (B026-D11): read the widget's OWN identity first. `renderInlineTag` stamps `data-tag-type` /
+    // `data-tag-content` on every widget it makes, rollable or not, so a `dc:INT` reaches this walker as the tag it was
+    // written as and gets rebuilt WITH the caller's formula context. Before that pair existed only `data-dice-*` was
+    // available, which the non-rollable tags never carry, and the text fallback below could not parse the rendered
+    // "DC INT" back into a tag: the context-free widget survived, on 279 SRD monster notes.
+    const tagType = oldWidget.getAttribute("data-tag-type") ?? oldWidget.getAttribute("data-dice-type");
+    const tagContent = oldWidget.getAttribute("data-tag-content") ?? oldWidget.getAttribute("data-dice-notation");
     let parsed = null;
-    if (tagType && tagContent) {
+    if (tagType && tagContent !== null) {
       parsed = parseInlineTag(`${tagType}:${tagContent}`);
     } else {
-      // Non-rollable widgets (dc/check) don't carry data attrs; fall back to
-      // re-parsing the text content. The widget format is "<icon><text>" so
-      // textContent will be just the rendered text — only useful if the text
-      // matches a parseable tag, which dc/check don't (they're already formatted).
+      // A widget from somewhere else (or an older rendered note left in the DOM): fall back to re-parsing the text
+      // content. The widget format is "<icon><text>", so textContent is just the rendered text, which only helps when
+      // that text is itself a parseable tag.
       parsed = parseInlineTag(oldWidget.textContent ?? "");
     }
     if (!parsed) return;

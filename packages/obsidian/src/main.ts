@@ -15,8 +15,7 @@ import { armorModule } from "./modules/armor/armor.module";
 import { weaponModule } from "./modules/weapon/weapon.module";
 import { conditionModule } from "./modules/condition/condition.module";
 
-import { parseInlineTag } from "@archivist-gg/dnd5e/inline-tag-parser";
-import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
+import { replaceInlineTagCodes } from "./shared/rendering/inline-tag-renderer";
 import { createErrorBlock, setWikilinkResolver } from "./shared/rendering/renderer-utils";
 
 // Edit mode scaffolding (shared across entity modules)
@@ -160,17 +159,11 @@ export default class ArchivistPlugin extends Plugin {
       this.registerEntityCodeBlock(p);
     }
 
-    // Inline tag post-processor
-    this.registerMarkdownPostProcessor((element) => {
-      element.querySelectorAll("code").forEach((codeEl) => {
-        const text = codeEl.textContent ?? "";
-        const parsed = parseInlineTag(text);
-        if (parsed) {
-          const tagEl = renderInlineTag(parsed);
-          codeEl.replaceWith(tagEl);
-        }
-      });
-    });
+    // Inline tag post-processor. The body lives beside the widget it builds (`replaceInlineTagCodes`,
+    // `shared/rendering/inline-tag-renderer.ts`) so a test can run THE REGISTERED FUNCTION rather than a copy of it:
+    // R4-G7 T8 wave E (B026-D11) found that every jsdom test of the monster prose injected a render and so never ran
+    // this processor at all, which is why an ability-keyed `dc:` tag printed "DC INT" on 279 SRD notes with a green suite.
+    this.registerMarkdownPostProcessor((element) => replaceInlineTagCodes(element));
 
     // Compendium ref post-processor for Reading mode ({{type:slug}} -> rendered stat block).
     // Dispatches rendering through the shared presenter dispatch via
