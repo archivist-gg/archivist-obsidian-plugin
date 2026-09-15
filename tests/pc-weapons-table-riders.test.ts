@@ -4,6 +4,7 @@ import { renderWeaponRow } from "../packages/obsidian/src/modules/pc/components/
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { AttackRow, DamageRider } from "@archivist-gg/dnd5e/pc/pc.types";
+import { CHOSEN_DAMAGE_TYPE_NOTE } from "@archivist-gg/dnd5e/dnd/math";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -132,5 +133,32 @@ describe("renderWeaponRow · RIDER-12: a rider with a condition prints in the ca
     ]));
     expect(captions(list)).toBe("+ your Charisma modifier force (Agonizing Blast: When you cast eldritch blast) · + half your fighter level slashing (Brute)");
     expect(chips(list)).toBe(1);
+  });
+});
+
+/**
+ * R4-G7 T8 RIDER-13 (F-RIDER (b)) · a `chosen` damage type is the player's pick, never the row's type and never a word.
+ *
+ * The engine keeps the schema's sentinel `chosen` on the rider (dnd5e `resolveDamageRider`). The row prints the amount
+ * with NO type, in the caption, with the words from dnd5e's `CHOSEN_DAMAGE_TYPE_NOTE` after the source (and before a
+ * condition, which follows a semicolon). T6a's renderer captioned it as `+ 1d8 chosen (Divine Strike)`.
+ */
+describe("renderWeaponRow · RIDER-13: a `chosen` rider prints type-less, captioned with the player's choice", () => {
+  it("the Nature Domain Divine Strike shape: `+ 1d8 (Divine Strike: <the note>)`, no chip, no word `chosen`", () => {
+    const list = renderRow(swordWith([{ amount: "1d8", damage_type: "chosen", source: "Divine Strike" }]));
+    expect(captions(list)).toBe(`+ 1d8 (Divine Strike: ${CHOSEN_DAMAGE_TYPE_NOTE})`);
+    expect(captions(list)).not.toContain("chosen");
+    expect(chips(list)).toBe(1); // the base damage only
+    expect(damageText(list)).toBe("1d8 + 3 slashing");
+  });
+
+  it("a `chosen` rider with a condition: the note first, the condition after a semicolon", () => {
+    const list = renderRow(swordWith([{ amount: "your Charisma modifier", damage_type: "Chosen", source: "Agonizing Blast", condition: "When you cast eldritch blast" }]));
+    expect(captions(list)).toBe(`+ your Charisma modifier (Agonizing Blast: ${CHOSEN_DAMAGE_TYPE_NOTE}; When you cast eldritch blast)`);
+  });
+
+  it("a `chosen` rider with no source captions the note alone", () => {
+    const list = renderRow(swordWith([{ amount: "1d6", damage_type: "chosen" }]));
+    expect(captions(list)).toBe(`+ 1d6 (${CHOSEN_DAMAGE_TYPE_NOTE})`);
   });
 });

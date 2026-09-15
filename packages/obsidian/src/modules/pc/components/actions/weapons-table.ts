@@ -9,7 +9,7 @@ import { renderRowExpand as renderInventoryRowExpand } from "../inventory/invent
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderSituationalRows } from "../situational-rows";
 import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
-import { isRenderableDamageText } from "@archivist-gg/dnd5e/dnd/math";
+import { CHOSEN_DAMAGE_TYPE_NOTE, isChosenDamageType, isRenderableDamageText } from "@archivist-gg/dnd5e/dnd/math";
 
 const attackDisSources = new Set([
   "blinded", "frightened", "poisoned", "prone", "restrained", "grappled", "exhaustion",
@@ -66,10 +66,11 @@ export function renderWeaponsGroup(
  *
  * Everything display-only (cost badge, range, to-hit / damage inline tags,
  * condition/roll-modifier chips, damage riders, versatile, crit caption,
- * situational sub-line) came verbatim from the former in-loop builder, with TWO
+ * situational sub-line) came verbatim from the former in-loop builder, with THREE
  * later changes: R4-G7 T6a routes a rider whose printed form cannot be a dice
  * chip to the row's `.pc-weapon-note` caption instead of into the damage text,
- * and R4-G7 T8 RIDER-12 routes a rider that carries a `condition` there too.
+ * R4-G7 T8 RIDER-12 routes a rider that carries a `condition` there too, and
+ * RIDER-13 routes a rider whose type is the player's `chosen` pick there, type-less.
  *
  * `hasMastery` is the group-level flag from `renderWeaponsGroup`: when set, the
  * row switches to the 6-col has-mastery grid and (for a row that actually has
@@ -154,11 +155,16 @@ export function renderWeaponRow(
     // R4-G7 T8 RIDER-12: a rider that carries a `condition` is not damage on every hit, so it goes to the
     // caption as well, with its condition after its source, whatever its amount: the decision is the
     // FIELD, never the condition's wording. The damage cell keeps the unconditional riders only.
+    // R4-G7 T8 RIDER-13: a rider whose type is the schema's `chosen` sentinel (the engine keeps it, never
+    // inherits the row's type) prints its amount with NO type, captioned with dnd5e's note for the player's
+    // choice; the sentinel word itself is never printed.
     const riderCaptions: string[] = [];
     for (const rider of a.damageRiders) {
-      const dice = rider.damage_type ? `${rider.amount} ${rider.damage_type}` : rider.amount;
-      if (rider.condition || !isRenderableDamageText(dice)) {
-        riderCaptions.push(riderCaption(dice, rider.source, rider.condition));
+      const chosen = isChosenDamageType(rider.damage_type);
+      const dice = rider.damage_type && !chosen ? `${rider.amount} ${rider.damage_type}` : rider.amount;
+      if (chosen || rider.condition || !isRenderableDamageText(dice)) {
+        const notes = [chosen ? CHOSEN_DAMAGE_TYPE_NOTE : undefined, rider.condition];
+        riderCaptions.push(riderCaption(dice, rider.source, notes));
         continue;
       }
       dmgCell.appendText(" + ");
@@ -271,10 +277,11 @@ function formatSigned(n: number): string {
 }
 
 /** One rider caption in the T6a E-4 (c) idiom: `+ <amount and type>`, then in parentheses the source and, after a
- *  colon, the rider's condition (R4-G7 T8 RIDER-12): `+ 2d8 radiant (Divine Smite: for a 1st-level spell slot)`.
- *  Either half may be absent; with neither there are no parentheses. */
-function riderCaption(dice: string, source: string | undefined, condition: string | undefined): string {
-  const note = [source, condition].filter((s): s is string => !!s).join(": ");
+ *  colon, the rider's notes joined by "; " (R4-G7 T8 RIDER-12 / RIDER-13): the player's-choice note for a `chosen`
+ *  type, then the condition, `+ 2d8 radiant (Divine Smite: for a 1st-level spell slot)`. Any part may be absent;
+ *  with none there are no parentheses. */
+function riderCaption(dice: string, source: string | undefined, notes: (string | undefined)[]): string {
+  const note = [source, notes.filter((s): s is string => !!s).join("; ")].filter((s): s is string => !!s).join(": ");
   return `+ ${dice}${note ? ` (${note})` : ""}`;
 }
 
