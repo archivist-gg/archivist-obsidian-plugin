@@ -74,6 +74,52 @@ describe("TabsContainer", () => {
     const labels = [...container.querySelectorAll(".pc-tab-btn")].map((b) => b.textContent);
     expect(labels).toEqual(["Actions", "Passive & Features", "Spells", "Inventory", "Interdict Boons"]);
   });
+  it("two pool tabs with the same label are told apart by the entity that declared the later one (R4-G7 RIDER-8, B012-D11)", () => {
+    // MEASURED in the converter output: the 2014 Fighter declares `fighting-style` "Fighting Style" and its Champion (5e)
+    // subclass (`short_name: Champion`) declares `champion-fighting-style` "Fighting Style" for the level-10 Additional
+    // Fighting Style. The ids differ, the labels do not, so the live sheet showed two identical FIGHTING STYLE tabs. The
+    // qualifier is the declaring entity's own short name (the converter's count column already reads
+    // "Champion (5e) Fighting Style"): a label the strip already carries is prefixed, nothing else changes.
+    const dyn: ComponentRenderContext = {
+      ...ctx,
+      resolved: {
+        classes: [{
+          entity: { name: "Fighter", tabs: [{ id: "fighting-style", label: "Fighting Style", renders: { pool: "fighting-style" } }] },
+          subclass: { name: "Champion (5e)", short_name: "Champion", tabs: [{ id: "champion-fighting-style", label: "Fighting Style", renders: { pool: "champion-fighting-style" } }] },
+        }],
+        pools: [
+          { id: "fighting-style", label: "Fighting Style", classIndex: 0, count: 1, anchorLevel: 1, selected: [], available: [], grants: [] },
+          { id: "champion-fighting-style", label: "Fighting Style", classIndex: 0, count: 1, anchorLevel: 10, selected: [], available: [], grants: [] },
+        ],
+      } as never,
+    };
+    const container = mountContainer();
+    new TabsContainer(mkRegistry()).render(container, dyn);
+    const pool = Array.from(container.querySelectorAll<HTMLElement>(".pc-tab-btn")).slice(4).map((b) => [b.dataset.tab, b.textContent, b.dataset.short]);
+    expect(pool).toEqual([
+      ["panel-pool-fighting-style", "Fighting Style", "Fighting Style"],
+      ["panel-pool-champion-fighting-style", "Champion Fighting Style", "Champion Fighting Style"],
+    ]);
+  });
+  it("a subclass without a short name qualifies by its full name, and a label nobody else carries is never qualified", () => {
+    const dyn: ComponentRenderContext = {
+      ...ctx,
+      resolved: {
+        classes: [{
+          entity: { name: "Fighter", tabs: [{ id: "fighting-style", label: "Fighting Style", renders: { pool: "a" } }] },
+          subclass: { name: "College of Swords (5e)", tabs: [
+            { id: "swords-style", label: "Fighting Style", renders: { pool: "b" } },
+            { id: "maneuvers", label: "Maneuvers", renders: { pool: "c" } },
+          ] },
+        }],
+        pools: ["a", "b", "c"].map((id) => ({ id, label: "x", classIndex: 0, count: 1, anchorLevel: 1, selected: [], available: [], grants: [] })),
+      } as never,
+    };
+    const container = mountContainer();
+    new TabsContainer(mkRegistry()).render(container, dyn);
+    const labels = Array.from(container.querySelectorAll(".pc-tab-btn")).map((b) => b.textContent);
+    expect(labels.slice(4)).toEqual(["Fighting Style", "College of Swords (5e) Fighting Style", "Maneuvers"]);
+  });
   it("does NOT append a declared tab whose pool did not resolve", () => {
     const dyn: ComponentRenderContext = {
       ...ctx,

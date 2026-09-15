@@ -1998,6 +1998,37 @@
   }
 }
 
+/* R4-G7 RIDER-8: the SAME short-label mechanism, reached earlier by a strip that carries a pool tab.
+ * RIDER-7 (Q-6 reversed) keeps the tab body right of the rail on every tab, so the strip always lives in
+ * the right column, and a fifth tab wrapped there on every S01 row that had one. MEASURED at W-A, not
+ * guessed: the right column is 355.5 px at the default 1024 x 800 window and 856 px at 2560 x 1440 (the
+ * sheet's 1200 px cap); the labels were measured in the live window by laying the sheet's own
+ * `.pc-body > .pc-content > .pc-tabs-bar` out off screen at every content width from 204 to 1000
+ * (`evidence/g7-live/wa-strip-lab.js`; its control reproduced the live button rects to 0.5 px). With full
+ * labels under the tiers above, the widest strip of each length in the converter corpus, the user's
+ * vault and the sweep's multiclass rows first holds one line at:
+ *   five tabs   Elemental Disciplines                          489 px
+ *   six tabs    Fighting Style + Champion Fighting Style       618 px
+ *   seven tabs  Fighting Style + Eldritch Invocations + Pact Boon (2014 Paladin / Warlock)   678 px
+ * so each length switches to the declared short labels one pixel below its own measurement. The short
+ * dress drops the letter-spacing and one pixel of padding a side against the 299 px tier, because at
+ * 355.5 px that tier's dress still wrapped Elemental Disciplines (357.7 px of buttons): in this dress the
+ * widest five-tab strip is 346.7 px and every five-tab strip in the corpus holds one line from 347 px
+ * up. Six and seven tabs hold one line from 455 px and 505 px up (measured); below that `flex-wrap`
+ * above stays the fallback. A strip of four tabs never matches these rules and keeps its full labels. */
+@container pc-content (max-width: 488px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+@container pc-content (max-width: 617px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+@container pc-content (max-width: 677px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+
 /* Portrait picker modal (two-stage: grid + crop) */
 .pc-portrait-picker .pc-portrait-picker-body { width: 432px; max-width: 100%; }
 

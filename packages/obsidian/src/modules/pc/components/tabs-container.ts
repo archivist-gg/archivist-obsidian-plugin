@@ -18,18 +18,22 @@ const BUILTIN: ReadonlyArray<{ type: string; panelId: string; label: string; sho
 
 interface BuiltTab { panelId: string; label: string; short: string; component: SheetComponent | undefined; }
 
+/** A data-declared tab plus the name of the entity that declared it (the subclass's own `short_name` when it has
+ *  one, else its `name`; the class's `name`). */
+interface CollectedTab { decl: TabDecl; declaredBy: string | undefined; }
+
 /** Data-declared tabs from the resolved class/subclass, de-duped by id. */
-function collectTabDecls(resolved: ResolvedCharacter | undefined): TabDecl[] {
-  const out: TabDecl[] = [];
+function collectTabDecls(resolved: ResolvedCharacter | undefined): CollectedTab[] {
+  const out: CollectedTab[] = [];
   const seen = new Set<string>();
   for (const c of resolved?.classes ?? []) {
-    const decls = [
-      ...(c.entity?.tabs ?? []),
-      ...(c.subclass?.tabs ?? []),
+    const decls: CollectedTab[] = [
+      ...(c.entity?.tabs ?? []).map((decl) => ({ decl, declaredBy: c.entity?.name })),
+      ...(c.subclass?.tabs ?? []).map((decl) => ({ decl, declaredBy: c.subclass?.short_name ?? c.subclass?.name })),
     ];
     for (const d of decls) {
-      if (seen.has(d.id)) continue;
-      seen.add(d.id);
+      if (seen.has(d.decl.id)) continue;
+      seen.add(d.decl.id);
       out.push(d);
     }
   }
@@ -47,12 +51,19 @@ export class TabsContainer implements SheetComponent {
     }));
 
     // Dynamic pool tabs: one PoolTab instance per declared tab whose pool resolved.
-    for (const decl of collectTabDecls(ctx.resolved)) {
+    // R4-G7 RIDER-8 (B012-D11): two tabs must never read the same. The 2014 Fighter and its Champion subclass both
+    // declare a "Fighting Style" pool tab under different ids, so a label the strip ALREADY carries is prefixed with
+    // the name of the entity that declared the later tab ("Champion Fighting Style"; the converter's own count column
+    // composes the same way, "Champion (5e) Fighting Style"). Both names are data; the renderer holds no label list.
+    const carried = new Set(tabs.map((t) => t.label.toLowerCase()));
+    for (const { decl, declaredBy } of collectTabDecls(ctx.resolved)) {
       const pool = ctx.resolved?.pools?.find((p) => p.id === decl.renders.pool);
       if (!pool) continue;
       // authored beats derived beats default (R4-G4 §4.2.5)
       const layout = decl.renders.layout ?? pool.layout ?? "spell-like";
-      tabs.push({ panelId: `panel-pool-${decl.id}`, label: decl.label, short: decl.label, component: new PoolTab(decl.renders.pool, layout) });
+      const label = carried.has(decl.label.toLowerCase()) && declaredBy ? `${declaredBy} ${decl.label}` : decl.label;
+      carried.add(label.toLowerCase());
+      tabs.push({ panelId: `panel-pool-${decl.id}`, label, short: label, component: new PoolTab(decl.renders.pool, layout) });
     }
 
     const tabBar = el.createDiv({ cls: "pc-tabs-bar" });

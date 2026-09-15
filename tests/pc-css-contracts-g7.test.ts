@@ -242,3 +242,30 @@ describe("R4-G7 CSS contracts · RIDER-7 the per-tab body collapse is retired, t
     expect(css).not.toContain("@container pc-sheet (min-width: 500px)");
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-8 a strip with a pool tab reaches the short labels earlier (CLEANLINESS PIN)", () => {
+  // THIS TEST IS NOT THE WITNESS: jsdom lays nothing out. The witness is the W-A live read (strip rows per tab on the
+  // deployed pair) and the off-screen strip lab (`evidence/g7-live/wa-strip-lab.js`), which measured the thresholds
+  // pinned here: the widest five / six / seven tab strip first holds one line at 489 / 618 / 678 px with full labels.
+  const tier = (css: string, px: number): string => {
+    const head = `@container pc-content (max-width: ${px}px) {`;
+    const at = css.indexOf(head);
+    expect(at, head).toBeGreaterThan(-1);
+    return css.slice(at, css.indexOf("\n}", at));
+  };
+
+  it("each strip length switches to the declared short labels one pixel below its own measurement", () => {
+    const css = read("components.css");
+    for (const [px, n] of [[488, 5], [617, 6], [677, 7]] as const) {
+      const block = tier(css, px);
+      const sel = `.archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(${n})) .pc-tab-btn`;
+      expect(block).toContain(`${sel} { padding: 5px 4px; font-size: 0; letter-spacing: 0; }`);
+      expect(block).toContain(`${sel}::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }`);
+    }
+  });
+
+  it("the four-tab strip's own tiers are untouched: the 299 px short-label block still reads every strip", () => {
+    const block = tier(read("components.css"), 299);
+    expect(block).toMatch(/\.archivist-pc-sheet \.pc-tab-btn::before \{\s*content: attr\(data-short\);\s*font-size: 10px;\s*letter-spacing: 0\.2px;/);
+  });
+});
