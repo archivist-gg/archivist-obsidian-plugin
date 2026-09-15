@@ -8005,6 +8005,14 @@ body.theme-light .archivist-tag-atk:hover {
   font-size: var(--pc-fs-small);
   color: var(--pc-text-muted);
 }
+/* R4-G7 T8 RIDER-25 (F-CRIT): the crit caption is its own line under the damage text (a DIV in `weapons-table.ts`; the
+   display is stated for a theme that restyles divs). MEASURED LIVE in W-Dr on `conv-champion-5e-20`'s Unarmed Strike at the
+   default window: inline it sat on the damage tag's line 0 px from its last letter ("bludgeoningcrit"); as a block with no
+   margin its box began 0.4 px inside the tag's; `margin-top: 2px` leaves 1.6 px of air, the `.pc-spell-eff-note` value. */
+.archivist-pc-sheet .pc-weapon-crit {
+  display: block;
+  margin-top: 2px;
+}
 
 /* Range cell: the main line always renders; a throwable melee weapon stacks its
  * thrown range as a second muted line. Muted-line tokens match .pc-action-row-sub

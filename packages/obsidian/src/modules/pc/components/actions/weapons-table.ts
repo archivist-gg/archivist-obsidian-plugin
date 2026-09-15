@@ -196,8 +196,11 @@ export function renderWeaponRow(
   // Expanded crit threshold caption (e.g. "crit 19–20") from a crit-range
   // feature effect. Display-only; shown whenever the row carries a lowered
   // critRange (the recalc fold leaves it undefined at the normal 20).
+  // R4-G7 T8 RIDER-25 (F-CRIT): a BLOCK element, its own line under the damage text. As a span it followed the damage
+  // tag with no separator and read "1+2 bludgeoningcrit / 18-20"; the line break is the separator (measured live in W-Dr:
+  // 0 px beside the tag inline, 1.6 px below it as a block with `actions.css`'s 2 px margin).
   if (a.critRange && a.critRange < 20) {
-    dmgCell.createSpan({ cls: "pc-weapon-crit", text: `crit ${a.critRange}–20` });
+    dmgCell.createDiv({ cls: "pc-weapon-crit", text: `crit ${a.critRange}–20` });
   }
 
   // 2024 Weapon Mastery: a REAL trailing 6th grid cell (only when the group

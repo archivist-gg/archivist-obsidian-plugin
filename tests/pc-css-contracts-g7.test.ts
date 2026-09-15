@@ -354,3 +354,14 @@ describe("R4-G7 CSS contracts · RIDER-20 a conditional roll tag is dashed (CLEA
     expect(block).not.toMatch(/color:/);
   });
 });
+
+describe("R4-G7 CSS contracts · RIDER-25 the crit caption is a block line with air above it (MEASURED LIVE in W-Dr's lab)", () => {
+  // W-Dr (2026-09-15, the default 1024 x 800 window, `conv-champion-5e-20` Unarmed Strike): the inline caption sat on the damage
+  // text's line with a 0 px gap; `display: block` alone left the caption's box 0.4 px INTO the damage tag's; `margin-top: 2px`
+  // measured a 1.6 px gap. The element is a DIV already (weapons-table.ts); the rule states the block for a theme that restyles divs.
+  it("the crit caption is display: block with margin-top: 2px", () => {
+    const block = ruleOf("actions.css", ".archivist-pc-sheet .pc-weapon-crit {");
+    expect(block).toMatch(/display:\s*block/);
+    expect(block).toMatch(/margin-top:\s*2px/);
+  });
+});

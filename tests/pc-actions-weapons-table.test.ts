@@ -274,6 +274,21 @@ describe("renderWeaponRow", () => {
     expect(crit?.textContent).toBe("crit 19–20");
   });
 
+  // R4-G7 T8 RIDER-25 (F-CRIT): the caption is its own BLOCK line under the damage, never a span glued to the damage text
+  // (the live frame read "1+2 bludgeoningcrit / 18-20"). The composed text is unchanged; the element is what carries the break.
+  it("renders the crit caption as its own block element after the damage text, not an inline run-on", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "unarmed-strike", name: "Unarmed Strike", range: "5 ft", toHit: 8,
+      damageDice: "1+2", damageType: "bludgeoning", properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] }, informational: [], slotKey: "mainhand", critRange: 18,
+    }] as unknown as AttackRow[];
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
+    const crit = root.querySelector(".pc-weapon-damage .pc-weapon-crit");
+    expect(crit?.tagName).toBe("DIV");
+    expect(crit?.textContent).toBe("crit 18–20");
+  });
+
   it("renders no crit caption when critRange is undefined", () => {
     const root = mountContainer();
     const attacks = [sword()];
