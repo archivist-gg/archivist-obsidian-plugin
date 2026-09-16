@@ -267,7 +267,11 @@ equipment:
    rule", and you adjust it by hand. Long rest restores `short`, `long` and
    `dawn`; short rest restores `short` only.
 
-Item charge rows appear on the Resources tab under **Doesn't reset**.
+Item charge rows appear on the Resources tab under **Doesn't reset**, and **only
+while the item is equipped** — the tab answers "what can I spend right now?", and
+a wand in the pack is not spendable without taking it out. Unequipping hides the
+row; it never touches the charges, and equipping brings it straight back. (A rest
+still recharges an unequipped item, so nothing is lost by stowing it.)
 
 Per-entry overrides let one copy differ from the definition:
 
