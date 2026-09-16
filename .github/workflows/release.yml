@@ -1,9 +1,13 @@
 name: Release Obsidian plugin
 
+# DISABLED as an automatic tag trigger since 0.5.0, and this is why: the plugin workspace depends on its two
+# sibling packages by local path (packages/obsidian/package.json pins @archivist-gg/core and @archivist-gg/dnd5e
+# as file:../../../..), so `npm ci` cannot resolve them on a runner and the build step fails before it can
+# produce an asset. Until both packages are published and the dependency is re-pointed at a version range,
+# releases are built locally and uploaded with `gh release create`. Run this workflow by hand only when that
+# is no longer true.
 on:
-  push:
-    tags:
-      - "*"
+  workflow_dispatch:
 
 concurrency:
   group: release-${{ github.workflow }}
