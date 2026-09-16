@@ -1476,8 +1476,17 @@
   input:is([type="text"], [type="number"], [type="search"], :not([type])):focus-visible {
   box-shadow: none;
 }
-:is(.archivist-pc-sheet, .archivist-modal)
-  input:is([type="text"], [type="number"], [type="search"], :not([type])) {
+/* The two tokens' DEFAULTS, at zero specificity on purpose.
+   `:where()` contributes nothing, so this rule is (0,0,0) and ANY per-input rule
+   that declares a token beats it, whatever its own specificity. Written the
+   obvious way — the same `:is()` host as the rule above, (0,2,1) — the defaults
+   out-specified `:is(…) .pc-bpicker-search` (0,2,0) and that field's declared
+   parchment ground never reached the token: measured live at rest rgb(253,241,220)
+   against a token resolving to transparent, so the builder search would have
+   flipped to transparent on hover. A default must never win an argument with the
+   thing it is a default FOR. */
+:where(.archivist-pc-sheet, .archivist-modal)
+  :where(input[type="text"], input[type="number"], input[type="search"], input:not([type])) {
   --pc-input-bg: transparent;
   --pc-input-border: var(--pc-tan-muted);
 }
@@ -1504,6 +1513,20 @@
   -webkit-text-fill-color: var(--pc-text-primary);
   caret-color: var(--pc-crimson);
   box-shadow: none;
+}
+
+/* Keyboard focus is still VISIBLE. The rule above deliberately pins the border
+   back to the input's resting colour in every state, which would otherwise have
+   taken the focus cue with it — Obsidian's rgb(85,85,85) focus border was ugly
+   but it was a cue, and removing it silently would leave a keyboard user with
+   nothing. Crimson on focus is the idiom the coin and proficiency modals already
+   use; `:focus-visible` keeps it off a plain mouse click, where the caret is the
+   cue. Same (0,3,1) as the state rule and LATER in the file, so it wins the
+   border for this one state and nothing else. An input with its own intentional
+   focus ring (portrait-picker search) is later still. */
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):focus-visible {
+  border-color: var(--pc-crimson);
 }
 
 /* SP4b — click affordance on editable values */

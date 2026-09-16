@@ -748,8 +748,10 @@
   color: var(--pc-text-muted); margin-bottom: 5px;
 }
 .archivist-pc-sheet .pc-binp {
-  width: 100%; border: 1px solid var(--pc-tan); border-radius: 4px;
-  background: rgba(255, 248, 220, 0.6); padding: 8px 11px;
+  width: 100%; border: 1px solid var(--pc-tan); --pc-input-border: var(--pc-tan);
+  border-radius: 4px;
+  background: rgba(255, 248, 220, 0.6); --pc-input-bg: rgba(255, 248, 220, 0.6);
+  padding: 8px 11px;
   font-family: var(--pc-font-serif); font-size: 15px; color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-balgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }

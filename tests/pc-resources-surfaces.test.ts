@@ -6,7 +6,6 @@ import { ResourcesTab } from "../packages/obsidian/src/modules/pc/components/res
 import { ResourceBand } from "../packages/obsidian/src/modules/pc/components/resource-band";
 import { HitDiceWidget } from "../packages/obsidian/src/modules/pc/components/hit-dice-widget";
 import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
-import { dieLadder } from "../packages/obsidian/src/modules/pc/components/resources/die-icon";
 import { collectResourceGroups, collectBandRows } from "../packages/obsidian/src/modules/pc/components/resources/resource-model";
 import { renderSpendControl } from "../packages/obsidian/src/modules/pc/components/actions/spend-control";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
@@ -401,16 +400,77 @@ describe("the component catalogue — `rendering_hint` selects the control", () 
     expect(root.querySelector(".pc-charge-at-will")?.textContent).toBe("at will");
     expect(root.querySelector(".pc-hd-widget")).toBeNull();
   });
-
-  it("the ladder is the resource's OWN faces, ascending and de-duped", () => {
-    expect(dieLadder({ base: "d6", scaling: { "5": "d8", "11": "d10", "17": "d12" } })).toEqual(["d6", "d8", "d10", "d12"]);
-    expect(dieLadder({ base: "d8", scaling: { "5": "d8" } })).toEqual(["d8"]);
-  });
 });
 
 // ─────────────────────────────────────────────────────────────
 // Write-back: one axis, three primitives
 // ─────────────────────────────────────────────────────────────
+
+/**
+ * THE TALLY — a count with no ceiling (hero points, table currency).
+ *
+ * It reads the `used` axis directly as the count HELD, where every other control
+ * reads `max - used` as the count LEFT. `uses.max: 999` (`AT_WILL_MAX`) is the
+ * project's existing word for "no ceiling" and is load-bearing, not a
+ * placeholder: `seedFeatureUses` clamps a stored `used` to the max on every
+ * recalc, and `writeRemaining` clamps every write to [0, max].
+ */
+describe("the `tally` control — a count with no maximum", () => {
+  const tallyCtx = (used: number, editState: object | null = null) => renderCtx({
+    features: [grant("Hero Points", res("hero-points", "custom", { rendering_hint: "tally", max_formula: "999" }))],
+    featureUses: { "hero-points": { used, max: 999 } },
+    editState,
+  });
+
+  it("prints a BARE count — no `/ total`, because there is no total", () => {
+    const root = mountContainer();
+    new ResourcesTab().render(root, tallyCtx(2));
+    expect(root.querySelector(".pc-hd-rem")?.textContent).toBe("2");
+    expect(root.querySelector(".pc-hd-sep"), "a tally has no separator").toBeNull();
+    expect(root.querySelector(".pc-hd-tot"), "and no total").toBeNull();
+    expect(root.textContent, "least of all the sentinel itself").not.toContain("999");
+  });
+
+  it("counts UP on plus — the inverted axis is the whole point", () => {
+    const setFeatureUse = vi.fn();
+    const root = mountContainer();
+    new ResourcesTab().render(root, tallyCtx(2, { setFeatureUse }));
+    root.querySelector<HTMLButtonElement>(".pc-hd-plus")!.click();
+    // every other control would write `max - (remaining + 1)`, i.e. DOWN
+    expect(setFeatureUse).toHaveBeenCalledWith("hero-points", 3);
+  });
+
+  it("counts down on minus", () => {
+    const setFeatureUse = vi.fn();
+    const root = mountContainer();
+    new ResourcesTab().render(root, tallyCtx(2, { setFeatureUse }));
+    root.querySelector<HTMLButtonElement>(".pc-hd-minus")!.click();
+    expect(setFeatureUse).toHaveBeenCalledWith("hero-points", 1);
+  });
+
+  it("FLOOR AT 0: minus at zero writes zero, never a negative count", () => {
+    const setFeatureUse = vi.fn();
+    const root = mountContainer();
+    new ResourcesTab().render(root, tallyCtx(0, { setFeatureUse }));
+    expect(root.querySelector(".pc-hd-rem")?.textContent).toBe("0");
+    root.querySelector<HTMLButtonElement>(".pc-hd-minus")!.click();
+    expect(setFeatureUse).toHaveBeenCalledWith("hero-points", 0);
+  });
+
+  it("the ceiling is far enough away that a table count never meets it", () => {
+    const setFeatureUse = vi.fn();
+    const root = mountContainer();
+    new ResourcesTab().render(root, tallyCtx(40, { setFeatureUse }));
+    root.querySelector<HTMLButtonElement>(".pc-hd-plus")!.click();
+    expect(setFeatureUse).toHaveBeenCalledWith("hero-points", 41);
+  });
+
+  it("files under Doesn't reset, so no rest heading claims it", () => {
+    const root = mountContainer();
+    new ResourcesTab().render(root, tallyCtx(2));
+    expect(groupOf(root, "Hero Points")).toBe("Doesn't reset");
+  });
+});
 
 describe("counter wiring", () => {
   const sanityCtx = (editState: object | null, used = 19) => renderCtx({
