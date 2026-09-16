@@ -115,6 +115,32 @@ npm run build
 
 Copy `main.js`, `styles.css`, and `manifest.json` to your vault's `.obsidian/plugins/archivist-gg/` directory.
 
+## Attribution
+
+This plugin bundles a compendium built from the Dungeons & Dragons **System Reference
+Document**, both the 5.1 (2014) and the 5.2 (2024) editions, published by **Wizards of the
+Coast LLC** under the [Creative Commons Attribution 4.0 International
+License](https://creativecommons.org/licenses/by/4.0/legalcode).
+
+> This work includes material from the System Reference Document 5.1 ("SRD 5.1") by Wizards of
+> the Coast LLC and available at
+> <https://dnd.wizards.com/resources/systems-reference-document>, and from the System Reference
+> Document 5.2 ("SRD 5.2") by Wizards of the Coast LLC and available at
+> <https://www.dndbeyond.com/srd>. Both are licensed under the Creative Commons Attribution 4.0
+> International License, available at
+> <https://creativecommons.org/licenses/by/4.0/legalcode>. This material has been modified from
+> its original form.
+
+Copyright (C) Wizards of the Coast LLC. "Dungeons & Dragons" and "D&D" are trademarks of
+Wizards of the Coast LLC. This project is unofficial and is neither affiliated with nor
+endorsed by Wizards of the Coast.
+
+The full notices, including what is bundled where and exactly what was changed, are in
+[LICENSES/SRD-5.1.md](LICENSES/SRD-5.1.md) and [LICENSES/SRD-5.2.md](LICENSES/SRD-5.2.md).
+The SRD text reaches this project through the [Open5e](https://open5e.com) v2 API, itself a
+CC-BY-4.0 redistribution. Bundled icon assets are credited in [CREDITS.md](CREDITS.md).
+
 ## License
 
-[AGPL-3.0](LICENSE)
+The plugin's own code is [AGPL-3.0](LICENSE). The bundled SRD compendium is CC-BY-4.0, not
+AGPL, and carries the attribution above.
