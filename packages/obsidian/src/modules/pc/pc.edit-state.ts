@@ -1164,7 +1164,7 @@ export class CharacterEditState {
    *  equipment mutation is in place — nothing replaces the array element. */
   attuneItem(index: number): eq.AttuneResult & { unequipped?: string[] } {
     if (!this.registry) return { kind: "ok" };
-    const r = eq.attuneItem(this.character, index, this.registry);
+    const r = eq.attuneItem(this.character, index, this.registry, this.getContext()?.derived?.attunementLimit);
     if (r.kind !== "ok") return r; // rejected/limit — attune unchanged, no persist
     const entry = this.character.equipment[index];
     if (entry?.attuned && !entry.equipped) {
