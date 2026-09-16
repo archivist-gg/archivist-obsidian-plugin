@@ -70,6 +70,14 @@ export async function renderMarkdownDescription(
     // written as and gets rebuilt WITH the caller's formula context. Before that pair existed only `data-dice-*` was
     // available, which the non-rollable tags never carry, and the text fallback below could not parse the rendered
     // "DC INT" back into a tag: the context-free widget survived, on 279 SRD monster notes.
+    // The upgrade reaches EVERY caller of this function, not the monster block alone: a `dc:` inside a spell, item,
+    // feat, race, background or condition block, or inside a PC feature card or one of the three builder surfaces,
+    // now gets the stat-block widget the same block's `at_higher_levels` tags already used. That is safe because
+    // `.archivist-stat-tag-dc` paints unscoped ink (#191813, `archivist-dnd.css`) and every one of those hosts is the
+    // same PARCHMENT surface: the compendium blocks are the `.archivist-*-block` cards (a condition renders into
+    // `archivist-spell-block-wrapper`, `condition.module.ts:44-46`) and all three builder call sites sit inside
+    // `.archivist-pc-sheet` (`pc.sheet.ts:58`, `--pc-parchment-light: #fdf1dc`). R4-G7 T8 wave E fix round 1, review
+    // Minor 4: the reach was measured but unstated; S03 is the witness for the hosts W-E did not photograph.
     const tagType = oldWidget.getAttribute("data-tag-type") ?? oldWidget.getAttribute("data-dice-type");
     const tagContent = oldWidget.getAttribute("data-tag-content") ?? oldWidget.getAttribute("data-dice-notation");
     let parsed = null;
