@@ -1794,6 +1794,21 @@ body.theme-light .archivist-tag-atk:hover {
   box-shadow: none;
 }
 
+/* Obsidian draws its OWN tick as a masked `::after` filled with
+   `--checkbox-marker-color`. Inside the modal that variable is the app theme's,
+   not ours — measured at rgb(28,28,28) — so its dark tick painted on top of the
+   parchment one below, and every checked box showed a black smudge inside the
+   crimson square. The box here draws its own mark as a background-image, so the
+   app's pseudo-element has nothing to contribute: remove it rather than re-tint
+   it, so exactly one tick is ever drawn and it is this file's.
+   (The SHEET's own `.pc-action-buff-toggle` is the opposite bargain — it KEEPS
+   Obsidian's marker and pins `--checkbox-marker-color` to parchment. Don't
+   "unify" these: the two boxes draw their tick from different places.) */
+.archivist-modal input[type="checkbox"]::after,
+.archivist-modal input[type="checkbox"]::before {
+  content: none;
+}
+
 .archivist-modal input[type="checkbox"]:hover:not(:checked):not(:disabled) {
   background-color: rgba(146, 38, 16, 0.08);
 }

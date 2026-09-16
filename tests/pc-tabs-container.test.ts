@@ -18,22 +18,24 @@ const ctx: ComponentRenderContext = { resolved: {} as ResolvedCharacter, derived
 
 function mkRegistry(): ComponentRegistry {
   const r = new ComponentRegistry();
-  for (const t of ["actions-tab", "passive-features-tab", "spells-tab", "inventory-tab"]) r.register(new Probe(t));
+  for (const t of ["actions-tab", "passive-features-tab", "resources-tab", "spells-tab", "inventory-tab"]) r.register(new Probe(t));
   return r;
 }
 
 describe("TabsContainer", () => {
-  it("renders four built-in tabs and no Notes/Features/Background tab", () => {
+  it("renders five built-in tabs and no Notes/Features/Background tab", () => {
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, ctx);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(4);
-    expect(container.querySelectorAll(".pc-tab-panel").length).toBe(4);
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(5);
+    expect(container.querySelectorAll(".pc-tab-panel").length).toBe(5);
     expect(container.querySelector('.pc-tab-btn[data-tab="panel-notes"]')).toBeNull();
     expect(container.querySelector('.pc-tab-btn[data-tab="panel-features"]')).toBeNull();
     expect(container.querySelector('.pc-tab-btn[data-tab="panel-background"]')).toBeNull();
-    // AC1: the four builtin tabs, in order, with the renamed "Actions" label.
-    const labels = [...container.querySelectorAll(".pc-tab-btn")].slice(0, 4).map((b) => b.textContent);
-    expect(labels).toEqual(["Actions", "Passive & Features", "Spells", "Inventory"]);
+    // AC1: the builtin tabs, in order, with the renamed "Actions" label. "Resources"
+    // sits after "Passive & Features": the two feature-shaped tabs stay adjacent, and the
+    // new one lands before the two inventories of things rather than after them.
+    const labels = [...container.querySelectorAll(".pc-tab-btn")].slice(0, 5).map((b) => b.textContent);
+    expect(labels).toEqual(["Actions", "Passive & Features", "Resources", "Spells", "Inventory"]);
     // The new panel renders a real component (not the "(No renderer…)" fallback).
     const passivePanel = container.querySelector<HTMLElement>("#panel-passive")!;
     expect(passivePanel.querySelector(".probe-passive-features-tab")).not.toBeNull();
@@ -49,7 +51,7 @@ describe("TabsContainer", () => {
     };
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(5); // 4 built-ins + 1 pool tab
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(6); // 5 built-ins + 1 pool tab
     const btn = container.querySelector<HTMLElement>('.pc-tab-btn[data-tab="panel-pool-boons"]');
     expect(btn?.textContent).toBe("Interdict Boons");
   });
@@ -69,10 +71,10 @@ describe("TabsContainer", () => {
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
     const shorts = [...container.querySelectorAll<HTMLElement>(".pc-tab-btn")].map((b) => b.dataset.short);
-    expect(shorts).toEqual(["Actions", "Passive", "Spells", "Inventory", "Interdict Boons"]);
+    expect(shorts).toEqual(["Actions", "Passive", "Resources", "Spells", "Inventory", "Interdict Boons"]);
     // The button's own text is untouched: the short form is an attribute the narrow tier reads.
     const labels = [...container.querySelectorAll(".pc-tab-btn")].map((b) => b.textContent);
-    expect(labels).toEqual(["Actions", "Passive & Features", "Spells", "Inventory", "Interdict Boons"]);
+    expect(labels).toEqual(["Actions", "Passive & Features", "Resources", "Spells", "Inventory", "Interdict Boons"]);
   });
   it("two pool tabs with the same label are told apart by the entity that declared the later one (R4-G7 RIDER-8, B012-D11)", () => {
     // MEASURED in the converter output: the 2014 Fighter declares `fighting-style` "Fighting Style" and its Champion (5e)
@@ -95,7 +97,7 @@ describe("TabsContainer", () => {
     };
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
-    const pool = Array.from(container.querySelectorAll<HTMLElement>(".pc-tab-btn")).slice(4).map((b) => [b.dataset.tab, b.textContent, b.dataset.short]);
+    const pool = Array.from(container.querySelectorAll<HTMLElement>(".pc-tab-btn")).slice(5).map((b) => [b.dataset.tab, b.textContent, b.dataset.short]);
     expect(pool).toEqual([
       ["panel-pool-fighting-style", "Fighting Style", "Fighting Style"],
       ["panel-pool-champion-fighting-style", "Champion Fighting Style", "Champion Fighting Style"],
@@ -118,7 +120,7 @@ describe("TabsContainer", () => {
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
     const labels = Array.from(container.querySelectorAll(".pc-tab-btn")).map((b) => b.textContent);
-    expect(labels.slice(4)).toEqual(["Fighting Style", "College of Swords (5e) Fighting Style", "Maneuvers"]);
+    expect(labels.slice(5)).toEqual(["Fighting Style", "College of Swords (5e) Fighting Style", "Maneuvers"]);
   });
   it("does NOT append a declared tab whose pool did not resolve", () => {
     const dyn: ComponentRenderContext = {
@@ -130,7 +132,7 @@ describe("TabsContainer", () => {
     };
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(4);
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(5);
   });
   it("activates the first tab by default when no activeTabId is provided", () => {
     const container = mountContainer();

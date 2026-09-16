@@ -817,6 +817,7 @@
   border: 1px solid var(--pc-tan-muted);
   border-radius: var(--pc-radius-sm);
   background: rgba(255, 255, 255, 0.7);
+  --pc-input-bg: rgba(255, 255, 255, 0.7);
 }
 
 /* ---------- Responsive ---------- */

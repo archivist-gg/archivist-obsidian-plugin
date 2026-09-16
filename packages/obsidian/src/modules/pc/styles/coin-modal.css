@@ -63,11 +63,13 @@
 .pc-coin-modal input.pc-coin-adjust-input {
   width: 52px; text-align: center; font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
   padding: 4px 6px; border: 1px solid var(--pc-tan); border-radius: 4px;
-  background: var(--pc-parchment-light); color: var(--pc-text-primary);
+  background: var(--pc-parchment-light); --pc-input-bg: var(--pc-parchment-light);
+  --pc-input-border: var(--pc-tan);
+  color: var(--pc-text-primary);
   box-shadow: none; outline: none;
 }
 .pc-coin-modal input.pc-coin-adjust-input:focus { border-color: var(--pc-crimson); box-shadow: none; }
-.pc-coin-modal input.pc-coin-adjust-input.is-error { border-color: var(--pc-crimson); background: rgba(146, 38, 16, .06); }
+.pc-coin-modal input.pc-coin-adjust-input.is-error { border-color: var(--pc-crimson); --pc-input-border: var(--pc-crimson); background: rgba(146, 38, 16, .06); --pc-input-bg: rgba(146, 38, 16, .06); }
 
 .pc-coin-adjust-btns { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
 /* display:inline-block + height:auto resets Obsidian's forced button height

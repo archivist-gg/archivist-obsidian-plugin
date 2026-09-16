@@ -37,6 +37,11 @@ export type SourceKey =
   | "feats"
   | "race"
   | "background"
+  /** A DM grant listed in `character.additional_features` (dnd5e's `FeatureSource`
+   *  arm `{kind:"campaign"}`). It has no class, no level and no pool behind it, so
+   *  it belongs to none of the sub-groups above; before this key `featureSource`'s
+   *  exhaustiveness guard refused to compile once the engine added the arm. */
+  | "campaign"
   | "boons";
 
 /** A collected equipped-item row: the ORIGINAL equipment index (filter-stable
@@ -79,7 +84,7 @@ export interface Section {
 
 const ECONOMY_ORDER: EconomyKey[] = ["actions", "bonus", "reactions", "passive"];
 const SOURCE_ORDER: SourceKey[] = [
-  "weapons", "class-features", "items", "feats", "race", "background", "boons",
+  "weapons", "class-features", "items", "feats", "race", "background", "campaign", "boons",
 ];
 
 const ECONOMY_LABEL: Record<EconomyKey, string> = {
@@ -96,6 +101,7 @@ const SOURCE_LABEL: Record<SourceKey, string> = {
   feats: "Feats",
   race: "Race",
   background: "Background",
+  campaign: "Campaign",
   // The FALLBACK for the boons head only: since R4-G4 §10 (UR3) that head is labelled
   // from the pool labels the sub-group holds, and reaches this literal only when no
   // entry carries one. The table itself stays closed and un-restructured (G12).
@@ -157,6 +163,8 @@ function featureSource(source: ResolvedFeature["source"]): SourceKey {
       return "background";
     case "feat":
       return "feats";
+    case "campaign":
+      return "campaign";
     default:
       return assertNever(source);
   }

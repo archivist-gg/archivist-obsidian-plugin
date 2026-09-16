@@ -310,7 +310,8 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search {
   width: 100%; max-width: 320px; display: block;
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
-  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  background: var(--pc-parchment-light); --pc-input-bg: var(--pc-parchment-light);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 5px 9px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
   caret-color: var(--pc-crimson); margin-bottom: var(--pc-space-2); outline: none; box-shadow: none;
 }
@@ -614,7 +615,8 @@
 .archivist-pc-sheet .pc-bcustom-name {
   flex: 1 1 auto; min-width: 0; max-width: 320px;
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
-  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  background: var(--pc-white); --pc-input-bg: var(--pc-white);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 5px 9px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
   caret-color: var(--pc-crimson); outline: none; box-shadow: none;
 }
@@ -646,7 +648,8 @@
 .archivist-pc-sheet .pc-bextra-input {
   flex: 1 1 auto; min-width: 0; max-width: 240px;
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
-  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  background: var(--pc-white); --pc-input-bg: var(--pc-white);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 4px 8px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
   caret-color: var(--pc-crimson); outline: none; box-shadow: none;
 }
@@ -687,14 +690,16 @@
 .archivist-pc-sheet .pc-bfeat-name {
   display: block; width: 100%; max-width: 320px; margin-bottom: 6px;
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
-  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  background: var(--pc-white); --pc-input-bg: var(--pc-white);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 4px 8px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
   caret-color: var(--pc-crimson); outline: none; box-shadow: none;
 }
 .archivist-pc-sheet .pc-bfeat-text {
   display: block; width: 100%; min-height: 64px; resize: vertical;
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
-  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  background: var(--pc-white); --pc-input-bg: var(--pc-white);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 6px 8px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
   caret-color: var(--pc-crimson); outline: none; box-shadow: none;
 }
@@ -743,8 +748,10 @@
   color: var(--pc-text-muted); margin-bottom: 5px;
 }
 .archivist-pc-sheet .pc-binp {
-  width: 100%; border: 1px solid var(--pc-tan); border-radius: 4px;
-  background: rgba(255, 248, 220, 0.6); padding: 8px 11px;
+  width: 100%; border: 1px solid var(--pc-tan); --pc-input-border: var(--pc-tan);
+  border-radius: 4px;
+  background: rgba(255, 248, 220, 0.6); --pc-input-bg: rgba(255, 248, 220, 0.6);
+  padding: 8px 11px;
   font-family: var(--pc-font-serif); font-size: 15px; color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-balgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }

@@ -78,7 +78,7 @@ function registryWith(types: string[]): ComponentRegistry {
 describe("HeaderSection", () => {
   it("renders name, subtitle, avatar placeholder, and hero right cluster with rest cluster", () => {
     const container = mountContainer();
-    const registry = registryWith(["ac-shield", "hp-widget", "hit-dice-widget"]);
+    const registry = registryWith(["ac-shield", "hp-widget", "resource-band"]);
     new HeaderSection(registry).render(container, fakeCtx(BASE_RESOLVED));
     expect(container.querySelector(".pc-name")?.textContent).toBe("Grendal the Wary");
     expect(container.querySelector(".pc-subtitle")?.textContent).toContain("Hill Folk");
@@ -86,7 +86,7 @@ describe("HeaderSection", () => {
     expect(container.querySelectorAll(".pc-rest-btn").length).toBe(2);
     expect(container.querySelector(".pc-hero-right .probe-ac-shield")).not.toBeNull();
     expect(container.querySelector(".pc-hero-right .probe-hp-widget")).not.toBeNull();
-    expect(container.querySelector(".pc-hero-right .probe-hit-dice-widget")).not.toBeNull();
+    expect(container.querySelector(".pc-hero-right .probe-resource-band")).not.toBeNull();
   });
 
   it("falls back to pc-empty-line when a right-cluster widget isn't registered", () => {
@@ -95,13 +95,13 @@ describe("HeaderSection", () => {
     new HeaderSection(registry).render(container, fakeCtx(BASE_RESOLVED));
     const missings = [...container.querySelectorAll(".pc-empty-line")].map((e) => e.textContent);
     expect(missings.some((t) => t?.includes("No renderer for ac-shield"))).toBe(true);
-    expect(missings.some((t) => t?.includes("No renderer for hit-dice-widget"))).toBe(true);
+    expect(missings.some((t) => t?.includes("No renderer for resource-band"))).toBe(true);
     expect(container.querySelector(".pc-hero-right .probe-hp-widget")).not.toBeNull();
   });
 
   it("renders a Manage & Level Up gear that reopens the builder on click", () => {
     const container = mountContainer();
-    const registry = registryWith(["ac-shield", "hp-widget", "hit-dice-widget"]);
+    const registry = registryWith(["ac-shield", "hp-widget", "resource-band"]);
     const openBuilder = vi.fn();
     const ctx = { ...fakeCtx(BASE_RESOLVED), editState: { openBuilder } as never };
     new HeaderSection(registry).render(container, ctx);

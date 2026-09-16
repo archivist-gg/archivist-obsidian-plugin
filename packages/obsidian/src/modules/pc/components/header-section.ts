@@ -37,7 +37,15 @@ export class HeaderSection implements SheetComponent {
     identity.createDiv({ cls: "pc-subtitle", text: buildSubtitle(ctx.resolved) });
 
     const right = root.createDiv({ cls: "pc-hero-right" });
-    for (const type of ["ac-shield", "hp-widget", "hit-dice-widget"] as const) {
+    // `resource-band` is the LAST panel of the cluster and OWNS the hit dice:
+    // it mounts the shipped `hit-dice-widget` as its first cell, so no
+    // standalone one is mounted here and the sheet never draws two. The band
+    // renders nothing at all when the character has neither hit dice nor a
+    // `surface: band` resource, so a sheet with nothing to show keeps the hero
+    // it had before. Looked up like the other two (never `new`ed here) so a
+    // registry without it degrades to the same "(No renderer …)" line as any
+    // other missing widget.
+    for (const type of ["ac-shield", "hp-widget", "resource-band"] as const) {
       const c = this.registry.get(type);
       if (!c) {
         right.createDiv({ cls: "pc-empty-line", text: `(No renderer for ${type})` });

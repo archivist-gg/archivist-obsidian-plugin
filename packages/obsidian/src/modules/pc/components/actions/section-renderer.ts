@@ -10,7 +10,8 @@ import { renderFeatureRow } from "./feature-rows";
 const LIST_CLASS: Record<SourceKey, string> = {
   weapons: "pc-weapons-table", items: "pc-items-table",
   "class-features": "pc-feature-list", feats: "pc-feature-list",
-  race: "pc-feature-list", background: "pc-feature-list", boons: "pc-feature-list pc-boons-list",
+  race: "pc-feature-list", background: "pc-feature-list", campaign: "pc-feature-list",
+  boons: "pc-feature-list pc-boons-list",
 };
 
 /** Render a (possibly filtered) list of economy sections into `root`: the economy

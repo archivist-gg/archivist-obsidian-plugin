@@ -71,18 +71,22 @@ describe("PCModule", () => {
     expect(m.registry.size()).toBeGreaterThan(0);
   });
 
-  it("wireComponents registers all 23 components", () => {
+  it("wireComponents registers all 25 components", () => {
     const m = new PCModule();
     const services = { entities: new EntityRegistry() } as unknown as PCServices;
     m.init(services);
-    expect(m.registry.size()).toBe(23);
+    expect(m.registry.size()).toBe(25);
     for (const type of [
       "header-section", "ac-shield", "hp-widget", "hit-dice-widget",
+      // The header resource band is a hero-cluster widget like the three above:
+      // HeaderSection LOOKS IT UP rather than constructing one, so an unregistered
+      // band would render the "(No renderer …)" line instead of the panel.
+      "resource-band",
       "save-chip-str", "save-chip-dex", "save-chip-con",
       "save-chip-int", "save-chip-wis", "save-chip-cha",
       "ability-row", "stats-tiles", "defenses-conditions-panel",
       "senses-panel", "skills-panel", "proficiencies-panel",
-      "actions-tab", "passive-features-tab", "spells-tab", "inventory-tab",
+      "actions-tab", "passive-features-tab", "resources-tab", "spells-tab", "inventory-tab",
       "notes-tab",
       "tabs-container", "builder",
     ]) {

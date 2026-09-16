@@ -47,8 +47,8 @@
 .pc-maxhp-modal .pc-maxhp-field-val input.pc-edit-inline {
   width: auto; min-width: 58px; max-width: 84px; box-sizing: border-box;
   text-align: center; font-size: var(--pc-fs-mid); padding: 3px 8px;
-  border: 1px solid var(--pc-tan); border-radius: 4px;
-  background: var(--pc-parchment-light);
+  border: 1px solid var(--pc-tan); --pc-input-border: var(--pc-tan); border-radius: 4px;
+  background: var(--pc-parchment-light); --pc-input-bg: var(--pc-parchment-light);
 }
 .pc-maxhp-box.is-placeholder { opacity: 0.55; font-style: italic; font-weight: 400; }
 .pc-maxhp-box.is-negative { color: var(--pc-crimson); }

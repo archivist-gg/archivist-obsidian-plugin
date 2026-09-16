@@ -18,6 +18,8 @@ import { SkillsPanel } from "./components/skills-panel";
 import { ProficienciesPanel } from "./components/proficiencies-panel";
 import { ActionsTab } from "./components/actions-tab";
 import { PassiveFeaturesTab } from "./components/passive-features-tab";
+import { ResourcesTab } from "./components/resources-tab";
+import { ResourceBand } from "./components/resource-band";
 import { SpellsTab } from "./components/spells-tab";
 import { InventoryTab } from "./components/inventory-tab";
 import { NotesTab } from "./components/notes-tab";
@@ -164,6 +166,7 @@ export class PCModule {
     r.register(new AcShield());
     r.register(new HpWidget());
     r.register(new HitDiceWidget());
+    r.register(new ResourceBand(r));
     // Hero
     r.register(new HeaderSection(r));
     // Stats band
@@ -180,6 +183,7 @@ export class PCModule {
     // Tabs
     r.register(new ActionsTab());
     r.register(new PassiveFeaturesTab());
+    r.register(new ResourcesTab());
     r.register(new SpellsTab());
     r.register(new InventoryTab());
     r.register(new NotesTab());

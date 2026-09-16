@@ -1162,6 +1162,48 @@ describe("CharacterEditState — attuneItem auto-equip (Task 4, #10)", () => {
     return { es, onChange };
   };
 
+  // The cap is DERIVED, not a constant: an Artificer's Magic Item Adept line raises it through an
+  // `attunement-limit` effect, and before this the editor gate read its own `overrides ?? 3` copy and
+  // rejected a legal 4th attunement at 3 no matter what the sheet displayed.
+  const makeESWithLimit = (c: Character, attunementLimit: number) => {
+    const onChange = vi.fn();
+    const es = new CharacterEditState(
+      c,
+      () => ({ derived: { attunementLimit } }) as unknown as EditStateContext,
+      onChange,
+      reg,
+    );
+    return { es, onChange };
+  };
+
+  it("honours a DERIVED cap above the baseline (Artificer at 5), not the hardcoded 3", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[ring-of-protection]]", attuned: true },
+      { item: "[[ring-of-protection]]", attuned: true },
+      { item: "[[ring-of-protection]]", attuned: true },
+      { item: "[[cloak-of-protection]]", attuned: false },
+    ] as unknown as Character["equipment"];
+    const { es } = makeESWithLimit(c, 5);
+    expect(es.attuneItem(3).kind).toBe("ok");
+    expect(c.equipment[3].attuned).toBe(true);
+  });
+
+  it("still rejects once the DERIVED cap is reached", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[ring-of-protection]]", attuned: true },
+      { item: "[[ring-of-protection]]", attuned: true },
+      { item: "[[ring-of-protection]]", attuned: true },
+      { item: "[[ring-of-protection]]", attuned: true },
+      { item: "[[ring-of-protection]]", attuned: true },
+      { item: "[[cloak-of-protection]]", attuned: false },
+    ] as unknown as Character["equipment"];
+    const { es } = makeESWithLimit(c, 5);
+    expect(es.attuneItem(5)).toEqual({ kind: "rejected", reason: "limit-reached" });
+    expect(c.equipment[5].attuned).toBeFalsy();
+  });
+
   it("attuning an unequipped equippable item auto-equips it (free slot → no swap)", () => {
     const c = baseChar();
     c.equipment = [{ item: "[[flame-tongue]]", equipped: false }];

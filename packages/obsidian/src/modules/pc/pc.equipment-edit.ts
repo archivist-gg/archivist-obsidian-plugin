@@ -168,6 +168,10 @@ export function unequipItem(character: Character, index: number): void {
   delete entry.slot;
 }
 
+/** LAST-RESORT fallback only. The real cap is DERIVED (`DerivedStats.attunementLimit`), because a class
+ *  feature can raise it via an `attunement-limit` effect — the Artificer's Magic Item Adept / Savant /
+ *  Master line. Callers that can see `derived` MUST pass its value to `attuneItem`; this reproduces only
+ *  the override-or-baseline half and is blind to every feature grant. */
 function attunementLimit(character: Character): number {
   return character.overrides?.attunement_limit ?? 3;
 }
@@ -180,10 +184,14 @@ export function attuneItem(
   character: Character,
   index: number,
   _registry: EntityRegistry,
+  // The DERIVED cap (DerivedStats.attunementLimit), which already folds feature grants and the
+  // character override. Omit it only where `derived` is genuinely unreachable — the fallback cannot
+  // see an Artificer's raised cap and will reject a legal attunement at 3.
+  derivedLimit?: number,
 ): AttuneResult {
   const entry = character.equipment[index];
   if (!entry || entry.attuned) return { kind: "ok" };
-  if (attunedCount(character) >= attunementLimit(character)) {
+  if (attunedCount(character) >= (derivedLimit ?? attunementLimit(character))) {
     return { kind: "rejected", reason: "limit-reached" };
   }
   entry.attuned = true;
