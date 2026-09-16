@@ -146,7 +146,20 @@ export function collectResourceGroups(ctx: ComponentRenderContext): ResourceGrou
   }
 
   // 3. Item charges, keyed on the ORIGINAL equipment index.
+  //
+  // EQUIPPED ONLY, the rule `collectActionItems` already states for the Actions
+  // tab ("Only equipped items surface on this tab", action-model.ts). This tab
+  // answers "what can I spend right now?", and a wand in the bottom of the pack
+  // is not something the character can spend without first taking it out. The
+  // row returns the moment it is equipped again; the charges are never lost,
+  // because they live on the equipment entry and nothing here writes to them.
+  //
+  // NOTE the asymmetry with the rest modal, which offers an unequipped item's
+  // recharge regardless: a wand does regain its charges overnight whether or not
+  // it was in hand, and hiding that would silently cost the player charges.
+  // Hiding a row the player cannot use is safe; skipping a refill is not.
   (ctx.resolved.definition?.equipment ?? []).forEach((entry, index) => {
+    if (!entry.equipped) return;
     const charges = entry.state?.charges;
     if (!charges || charges.max <= 0) return;
     push(ITEM_GROUP, {

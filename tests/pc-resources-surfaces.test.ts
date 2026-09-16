@@ -200,6 +200,39 @@ describe("ResourcesTab — grouping by what a rest gives back", () => {
     expect(row.querySelector(".pc-charge-recovery")?.textContent).toBe("/ Dawn 1d6+1");
   });
 
+  it("EQUIPPED ONLY: an unequipped item's charges are not listed", () => {
+    // The tab answers "what can I spend right now?", and a wand in the pack is
+    // not spendable without taking it out. Same rule the Actions tab states.
+    const ctx = renderCtx({
+      equipment: [{ item: "[[srd_item_wand-of-magic-missiles]]", equipped: false,
+        state: { charges: { current: 4, max: 7 }, recovery: { amount: "1d6+1", reset: "dawn" } } }],
+      entities: [{ slug: "srd_item_wand-of-magic-missiles", entityType: "item", data: { name: "Wand of Magic Missiles" } }],
+    });
+    const root = mountContainer();
+    new ResourcesTab().render(root, ctx);
+    expect(rowNames(root)).not.toContain("Wand of Magic Missiles");
+    expect(collectResourceGroups(ctx).flatMap((g) => g.rows).map((r) => r.name))
+      .not.toContain("Wand of Magic Missiles");
+  });
+
+  it("and the SAME item listed again the moment it is equipped — nothing is lost, only hidden", () => {
+    // The control for the test above: identical fixture but `equipped: true`, so
+    // the absence there is the equipped flag and not a broken fixture.
+    const equipped = (on: boolean) => renderCtx({
+      equipment: [{ item: "[[srd_item_wand-of-magic-missiles]]", equipped: on,
+        state: { charges: { current: 4, max: 7 }, recovery: { amount: "1d6+1", reset: "dawn" } } }],
+      entities: [{ slug: "srd_item_wand-of-magic-missiles", entityType: "item", data: { name: "Wand of Magic Missiles" } }],
+    });
+    const names = (on: boolean) => collectResourceGroups(equipped(on)).flatMap((g) => g.rows).map((r) => r.name);
+    expect(names(false)).not.toContain("Wand of Magic Missiles");
+    expect(names(true), "the control: the same fixture equipped DOES list").toContain("Wand of Magic Missiles");
+    // and its charges are untouched by the hiding
+    const row = collectResourceGroups(equipped(true)).flatMap((g) => g.rows)
+      .find((r) => r.name === "Wand of Magic Missiles")!;
+    expect(row.used).toBe(3);
+    expect(row.max).toBe(7);
+  });
+
   it("lists EVERY resource, `surface: band` ones included — the tab is the complete inventory", () => {
     const ctx = renderCtx({
       features: [
@@ -526,14 +559,22 @@ describe("counter wiring", () => {
   });
 
   it("an item's pips write through setItemCharges on the ORIGINAL equipment index", () => {
+    // The index is the write-back key and must survive FILTERING: an unequipped
+    // item sits at 0 and draws no row, so the visible row is the SECOND entry and
+    // must still write to index 1. A row-ordinal key would write to 0 and silently
+    // spend the wrong item's charges.
     const setItemCharges = vi.fn();
     const root = mountContainer();
     new ResourcesTab().render(root, renderCtx({
-      equipment: [{ item: "[[wand]]", state: { charges: { current: 7, max: 7 } } }],
+      equipment: [
+        { item: "[[stowed]]", equipped: false, state: { charges: { current: 2, max: 3 } } },
+        { item: "[[wand]]", equipped: true, state: { charges: { current: 7, max: 7 } } },
+      ],
       editState: { setItemCharges },
     }));
+    expect(root.querySelectorAll(".pc-feature-row").length, "only the equipped item draws").toBe(1);
     root.querySelectorAll<HTMLElement>(".archivist-toggle-box")[1].click();
-    expect(setItemCharges).toHaveBeenCalledWith(0, 2, 7);
+    expect(setItemCharges).toHaveBeenCalledWith(1, 2, 7);
   });
 
   it("renders read-only (no throw, no write) when editState is null", () => {
