@@ -1,0 +1,329 @@
+/* ============================================================
+   Resources tab + header resource band + the charge bar.
+
+   One partial, because the three share a vocabulary and none is
+   large enough to own a file. Most of what they need already
+   exists: the rows are the Passive tab's `.pc-feature-row` grid,
+   the counters are the shipped `.pc-hd-widget` shape, the pips
+   are `.archivist-toggle-box`, the captions `.pc-charge-recovery`,
+   and the die faces live in `dice-icons.css`.
+   ============================================================ */
+
+/* ── The Resources tab ────────────────────────────────────── */
+
+/* The heading carries a count on its right, so it is a baseline-aligned row
+   rather than the plain block `.pc-tab-heading` is elsewhere. */
+.archivist-pc-sheet .pc-resources-tab .pc-tab-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--pc-space-2);
+}
+
+/* `.pc-action-row` declares `cursor: pointer` because everywhere else a row
+   opens an expand card. These rows have none — the caret cell is deliberately
+   empty — so the hand cursor would promise something that never happens. */
+.archivist-pc-sheet .pc-resources-tab .pc-action-row {
+  cursor: default;
+}
+
+/* A counter inside a ROW is a control in a cell, not a panel in a header strip:
+   it keeps the shipped shape and drops the widget's own floor and padding so it
+   sits on the row's baseline grid like every other detail control. The NUMBER is
+   untouched: a counter reads the same size wherever it is drawn. */
+.archivist-pc-sheet .pc-resources-tab .pc-hd-widget {
+  min-width: 0;
+  padding: 0;
+  column-gap: var(--pc-space-2);
+}
+
+/* A die face BESIDE the number rather than above it. `.pc-hd-nums` is otherwise
+   a plain text block, so the glyph would sit on the text baseline and ride high
+   against a 40px face; this centres the two against each other. */
+.archivist-pc-sheet .pc-hd-nums-die {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pc-space-2);
+}
+
+/* The face a pip track or a bar carries: the same glyph at caption scale, since
+   it labels the control rather than sharing the number's weight. */
+.archivist-pc-sheet .pc-resource-face {
+  color: var(--pc-crimson);
+  flex: none;
+}
+
+/* ── The header band ──────────────────────────────────────── */
+
+/* ONE panel holding every cell, divided by hairlines. It takes the leftover
+   width of the hero cluster and wraps its cells rather than pushing the cluster
+   wider. */
+.archivist-pc-sheet .pc-rband {
+  display: flex;
+  /* CENTER, never stretch. Under `stretch` a cell fills the hero row's full
+     height, and the hero row is as tall as its tallest sibling — so two cells
+     framing a two-line readout were measured 164 px tall inside a 182 px band,
+     with the numbers flung to opposite ends of a mostly empty panel. The cell
+     should be as tall as what it holds. */
+  align-items: center;
+  /* `align-items` governs items WITHIN a line; `align-content` governs the LINES,
+     and it defaults to `stretch`. With `flex-wrap: wrap` that made each wrapped
+     line stretch to the hero row's full height — measured 164 px cells inside a
+     361 px band, the numbers pushed to opposite ends of a mostly empty panel. */
+  align-content: center;
+  gap: 0;
+  /* NEVER wrap. The cells are a single horizontal run at every width — stacking
+     them turned the divider through the wrong axis and let each wrapped line
+     stretch to the hero row's height. They shrink instead; each cell keeps
+     `min-width: 0` so the run narrows rather than overflowing. */
+  flex-wrap: nowrap;
+  padding: var(--pc-space-2) 0;
+  /* Size to the cells, shrink when squeezed, never demand a 320 px basis. The basis
+     was hogging the hero row: measured, it pushed the 32 px rest cluster onto a line
+     of its own while the band itself still had slack. */
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* NO `container-type` here, deliberately. Making the band its own query container
+   applies inline-axis size containment, which drops its contents out of its
+   intrinsic width — measured live, the band then collapsed to a ~40 px column at
+   the right of a 1200 px hero with "HIT DICE · D8" broken over three lines. The
+   stacked case is handled at the SHEET breakpoint below instead. */
+
+.archivist-pc-sheet .pc-rband-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pc-space-1);
+  padding: 2px 18px;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+/* Every cell after the first is fenced off from the one before it. */
+.archivist-pc-sheet .pc-rband-cell + .pc-rband-cell {
+  border-left: 1px solid var(--pc-tan);
+}
+
+/* A component dropped into the band SHEDS ITS OWN CHROME — the band is the
+   panel. Without this the hero would show a bordered box inside a bordered box
+   for every cell, and `.pc-hd-widget`'s own stat-tile floor would stop three
+   cells fitting on one line. */
+.archivist-pc-sheet .pc-rband .pc-panel,
+.archivist-pc-sheet .pc-rband .pc-hd-widget {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  /* `.pc-hd-widget` carries `flex: 1 1 160px`, written for the hero's ROW flex where
+     160 px is a WIDTH. The band's cell is a COLUMN flex, so the same declaration
+     becomes a 160 px HEIGHT floor — measured `grid-template-rows: 160px` around 42 px
+     of content. Neutralise it; the widget is sized by what it holds. */
+  flex: 0 0 auto;
+  padding: 0;
+  min-width: 0;
+}
+
+/* ── The charge bar ───────────────────────────────────────── */
+
+/* A track for a pool too large to count at a glance. Three zones: what is left,
+   what a pending spend would take, and what has already gone. */
+.archivist-pc-sheet .pc-charge-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 150px;
+  flex: 1 1 170px;
+}
+
+.archivist-pc-sheet .pc-charge-bar-track {
+  position: relative;
+  height: 10px;
+  border: 1px solid var(--pc-tan);
+  border-radius: 999px;
+  /* The panel ground, the literal `.pc-panel` states (components.css:457); there
+     is no token for it and this track is a well cut into a panel. */
+  background: rgba(255, 248, 220, 0.45);
+  overflow: hidden;
+  display: flex;
+}
+
+.archivist-pc-sheet .pc-charge-bar-fill {
+  background: var(--pc-crimson);
+  transition: width 0.18s ease;
+}
+
+/* The preview of a spend the player has dialled but not committed. */
+.archivist-pc-sheet .pc-charge-bar-pending {
+  background: var(--pc-crimson);
+  opacity: 0.35;
+  transition: width 0.18s ease;
+}
+
+/* Spent. Hatched rather than counted: depletion is what the texture is FOR, and
+   a figure beside the remaining count only makes the reader subtract. */
+.archivist-pc-sheet .pc-charge-bar-burnt {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--pc-tan-muted) 0 3px,
+    transparent 3px 6px
+  );
+  transition: width 0.18s ease;
+}
+
+.archivist-pc-sheet .pc-charge-bar-cap {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
+
+.archivist-pc-sheet .pc-charge-bar-cap b {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--pc-text-primary);
+}
+
+/* Beside the track instead of under it — the one-line spend row. */
+.archivist-pc-sheet .pc-charge-bar-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--pc-space-2);
+  flex: 1 1 180px;
+}
+
+.archivist-pc-sheet .pc-charge-bar-inline .pc-charge-bar-track {
+  flex: 1 1 auto;
+  min-width: 70px;
+}
+
+.archivist-pc-sheet .pc-charge-bar-inline .pc-charge-bar-cap {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* ── The range-spend stepper ──────────────────────────────── */
+
+/* The whole control on one line: stepper, pill, bar. */
+.archivist-pc-sheet .pc-spend-range {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--pc-space-3);
+  width: 100%;
+}
+
+.archivist-pc-sheet .pc-step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-1);
+  flex: none;
+}
+
+/* Crimson, like the spend pill it sets the size of — this stepper moves a SPEND,
+   not a tracker, so it wears the spending colour and not the tan of the ± on a
+   counter. */
+.archivist-pc-sheet .pc-step-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-crimson);
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-body);
+  line-height: var(--pc-lh-tight);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archivist-pc-sheet .pc-step-btn:hover:not(:disabled) {
+  /* No token for a crimson wash; `.pc-spend-control:hover` (actions.css) states
+     the same literal and this button is its sibling. */
+  background: rgba(146, 38, 16, 0.10);
+}
+
+.archivist-pc-sheet .pc-step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.archivist-pc-sheet .pc-step-input {
+  width: 52px;
+  height: 22px;
+  padding: 0;
+  box-sizing: border-box;
+  text-align: center;
+  border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-sm);
+  /* This field's own ground. It is NOT shared with `.pc-hp-input`, which
+     states the same literal but never wears it — `.pc-hp-actions input`
+     out-specifies that rule, so the HP field is transparent. */
+  background: rgba(255, 255, 255, 0.35);
+  --pc-input-bg: rgba(255, 255, 255, 0.35);
+  color: var(--pc-text-primary);
+  box-shadow: none;
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-small);
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.archivist-pc-sheet .pc-step-input::-webkit-outer-spin-button,
+.archivist-pc-sheet .pc-step-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ── Narrow tiers ─────────────────────────────────────────── */
+
+/* actions.css's 787px rule gives the detail slot the whole row when it holds a
+   control cluster — but its `:has()` list names only `.pc-spend`,
+   `.pc-buff-group` and `.pc-feature-track`. This tab introduces two cluster
+   shapes that match none of them: the counter (`.pc-hd-widget`, every hit-dice
+   row and every `counter` / `die` resource) and a bare `.pc-charge-bar`.
+   Without this the tab reflowed HALF its rows on a narrow pane — a pip row
+   dropped to two columns and the counter row beside it did not.
+
+   Scoped to `.pc-resources-tab`, so no row on any other tab changes. */
+@container pc-content (max-width: 787px) {
+  .archivist-pc-sheet .pc-resources-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-hd-widget),
+  .archivist-pc-sheet .pc-resources-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-charge-bar) {
+    grid-template-columns: minmax(0, 1fr) 18px;
+  }
+  .archivist-pc-sheet .pc-resources-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-hd-widget) > .pc-feature-detail,
+  .archivist-pc-sheet .pc-resources-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-charge-bar) > .pc-feature-detail {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  /* A range spend is three controls wide; below this it stacks rather than
+     squeezing the bar to nothing. */
+  .archivist-pc-sheet .pc-spend-range {
+    flex-wrap: wrap;
+  }
+}
+
+/* `pc-sheet`, not `pc-content`: the band lives in `.pc-hero-right`, outside
+   `.pc-content`, and a container query can only restyle its own descendants —
+   the rule components.css states where it drops the HP and HD widgets' floors
+   at the same breakpoint. The band shrinks with them rather than holding a
+   320px floor in a 400px pane, and its cells lose the wide gutters that would
+   otherwise cost more than the numbers they frame. */
+@container pc-sheet (max-width: 699px) {
+  .archivist-pc-sheet .pc-rband {
+    flex: 0 1 auto;
+  }
+  .archivist-pc-sheet .pc-rband-cell {
+    padding: 2px var(--pc-space-2);
+  }
+}

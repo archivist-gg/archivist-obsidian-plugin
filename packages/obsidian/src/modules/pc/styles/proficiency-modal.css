@@ -134,6 +134,7 @@
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
   padding: 4px 8px; border: 1px solid var(--pc-tan-muted);
   border-radius: var(--pc-radius-md); background: var(--pc-parchment-light);
+  --pc-input-bg: var(--pc-parchment-light);
   color: var(--pc-text-primary); box-shadow: none;
 }
 .pc-prof-modal input.pc-prof-modal-custominput:focus {

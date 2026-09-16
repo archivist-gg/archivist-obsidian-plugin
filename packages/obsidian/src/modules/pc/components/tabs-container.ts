@@ -12,6 +12,7 @@ import { PoolTab } from "./pool-tab";
 const BUILTIN: ReadonlyArray<{ type: string; panelId: string; label: string; short?: string }> = [
   { type: "actions-tab",           panelId: "panel-actions",   label: "Actions" },
   { type: "passive-features-tab",  panelId: "panel-passive",   label: "Passive & Features", short: "Passive" },
+  { type: "resources-tab",         panelId: "panel-resources", label: "Resources" },
   { type: "spells-tab",            panelId: "panel-spells",    label: "Spells" },
   { type: "inventory-tab",         panelId: "panel-inventory", label: "Inventory" },
 ];

@@ -546,7 +546,11 @@
 .archivist-pc-sheet .pc-hp-input {
   font-weight: 700;
   border: 1px solid var(--pc-tan-muted);
-  background: rgba(255, 255, 255, 0.35);
+  /* The ground is TRANSPARENT, not a field wash: `.pc-hp-actions input` above
+     is (0,2,1) and out-specifies this (0,2,0) rule, so a `background` stated
+     here never applied. The token names what the input ACTUALLY has, so the
+     hover/focus rule re-asserts that and not a ground it never wore. */
+  --pc-input-bg: transparent;
   color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-hp-nums {
@@ -1101,7 +1105,13 @@
     flex-wrap: wrap;
     justify-content: flex-start;
   }
-  .archivist-pc-sheet .pc-hp-widget { min-width: 0; flex: 1 1 280px; }
+  /* The HP panel SHRINKS here but never grows. With `flex-grow: 1` it ate the
+     whole hero line — 536 px of a 620 px row at a 700 px sheet, spreading
+     CURRENT / MAX / TEMP over 446 px of mostly air and pushing the resource
+     band onto a line of its own. At `0 1 auto` it sits at its content width
+     (~264 px, the same as the wide tier), so the line reads the same at every
+     sheet width and the band shares it whenever the width allows. */
+  .archivist-pc-sheet .pc-hp-widget { min-width: 0; flex: 0 1 auto; }
   .archivist-pc-sheet .pc-hd-widget { min-width: 0; flex: 1 1 160px; }
   /* R4-G7 T8 RIDER-27 fix round 1 (review Important 1): the hero cluster above takes its own line, so the identity's 320 px floor
      (the base rule near the top of this file) has nothing to keep off the first line here; zeroed, the identity stays beside the
@@ -1450,7 +1460,12 @@
    builder. Null it in ALL states, for text-entry inputs only (checkbox/file
    keep their Obsidian chrome). Our own focus cues are borders/outlines and are
    unaffected; intentional input rings (portrait-picker search) are re-asserted
-   at equal specificity LATER in this file, so they win by source order. */
+   at equal specificity LATER in this file, so they win by source order.
+
+   The base rule also names the two tokens the state rule below re-asserts. An
+   input that wants a ground other than transparent states it in `--pc-input-bg`
+   beside its own `background`, and a distinct resting border in
+   `--pc-input-border`; both are declared HERE so every input has them. */
 :is(.archivist-pc-sheet, .archivist-modal)
   input:is([type="text"], [type="number"], [type="search"], :not([type])),
 :is(.archivist-pc-sheet, .archivist-modal)
@@ -1459,6 +1474,35 @@
   input:is([type="text"], [type="number"], [type="search"], :not([type])):focus,
 :is(.archivist-pc-sheet, .archivist-modal)
   input:is([type="text"], [type="number"], [type="search"], :not([type])):focus-visible {
+  box-shadow: none;
+}
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])) {
+  --pc-input-bg: transparent;
+  --pc-input-border: var(--pc-tan-muted);
+}
+
+/* An input keeps the ground it declares in EVERY state.
+   Obsidian writes its own input chrome as `input[type="text"]:hover` /
+   `:focus` — an ATTRIBUTE selector, so (0,2,1), which OUT-SPECIFIES a
+   two-class sheet selector such as `.archivist-pc-sheet .pc-hp-input` (0,2,0).
+   Every input on the sheet therefore wore its parchment dress at rest and
+   flipped to Obsidian's `--background-modifier-form-field` the moment it was
+   hovered or focused: measured live at rgb(46,46,46) behind the sheet's
+   rgb(26,26,26) ink, i.e. unreadable, on the HP heal/damage field.
+   One rule states the policy for all of them, reading each input's OWN colors
+   back out of the two tokens rather than imposing a single ground. Specificity
+   is (0,3,1) — the host `:is()`, the type `:is()`, the state `:is()`, plus the
+   `input` element — so it beats Obsidian's (0,2,1), while a per-input rule that
+   deliberately wants a different focus dress still ties at (0,3,1) and wins by
+   source order from later in the barrel (coin, proficiency, portrait-picker). */
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):is(:hover, :focus, :focus-visible, :active) {
+  background-color: var(--pc-input-bg);
+  border-color: var(--pc-input-border);
+  color: var(--pc-text-primary);
+  -webkit-text-fill-color: var(--pc-text-primary);
+  caret-color: var(--pc-crimson);
   box-shadow: none;
 }
 
@@ -2110,7 +2154,9 @@
   margin-bottom: var(--pc-space-2);
   padding: 6px 10px;
   background: var(--pc-parchment-light, #fff9ec);
+  --pc-input-bg: var(--pc-parchment-light, #fff9ec);
   border: 1px solid var(--pc-tan);
+  --pc-input-border: var(--pc-tan);
   border-radius: var(--pc-radius-sm);
   color: var(--pc-text-primary);
   font-family: var(--pc-font-sans);

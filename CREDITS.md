@@ -73,3 +73,19 @@ The PC character sheet's spells "Cast" table uses icons from
 - **thunder** → [skoll/sound-waves](https://game-icons.net/1x1/skoll/sound-waves.html) (Skoll, CC-BY 3.0)
 - **healing** → [skoll/hearts](https://game-icons.net/1x1/skoll/hearts.html) (Skoll, CC-BY 3.0)
 - **burst** (bludgeoning/piercing/slashing fallback) → [lorc/bright-explosion](https://game-icons.net/1x1/lorc/bright-explosion.html) (Lorc, CC-BY 3.0)
+
+## Dice icons
+
+The PC character sheet's resource controls draw die faces (d4, d6, d8, d10, d12,
+d20) as CSS masks, from the "Polyhedral Dice" set by
+[**Lonnie Tapscott**](https://thenounproject.com/creator/lonniusmax/) via
+[Noun Project](https://thenounproject.com/), licensed under
+[CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/). The mask rules live in
+`packages/obsidian/src/modules/pc/styles/dice-icons.css`.
+
+- **d4** → [icon 2453696](https://thenounproject.com/icon/2453696/) (Lonnie Tapscott, CC-BY 3.0)
+- **d6** → [icon 2453695](https://thenounproject.com/icon/2453695/) (Lonnie Tapscott, CC-BY 3.0)
+- **d8** → [icon 2453699](https://thenounproject.com/icon/2453699/) (Lonnie Tapscott, CC-BY 3.0)
+- **d10** → [icon 2453698](https://thenounproject.com/icon/2453698/) (Lonnie Tapscott, CC-BY 3.0)
+- **d12** → [icon 2453697](https://thenounproject.com/icon/2453697/) (Lonnie Tapscott, CC-BY 3.0)
+- **d20** → [icon 2453700](https://thenounproject.com/icon/2453700/) (Lonnie Tapscott, CC-BY 3.0)

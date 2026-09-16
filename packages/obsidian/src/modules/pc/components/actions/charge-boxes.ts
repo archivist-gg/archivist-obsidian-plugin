@@ -114,7 +114,7 @@ export function renderChargeBoxes(parent: HTMLElement, opts: ChargeBoxesOpts): H
   });
 
   if (opts.recovery) {
-    const label = formatRecovery(opts.recovery);
+    const label = formatChargeRecovery(opts.recovery);
     // R4-G6b §10 (Q-8): the caption is a UNIT holding its `/ ` separator out of flow, so the mark is
     // clipped away when the caption falls onto its own line under the pips and never starts it. The
     // element is a `span` now rather than a `div` (harmless: it is a flex item of an `inline-flex`
@@ -126,7 +126,10 @@ export function renderChargeBoxes(parent: HTMLElement, opts: ChargeBoxesOpts): H
   return wrap;
 }
 
-function formatRecovery(rec: NonNullable<ChargeBoxesOpts["recovery"]>): string {
+/** Exported so the Resources tab can print the SAME caption beside a control that
+ *  draws no boxes (its item rows reach the counter, not `renderChargeBoxes`), and
+ *  so the four-member item vocabulary stays owned by exactly one module. */
+export function formatChargeRecovery(rec: NonNullable<ChargeBoxesOpts["recovery"]>): string {
   // The feature path hands over a finished caption; only the item path consults
   // the four-member map (and only it carries the dawn "N per dawn" suffix).
   if ("label" in rec) return rec.label;

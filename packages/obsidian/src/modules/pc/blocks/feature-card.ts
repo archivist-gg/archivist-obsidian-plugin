@@ -367,6 +367,12 @@ export function formatSourceLabel(source: FeatureSource | undefined, resolved?: 
       return name;
     case "background":
       return `Background: ${name}`;
+    // A DM grant (`character.additional_features`) has no class, no level and no pool behind it, so
+    // the only true thing to say about the slot is that the campaign put it there. The bare kind, the
+    // form the `feat` arm above already uses when it has no `via`. Before this arm the `campaign`
+    // source fell to the default and every grant row rendered with a BLANK source sub-label.
+    case "campaign":
+      return "Campaign";
     default:
       return "";
   }
