@@ -21,7 +21,7 @@ const CORE_PKG = "@archivist-gg/core";
 const DND5E_PKG = "@archivist-gg/dnd5e";
 const CORE_RANGE = "^0.1.0";
 const DND5E_RANGE = "^0.3.6";
-const TARGET_VERSION = "0.6.0";
+const TARGET_VERSION = "0.6.1";
 const MIN_APP = "1.7.2";
 const BACKFILL = {};
 // Expected caret minor per package (from its RANGE), so assertLock validates each
