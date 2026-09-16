@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { TabsContainer } from "../packages/obsidian/src/modules/pc/components/tabs-container";
 import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
+import { PoolTab } from "../packages/obsidian/src/modules/pc/components/pool-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { SheetComponent, ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
@@ -51,6 +52,73 @@ describe("TabsContainer", () => {
     expect(container.querySelectorAll(".pc-tab-btn").length).toBe(5); // 4 built-ins + 1 pool tab
     const btn = container.querySelector<HTMLElement>('.pc-tab-btn[data-tab="panel-pool-boons"]');
     expect(btn?.textContent).toBe("Interdict Boons");
+  });
+  it("carries a short label on every tab: the built-in long one abbreviates, every other repeats its own label", () => {
+    // R4 {G5, G6} live rider 2, V-1 at 252: below a 300 px content column the strip renders
+    // `data-short` instead of the button's own text, so the four built-in tabs fit one row. The
+    // attribute is the renderer's whole part in that: the abbreviation is declared beside the label
+    // it shortens, and a data-declared pool tab repeats its own label rather than being shortened
+    // by any rule in the renderer.
+    const dyn: ComponentRenderContext = {
+      ...ctx,
+      resolved: {
+        classes: [{ entity: { tabs: [{ id: "boons", label: "Interdict Boons", renders: { pool: "interdict-boons" } }] }, subclass: null }],
+        pools: [{ id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 1, anchorLevel: 2, selected: [], available: [], grants: [] }],
+      } as never,
+    };
+    const container = mountContainer();
+    new TabsContainer(mkRegistry()).render(container, dyn);
+    const shorts = [...container.querySelectorAll<HTMLElement>(".pc-tab-btn")].map((b) => b.dataset.short);
+    expect(shorts).toEqual(["Actions", "Passive", "Spells", "Inventory", "Interdict Boons"]);
+    // The button's own text is untouched: the short form is an attribute the narrow tier reads.
+    const labels = [...container.querySelectorAll(".pc-tab-btn")].map((b) => b.textContent);
+    expect(labels).toEqual(["Actions", "Passive & Features", "Spells", "Inventory", "Interdict Boons"]);
+  });
+  it("two pool tabs with the same label are told apart by the entity that declared the later one (R4-G7 RIDER-8, B012-D11)", () => {
+    // MEASURED in the converter output: the 2014 Fighter declares `fighting-style` "Fighting Style" and its Champion (5e)
+    // subclass (`short_name: Champion`) declares `champion-fighting-style` "Fighting Style" for the level-10 Additional
+    // Fighting Style. The ids differ, the labels do not, so the live sheet showed two identical FIGHTING STYLE tabs. The
+    // qualifier is the declaring entity's own short name (the converter's count column already reads
+    // "Champion (5e) Fighting Style"): a label the strip already carries is prefixed, nothing else changes.
+    const dyn: ComponentRenderContext = {
+      ...ctx,
+      resolved: {
+        classes: [{
+          entity: { name: "Fighter", tabs: [{ id: "fighting-style", label: "Fighting Style", renders: { pool: "fighting-style" } }] },
+          subclass: { name: "Champion (5e)", short_name: "Champion", tabs: [{ id: "champion-fighting-style", label: "Fighting Style", renders: { pool: "champion-fighting-style" } }] },
+        }],
+        pools: [
+          { id: "fighting-style", label: "Fighting Style", classIndex: 0, count: 1, anchorLevel: 1, selected: [], available: [], grants: [] },
+          { id: "champion-fighting-style", label: "Fighting Style", classIndex: 0, count: 1, anchorLevel: 10, selected: [], available: [], grants: [] },
+        ],
+      } as never,
+    };
+    const container = mountContainer();
+    new TabsContainer(mkRegistry()).render(container, dyn);
+    const pool = Array.from(container.querySelectorAll<HTMLElement>(".pc-tab-btn")).slice(4).map((b) => [b.dataset.tab, b.textContent, b.dataset.short]);
+    expect(pool).toEqual([
+      ["panel-pool-fighting-style", "Fighting Style", "Fighting Style"],
+      ["panel-pool-champion-fighting-style", "Champion Fighting Style", "Champion Fighting Style"],
+    ]);
+  });
+  it("a subclass without a short name qualifies by its full name, and a label nobody else carries is never qualified", () => {
+    const dyn: ComponentRenderContext = {
+      ...ctx,
+      resolved: {
+        classes: [{
+          entity: { name: "Fighter", tabs: [{ id: "fighting-style", label: "Fighting Style", renders: { pool: "a" } }] },
+          subclass: { name: "College of Swords (5e)", tabs: [
+            { id: "swords-style", label: "Fighting Style", renders: { pool: "b" } },
+            { id: "maneuvers", label: "Maneuvers", renders: { pool: "c" } },
+          ] },
+        }],
+        pools: ["a", "b", "c"].map((id) => ({ id, label: "x", classIndex: 0, count: 1, anchorLevel: 1, selected: [], available: [], grants: [] })),
+      } as never,
+    };
+    const container = mountContainer();
+    new TabsContainer(mkRegistry()).render(container, dyn);
+    const labels = Array.from(container.querySelectorAll(".pc-tab-btn")).map((b) => b.textContent);
+    expect(labels.slice(4)).toEqual(["Fighting Style", "College of Swords (5e) Fighting Style", "Maneuvers"]);
   });
   it("does NOT append a declared tab whose pool did not resolve", () => {
     const dyn: ComponentRenderContext = {
@@ -149,5 +217,22 @@ describe("TabsContainer", () => {
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
     expect(container.querySelector("#panel-pool-boons .pc-block.pc-boon-block")).not.toBeNull();
+  });
+  it("R4-G4 \u00a74.2.5: an authored layout beats the derived one, the derived one beats the default", () => {
+    const mk = (declared: string | undefined, derived: string | undefined) => ({
+      ...ctx, resolved: {
+        classes: [{ entity: { tabs: [{ id: "t", label: "T", renders: { pool: "p", ...(declared ? { layout: declared } : {}) } }] }, subclass: null }],
+        pools: [{ id: "p", label: "P", classIndex: 0, count: 1, anchorLevel: 2, selected: [], grants: [], available: [], ...(derived ? { layout: derived } : {}) }],
+        state: {},
+      } as never,
+    });
+    const spy = vi.spyOn(PoolTab.prototype, "render");
+    const authored = mountContainer(); new TabsContainer(mkRegistry()).render(authored, mk("blocks", "dice-pool"));
+    const derivedOnly = mountContainer(); new TabsContainer(mkRegistry()).render(derivedOnly, mk(undefined, "dice-pool"));
+    const neither = mountContainer(); new TabsContainer(mkRegistry()).render(neither, mk(undefined, undefined));
+    const layouts = spy.mock.instances.map((i) => (i as unknown as { layout: string }).layout);
+    expect(layouts).toEqual(["blocks", "dice-pool", "spell-like"]);
+    expect([authored, derivedOnly, neither].every((c) => c.querySelector("#panel-pool-t") !== null)).toBe(true);
+    spy.mockRestore();
   });
 });

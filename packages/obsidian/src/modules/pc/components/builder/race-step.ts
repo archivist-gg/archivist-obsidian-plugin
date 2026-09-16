@@ -8,6 +8,8 @@ import { stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
+import { RACE_STRUCTURAL_PSEUDO } from "@archivist-gg/dnd5e/race/race.structural";
 
 // Honest ledger columns for the race picker — size/speed exist in the entity
 // data today. Sorted by rank order (not alphabetically) and walking speed.
@@ -45,10 +47,6 @@ interface RaceData {
 
 const cap = (s: string): string => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-// Traits folded into the glance tiles (Size / Speed / Darkvision) — never shown
-// again as their own trait rows.
-const FOLDED = new Set(["size", "speed", "darkvision"]);
-
 const stripSummary = (items: DecisionItem[]): string => {
   const done = items.filter((i) => i.status === "resolved").length;
   return `${items.length} total · ${done} resolved · ${items.length - done} open`;
@@ -62,6 +60,10 @@ const stripSummary = (items: DecisionItem[]): string => {
  *  expanded row renders the same block WITHOUT the strip + Decisions tile. */
 export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const chosen = stripSlug(ctx.resolved.definition.race);
+  // The engine seeds its bare-slug index from a total order; handing it the
+  // visibility predicate makes VISIBLE entities seed first, so a hidden
+  // compendium can never shadow a visible entity that shares a bare slug.
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
   renderEntityPicker(body, ctx, {
     entityType: "race",
     stateKey: "builder.race-picker",
@@ -78,7 +80,12 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
       // composes them on the restore pass (by then it IS the chosen race).
       const isChosen = e.slug === stripSlug(ctx.resolved.definition.race);
       const d = e.data as RaceData;
-      const ledger = isChosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities }) : null;
+      const ledger = isChosen
+        ? buildDecisionLedger(ctx.resolved, {
+            registry: ctx.services.entities,
+            isEntityVisible: (en) => entityCompendiumVisible(en, hidden),
+          })
+        : null;
       const items = ledger?.origin.filter((i) => i.source.kind === "race") ?? [];
       const dv = d.vision?.darkvision;
       renderChronicleBlock(wrap, {
@@ -109,7 +116,9 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
 
 /** The "Traits" section: serif name + the COMPLETE description (smoke r6 — no
  *  first-sentence truncation or Read-full toggle; traits read in full at a glance).
- *  Size/Speed/Darkvision are folded out (they live in the glance tiles).
+ *  Size/Speed/Darkvision are folded out (they live in the glance tiles): the names come from
+ *  `RACE_STRUCTURAL_PSEUDO` (dnd5e `race/race.structural`), shared with the Passive tab's
+ *  `renderRaceBlock` since R4-G3b Task 6 retired this file's `FOLDED` literal into it.
  *
  *  Decision-bearing traits (those carrying `choices`) are EXCLUDED here (smoke r8):
  *  since round 7 they ALSO surface in the "What you decide" strip with their full
@@ -119,7 +128,7 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
  *  the `▸ decision` meta any more, so that meta is no longer rendered. */
 function renderTraits(host: HTMLElement, ctx: ComponentRenderContext, d: RaceData): void {
   const traits = (d.traits ?? [])
-    .filter((t) => !FOLDED.has(t.name.toLowerCase()))
+    .filter((t) => !RACE_STRUCTURAL_PSEUDO.has(t.name.toLowerCase()))
     .filter((t) => !t.choices?.length);
   if (!traits.length) return;
   renderSectionRule(host, "Traits", "from the species entry");

@@ -1,6 +1,6 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist-gg/core";
-import { renderSourceTag } from "./compendium-filter";
+import { renderSourceTag, sourceTagCls } from "./compendium-filter";
 import { renderEntityBlock } from "./entity-block";
 
 export interface ColSpec {
@@ -79,15 +79,21 @@ export function renderSelectionTable(
   }
 
   const host = parent.createDiv({ cls: "pc-btable-host" });
-  // The built-in Name column is the single fluid track: data columns keep
-  // their fixed widths while Name absorbs the remaining host width, so the
-  // ledger fills wide hosts (builder step bodies) and still overflows into
-  // the host's horizontal scroll in narrow ones (drawers).
+  // The built-in Name column is the single fluid track: every data column keeps a fixed width while
+  // Name absorbs the remaining host width, so the ledger fills wide hosts (builder step bodies) and
+  // still overflows into the host's horizontal scroll in narrow ones (drawers).
+  // R4 {G5, G6} live rider 4, Y2-1: the built-in Source track is a fixed width too, but a NAMED one.
+  // `110px` is the shipped value and stays the fallback, so every host that sets no property lays out
+  // byte-identically; `builder.css` sets `--pc-btable-src-track` inside `@container pc-sheet
+  // (min-width: 700px)`, which is the only place it is set today. The property is the seam because
+  // this template is an inline style and CSS cannot override one track of it: the modal tables
+  // (`decision-modal.ts`, `class-modal.ts`) portal outside the sheet, so they never match that query
+  // and keep the 110 px track X-9-5's wrap was measured in.
   const tracks = [
     ...(opts.expandSelect ? [] : ["30px"]),
     "minmax(200px, 1fr)",
     ...opts.columns.map((c) => c.width),
-    "110px",
+    "var(--pc-btable-src-track, 110px)",
   ].join(" ");
 
   const draw = (): void => {
@@ -148,6 +154,14 @@ export function renderSelectionTable(
     const nameTd = tr.createDiv({ cls: "col-name" });
     nameTd.createSpan({ cls: `pc-btable-name${isSel ? " on" : ""}`, text: e.name });
     if (opts.expandSelect && isSel) nameTd.createSpan({ cls: "pc-bname-seal", text: " ✓" });
+    // R4 {G5, G6} live rider V-9: the source, a second time, under the name. The table is
+    // `width: max-content` inside a horizontal scroller, so at the builder's narrow widths the Source
+    // column is simply off the end of it: the Species step listed every species TWICE, one row per
+    // edition, with nothing on screen telling the two apart. The span is always in the DOM and the
+    // stylesheet reveals it only at the tier where the column has gone (`builder.css`), which is why
+    // this renders unconditionally rather than measuring anything. It carries `renderSourceTag`'s own
+    // colour class, so the two editions differ in colour as well as in words.
+    nameTd.createSpan({ cls: `pc-bsrc pc-sel-src-inline ${sourceTagCls(e)}`, text: e.compendium });
     for (const c of opts.columns) c.render(tr.createDiv({ cls: c.cls }), e);
     renderSourceTag(tr.createDiv({ cls: "col-source" }), e);
 

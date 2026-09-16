@@ -1,8 +1,14 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
 
+interface ScopeEntry {
+  modifiers: unknown;
+  key: string;
+  func: () => boolean | void;
+}
 interface MockModalInstance {
   contentEl: HTMLElement;
+  scope: { keys: ScopeEntry[] };
   onOpen?: () => void;
   onClose?: () => void;
   close?: () => void;
@@ -16,10 +22,30 @@ vi.mock("obsidian", async () => {
     Modal: class {
       app: unknown;
       contentEl: HTMLElement;
+      containerEl: HTMLElement;
+      scope = {
+        keys: [] as ScopeEntry[],
+        register(mods: unknown, key: string, cb: () => boolean | void): ScopeEntry {
+          const entry: ScopeEntry = { modifiers: mods, key, func: cb };
+          this.keys.push(entry);
+          return entry;
+        },
+        unregister(h: ScopeEntry): void {
+          const i = this.keys.indexOf(h);
+          if (i >= 0) this.keys.splice(i, 1);
+        },
+      };
       constructor(app: unknown) {
         this.app = app;
+        // Mirror the native portal nesting (.modal-container > .modal >
+        // content): PaneCenteredModal measures and pads containerEl.
+        this.containerEl = document.createElement("div");
         this.contentEl = document.createElement("div");
+        this.containerEl.appendChild(this.contentEl);
         modalInstances.push(this as unknown as MockModalInstance);
+        // Seeded LAST, mirroring the native constructor: this is the FIFO-first
+        // Escape entry a modal must unregister before it can own the key.
+        this.scope.register([], "Escape", () => this.close());
       }
       open(): void { (this as unknown as MockModalInstance).onOpen?.(); }
       close(): void { (this as unknown as MockModalInstance).onClose?.(); }
@@ -230,5 +256,51 @@ describe("adjust section", () => {
     refreshCoinModal(makeCtx({ gp: 12 }, es));
     expect(boxes(el)[1]).toBe(gpB);
     expect(gpB.value).toBe("37");
+  });
+});
+
+describe("Escape ownership (4.2)", () => {
+  it("onOpen unregisters the built-in, leaving exactly one Escape handler", () => {
+    openCoinModal(makeCtx({ gp: 5 }, makeEditState()));
+    const m = lastModal();
+    expect(m.scope.keys.filter((k) => k.key === "Escape").length).toBe(1);
+  });
+
+  it("Escape cancels an active ledger inline edit and leaves the modal open", () => {
+    openCoinModal(makeCtx({ gp: 5 }, makeEditState()));
+    const m = lastModal();
+    // CHAIN, never replace: CoinModal.onClose (coin-modal.ts:86) is the only
+    // thing that nulls the module singleton `current`. Clobbering it leaks
+    // `current` into the next test, where openCoinModal takes the
+    // `if (current) { updateContext(ctx); return; }` branch (coin-modal.ts:20),
+    // pushes no new instance, and lastModal() returns undefined.
+    let closed = false;
+    const orig = m.onClose;
+    m.onClose = () => { closed = true; orig?.call(m); };
+
+    const val = m.contentEl.querySelector<HTMLElement>(".pc-coin-lrow-val")!;
+    val.click();
+    expect(m.contentEl.querySelector("input.pc-edit-inline")).toBeTruthy();
+
+    const esc = m.scope.keys.find((k) => k.key === "Escape")!;
+    expect(esc.func()).toBe(false);
+    expect(m.contentEl.querySelector("input.pc-edit-inline")).toBeFalsy();
+    expect(closed).toBe(false);
+  });
+
+  it("Escape with no active inline edit closes the modal", () => {
+    openCoinModal(makeCtx({ gp: 5 }, makeEditState()));
+    const m = lastModal();
+    // CHAIN, never replace: CoinModal.onClose (coin-modal.ts:86) is the only
+    // thing that nulls the module singleton `current`. Clobbering it leaks
+    // `current` into the next test, where openCoinModal takes the
+    // `if (current) { updateContext(ctx); return; }` branch (coin-modal.ts:20),
+    // pushes no new instance, and lastModal() returns undefined.
+    let closed = false;
+    const orig = m.onClose;
+    m.onClose = () => { closed = true; orig?.call(m); };
+    const esc = m.scope.keys.find((k) => k.key === "Escape")!;
+    expect(esc.func()).toBe(false);
+    expect(closed).toBe(true);
   });
 });

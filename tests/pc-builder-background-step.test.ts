@@ -24,7 +24,11 @@ const ACOLYTE_2024_DATA = {
   name: "Acolyte",
   skill_proficiencies: ["insight", "religion"],
   tool_proficiencies: [{ kind: "fixed", items: ["calligrapher's-supplies"] }],
-  language_proficiencies: [],
+  // Refreshed (R4-P3b §16.4) to the live `SRD 2024/Backgrounds/Acolyte.md`: the
+  // fixed `common` grant AND the language choice, which every 2024 SRD background
+  // carries as a `select-proficiency` in `choices[]`. The stale `[]` + no choice
+  // meant the Languages glance tile never rendered for a 2024 background here.
+  language_proficiencies: [{ kind: "fixed", languages: ["common"] }],
   equipment: [
     { kind: "fixed", grants: [{ item: "holy-symbol", qty: 1 }, { item: "parchment", qty: 10 }] },
     { kind: "gold", amount: 8 },
@@ -32,7 +36,10 @@ const ACOLYTE_2024_DATA = {
   feature: { name: "Background Feature", description: "(No description provided.)" },
   ability_score_increases: { pool: ["int", "wis", "cha"] },
   origin_feat: "[[SRD 2024/Feats/Alert]]",
-  choices: [{ kind: "ability-points", id: "abilities", points: 3, max_per: 2, pool: ["int", "wis", "cha"] }],
+  choices: [
+    { kind: "ability-points", id: "abilities", points: 3, max_per: 2, pool: ["int", "wis", "cha"] },
+    { kind: "select-proficiency", id: "languages", count: 2, domain: "language" },
+  ],
 };
 
 // SAGE_2014: a 2014 background carrying FIXED languages (the real normalizer
@@ -117,6 +124,10 @@ function mkCtx(over: {
   resolvedBackground?: unknown;
   race?: unknown;
   editState?: unknown;
+  /** Overrides the picker pool. The default four-row BACKGROUNDS is what the row-count
+   *  assertions above measure, so a case needing its own background supplies it here
+   *  rather than growing the shared list. */
+  backgrounds?: RegisteredEntity[];
 } = {}): ComponentRenderContext {
   const builderUiState = new Map<string, unknown>();
   const chosenSlug = over.background ? over.background.replace(/\[\[|\]\]/g, "") : null;
@@ -137,7 +148,7 @@ function mkCtx(over: {
       plugin: {},
       entities: {
         search: (_q: string, type: string) =>
-          type === "background" ? BACKGROUNDS : type === "feat" ? [ALERT_FEAT] : [],
+          type === "background" ? (over.backgrounds ?? BACKGROUNDS) : type === "feat" ? [ALERT_FEAT] : [],
         getByTypeAndSlug: () => undefined,
       },
       compendiums: {
@@ -250,8 +261,14 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     // F13 guard: for the CHOSEN background the resolver pipeline now owns the
     // origin feat (real Feats row + the strip reference below name it), so the
     // redundant "Origin Feat" glance TILE is suppressed — no double-render.
+    // "Languages" joined the set when the fixture was refreshed to the live note
+    // (R4-P3b §16.4): the 2024 Acolyte grants a fixed `common` AND a language
+    // choice, so the Languages glance tile now has something to show.
     expect([...block.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent)).toEqual(
-      ["Skills", "Tool", "Ability Points"]);
+      ["Skills", "Tool", "Languages", "Ability Points"]);
+    const langTile = [...block.querySelectorAll(".pc-cb-tile")].find(
+      (t) => t.querySelector(".pc-cb-tl")!.textContent === "Languages")!;
+    expect(langTile.querySelector(".pc-cb-tv")!.textContent).toBe("Common, choose 2");
     expect(block.querySelector(".pc-dstrip")).not.toBeNull();
     const info = block.querySelector(".pc-dstrip-row.info")!;
     // The row is a lightweight NAME reference — the feat name, no "▸" expand affordance.
@@ -389,5 +406,167 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     expect(langTile, "2024 branch must render a Languages glance tile").not.toBeUndefined();
     // COMBINE fixed Common with the unresolved "choose 2" — joined with ", " (no em dash).
     expect(langTile!.querySelector(".pc-cb-tv")!.textContent).toBe("Common, choose 2");
+  });
+});
+
+// R4-G1a D5 / G9: the converter's passthrough grant keys reach the Equipment line.
+// A 2024 Acolyte whose fixed entry carries both attested item shapes: a
+// `display_name` override, and an undecorated slug beside a `contains_value`.
+const PASSTHROUGH_ROW: RegisteredEntity = {
+  slug: "srd-2024_acolyte", name: "Acolyte", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024",
+  data: {
+    ...ACOLYTE_2024_DATA,
+    equipment: [{ kind: "fixed", grants: [
+      { item: "holy-symbol", display_name: "holy symbol (a gift to you when you entered the priesthood)" },
+      { item: "pouch", contains_value: 1500 },
+    ] }],
+  },
+} as unknown as RegisteredEntity;
+
+// The same background with a raw-cast fixed entry that carries no grants array at all.
+const NO_GRANTS_ROW: RegisteredEntity = {
+  ...PASSTHROUGH_ROW,
+  data: { ...ACOLYTE_2024_DATA, equipment: [{ kind: "fixed" } as never] },
+} as unknown as RegisteredEntity;
+
+describe("renderBackgroundStep · the fixed entry's Equipment text (R4-G1a D5, G9)", () => {
+  const mount = (row: RegisteredEntity) => {
+    const c = mountContainer();
+    const ctx = mkCtx({
+      background: "[[srd-2024_acolyte]]", resolvedBackground: resolvedAcolyte2024, backgrounds: [row],
+    });
+    return { c, ctx };
+  };
+
+  it("prefers display_name and still humanizes the undecorated slug beside it", () => {
+    const { c, ctx } = mount(PASSTHROUGH_ROW);
+    renderBackgroundStep(c, ctx);
+    expect(c.textContent).toContain("holy symbol (a gift to you when you entered the priesthood)");
+    // The undecorated item arm humanizes its slug, so the rendered token is "Pouch".
+    expect(c.textContent).toContain("Pouch");
+  });
+
+  it("a fixed entry with no grants array renders with no throw and no Equipment line", () => {
+    const { c, ctx } = mount(NO_GRANTS_ROW);
+    expect(() => renderBackgroundStep(c, ctx)).not.toThrow();
+    expect(c.textContent).not.toContain("Equipment");
+  });
+});
+
+// R4-G3b §10 (Task 11): the chosen background's entity data carries the
+// converter's `tables`; the step renders each one its feature description does
+// not embed (Task 15c) under its own section rule, inside a `.pc-cb-trait-d`
+// host so the chronicle cast-table dress applies. CRIMINAL_TABLES_DATA carries no
+// feature, so nothing is filtered here. Its own one-row picker pool leaves the
+// shared BACKGROUNDS list (and the row-count assertions that measure it)
+// untouched.
+const CRIMINAL_TABLES_DATA = {
+  ...CRIMINAL_2024_DATA,
+  tables: [
+    { name: "Origin", dice: "d8", rows: Array.from({ length: 8 }, (_, i) => ({ roll: String(i + 1), text: `Origin ${i + 1}` })) },
+    { name: "Specialty", dice: "d8", rows: [...Array.from({ length: 7 }, (_, i) => ({ roll: String(i + 1), text: `S${i + 1}` })), { roll: "2-3", text: "Ranged" }] },
+  ],
+};
+
+const CRIMINAL_TABLES_ROW: RegisteredEntity = {
+  slug: "srd-2024_criminal", name: "Criminal", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024", data: CRIMINAL_TABLES_DATA,
+} as unknown as RegisteredEntity;
+
+describe("renderBackgroundStep · background tables (R4-G3b §10)", () => {
+  it("a chosen background carrying `tables` renders each one the feature description does not embed under its own section rule", () => {
+    const c = mountContainer();
+    const ctx = mkCtx({
+      background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal, backgrounds: [CRIMINAL_TABLES_ROW],
+    });
+    renderBackgroundStep(c, ctx);
+    // RED FIRST before Task 11 (df04139a): the step rendered no table, so this
+    // read 0. CRIMINAL_2024_DATA carries no `feature`, so the only
+    // `.pc-cb-trait-d` hosts on this block are the two table hosts.
+    expect(c.querySelectorAll(".pc-cb-trait-d table")).toHaveLength(2);
+    expect(c.querySelectorAll(".pc-cb-trait-d tbody tr")).toHaveLength(16);
+    expect(Array.from(c.querySelectorAll(".pc-cb-sec-l")).map((s) => s.textContent)).toContain("Origin");
+    expect(Array.from(c.querySelectorAll(".pc-cb-trait-d tbody tr td:first-child")).map((t) => t.textContent)).toContain("2-3");
+  });
+});
+
+// R4-G3b Task 15c (rider, second arm): the step renders the 2014 feature's
+// description through the shared markdown path (renderGearProps), so a roll table
+// embedded there became a real table on the step AND rendered again as a
+// structured `tables:` entry. 4 of the corpus's 88 tables are in that shape
+// (Astral Drifter, GGtR Dimir Operative, GGtR Rakdos Cultist, SCAG Inheritor).
+// The step filters against the FEATURE description only: renderChronicleBlock
+// passes the background description to `.pc-cb-flavor` as plain `text:`, so the
+// step never had a description-side copy to dedupe (pinned by the control below).
+const RAKDOS_FEATURE_DESC = [
+  "As a member of the Rakdos, you have a role in the show.",
+  "",
+  "| d8 | Type of Performer |",
+  "| --- | --- |",
+  "| 1 | Spikewheel acrobat |",
+].join("\n");
+
+const RAKDOS_TABLES_DATA = {
+  ...CRIMINAL_2024_DATA,
+  feature: { name: "Fearsome Reputation", description: RAKDOS_FEATURE_DESC },
+  tables: [
+    { name: "Type of Performer", dice: "d8", rows: [{ roll: "1", text: "Spikewheel acrobat" }] },
+    { name: "Contact", dice: "d10", rows: [{ roll: "1", text: "A rival performer you admire." }] },
+  ],
+};
+
+const RAKDOS_TABLES_ROW: RegisteredEntity = {
+  slug: "srd-2024_criminal", name: "Criminal", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024", data: RAKDOS_TABLES_DATA,
+} as unknown as RegisteredEntity;
+
+const SCAM_FLAVOR_DATA = {
+  ...CRIMINAL_2024_DATA,
+  description: [
+    "You have always had a way with people.",
+    "",
+    "| d6 | Scam |",
+    "| --- | --- |",
+    "| 1 | I cheat at games of chance. |",
+  ].join("\n"),
+  tables: [{ name: "Scam", dice: "d6", rows: [{ roll: "1", text: "I cheat at games of chance." }] }],
+};
+
+const SCAM_FLAVOR_ROW: RegisteredEntity = {
+  slug: "srd-2024_criminal", name: "Criminal", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024", data: SCAM_FLAVOR_DATA,
+} as unknown as RegisteredEntity;
+
+describe("renderBackgroundStep · background tables the feature description embeds (R4-G3b Task 15c)", () => {
+  it("a table the FEATURE description embeds gets no section rule and no host; the one it omits keeps both", () => {
+    const c = mountContainer();
+    const ctx = mkCtx({
+      background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal, backgrounds: [RAKDOS_TABLES_ROW],
+    });
+    renderBackgroundStep(c, ctx);
+    // RED FIRST at 27875c5d: the step rendered a structured table for BOTH
+    // entries beside the feature description's own copy of Type of Performer, so
+    // this read 2. The feature's own `.pc-cb-trait-d` host holds no <table>: the
+    // jsdom obsidian mock renders markdown as textContent.
+    expect(c.querySelectorAll(".pc-cb-trait-d table")).toHaveLength(1);
+    const rules = Array.from(c.querySelectorAll(".pc-cb-sec-l")).map((s) => s.textContent);
+    expect(rules).not.toContain("Type of Performer");
+    expect(rules).toContain("Contact");
+    expect(Array.from(c.querySelectorAll(".pc-cb-trait-d th")).map((t) => t.textContent)).toEqual(["d10", "Contact"]);
+  });
+
+  it("the control: a table the background DESCRIPTION embeds still renders on the step, because the flavor is plain text", () => {
+    const c = mountContainer();
+    const ctx = mkCtx({
+      background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal, backgrounds: [SCAM_FLAVOR_ROW],
+    });
+    renderBackgroundStep(c, ctx);
+    expect(Array.from(c.querySelectorAll(".pc-cb-sec-l")).map((s) => s.textContent)).toContain("Scam");
+    expect(c.querySelectorAll(".pc-cb-trait-d table")).toHaveLength(1);
+    // The premise, pinned: the description reaches the step as TEXT, bars and all,
+    // so it never becomes a second copy of the table.
+    expect(c.querySelector(".pc-cb-flavor")?.textContent).toContain("| d6 | Scam |");
+    expect(c.querySelector(".pc-cb-flavor table")).toBeNull();
   });
 });

@@ -1,0 +1,2626 @@
+{
+ "SRD 5e/Monsters/Aboleth.md": {
+  "c1": "2e603845a499321b779c7e40cd69d73bb6559479b6214e9b073c6415782f4d20",
+  "c2": "61207d8e061c7d31f61ba74f4a2963569f79e1dae9590e0fbe5600e4efb30ed0"
+ },
+ "SRD 5e/Monsters/Acolyte.md": {
+  "c1": "28346870cb3f620055dbdfb848c45a59a7aa4bc57c01a1944664fd1e59021bb7",
+  "c2": "49d3083c5acae61b5dc4cfbd30f587ce19204a6cbb44f5acb8cf5406b1780986"
+ },
+ "SRD 5e/Monsters/Adult Black Dragon.md": {
+  "c1": "177aaeac5b3485e9847428fb5af8f1f0401e9ef11baa320a940c9b4dd6e2cc7c",
+  "c2": "56eb7196ff954ad02e81fa0ddc277334c36608217953c5ee4e3218aa99869d94"
+ },
+ "SRD 5e/Monsters/Adult Blue Dragon.md": {
+  "c1": "ac1b74a68124bb007e2c70161a061ca178e14e98626c5c1caa0545da920fc53f",
+  "c2": "a89021c37320b74d15bb1a8d9b3bfbe6b414d1e1fcf7d7227234f7d0249b8a99"
+ },
+ "SRD 5e/Monsters/Adult Brass Dragon.md": {
+  "c1": "b2d11f096b92f41be36efdf900d86972367a73e14069d219768175e6868c8578",
+  "c2": "4a00fea35fa0cccd418fd51b62d7d22a0b11c794db422637063b873c62b35f12"
+ },
+ "SRD 5e/Monsters/Adult Bronze Dragon.md": {
+  "c1": "38a6fb4e4caea66469ecaa1fba3946cc2d01f9af7171d0db53d406d63d9b56f6",
+  "c2": "c2f411d0bbc8a29e1bf171e9b3ca7154612be61ebed77c871b0d474041de9e36"
+ },
+ "SRD 5e/Monsters/Adult Copper Dragon.md": {
+  "c1": "ef3566d855b0cc6ce63c23f3e21a9e8a0cfd08ae6a1f363ae118f8378a1ac7c4",
+  "c2": "04d646fee2197ffad42c36c512cb0ae491923630ed034044bcacca539df0358e"
+ },
+ "SRD 5e/Monsters/Adult Gold Dragon.md": {
+  "c1": "6be6f6ca07c2e92f28b311d33c6cb3c97a2341b4351c2282b4b59ec46719c07e",
+  "c2": "95245af37943d73c1d8e0163596160bf22d7185bcc541c89eb280430b7c40351"
+ },
+ "SRD 5e/Monsters/Adult Green Dragon.md": {
+  "c1": "e8202b0df0ba986cea85abb27db4da721ad6ad29df0c86ea0881622132ce2eb9",
+  "c2": "dc787d493c4e120af2a58b6fee9b0b976965c6234c5f2512279a018ef613220e"
+ },
+ "SRD 5e/Monsters/Adult Red Dragon.md": {
+  "c1": "71a4332de7c4e387dcd493c03d9d5834fd790d810544697abada6ca57cff07c2",
+  "c2": "459c6ae8d17862c574ae2bb880dc64fcc0b4c5c55433d4a35198077431d73177"
+ },
+ "SRD 5e/Monsters/Adult Silver Dragon.md": {
+  "c1": "e1a0ba1fca9f7a63263f92917e8c44713a9922f77ee69696f76f2567c6bc20d2",
+  "c2": "c0545858e278588514ccc04aa3c84c4db08d1a76ef4d3c29481d27e0070faba2"
+ },
+ "SRD 5e/Monsters/Adult White Dragon.md": {
+  "c1": "87a67bda293e847426eeb2f2b2420a294a954400e157738b1da614ec0ec94e4a",
+  "c2": "a50ebc9d70a4d6c53cc25c6d43c44d1cba14c282188b55e2796242c919551ff2"
+ },
+ "SRD 5e/Monsters/Air Elemental.md": {
+  "c1": "b3c1668e86fca103fb4f4957b8f8162e7d0fd6d2bb59440391678466b705a48a",
+  "c2": "7adb2f3e5b74c3d66f119afdde5e3f5ad5708a18d37f0eafe33932ede85b9f94"
+ },
+ "SRD 5e/Monsters/Ancient Black Dragon.md": {
+  "c1": "c291301fa01cb5c995bf5bfc1dcf5d14a4408f7ff45b6752b5ceb2da2235a72f",
+  "c2": "445b00337311f2db246417318ce485c76ab23e55c534ce431584487bb7414586"
+ },
+ "SRD 5e/Monsters/Ancient Blue Dragon.md": {
+  "c1": "dbf4cdc42f1f0dbdd0402aa086989c8220cdbdcad5ad804c098c06ab34030cf8",
+  "c2": "8aef4f2f86af81e97a028955b6d1b36a9713b4749f66de1f4f0716f10521975a"
+ },
+ "SRD 5e/Monsters/Ancient Brass Dragon.md": {
+  "c1": "7e67fd536e3eaa7f9b9f90f06c3df78c9b51da908a3825d4e30fd196ecca808b",
+  "c2": "4f0ed0aac3655c3d82caadfa49e49800d173a9f47de9a5c2137b99bebb6e2792"
+ },
+ "SRD 5e/Monsters/Ancient Bronze Dragon.md": {
+  "c1": "2678ea2c304eb11df96e1dbeec06a75b73e9837d6bc7ec4712af563a16b7cd06",
+  "c2": "3d72744d277856852e9b74177ee2381e2473f36a2ea2dee418269cdc609b75b9"
+ },
+ "SRD 5e/Monsters/Ancient Copper Dragon.md": {
+  "c1": "de1aad32876114d3ba6fdb9b18f2afeaea4ef2937ae3526e89f62e450c1fed27",
+  "c2": "fe45506cdd1287d15756799e77c62822ecd6e46b46c1aa4fcb06b69561384d82"
+ },
+ "SRD 5e/Monsters/Ancient Gold Dragon.md": {
+  "c1": "eef7d5b1f88630b08fb7f0a45fea43d986d93366d1f151141cb77e0cb5c945d5",
+  "c2": "e7e3ef72b85aae20ab2f0c9e8846f9fb91ee865c52df3160b6ddf0eeaabdf922"
+ },
+ "SRD 5e/Monsters/Ancient Green Dragon.md": {
+  "c1": "e04a036b16a0d0adada66d50fb4b58b5076784911d2561221bcd3eca1f8218e5",
+  "c2": "70756f2659d2f93166ba623421a8876cdf639249d3ae49e1465b517480d7d8b6"
+ },
+ "SRD 5e/Monsters/Ancient Red Dragon.md": {
+  "c1": "3e9a571830671d27bfaef26120075f54c0607dc9a115a74fcc4af3830213a8ee",
+  "c2": "2ac3845a77031b521e2c5b53cc16b32e4d1d0e7c4b6a402024d3bb2c0439cbf6"
+ },
+ "SRD 5e/Monsters/Ancient Silver Dragon.md": {
+  "c1": "bb1d9269a44ff7d7a6fd3605d17820a12143d4ccbfec35e191f9635c3f541cfd",
+  "c2": "683d9c4516604a2045864183df22a4d417e129bc546fcf37cec1f7c7ef6115ad"
+ },
+ "SRD 5e/Monsters/Ancient White Dragon.md": {
+  "c1": "e1723dcdf9067eb84b900d9317e295ef6fa215ea276107fc3a59a19ad830d7b7",
+  "c2": "f3981f60117866064f2de164448ffc243e613f2373400f595c73fae3fcb8059a"
+ },
+ "SRD 5e/Monsters/Androsphinx.md": {
+  "c1": "50224a9b8b184d4b69a1175b425bff666b8847038416e78fa2a2c07aca128a3b",
+  "c2": "f4532978de86755e29dbbd47b86a23d82d9e4c251a9f2dd975a5545e599d411f"
+ },
+ "SRD 5e/Monsters/Animated Armor.md": {
+  "c1": "10b8925eb6696ece1967c9b00f4d4a673a2f76250f5f0fcf588e690b7e9ddf01",
+  "c2": "45fd8b2bb203d6c25062bd95903cf5d367e727c43c12d4b3e5fb0cf61a817790"
+ },
+ "SRD 5e/Monsters/Ankheg.md": {
+  "c1": "d3e0607d13f2a6ca9a1ac6427042e6fb4281d526754347d0898ada903f8f8de2",
+  "c2": "ce20b417a02f6e2f9c97b96355822061aa310a62f76d3bb8b21ecca5ed125c40"
+ },
+ "SRD 5e/Monsters/Ape.md": {
+  "c1": "510beec586ec3808e5aa2ff423c79acd8fddc76cd76ea5ae13a444b6e1ed4b41",
+  "c2": "509cc22d4e6a3feb146febe491868eeeff867f829181aba11b7e3460b4224b7e"
+ },
+ "SRD 5e/Monsters/Archmage.md": {
+  "c1": "08bcce835c88a0c871528515b14b7bcdfd45dec1e6761cdb537ee6c0e0337eb1",
+  "c2": "06a4567c42750108c8347339c781c9b09eebdcfa56e78da01468037b16a3ac57"
+ },
+ "SRD 5e/Monsters/Assassin.md": {
+  "c1": "c24bd55cb17eca253e6551dfa982f7ba4da83a88253f068b500a655e17b15f4d",
+  "c2": "94267a650ed057dde2a0cb405021700d1be46d28830f144c113424b99b419027"
+ },
+ "SRD 5e/Monsters/Awakened Shrub.md": {
+  "c1": "e64ab08515216f719f10ecfcd28044e6b4dd80d10931e03b43dbb283ed7c19ee",
+  "c2": "dc15d35fc02682efaade620c61d5bed88ae9bc4e21e705b1c16c150e797adfcc"
+ },
+ "SRD 5e/Monsters/Awakened Tree.md": {
+  "c1": "959a2f4072efec73044fa0941402bc1c83902f6d2150f1ffd4fc1bedb5691bdb",
+  "c2": "590fab73eaf45d205f6e09e8cd77fbf136cac6ca156beef0c9d2eba3655f3d09"
+ },
+ "SRD 5e/Monsters/Axe Beak.md": {
+  "c1": "c3784ab09d83c5199e89b7500436bdd3125d73b68225108a2a28d3b5b4c38ce3",
+  "c2": "afe0283c0cceecf21198661e77273ae9b0e4a708af31da541d00aaaa18543a83"
+ },
+ "SRD 5e/Monsters/Azer.md": {
+  "c1": "7b701858bc63950bade6d039f6e02595f3c4c13e448c7cc8fb480d38e5396398",
+  "c2": "c3fbb90ce03ac3419d551b5fbae8213d51aa17252b01f5da5030c0b11e1bb243"
+ },
+ "SRD 5e/Monsters/Baboon.md": {
+  "c1": "c1dea3de40661b43ea741c8797ff40c6d0c789032af05ccf13623b9079979d34",
+  "c2": "b317a61ba36c63e2eefd7e4f8ad4b22f1365bd92ca5231238385b337af8d836a"
+ },
+ "SRD 5e/Monsters/Badger.md": {
+  "c1": "05ee8c8e9b5ae19b5858119ed97c43a3e52883a2a62c14a5309a3db20a46fe98",
+  "c2": "3ea9936580449f3f9c2673c13248e16955b81b668f6f34acb393d666ffd1abfd"
+ },
+ "SRD 5e/Monsters/Balor.md": {
+  "c1": "75d513bfe7d22d8d82dedf2c2ae52c31da3cc98fc33a143ee5413f4d0a8b2e66",
+  "c2": "62c4adb3d1d3aadad159a7caeea9ef9daef3db0e2b03a0a25a741c26e6187431"
+ },
+ "SRD 5e/Monsters/Bandit Captain.md": {
+  "c1": "028398c0fcdcd2b8e836e9a07a2f9e63322f187ceec99238eadd754e6b3a22da",
+  "c2": "866bf4b6633941cf2233c2a8432cca9ec274803b6024fb92bd6f38a337eaf0ca"
+ },
+ "SRD 5e/Monsters/Bandit.md": {
+  "c1": "6a431b17a06465d49ccb1bea2ce5f3dfcbae5a62aa9cf906bab9acccdfb78840",
+  "c2": "9d283a5bf1c0a610026f3008f3eab8b7f2516919eeeb2fe672945315fbfe84fc"
+ },
+ "SRD 5e/Monsters/Barbed Devil.md": {
+  "c1": "c9f5e5555cfb1967c24d2909eaf7cd13ef45f4ba076395c274e3cdeaaeb00d2a",
+  "c2": "99f1000fdef65f0df9db7514124890877b7a4350bde4b57d110c099b5b4f6fc5"
+ },
+ "SRD 5e/Monsters/Basilisk.md": {
+  "c1": "3560ec76877937ff361f045c963b54ddfd7eef1bc998ea63b24a599b2436ea55",
+  "c2": "37deb256060be7e186a9dffdc356d36a23c5de10257b633f897179acba7824f9"
+ },
+ "SRD 5e/Monsters/Bat.md": {
+  "c1": "8cb2f1e39051ca15584684326c0b64ae63fb16512ab90de4085ff3967c33cbcc",
+  "c2": "9737bcb6778a6ad08bf3f1959cdba2ac3be338cfae2cdbacf99367ca9f417e99"
+ },
+ "SRD 5e/Monsters/Bearded Devil.md": {
+  "c1": "d281beee425c2a13b1da7ba4d076f8b0079cfe3e09d1a7738b3bd2c2e556c019",
+  "c2": "e95d77ad4fdf405efc84f7153efad72138a62fd0df0f82ec43cfcdd052f6a175"
+ },
+ "SRD 5e/Monsters/Behir.md": {
+  "c1": "77cdb2ef7ecc2c9276ccad0475b180bc3ecbd6f79e6f489e4eaee3774674424a",
+  "c2": "288396d5474b5ae9075c074460ca64950702bf57c3bfcb81ceb379b3700840e6"
+ },
+ "SRD 5e/Monsters/Berserker.md": {
+  "c1": "2ba96c5a12e3509a5793174ee87bb250ddd4940c1bc5fb4d47948f32a74b929b",
+  "c2": "b836f1f0db611af403ebd6ceb3aad84c7b9aeaa52b4ac1a8ad0e4d611dd1248d"
+ },
+ "SRD 5e/Monsters/Black Bear.md": {
+  "c1": "68329c6be20eea2622a38c3c7293cc25692bcfbd67e6e713ef3f26d7cc8aca09",
+  "c2": "46a4b09b320d4f30aaa76a816716b4ba68064eb64b70ad0f7e45de142928b733"
+ },
+ "SRD 5e/Monsters/Black Dragon Wyrmling.md": {
+  "c1": "5a6bf079ca9d55abd9592cdd13be960816543a37e237ee90a86ce56a68490bf2",
+  "c2": "83e764d8ecf5ff12e212ec7491a227f6b15f813c2edab513cb018a469029f4ae"
+ },
+ "SRD 5e/Monsters/Black Pudding.md": {
+  "c1": "89d732913d03ef29bcb355ef6769a6c24746dee7fe0f51cb46d3920eb2e68127",
+  "c2": "b896c1972dd2d2ff96e87474c50774cec592a55609858c55e3caf096c02589c3"
+ },
+ "SRD 5e/Monsters/Blink Dog.md": {
+  "c1": "77206a0dbecc6df56987985f4f85fa892aac708b50c8a2773fd7b677914ead74",
+  "c2": "cd45ec405af79429bb6297f933eaf8311b5dd79281f7b00e13bfd390b240285e"
+ },
+ "SRD 5e/Monsters/Blood Hawk.md": {
+  "c1": "f81036ce6659d5e5eaf376fb7ee2c50175a145a96bb652ee5e453d118aa071bb",
+  "c2": "7846d40d21d6aad275a1da4ca17ee9129dc4036b7d02ad6c0ed1cc1e52dd7550"
+ },
+ "SRD 5e/Monsters/Blue Dragon Wyrmling.md": {
+  "c1": "0b3452fac28df13f7cfd71423ed2ca842fa5ffb99410e13f337f451ab094fb01",
+  "c2": "0d676cda5dd8a3ed8093f45d180ed97a9236ba7410669e00aa1586d1f356aa54"
+ },
+ "SRD 5e/Monsters/Boar.md": {
+  "c1": "ddf382182c1719c792f832d26e7123932f6ca0562c5120888e5205247cbf146e",
+  "c2": "55438dd256f942fc636a54cda1ff2212cc7df69d157d3d04f808728168ed0626"
+ },
+ "SRD 5e/Monsters/Bone Devil.md": {
+  "c1": "36551c5e923e7b7cca9197b599707446490b4ca6c36b5a22180f5eee7671301f",
+  "c2": "890c16da19865fe5e51360e26510ee93c90d002af63693359c59d397754ac109"
+ },
+ "SRD 5e/Monsters/Brass Dragon Wyrmling.md": {
+  "c1": "1d8ad58f19c878cb2558d01e233cd4cf562d8c36932b6b44f5257fa3794ab7b2",
+  "c2": "d86145564033ca7c13f7ef51c57b1db93f3db2bf99bc516ea2c991211a6c5fbf"
+ },
+ "SRD 5e/Monsters/Bronze Dragon Wyrmling.md": {
+  "c1": "3781dbe18750b00009175ec1adafcee03616dfa590015be3ad1c00f351607ebf",
+  "c2": "6076038005436eb2edca990db861923156d272002e003b8d5ff3f690c35d30cc"
+ },
+ "SRD 5e/Monsters/Brown Bear.md": {
+  "c1": "4b8cff2307ea57abb1d13a8c2da11985adf162beb67837522556f274289f926e",
+  "c2": "cae6731e1972ccb425f625eb3cc1e4f8d7f170736f72ad03acc1e7a8a536658b"
+ },
+ "SRD 5e/Monsters/Bugbear.md": {
+  "c1": "e9dfe18c39861589e11d6a98c1562bca6a4b2b67f00d9052bcce52edccdc9f21",
+  "c2": "a1abc793e1388a0b9887353d911ef0c23016725d627c1c883d436bdee0256114"
+ },
+ "SRD 5e/Monsters/Bulette.md": {
+  "c1": "70d2cfe83833b4b12bf8b09d0d15ef71cead2ae7a19e07ef0460c96de3e2c7e4",
+  "c2": "e6dd0db5658568f8e403e80cd909da272b37ffee455004186f47abf559453ff2"
+ },
+ "SRD 5e/Monsters/Camel.md": {
+  "c1": "05846e009cea1ec34dcbb22363c856fcdb188e3b10446e1a4ead2a7f054a3986",
+  "c2": "c57b55f90228d33dda0f5bf57720ae8e4aa4888a03c78363ee7cf6bfecbf51d9"
+ },
+ "SRD 5e/Monsters/Cat.md": {
+  "c1": "a2b98f73d1ba4c07f77c9ba212c9426218f14b70b41fc45b1377829371dbd66d",
+  "c2": "6c2fd60d8ae18230e0b30a262b7baf18d7eee0a1485f025a77656e0707e4a3f6"
+ },
+ "SRD 5e/Monsters/Centaur.md": {
+  "c1": "7697d7f95b638ecde928aa59536758b00f872e73780bf3dc0b4893a7cd9666b7",
+  "c2": "af39d2d3824eed4ee683a416ad2d70a593d5564b4a4d338e5c5d653ee58a06b4"
+ },
+ "SRD 5e/Monsters/Chain Devil.md": {
+  "c1": "a2f88850432faea82d591d5df98ad1a71230cb7b89083dad67fc41c738247cd3",
+  "c2": "a75c01fb15d410c487dff084c44130cc3dcd74d3b06d54f4a7055474d2549466"
+ },
+ "SRD 5e/Monsters/Chimera.md": {
+  "c1": "26e8f4023c5864cc5e66cb2520cdcee21a09343ce4f40f53d3a566e90899ad02",
+  "c2": "805b187b4357972726f8b47e151258337e58a16dfac729786550ca6622d9fe9d"
+ },
+ "SRD 5e/Monsters/Chuul.md": {
+  "c1": "d8858440c94dd95c519bb902a7841736efef84ca67e4e905a305f6bbaa4f4012",
+  "c2": "a814e6a596579f5fdf2b814c80b4e657fe23f3a32a68f7cdf44c9939511d7ab7"
+ },
+ "SRD 5e/Monsters/Clay Golem.md": {
+  "c1": "aa77c2ac915f51fad8c477e6976142d7fc5cd388c3feefc3457fa9c9d8435fca",
+  "c2": "e6139ce770485f18ca8e006eb887cc5cdc94a6d61a507f546002922c48b437f9"
+ },
+ "SRD 5e/Monsters/Cloaker.md": {
+  "c1": "e4efd27585b49148726b1cf69630abacd63ace3cb932fbd2a365191fd61410db",
+  "c2": "0dd2be823d1215b7bfe906c4a35ea1a58516f0d79959ad2db9ee774e8a39f315"
+ },
+ "SRD 5e/Monsters/Cloud Giant.md": {
+  "c1": "311a7d7466764a21dfbbfda4ee25aa0627f228bc139085480afbd38eee470b06",
+  "c2": "0f1c740fd7e6d093209717e0e1e593274332914eac73c35742457a8f13878b22"
+ },
+ "SRD 5e/Monsters/Cockatrice.md": {
+  "c1": "eac0c7a933385bf75cf828f13abd98f739e9980281b9de0758a049450564603f",
+  "c2": "a87b8d771ff63f02e7c86159a318cc40c9ca0d696a72caa516d495871f976a77"
+ },
+ "SRD 5e/Monsters/Commoner.md": {
+  "c1": "f5b863c610edd4ac207fc90e0e485b9c623dc1982413add23b310961eead0172",
+  "c2": "ecb4dbf5895a37bea8df0615626c0e9e8ff7a5e59c01914d2cd20502c29e9460"
+ },
+ "SRD 5e/Monsters/Constrictor Snake.md": {
+  "c1": "5aaa0a206aa64fd21e64c3a30ef02b968d75e654b269405108432e5b24119c37",
+  "c2": "6983fe3417180045f32b8fe5532158883e4bfe2607c3728baec1caa1132ad60d"
+ },
+ "SRD 5e/Monsters/Copper Dragon Wyrmling.md": {
+  "c1": "907111ff108373516008d95e4a84395258e4c0cc716f6a5483fa50cb202178cb",
+  "c2": "57c486fea5a1b8a5d7c45b6e1a77120f661009d85081a3a7d3444a09e19c1210"
+ },
+ "SRD 5e/Monsters/Couatl.md": {
+  "c1": "4438befe496c72ba2c31ba2874be2eb5d2590cb9abbbaa2fbd90635607349f4c",
+  "c2": "e0b25bc9f18bfc54c1daf792b798beb011f31b2b89f1983932ec6f84b0bf0b38"
+ },
+ "SRD 5e/Monsters/Crab.md": {
+  "c1": "7e3fd2aed08935f4a92cd73b39e01755abfaf0dc729f5d94d3e8d97e2ee1c2d6",
+  "c2": "fec506dc25add7a3b9d42276536164554589afe004f82790e5972040550f5e9e"
+ },
+ "SRD 5e/Monsters/Crocodile.md": {
+  "c1": "5fb1805a8183af830282fea8610381ff412addec62833f14ea039e0792ed03d7",
+  "c2": "deba859e027dbc4ffc7251043cdca4e699ef2195c99cb0b95cf2634d4b48cd66"
+ },
+ "SRD 5e/Monsters/Cult Fanatic.md": {
+  "c1": "49791ee605eceb56712433c592b6cf45360447a7e518b2f3d5905e47f3e121d9",
+  "c2": "be24d4ff555d3d9f1738f6b8000210c1a841cb5b0c6fddc513da20fe2f3c1ab8"
+ },
+ "SRD 5e/Monsters/Cultist.md": {
+  "c1": "7139a0a8099d3582f042d88c5e035e359db349c61669306077a42b0b51fd151c",
+  "c2": "17d440c5c11df068f9779c76a065996deed6b9c0b1996f4a85dc17a163ecef5f"
+ },
+ "SRD 5e/Monsters/Darkmantle.md": {
+  "c1": "3424c262f673a2644d718f8a31e5dbe6049ce58b5fbe16638a2ead8bd7249a9b",
+  "c2": "1c3decc5fa543c4d1769181e21f04a34cbc1a9dd4834c03b7b32316dcdbcb44e"
+ },
+ "SRD 5e/Monsters/Death Dog.md": {
+  "c1": "75e9daa1f84b4b223158fa30c56b8ebe3e6eb9be677c3adb0381cd2ed7edf910",
+  "c2": "1156f72ca581e75b8e53575f46bc725f5c704d372c28471f8bd0a1a0acec6ebd"
+ },
+ "SRD 5e/Monsters/Deep Gnome (Svirfneblin).md": {
+  "c1": "1f103456ab6353da55f637fe889bce46447b2e8cf256690966da0b2260d738e7",
+  "c2": "97073f3c8eb6da0e328aed369a6b18daed6a9feff4faad6855209e48279a31ca"
+ },
+ "SRD 5e/Monsters/Deer.md": {
+  "c1": "ff9f26e9d8359b037671dd6f5d54fde6bb52a8d60ee10c6d82950b90c55bc69b",
+  "c2": "28a3847a575d49c5e700ccca2a4e5e0e065299e24823ecaf34ba47178bce42b1"
+ },
+ "SRD 5e/Monsters/Deva.md": {
+  "c1": "f572588847ba192ba908d6292fea6593870250cdfe00fc8c3f6b7574653124b8",
+  "c2": "c3613dfde4c8768c1ab085f4d330c58101c7e1b1a96630a9aff8e16e271f59ce"
+ },
+ "SRD 5e/Monsters/Dire Wolf.md": {
+  "c1": "ceb8cb4b0fae06a3eaf8047581cd99a49a54e96188f026a394061353a9d04779",
+  "c2": "8cebdcef37e8e47710207326b5e78c3455fc978c9899ac12d0fa6f122a02bcd6"
+ },
+ "SRD 5e/Monsters/Djinni.md": {
+  "c1": "c743510de06329130c931b2b881d2fb06160b53229fdaa01f8c00421c2594a18",
+  "c2": "32c990126aba6f08f1392c2d94dac317af4e11e2ec5c80a4021518e77eaf68ec"
+ },
+ "SRD 5e/Monsters/Donkey.md": {
+  "c1": "4ee5b82fac5fdb8871b3a488c46b5932151d5e8cd850ac3ea9f3683b91f8b289",
+  "c2": "6d75cf4fe66e9b1c33e3b8457912b79e977588978d11f97a1f1a334cd9482334"
+ },
+ "SRD 5e/Monsters/Doppelganger.md": {
+  "c1": "81a283cba6e330eb94baab4e15e224259e34e46ab76e685bc0a5f0db6fcabfb6",
+  "c2": "9729ef1b9aceb5492dec220fcfcb9c01b02c4ad7af1ffa708eced7cf1da57694"
+ },
+ "SRD 5e/Monsters/Draft Horse.md": {
+  "c1": "e687c9762603cb2bd421c9a15fd28b6c11e8684bf735c8c0cee0e1266f17f86b",
+  "c2": "ac794bd36def24f2e724352cf7652eacf128975812aab60b85795d04f2afdf2e"
+ },
+ "SRD 5e/Monsters/Dragon Turtle.md": {
+  "c1": "80300522fa89156541ba824a3fae09825e9b84e847e0f616eda90aff07e5be60",
+  "c2": "3f8e69a8622570e86955460c695b8df33fcc5a60caad481cd28b555bfc7a5463"
+ },
+ "SRD 5e/Monsters/Dretch.md": {
+  "c1": "47bc4047feef6c22a9919c7ee439c93b15b673e78a27d2d920e6409e20999c03",
+  "c2": "1823b21b695f83652ed21fc0dff697738f3a71916cc2c7a46a0183e199c71917"
+ },
+ "SRD 5e/Monsters/Drider.md": {
+  "c1": "b612cff355cd522410ef199ad5123fc2454342c946a9a908fe72af2a5025153f",
+  "c2": "887c1204cb2362ab9e14f8b74bec28d91b1d45d82734ca5a40f7fac43281cd74"
+ },
+ "SRD 5e/Monsters/Drow.md": {
+  "c1": "cdd4e7555c99ee145eeb1af28ec31c426f6cd90e2c080681d2d9b07430782708",
+  "c2": "b1ea663ddc5c19c327cee48596f7aea147ecc483c2e74d880865fa008f0785b8"
+ },
+ "SRD 5e/Monsters/Druid.md": {
+  "c1": "7ab29656922d8b4dc7b10ac57fc478bfecd6b1e1d549d95cab4842c1a2f2d6ff",
+  "c2": "ac3f1983850563f51af5d7378193ad05c449c795373fedd06a0ebc8e9707c1be"
+ },
+ "SRD 5e/Monsters/Dryad.md": {
+  "c1": "a8aa15ae64acf0b5c07aa5375a0f079343709977a38cabfd34512e345ee8333d",
+  "c2": "947ef8fc7cdc0ea96b07442e831747b525b31c01460001b76c65c5f5a6bf5f0d"
+ },
+ "SRD 5e/Monsters/Duergar.md": {
+  "c1": "7051e89677831812e3e4534ec0eab53f94167d1b27038289030dc408b1a068d5",
+  "c2": "0734132d1f8dd69ee22578cf7d0cb08b2e304bb197f53b34d5e6ae6c76c3e8b0"
+ },
+ "SRD 5e/Monsters/Dust Mephit.md": {
+  "c1": "b13b415328f3da4523adb6801839951254a239885caf5f18a9c5647e7fcb5cd0",
+  "c2": "4c8e12957b74a1a787ef9a1264309f5befd6a8d419d2f9edf94620fb37eca7e3"
+ },
+ "SRD 5e/Monsters/Eagle.md": {
+  "c1": "b0f6077a467b3ae408d45ecaee81c8dad453bf7552275781750fcf017e2e126a",
+  "c2": "8112c34c4a6b046a1f914084030cc50de1bca7a6ba5bc1c019c0cbdec8b54e16"
+ },
+ "SRD 5e/Monsters/Earth Elemental.md": {
+  "c1": "46142fd7a421ef083ac13696cdafe57163f982533726a31142ad53b762391f8c",
+  "c2": "43e51c5e56d8af7ee5d34ee62a296925d59ed180463d2fb0cf0f086530e55b2e"
+ },
+ "SRD 5e/Monsters/Efreeti.md": {
+  "c1": "96bb8cca49922df871c8042eb1de17f3af95e59e420079347f3abe7d1ff3e5fb",
+  "c2": "440690ea6151ae89e7be7b220e15b8e2ce1f31b971d27fbba369055f9a6e12b1"
+ },
+ "SRD 5e/Monsters/Elephant.md": {
+  "c1": "60031658122f92cc3da577da4dcb4f299e0f5a41e934247475f68d0e0a9df8c9",
+  "c2": "f3e0ec238a1e4c1147243ef496d2e200e5ef82793eb5f6110cd1ad266299990c"
+ },
+ "SRD 5e/Monsters/Elf, Drow.md": {
+  "c1": "0edec184a93eec8fe8d0afdcf6cb1ede37130a770f86625b219ecfb04cc993a1",
+  "c2": "44e87765fd2b3bc521897bd8ab9692c52449122eb85511cbc69468fbdd0ed8d2"
+ },
+ "SRD 5e/Monsters/Elk.md": {
+  "c1": "fadb203f8274f93f9950a31e03bb52388a45a75b5379b3c9350594665614042c",
+  "c2": "f329e51d76d816935a43482253f68d77390d5e64f6f964a707f3d286337ebe96"
+ },
+ "SRD 5e/Monsters/Erinyes.md": {
+  "c1": "81dbed7dbcce53d62496c0709df53fb06725691955189d8a25cd99eec2edd77e",
+  "c2": "89008b0fd5e5a0a6333e51eb619fd514370b2361d5e2841d763ecfa1e1900e54"
+ },
+ "SRD 5e/Monsters/Ettercap.md": {
+  "c1": "43754f9738bc2ca728016de01b75d4ae23bdac912c355c217b388ae048233097",
+  "c2": "9d904b2fbf67eda83491a6a13318c1a460ec29134bbb12cbb571d5b7398eee33"
+ },
+ "SRD 5e/Monsters/Ettin.md": {
+  "c1": "72b4169627831a78728e7884fb70473a09242cc866ab4139138b7fc528de4b5b",
+  "c2": "5dbfb93d95d9fafab607f455229dc2763d89c21cfcc3263deecc81bba3b2431a"
+ },
+ "SRD 5e/Monsters/Fire Elemental.md": {
+  "c1": "a8071d82b1817f2a55c8b705e1c048d3e78dabd54a46bde70b3b3232fd9457b5",
+  "c2": "6e16ba1e4ec78db9cf9ae877f43c6ca3fe1dbaa190444376da5420bc48ccd6aa"
+ },
+ "SRD 5e/Monsters/Fire Giant.md": {
+  "c1": "5ecffca73eed601c8938e0a65472742b9dc66b7b0ce5c44055a68ecddc5c7fcf",
+  "c2": "71e755b19b25f302c4168f09755b988801691a63da6e4cbc8898cd796665bea8"
+ },
+ "SRD 5e/Monsters/Flesh Golem.md": {
+  "c1": "877ddf4166140fff0a740fc787ea93371f25874ad8a98264dbca6a455f675b5e",
+  "c2": "fb86711bc75cac0bf08372cd99ef0a35ca6951b552ac6daff2b87afe627412b8"
+ },
+ "SRD 5e/Monsters/Flying Snake.md": {
+  "c1": "d19a59dc11541168e2baf8372c0e861357ecd9d6f4882a50bddea5c1838a8117",
+  "c2": "df8188614963c6f2480463b34d0de4e2d0df78104ce200593c72138e1c9dc7f7"
+ },
+ "SRD 5e/Monsters/Flying Sword.md": {
+  "c1": "8f53062b93989f77d98f8b61de71322aa3ff054b701505b60ea90747ede3ee75",
+  "c2": "471b2044b7cd1e9c8d02302e89e98011752f0ce2fdac6374bdb23df5cf444649"
+ },
+ "SRD 5e/Monsters/Frog.md": {
+  "c1": "38dbfaef65e0ebe10f7f10fee49797872eff820acdfe25283b85faf252acf91d",
+  "c2": "8f7fbab61aab18b89e4f411945028073a5361e9ac24f1a4df009d478d13bd36f"
+ },
+ "SRD 5e/Monsters/Frost Giant.md": {
+  "c1": "422c58c4fedb914295267ec5f9f8e9a0f9d46f13f0295cc8a800cecfddf2f915",
+  "c2": "7af75ed4e76e4ac26e3baa4b42cce37a3939d1f1a4ad1eec3f1d15ad4d96dcba"
+ },
+ "SRD 5e/Monsters/Gargoyle.md": {
+  "c1": "7d9318553e0d84b2f15bbdf68b92ceffc7d926ff3aecc49e31e4e6e441f35a32",
+  "c2": "70e6be0fa2d59141bd7edaf5f580ce65a8f2114aa5e8ea86d5554646e6d0fb1b"
+ },
+ "SRD 5e/Monsters/Gelatinous Cube.md": {
+  "c1": "842fdcbb7e456f1f966cb405ccef88e97c416bbe461f2f29145314aada82a3c4",
+  "c2": "87961f2995b8e49c5ae4fe3810e8894f47cb7e049d2042a07667624b2ff70a39"
+ },
+ "SRD 5e/Monsters/Ghast.md": {
+  "c1": "c7652967eccc7c945c859e531f571e2e9ece53f0ec2a6cf31ad4bef20e8a5e37",
+  "c2": "015f8ab18a0853b36e3379b97f5463dec769956dbb62f8d34ece674b19f5d9af"
+ },
+ "SRD 5e/Monsters/Ghost.md": {
+  "c1": "bc7d6936d1ddae6600a9933e0c5fdfac316dafff7b5341c4698dccd573df1abb",
+  "c2": "6651a91a61a280cee652b17011cb1cb15aabbea951bf2f29b5efbee318b7e08c"
+ },
+ "SRD 5e/Monsters/Ghoul.md": {
+  "c1": "cba69c349861128ccb71a91869b6a4a1578e1a582fad933e4cc6a06235bf830d",
+  "c2": "8f7ea955f2f0f72a2658fdce1db6c2f1140d97b7751e46bd310bedcd5135c4cb"
+ },
+ "SRD 5e/Monsters/Giant Ape.md": {
+  "c1": "782cce79dc6e513496da057f650d9b9c60c790a5d5b57856221fb657a70cf2c2",
+  "c2": "9f1b285e29d0aea800eebf9aad380daf1be0ec4b4bbc7f51aec29168b61b115d"
+ },
+ "SRD 5e/Monsters/Giant Badger.md": {
+  "c1": "a8007cae0f4228c7b34ec8ada4081ac3f0fca01886a700f7b214ae7ce3e44ff2",
+  "c2": "c9d0a42ec351541d1dfd7e5c0ce3aafa2e8e7b8c8b7cb212f7c1a300ee9ce097"
+ },
+ "SRD 5e/Monsters/Giant Bat.md": {
+  "c1": "215849cf599e56b6ca397e502a7c37cbb9569ed4a4b131dcf062a60c1abc86f8",
+  "c2": "6676f0357e56b8464c40552fe615f352e67cf7a2c1b3b5fc0dfecf40a8ed47ef"
+ },
+ "SRD 5e/Monsters/Giant Boar.md": {
+  "c1": "f62ecb3ce0e40f9fa11009ff72cefd38f1981bbc6fdf5b752c9e3dbcd6acdc11",
+  "c2": "edb18e149d1ff03e80192345ff36f8b12f729af6d49615b5a0e609f687620fb0"
+ },
+ "SRD 5e/Monsters/Giant Centipede.md": {
+  "c1": "5eafd707d7f59453d56306981d4367ec381fe1d9e601ef46ea41660e65b809e2",
+  "c2": "fc2994204ee59558343ef4eefdece94df8ee78fcb5c66fbcc668bab635aed6b6"
+ },
+ "SRD 5e/Monsters/Giant Constrictor Snake.md": {
+  "c1": "629905496ee74d31b2d0355041cc6c2553ce6500331edc5b0d254c283046786f",
+  "c2": "85e446eec6e5e293cb2de50b29367e0fa5982f949f52f54a90d623c68dd61abf"
+ },
+ "SRD 5e/Monsters/Giant Crab.md": {
+  "c1": "deb3a75cf3dc9d7c798cfe93e8023bad571922aa00d10f5e9051d8daeb609244",
+  "c2": "a0f3af63d551116200c0d8e5983f848bf89a867f8686170784a4fbb5aedfe419"
+ },
+ "SRD 5e/Monsters/Giant Crocodile.md": {
+  "c1": "b3fffe5e04499f00a4615da4fb38b95906a857fff9122d149808855b08d2847a",
+  "c2": "be005cc15ab66223df4669944beff34d2557bf5c0182837bee3240f92275499e"
+ },
+ "SRD 5e/Monsters/Giant Eagle.md": {
+  "c1": "6e00b23d7e6aa1c041d370c9e7cf04bc0863012f1bf5d1c940e7c46139a5d9a2",
+  "c2": "5dbc1e8bd9919f48f49dbdb8ae84d6de9c2a9b424c4d7719d617032b4b9c7a7c"
+ },
+ "SRD 5e/Monsters/Giant Elk.md": {
+  "c1": "fd650640e5d1957d1aff6ebc1c59426da1217216cfd6cc4c6957e121f77bc19d",
+  "c2": "c0a128743a2ac0644a6181354b520f41d3e3d88dd226de1565850f4067c2c336"
+ },
+ "SRD 5e/Monsters/Giant Fire Beetle.md": {
+  "c1": "40fa64121c7805156881009c959fc379d74779c16cdb03bf7217f7ccb20b317d",
+  "c2": "cb326273d42f1a99e4ba623d35490b89d1e0fbeab422fc093a4d47a487ef765b"
+ },
+ "SRD 5e/Monsters/Giant Frog.md": {
+  "c1": "f5c9911a1aa36d0babf925da2a39f89970430daad6eb4792d4969b9f5e021b03",
+  "c2": "e0779abb8dc874261e6f1a8ca427e01873790fa202f2d2ce644e5a2ebf6193d8"
+ },
+ "SRD 5e/Monsters/Giant Goat.md": {
+  "c1": "0f088f6d1383d600f122a915d6da22d554c4c854c65cecc079f6424e1017988b",
+  "c2": "1ceca828ae202500ea95f05d82f5996b08da8903e59f07ce6d5e46bd40ac13aa"
+ },
+ "SRD 5e/Monsters/Giant Hyena.md": {
+  "c1": "c3e04ffdd37e2eb7503a004ebb7b1056fefc94a22bf91a315144be3660d4f8ec",
+  "c2": "886c650fa81c514b5b2d85662d06bb757ffa6eeaf1ecbc01a42b3738281cd7fe"
+ },
+ "SRD 5e/Monsters/Giant Lizard.md": {
+  "c1": "5aef016129f211d4747ecfc55a310c607466b78fa4f4cad3bbe9f106b7f8ef57",
+  "c2": "b4f80e69a9fee78bb837032ea84891181dd9c65ef40877e9625c6515fff39eef"
+ },
+ "SRD 5e/Monsters/Giant Octopus.md": {
+  "c1": "c7d8badd1db95be357e62873bc86c4fbebb678457844f603595851a3e0bd0fa4",
+  "c2": "1a9e7e75cf4b7f134b417ba0a5364e92d28174fbe51bdcd701eb7b593e070dcf"
+ },
+ "SRD 5e/Monsters/Giant Owl.md": {
+  "c1": "5732898cd02b99772460c7bc0758ef980957b68e280506fd9140651cc6dead5b",
+  "c2": "949f23f22c0cb3182d750d169ad72bcda71b18631784192efab72c136a25f967"
+ },
+ "SRD 5e/Monsters/Giant Poisonous Snake.md": {
+  "c1": "83880a78b1e7d91e8f64b9936ee4c85d9cf6d81757accbc5d278feba0269823b",
+  "c2": "7ce0e096087d89f2afb0536128a1ba2675fce72f6e8b35d9636fa6fdf5500d78"
+ },
+ "SRD 5e/Monsters/Giant Rat (Diseased).md": {
+  "c1": "785d7209dac71af18b19fad14baad98602289b7d4c1ef1477f5db01d3198d81a",
+  "c2": "51c43e88031a3310fe4a665e2fdfec295be59645291b080dd7ba825a5af88bf1"
+ },
+ "SRD 5e/Monsters/Giant Rat.md": {
+  "c1": "fdb9823e61fb3a297816208d4a43982688be67da00bb8196f36108379feb2fa5",
+  "c2": "d0744fd502a05d9d4cac441e8f758a05d4f009e00d8ffb90e03b58aae509d475"
+ },
+ "SRD 5e/Monsters/Giant Scorpion.md": {
+  "c1": "1397edb555b21b9bac1a13bdf9dc7ffaf198ceb5f739996b01735234021c88c0",
+  "c2": "52613997c1e5b406867750b28da43c813db7f3ebfdb880cb17f62d11b14ed2ab"
+ },
+ "SRD 5e/Monsters/Giant Sea Horse.md": {
+  "c1": "066ccaef8ee70a9fba68a55392f2e444815b86b4a9e1ad139b28bb93caa48cb4",
+  "c2": "d91f50e1c3af43f6e6972ae4b31ce68c0ba2bfcdbb1d56630f9487b23271eb57"
+ },
+ "SRD 5e/Monsters/Giant Shark.md": {
+  "c1": "31ff3889d1a079f4c09d50ca9f0b96bdb1b40d3c0aedd44fb2a4ae113d31f0ec",
+  "c2": "14da8695423284f72dc31c9ff1efced4f1cd2140f1bdf99b47f4117a514cc599"
+ },
+ "SRD 5e/Monsters/Giant Spider.md": {
+  "c1": "f6925ebfb80de7fdfedc5269910ec6e123751daea9c0198e3c174a421ec0fe6d",
+  "c2": "a919d8995a0bd24750b9cc641313f4a7eaaf39a5dda23705bf642d330cd3823f"
+ },
+ "SRD 5e/Monsters/Giant Toad.md": {
+  "c1": "4d9d1c8521294dd6a656e4f8f744d73049b4bcfd59ce5695f01aeb41c04c75ba",
+  "c2": "99193647e749e328a77cdf6d451da4ea51ccdb12629ac001108739592d9f9007"
+ },
+ "SRD 5e/Monsters/Giant Vulture.md": {
+  "c1": "9b973714b9457fa8cac51a5db64d2cad333a0e0e5dd8ec7632e785f3f47e6e22",
+  "c2": "8dc142f8a2a3df47c471e2f09ce83c2ec903325d58b4208c78417fb6f1122cb8"
+ },
+ "SRD 5e/Monsters/Giant Wasp.md": {
+  "c1": "606cbabf8ab3b5ba083b44e342a3017bdbdfa3be895c5f0bd8b6df65e631b1b7",
+  "c2": "120c418262957e541f8c97199ab3ef7ec6f3212147488a8bd8686f1f218f55c9"
+ },
+ "SRD 5e/Monsters/Giant Weasel.md": {
+  "c1": "cc1af5f69985a40346825fe77508c0a56af1cdb15d818d4ae6db09ddfa280181",
+  "c2": "316ad90dd11f097f70cb114127185df2410999ff51d4779b5d7ea3b4f1a85a63"
+ },
+ "SRD 5e/Monsters/Giant Wolf Spider.md": {
+  "c1": "d7c5d435665154598ed4ee9646df954ed839c16042fc697d868e05ecc7146755",
+  "c2": "322f17a55ed09f0b16db0041709469c9825127cb64b6ce191ab69ef0dfbfb3af"
+ },
+ "SRD 5e/Monsters/Gibbering Mouther.md": {
+  "c1": "bc1ca7453d7b88f1310d3744b4e0ce2938834f5abf746ad04baf0fe3a80fd27e",
+  "c2": "c2fae078f6ef3078d74929d099b17203206d5ebb7aa1ea39e91a397459e74432"
+ },
+ "SRD 5e/Monsters/Glabrezu.md": {
+  "c1": "5c8199661c79e312eba5cc8664afcecc43796043c3ddf018fc80d0faa47e961a",
+  "c2": "f70c8bbc5cf2b36b88469996cc0536204c6146f077b5b9e9e47fd3aad49b01d6"
+ },
+ "SRD 5e/Monsters/Gladiator.md": {
+  "c1": "99c1b305eac569bca1c796859fc45f784235897b153f52279c455baf2c6f9e20",
+  "c2": "e57aa63bfe73a4a4aca2d244e7f98041a3bc9377d9391189815c87ac140b9af9"
+ },
+ "SRD 5e/Monsters/Gnoll.md": {
+  "c1": "3c6c0021bcb9d01cc555b988f9bac99b23f4ab31b50e65411657dedae87af661",
+  "c2": "13b52e18f014c4af434a1d721b12bdbe7198624112b1f1d29502929da0ce6478"
+ },
+ "SRD 5e/Monsters/Gnome, Deep (Svirfneblin).md": {
+  "c1": "f4a4fae187bf70dd5d09a50157ad73611e1b52b636193397a0f82b5d48494d0b",
+  "c2": "64f2ec2f4e63dc7944f830bd85adae2bf0c9f2646ff21881bb8ab849fe94f359"
+ },
+ "SRD 5e/Monsters/Goat.md": {
+  "c1": "b6b4897fca01e8d0eea63ffc0502b150ab00f9e459634e494fd411b159a8ea79",
+  "c2": "792241332af703c5b46377e1d0f5cd01339d8839b117770969a7b47e2f6f1ee9"
+ },
+ "SRD 5e/Monsters/Goblin.md": {
+  "c1": "8a7dcac4b7b261ae2f33f110ba4714b641ff8450c0070cd31ea39b6a73ece9fa",
+  "c2": "354bcaa5e7706405c74ec7d79b4b635a78f900b099e2cc359e7ad6bbbe1b9fdf"
+ },
+ "SRD 5e/Monsters/Gold Dragon Wyrmling.md": {
+  "c1": "f92080a48f52d59ce8555fa98e0ae0fdd76d2ed86fbc1a3b349b3e051039b1cd",
+  "c2": "0384e0e54afead7df71d6a266d4cff3e4161efbaefb09e78de3f6ab23b24ee8f"
+ },
+ "SRD 5e/Monsters/Gorgon.md": {
+  "c1": "a390dc4ebbc0a1bee9eb498bb9927855cbb0fccb27c26bc5b42f88bf6493b57b",
+  "c2": "fcf89ae0678889cc69187a3f34b893321e21d63b76803d80caf6f3fd1cf4c562"
+ },
+ "SRD 5e/Monsters/Gray Ooze.md": {
+  "c1": "ab8e43a5a26ea2b65ebf8e866732e2ece8fd6d92e526f7674d407d9dc35fac42",
+  "c2": "de6c5059fed328889e11660e4406fe06f198c7b6580fd8f5a6b47fd35a0dc813"
+ },
+ "SRD 5e/Monsters/Green Dragon Wyrmling.md": {
+  "c1": "50a571eeaf9ee1de84861020e231565f58927f2bcbc9b3b8e82477574c8e379f",
+  "c2": "ce35bf59d354af5d2e328cf785ee50289a96ee0a0fc702a1ebfc4f5afb19a1b5"
+ },
+ "SRD 5e/Monsters/Green Hag.md": {
+  "c1": "e7dcae5a261034aa1cd780f47e3d5e46bab1748ea63dd90e0c7509e70f71fc58",
+  "c2": "ee64afad1ab2a729e3301aca9aa6fe639efa9f2864499074697908fbe640a28b"
+ },
+ "SRD 5e/Monsters/Grick.md": {
+  "c1": "66a0e8871f5261270094c5ee3f592eea154029b0eb45a9822203f6f8c6dbad4e",
+  "c2": "790aff647969150dbdfc4894df8dab5d01218f8656c4ba33b428dac79a05f3d6"
+ },
+ "SRD 5e/Monsters/Griffon.md": {
+  "c1": "b1404472a935f93ed64129b787733c4107ec910d80c72d82ec425aa291e57939",
+  "c2": "c7a6bafdd1a807dc269030d11c015553b8c505f8f40fa359f361b06164d2c681"
+ },
+ "SRD 5e/Monsters/Grimlock.md": {
+  "c1": "7c757c183ae6a473e14b411289dd3d92d9cdeda5af0d0fe877b229d55bf9ea3a",
+  "c2": "5180f149369f99488bb33b8e52037940f43fab3dd923ac382f32ced9fd8cfda2"
+ },
+ "SRD 5e/Monsters/Guard.md": {
+  "c1": "ec3f6b8fb47e31cb695a5df0937f3ca53770f47ddde21a1ca3cfeb82376a59c6",
+  "c2": "ad67c87fde9e34e16790b995c8bc5bae1a28387126a81edc03f196927787dd88"
+ },
+ "SRD 5e/Monsters/Guardian Naga.md": {
+  "c1": "25f3a6724d0b4864b9b7c2942c0bbafd35f670f5a9971129e9c71bc6e3b47117",
+  "c2": "a613c9390a31fcb3f9efd80ec987223747fd021fd7ddc7f1a8f742fff6725963"
+ },
+ "SRD 5e/Monsters/Gynosphinx.md": {
+  "c1": "1b2fcdb3524261e5490d9645a475070025e56cf763ed99999143d0771dfe42d2",
+  "c2": "8e09c4525cebf15a8fc2b2aea3c95dd8125c26368bcc42fcecc88539567c04ea"
+ },
+ "SRD 5e/Monsters/Half-Red Dragon Veteran.md": {
+  "c1": "bfcfe1ace5eff7c0eb4d58c82eaa0c6159309e7f8481e5298a94d58a29efdb3e",
+  "c2": "d29f66b8cb3e34d3aa7bffa4895e5dbb12972ed4f7ee769fa6575f0b85f1f892"
+ },
+ "SRD 5e/Monsters/Harpy.md": {
+  "c1": "c5b510cfa2681068329c7242eac5ba4fbac787e5b4919a3f03df0a103cf16143",
+  "c2": "81793f2b9501ded3c34a24c0a65c76d068ffa90625eca5a5d95a41c50f0b56b1"
+ },
+ "SRD 5e/Monsters/Hawk.md": {
+  "c1": "0ceae450c2f8534e02228f68f0ef21b022cc2d3573b4397f9998ce190d37c114",
+  "c2": "2fc7a16015cda30925d1ac9c39645ba24caacbe3cd6bf772eddcf86fe1c9c028"
+ },
+ "SRD 5e/Monsters/Hell Hound.md": {
+  "c1": "9cf14c73aa3308b8c3e916dda6206d91e034fa497b2867b7d4554e9e809a6a4a",
+  "c2": "3ac52725b9b99a93462dcca83ef6a18dd09df840a93d36ac9e2711f7074ae749"
+ },
+ "SRD 5e/Monsters/Hezrou.md": {
+  "c1": "7f154f1332c6fe8dd117e3d7fd280d6de87e5ff7d83257f75d3b65d7506fa33c",
+  "c2": "7344ba9517cafce94ba1449739598f5ff0b3362e1fb963c6774177618a1085d8"
+ },
+ "SRD 5e/Monsters/Hill Giant.md": {
+  "c1": "4a1b26c773261dff5ddb935469d2885fb5c52707dd79bb1df033c7bc67c62f04",
+  "c2": "67072a4f9ae2f694623d74c0781f4ff1a34af9c1ac97525c2a796391c11783f5"
+ },
+ "SRD 5e/Monsters/Hippogriff.md": {
+  "c1": "49e5b69468f79510689ad32e4d7b5c6d8110ac58e87a9c451a22e051ffbebfd3",
+  "c2": "926da43484462c0a58aa77eebd6973432be5669d355fb8eb2144e64eef271813"
+ },
+ "SRD 5e/Monsters/Hobgoblin.md": {
+  "c1": "0e67bbbc55248d580aa65debf736c2970d77c19df5069944ae2a76f3e73d6b7a",
+  "c2": "f662e296248ee28a21f3346c6b71d75473e3633b0f6425b62741aec7329dd54b"
+ },
+ "SRD 5e/Monsters/Homunculus.md": {
+  "c1": "d34494add2a50cfdd454db555a379f0d9fcc89239fe239607df41b7452d109b0",
+  "c2": "213bb55c851f36c8fc7044058033cef6da195d3e9e79dc50d448d21262c54a18"
+ },
+ "SRD 5e/Monsters/Horned Devil.md": {
+  "c1": "07bd7818d687f10d0df5f0237e31cdffc056eeb271ef086257b76563055f272d",
+  "c2": "e65a381ec737cea7409ef06b4b133fa974e504444f7c610df523875801692e62"
+ },
+ "SRD 5e/Monsters/Hunter Shark.md": {
+  "c1": "5bb62166f35e34d4a3934944d2d1a8c984e9db47b75d0edbad027270f2831c62",
+  "c2": "7cc450af2c46848a13ad0eaa0f6cb7a7098a5abc7c8fb9971951427dd732f782"
+ },
+ "SRD 5e/Monsters/Hydra.md": {
+  "c1": "c39f5f98fc028565502b22e6b3b577cd8efddc2c808a2239ebfce8e645edd9fe",
+  "c2": "7d784964d27123bd7c330c6ccb40f682fb456b449032c6715c1667c515816c70"
+ },
+ "SRD 5e/Monsters/Hyena.md": {
+  "c1": "f694424afdf3b7c3de8639d71c2263c9ec59d9cc09c3b722be2dbd2b0466729d",
+  "c2": "f072b30f2f99a6b53d8fa0eec046a5f7ea2ab28bd4d3b44be30582dcb878f7a3"
+ },
+ "SRD 5e/Monsters/Ice Devil.md": {
+  "c1": "be0309d70837df844d3963f6be8dbc3823404c9fcea243aab1fe8b37362d2485",
+  "c2": "4e3d0a010aa3eeea7dc63ada707cd75c7ca2fd43b1d4d77c797739bcc18b1e8f"
+ },
+ "SRD 5e/Monsters/Ice Mephit.md": {
+  "c1": "4f668c7121ff809c41b82f1a1e662377bc9698bda41f81602169503731d9a7b8",
+  "c2": "373f0714b62db3e2ed29993ff318287df56c0a77634423be3eab5261fb74adca"
+ },
+ "SRD 5e/Monsters/Imp.md": {
+  "c1": "e674f56956641d0ed61ce63576051548f0756f21f95d966ca5d632817e567d3b",
+  "c2": "d4d92d76138a581d12cab70812dcd40fe39273740945bd9179afd663f0332441"
+ },
+ "SRD 5e/Monsters/Invisible Stalker.md": {
+  "c1": "a8687a59a6777afbd1095d9b979d8d32d1d6bcf3351812e76184891eb6dc3cf2",
+  "c2": "6c4f7c1d2ce73f53d5c04aa2d1445ba3d8344eb6eff8dcbe0316ae3ea415c404"
+ },
+ "SRD 5e/Monsters/Iron Golem.md": {
+  "c1": "fbf15d3e758ce84913d441a17d604071bb0d15f4e84732f2fcda06fd8d7e192b",
+  "c2": "5b704f12b217514f1bde7926bc2095f74fad7119a68198bdd59244a93deb23fb"
+ },
+ "SRD 5e/Monsters/Jackal.md": {
+  "c1": "d7ffa674ccc370775d7a58fef5be04fcb8bb21a1f1ba3a891b64377896d302bd",
+  "c2": "c1d0c4e528482a438549f7f6fbefc512c3cec5ace1468aa32f1ed98acea116dd"
+ },
+ "SRD 5e/Monsters/Killer Whale.md": {
+  "c1": "a44c25b26ff4150f64e0aa99de9a01493e893a9e133f2fe876fd766601d786f7",
+  "c2": "6f9f7c1b2da1ad3743e784b917de9f5334fc549b5f40563a741e2ea9b5667292"
+ },
+ "SRD 5e/Monsters/Knight.md": {
+  "c1": "b68a0b7ddf99934ff8e5529970015be64f9435096fa328fdc7ac13797c74299a",
+  "c2": "ab9db6850af0ba94925f9eb914a15619932cf1e4392cdafd211176ad305c98e7"
+ },
+ "SRD 5e/Monsters/Kobold.md": {
+  "c1": "ec49b896181d4f78b07c0f96e350dd963aa6ce141123cad7d7a1763e6568171f",
+  "c2": "c607fa49812233b311cddf56f4d2d8a37a17c7aef2be37192d80b811a16d4d37"
+ },
+ "SRD 5e/Monsters/Kraken.md": {
+  "c1": "7fdb3cf638844e7b360ef9586490c6323dd3df26b1bba08678db9faa31d0b54b",
+  "c2": "4d955adf75161218034803df9af8f05a5e73a2df327ab4ca87deaebff67b6c91"
+ },
+ "SRD 5e/Monsters/Lamia.md": {
+  "c1": "8672238c692192cdc83fbb05f2d7113599443df1c03d55eb2c429fd95f6c8c73",
+  "c2": "c403efd2ab60832406ea0258babbdc200f1b94834e88edd214b7f61c59741d0f"
+ },
+ "SRD 5e/Monsters/Lemure.md": {
+  "c1": "f2c385ed48f76c9d975a8c2e91fead16e79ee71520573278f8c3f341ddc059a3",
+  "c2": "1c61da0183dfcf4021eca72989e2422b2099120f68a07e401c95b6d9dc7cf05b"
+ },
+ "SRD 5e/Monsters/Lich.md": {
+  "c1": "0664d75e1603a8ec72d4640c0a636a010d64a5e2392f6421580c3241e9522136",
+  "c2": "dc08151aac1f9dcaf2e6415aca3ccc76b7209d3f537fa3c25e09430c5f311a28"
+ },
+ "SRD 5e/Monsters/Lion.md": {
+  "c1": "a84146e4dd4f54210ca4147e2fbe3a5b4c43944a8e60a5598adee9cdfd3ccc0e",
+  "c2": "46d99472c0eb9463110f14ce00256cac22b29f9b9bc1693be386894af71db217"
+ },
+ "SRD 5e/Monsters/Lizard.md": {
+  "c1": "dfc362a770a4189bdd899e7e22e8c1f40052350e841c19778ea1a66fc90b00b1",
+  "c2": "42bab0fd2a8a07fffd1c5c3c8fcb9680578754834291455da96c86194007b4f2"
+ },
+ "SRD 5e/Monsters/Lizardfolk.md": {
+  "c1": "cadf47c1cb8b482b663816bc32349993c6c6f12e86b56d6ba76bea1c97ed59fc",
+  "c2": "06b8f8dea5c27615bfe235ad0fe93dfc7f28b914bd414881e49958721385f4a8"
+ },
+ "SRD 5e/Monsters/Mage.md": {
+  "c1": "e8ab49ded7a1bfb5759e0b724a87d2a263107f95a4ca5a965841f2edb29edfef",
+  "c2": "2c09a8c07dc17255d80dd5c8be1a15562745e156cda891a522dcb2b725a39fde"
+ },
+ "SRD 5e/Monsters/Magma Mephit.md": {
+  "c1": "55580945706c0e25e1ccd900c081e9a1d800fd50c744c4c9da2b0651421d2945",
+  "c2": "ef0d8deadfd2fe1e0ddacbc41bc6a6a4d9ecd4de1b6213ce2340765b231e9975"
+ },
+ "SRD 5e/Monsters/Magmin.md": {
+  "c1": "1f1db520ab8f5da757ae977a305e019d9321fee3b25231133bebfdbbf4374288",
+  "c2": "04af5317d03a4a0f9a36ea491f7c62a458044f76b6649d06d4d0c0ba028ed94f"
+ },
+ "SRD 5e/Monsters/Mammoth.md": {
+  "c1": "c7e66452cb7f5cbe7f9f2ddb5f25a101892d9ea61c032141a618973f5f57ac85",
+  "c2": "836b25562326c50dc73b881f1fcb1cd64398ef39054aa7fc6e866405c97fb505"
+ },
+ "SRD 5e/Monsters/Manticore.md": {
+  "c1": "a88eea397e8d0bc8e25d7163fd02b54692e836879d30161ff05b1f6f16f9b80c",
+  "c2": "78fd0df06fd1bf74daf09fde45f3ba73412163f21ce9a709a845a30b3d617c9a"
+ },
+ "SRD 5e/Monsters/Marilith.md": {
+  "c1": "c77d2b0b3766ee252abb4eab0f1f37c79965e39f01783242694f1de9825a8ce5",
+  "c2": "144420af547da4b47a85f63d2c31ab6ac8c2eeb0596a0e68e396ff8894b3b213"
+ },
+ "SRD 5e/Monsters/Mastiff.md": {
+  "c1": "fffd9d950e202225e83fbdf4c694a3e522e88d6a02f66395ae552d189f0961c3",
+  "c2": "069cdfc93747fe5779774f2d2b9572fb7d4d6f02442cd0b3deb2879cb7a60c8e"
+ },
+ "SRD 5e/Monsters/Medusa.md": {
+  "c1": "3e87b52e4cba57009b476d99913e5be0e74d47fe1664d3611f425ebf666ff4ce",
+  "c2": "0be591d07b8550d125e7b9e065457354e1362bc3bbb447803d267c1e8ee5e8dc"
+ },
+ "SRD 5e/Monsters/Merfolk.md": {
+  "c1": "844b283d5f5667b9fa5611b2b0af30ba8b2b5ccc080dcd1edfe0a26a894a682f",
+  "c2": "ea18b404a08f23762577eb7ce2b24f91160c9cb194daa6e6d577a01e3bcee943"
+ },
+ "SRD 5e/Monsters/Merrow.md": {
+  "c1": "1891b86cfb85ea6e8a11e6200705afb936584fd9d8019beb6b145d895385f6a4",
+  "c2": "1feb318f342e160c07671f26938519e38bc697c2f6e12dfce53c3ba8f751ab18"
+ },
+ "SRD 5e/Monsters/Mimic.md": {
+  "c1": "14b8cdd8e3899d7d976583178a6a2c8c4b01b72e73aac64f8e68d0b98aea0d8a",
+  "c2": "be4029d2b5d02fc53d7b26d5ce1aa046278be5878c9a23c697c88a175181b0d5"
+ },
+ "SRD 5e/Monsters/Minotaur Skeleton.md": {
+  "c1": "55449a3e8e642a75f5fbba309e7884cefef485efa505465635210fa6bdcbdf41",
+  "c2": "92b03772324a37880c9ae07962d09ee3d0992b0d3061a27766a90844051a8039"
+ },
+ "SRD 5e/Monsters/Minotaur.md": {
+  "c1": "6fc391b49eccc2dc622e6cb2cbb11c7ffd37924aa041612eed6767bc60c96788",
+  "c2": "a2da6a2827103b85c019da2cf740a53d249a4ba0e8c2c2afb0b4fa01c63a6d4c"
+ },
+ "SRD 5e/Monsters/Mule.md": {
+  "c1": "d02137fca044bd55b8995ee027e3d097322fb5ad3a3a9763a77a58b63db4f9dd",
+  "c2": "aa4c2b8d54a22cc9376ea777c7a79892005a54d3e9991eaa1fac6d62c9a4f55b"
+ },
+ "SRD 5e/Monsters/Mummy Lord.md": {
+  "c1": "a494fda6c84a4368e90d9aa84861f3317336e77846a7ea7208f7c7ab6571bb5f",
+  "c2": "b0f60c3991ea1bc5d5c5d84dbbffaab91f7a453e3968f6026312f931d0f1c3c2"
+ },
+ "SRD 5e/Monsters/Mummy.md": {
+  "c1": "8926dfca1908147cf5be86ca4bfee7386adf1dab5e85cd148ada1944d1ae50b2",
+  "c2": "d98dbc01cf31d4a5254f84e9892b95df301e2dfa4572e1d346d498205fbef83e"
+ },
+ "SRD 5e/Monsters/Nalfeshnee.md": {
+  "c1": "0896a529ef60a24df5752c6ab9a3f8f267c8983859f2190c77b1a08913621b07",
+  "c2": "105dea6104d7ef9b5310e7203ee195968e9f00143627b6bb696a198e78f44115"
+ },
+ "SRD 5e/Monsters/Night Hag.md": {
+  "c1": "8ae118767348a3f1117c53ac3899a01016f096315c27c59364c88144461d0f6c",
+  "c2": "58eed2fc2f8ad2d1a5a3183df041bb13c628b1bcd39977beb8a3f4800e627eca"
+ },
+ "SRD 5e/Monsters/Nightmare.md": {
+  "c1": "823b73a6fc9dbdfbf6158f8a9a3ddbd8535f44bcbcd9b2b8d2027bdd41a61334",
+  "c2": "9e8e510a8a723824bd53e6d602d60eb76ed31a07a89da74eb4beebf1c04722a0"
+ },
+ "SRD 5e/Monsters/Noble.md": {
+  "c1": "1726e29e62f4a003ced8bc2b287a3711526c9e47d3ed49e8795f8dd57b97e1de",
+  "c2": "b052f3ab86435f974f36c162d656b57e5bfad7871f4225e1f6f4c90f7f26dc19"
+ },
+ "SRD 5e/Monsters/Ochre Jelly.md": {
+  "c1": "b77f446ca49c59d7116a2bd293323235b5fb430a9afd06aedf3aadb9d521221e",
+  "c2": "d1018542989ad44e4733d18635a52e1c83781408409ad340b0003327bc65915e"
+ },
+ "SRD 5e/Monsters/Octopus.md": {
+  "c1": "ac8d423059a98201e854268c345670dd6039677dbe95ec9d1486d9bb5aae66fe",
+  "c2": "2f7dc2899dffb7ac68aa1cbb29450cc8bfc4477c2395bf6a2b5d69953eac656c"
+ },
+ "SRD 5e/Monsters/Ogre Zombie.md": {
+  "c1": "3d1cf6398e933aed9c43841fc5b1298c3d9ed7d5fef3f8128dec3208363b5cd4",
+  "c2": "80078495a9330ebacc433e13bc376e8bff5536c74b79293b4fe852e5dc681644"
+ },
+ "SRD 5e/Monsters/Ogre.md": {
+  "c1": "55da2a2b2c22f5c48ff7cca1799154753fae6498f264eb886ab6f71b0f0d5b05",
+  "c2": "85c1bb8b57ee100a58521fada13485f4e4d4f48eb3e66084ad509955c0baa79b"
+ },
+ "SRD 5e/Monsters/Oni.md": {
+  "c1": "989ad415bf9664a1660061bfa623282f835b4f0b14ece2aaf2034b2b00d0d66b",
+  "c2": "63736baea6e0b0d4bfec325e0a02d979c3282ce9576bc76665064a68030b9225"
+ },
+ "SRD 5e/Monsters/Orc.md": {
+  "c1": "60793b4df3a007cad4a3f7e444d4d399cf0f8604b321e4656454c88a4d039b41",
+  "c2": "cf4f71ac866e15fff9a09f7a185da909e7ad6f9986b34f3125ddda8c5108093c"
+ },
+ "SRD 5e/Monsters/Otyugh.md": {
+  "c1": "fcea106d0b6ce13def053708f26cdc33207d2704cf9b60a795c3fc41ab81d1a2",
+  "c2": "5447632ac157f58de83913c57c0ba058f93622ee5e99edebde3917379f050c85"
+ },
+ "SRD 5e/Monsters/Owl.md": {
+  "c1": "d123f5b089f7b7dc9289a6eff1b9e73df34a86afb64d6d78b98d545345b57083",
+  "c2": "c957014909214a1dacb751e3c46a7488d6896a6e6b1baeebf313da0733a521b0"
+ },
+ "SRD 5e/Monsters/Owlbear.md": {
+  "c1": "e4d01c704e2c9afac98adaf58904f58e9f8f0c862d3e9c44445365bc133c4e8d",
+  "c2": "56682d8edc60eb4c67d97c8922b34894a32bc35b3c55438c6ace62330d31501e"
+ },
+ "SRD 5e/Monsters/Panther.md": {
+  "c1": "e5be34ea5a506f79543bbc2fcd3941d10b463ea58da6915e8e6116fad5b4a5bd",
+  "c2": "1d4d4a97112180f0c720eed1108a74d8636009818db86d361ec968aa7188b5e2"
+ },
+ "SRD 5e/Monsters/Pegasus.md": {
+  "c1": "68d1ae1192b910effd69d0a3fcd4145de28e7e82c32afc9e83d07823a40ef67b",
+  "c2": "af56783c6623be2460b3c299cb891976bb35a257d09ec0a2cfb61645549c1f10"
+ },
+ "SRD 5e/Monsters/Phase Spider.md": {
+  "c1": "8b476f95315c4a4b070ba0099a6d89f7165e26736737396d7482fe1c7a2bcffa",
+  "c2": "d16a8deea4c4170c958707a44e8f1cd1378c229f9d654403f168e068a63a87a5"
+ },
+ "SRD 5e/Monsters/Pit Fiend.md": {
+  "c1": "0f5a970ee3604be4c9f0256c8021b5a8d3ca83f4b9f08bb5f40508b82eae65d3",
+  "c2": "a2bdcc2391e90defb2bf93e39b4f1e2e971f57a95f1fbc31d6d0ea82a7678f1a"
+ },
+ "SRD 5e/Monsters/Planetar.md": {
+  "c1": "7dd28bbb69664905874c627e2b5a7718a0f11412008942aee530b6c7b7952343",
+  "c2": "41286ed2772b9d4bcd68f48b181b40a92365b21ad6bc9f60deb706028e330b71"
+ },
+ "SRD 5e/Monsters/Plesiosaurus.md": {
+  "c1": "6c4c953db1fd52736c1065b5d1b323c613c933566f541675ab70206b3ff9bd49",
+  "c2": "a2d8c8787966dffe7330ccaa47f6a708e3dec74464f9fce8e02465f116d16afb"
+ },
+ "SRD 5e/Monsters/Poisonous Snake.md": {
+  "c1": "0f10d1068fbb0a3d64b94ae7289428d712f6faf94ce6e1f6c9453b5871aade53",
+  "c2": "9c2abd6544bcada231da70675a630741378ed8dedecdea6e3d7db782956118b2"
+ },
+ "SRD 5e/Monsters/Polar Bear.md": {
+  "c1": "9dfbf8b8635f1956e4bf9defe44ddeea2b06feb3721a9e5e22bdddce4ed2dbc6",
+  "c2": "e6c0b5ef27c89c21b7fabbc7dbe4df83d2093a6f81a647c9bba3bd0d219d6d18"
+ },
+ "SRD 5e/Monsters/Pony.md": {
+  "c1": "88f816800f75c5e65004ebd2026dfef222b73af22112e6d3eeb21044789bac6e",
+  "c2": "a1300ff5db4ce4b9090a993d01fa7008d4a625e5b07f99cd2924e0e00e4ef2d8"
+ },
+ "SRD 5e/Monsters/Priest.md": {
+  "c1": "ade700f2b8eff928498e79d1ce7cf0a6eafbaf26334ff1ef492cec9d67b5b9f2",
+  "c2": "58cc11dbfb14b8763634ab125fec288b12d80baeefc4b74e3ebe261166d510e8"
+ },
+ "SRD 5e/Monsters/Pseudodragon.md": {
+  "c1": "29df95b14e0d04a12a87a97b08c120d4a3a6d196be42b3e14b61d0e5f79b6104",
+  "c2": "6e43593262e00d72631df97fb7312ba9e3b0395a595262df4c6d028f7a2dc839"
+ },
+ "SRD 5e/Monsters/Purple Worm.md": {
+  "c1": "735da59eaf1686010242be5cd22b710b5cc5eefded1dea40bca784a8afe75d04",
+  "c2": "7abece2a6bbfee22ce9e2ab592401e60540e99146be76a95cdbb6399786858e5"
+ },
+ "SRD 5e/Monsters/Quasit.md": {
+  "c1": "6bc227a048af7fe711149cdac2d1c4197b097e8bd26c1279bb85d256230cd591",
+  "c2": "f3d402843216540dd322ff9f072a259ef016174906f390923d23ffe2583c4427"
+ },
+ "SRD 5e/Monsters/Quipper.md": {
+  "c1": "49b01a5d2b3ec46c9387ddb240e0489db83b9087bfcf79a4649c587bd61f3c36",
+  "c2": "be3005ea22af0ef420a488d8035d72495e04d168fed8ad657190f10440dc35a0"
+ },
+ "SRD 5e/Monsters/Rakshasa.md": {
+  "c1": "7577ed4dce68fef944e2c8016c4521bed29397029eb8754f4877480480471936",
+  "c2": "c91b96a9c6469954f5b0f9a4f05510efee1e4fac856a261c9eba4986d6664eee"
+ },
+ "SRD 5e/Monsters/Rat.md": {
+  "c1": "f95efa9085f87576a6ec295fbf3477e6740cfbfb07483cd05d0032c2a316e18c",
+  "c2": "14265f368bb478882a2fbf9d409de0671278accc976c4f1e10b2a396a4c061f0"
+ },
+ "SRD 5e/Monsters/Raven.md": {
+  "c1": "b27486997ad832721755ca47c97cb5af6e5ea106a6d4e486679dbea2e4d763e0",
+  "c2": "521505b10e97c62688872039a13c494f0fd7a5c4f49a223f25d6f9744b4be893"
+ },
+ "SRD 5e/Monsters/Red Dragon Wyrmling.md": {
+  "c1": "16a32618d6b4171ee6e50d5d8295d38168ac7a8286d1203ed24e6dedf2bca064",
+  "c2": "1d95b567f1f2f1a9329c83205aabdbb9eddb9d6be3054f8f879e8f2a1e5e5bb7"
+ },
+ "SRD 5e/Monsters/Reef Shark.md": {
+  "c1": "d65a8fc7511c51b6d88cf35471058ceebe396d61469983d6a052ece7669797ba",
+  "c2": "9d1762afd3d802891bff8d05bc7ce5b458e19f6d4f0eb8f90034579d9b0018ee"
+ },
+ "SRD 5e/Monsters/Remorhaz.md": {
+  "c1": "b1d7d61bd55d87cef60b927830231ef29c571f0c0467b9e21015811753497251",
+  "c2": "c26b664af33a72912d37e34d2a597059b6812896df45e8f32f42914007e831ce"
+ },
+ "SRD 5e/Monsters/Rhinoceros.md": {
+  "c1": "6eb6a6be09f78f56298c55f95274323bcea701111a52a42b90bf522b34d9b0a2",
+  "c2": "2f44711029b8da315a4214ae7129da22339399a27c21b19911609c3abc0f1733"
+ },
+ "SRD 5e/Monsters/Riding Horse.md": {
+  "c1": "4aaad582ba2bd8073eed4f7e51ee57e6f60cf12306bc2181b70a2d80b75d4be1",
+  "c2": "861ab84d896ca627bbefaa342869a8ec51fdfb5b01b8ae39fc979bfcdc9fa52f"
+ },
+ "SRD 5e/Monsters/Roc.md": {
+  "c1": "58bdda563773ce3f775d5ad14ef76921c6cc69cd2905660640c97f332284831e",
+  "c2": "0dcaf8a692ae40e9c41d77893a4c441f976987fb168a24c48f7148d67d1fe250"
+ },
+ "SRD 5e/Monsters/Roper.md": {
+  "c1": "f5343a82fc89d46bc56f1044276daa994480aa8589d1c3fdc79fbf9dab873936",
+  "c2": "89606c2c9596df7c64b016e8d9e9d19bb98350ca93c285f718a3f0adf7590dce"
+ },
+ "SRD 5e/Monsters/Rug of Smothering.md": {
+  "c1": "c44758f272a7f2bfb290fe558c149b08879130ea5d0f98b0a7899d65016e7928",
+  "c2": "c21cbb69bf2ccc875c2d6d2ff21d677a7dd3d97b3639892fd26eb56875eaaee8"
+ },
+ "SRD 5e/Monsters/Rust Monster.md": {
+  "c1": "66e532c4c921e477dc6d52aaa24c297acf28687e5387c793349ec385a2df55c7",
+  "c2": "8edbb523653087d416c50af6ff4972368bb4071efc13a40c0c799d81350e0e3d"
+ },
+ "SRD 5e/Monsters/Saber-Toothed Tiger.md": {
+  "c1": "d53abcf62a3ae4ece19c0a49fa9ff09f8461261f4110e76fd99f14e88123aca2",
+  "c2": "77adcb71a013876283776e4ff7020a5592b6a7fb5410929833ae1d270f837080"
+ },
+ "SRD 5e/Monsters/Sahuagin.md": {
+  "c1": "4b11e4233e99ffcdbddc0e4704e5ac1123fc17be09f68e9a5a39de99bae5a1fc",
+  "c2": "37cf2cbdc36511a32c9455acb432a862c5f2e9feebcf43d0eb2a946e082e478b"
+ },
+ "SRD 5e/Monsters/Salamander.md": {
+  "c1": "f47622235e4167474426d025f6c0018c7d125173a6fe0f872084e410f70a79c6",
+  "c2": "8a69e3f3a2b8db030d053c9931ced4e018c3616e7da2b8711e3c7c3b2333db5c"
+ },
+ "SRD 5e/Monsters/Satyr.md": {
+  "c1": "5f8b79d32bf5c59cc3106ca2927d1ee63e267c70de5dceadd3f155e1c65964bb",
+  "c2": "0540c6fbeee9bcd9313990542ab39f4581f2afd7bc24c4f7ff28fc2c477f1f3d"
+ },
+ "SRD 5e/Monsters/Scorpion.md": {
+  "c1": "c3f84874511c3b9d0f0c6b20b1c8bf28478d94555fd10c518e2d05b33027a3cf",
+  "c2": "241bda03e82d92dce7760c9725628bc5305952acb653204181185c0b6589fb9b"
+ },
+ "SRD 5e/Monsters/Scout.md": {
+  "c1": "8a7628093d21db1722a04edb4e69dd53b10675c0235f9308cd2e67d20c3e2573",
+  "c2": "7fef7b7697f6d60e2b30b594a292ecd282e36a84a51c510a51f140a7f3ba596c"
+ },
+ "SRD 5e/Monsters/Sea Hag.md": {
+  "c1": "a64967e5030031c89cdcd23724737c66782af607c2149da13b1ea3bb1a2a3465",
+  "c2": "440acf2a8f9f4ee7de728de5281beda85ee81552fb0cdbaa762b060fb49329a2"
+ },
+ "SRD 5e/Monsters/Sea Horse.md": {
+  "c1": "824315809b802839c04b1dbda9a2be640eb3ed521fd66538b81698a2c91a79d8",
+  "c2": "09a40f161de7f49ed5c9ca8f61192f8a388912a95e3693485545b406518702dd"
+ },
+ "SRD 5e/Monsters/Shadow.md": {
+  "c1": "6a2cb86041c6027cc4c8ad112b4aabcd324e90bb30732d804b40b6c6f9723d72",
+  "c2": "39bdcc1a1b72570d5c9c151536c82a8089613ae721f9fecbef3c96a90cf15092"
+ },
+ "SRD 5e/Monsters/Shambling Mound.md": {
+  "c1": "d6335765d2017bf45e7fadf9b2719737c4f7b6adbb8920fe78199d5b0a8a8c59",
+  "c2": "c594a65492db3f74fecb9d6ceae11b94081cf6e4d3aaec2ffc3f64ec7feac511"
+ },
+ "SRD 5e/Monsters/Shield Guardian.md": {
+  "c1": "d12ec2ae1bac4ea7fe0b0da893841ef19d60c98e49ff72b4bc921f6950ae51dc",
+  "c2": "367e8527bc4b0a4659f6b93e04b2f4af3a8475d8103d28419d143708d3a5991b"
+ },
+ "SRD 5e/Monsters/Shrieker.md": {
+  "c1": "cd2ff8b42bb7796f73edb6cda14b80c2d8b104c1bca859e94cb8ec9c10e9c446",
+  "c2": "34cd6c7597ace26fa162ea7edc669d7071158c31cb8a69c6dca91670a9aad8dd"
+ },
+ "SRD 5e/Monsters/Silver Dragon Wyrmling.md": {
+  "c1": "3b7f024d45c0016dc6836db107b68ca8842ec3dce11a4c64d2e05a80a8b6aaa4",
+  "c2": "f53ae1ceb8d4a72baf076690d59b056f6d61b35f3082d8b5aa7915356416b9de"
+ },
+ "SRD 5e/Monsters/Skeleton.md": {
+  "c1": "69c64666a7a21f8cf95a1defd753e0f6cee1761c0b973d3b3368a1b9e648e1ba",
+  "c2": "df5d58110d37a95a26146556f5098bcd2b6d6709a84f01c2bd5a090c22477869"
+ },
+ "SRD 5e/Monsters/Solar.md": {
+  "c1": "a23cac875f2aacaf90f3c97f42637fb3cf3ea4a2902574b1584129aed535ac6f",
+  "c2": "70164a3f084973929493914d7305e875e6ac2bca0efb466823d01a9f93015be9"
+ },
+ "SRD 5e/Monsters/Specter.md": {
+  "c1": "04b814ceae30c4389c4c6a1e0ba57938f3c7cd5f2a281ddb3fe1d139189381f7",
+  "c2": "dfe0b25b26358115419430e6c3cdf4b849375d565d8f3ad24d3a7ed115e1e216"
+ },
+ "SRD 5e/Monsters/Spider.md": {
+  "c1": "f5b7d489e00607f36525450f3730b9514c211011b15cd96ee0b2118f5939f93d",
+  "c2": "8a7c2837e552eb36c677b2c715930b63c870583eb8b5f0afa8b40f25d346580a"
+ },
+ "SRD 5e/Monsters/Spirit Naga.md": {
+  "c1": "49fb9f6c87f41c96007fe656c6f86b32812db89c885a5c6d1cf93e0243020136",
+  "c2": "296c94be1db5492c9ce91a35b8af366d8bee176170ee6a81364901655ee6a7c6"
+ },
+ "SRD 5e/Monsters/Sprite.md": {
+  "c1": "e9f065841799ede8cb083088f03b48203ef21a0fda30006a4abd88e63fc96203",
+  "c2": "601ccb820a472d46109b5c17ec3f85731f9f9e7d8bd178e14672406b63e0a971"
+ },
+ "SRD 5e/Monsters/Spy.md": {
+  "c1": "846aa390156a2bee665071dfdcae41d9b3d91d246bce218f672eab6220187cbc",
+  "c2": "d1990be4af2392bc7625d50eb728b55368a41db83938b15d17f9147b128bcde8"
+ },
+ "SRD 5e/Monsters/Steam Mephit.md": {
+  "c1": "a4a540c29e4017176e35ae735e16294579bd4f0cb0e1f932dc5878e45fe492bf",
+  "c2": "3a03d735034a67fc723d0de155d404f583c753949e3dc16e94cd59a249789cf8"
+ },
+ "SRD 5e/Monsters/Stirge.md": {
+  "c1": "9510a7d6d8cbad7718f80e1b96e1587a5850aeaea045f3170dc78b1b50ce60e6",
+  "c2": "b6161a05b877dc87b3cac48cff05c6b453916c5e90583d1f0c6ee62be2f71ed8"
+ },
+ "SRD 5e/Monsters/Stone Giant.md": {
+  "c1": "b9e95d621cfe54ecf5cb0ce7984fd8cd873c713606b4a804d1343f680dcf67b9",
+  "c2": "3fbfbb9ef3e015f9e5597c5d74cacb35e5e9166c134213cd3c1c85b0d0704fad"
+ },
+ "SRD 5e/Monsters/Stone Golem.md": {
+  "c1": "0d842ef9902cf9110db1ef55a5a3314009333474d791dd6622c79c56257c8970",
+  "c2": "4a8ca6accaed26d12cb7efcf6b664cbef93483de03f8faf4d8fd69d860ebd9bd"
+ },
+ "SRD 5e/Monsters/Storm Giant.md": {
+  "c1": "18fe71c65e1a6f79986748abf24d370d0c99c7b575df7c8fcdec472257d37883",
+  "c2": "479774f9e310b3c770d0569508e3fbc6497a64558e24d1e1f430ad0e11e88ff1"
+ },
+ "SRD 5e/Monsters/Succubus_Incubus.md": {
+  "c1": "6002bac2d77cf6f7e1431306c49d0317fc39e7830823554ca7a8e97d817f903e",
+  "c2": "ce95f6f448db92f4702cc7463f1349f8589c277577aa16320331b8ed41f0b320"
+ },
+ "SRD 5e/Monsters/Swarm of Bats.md": {
+  "c1": "d836b95bbc2be6d74f7ad0a5ee9089cb08d906ae5498abd2a6d669b2b179911f",
+  "c2": "53ed1ac32c62fe62223b60fa2e0fad3d2b5c88fdde9298580afcff64cb1dbbaf"
+ },
+ "SRD 5e/Monsters/Swarm of Beetles.md": {
+  "c1": "3ff2e4665aa402361554601d023f9125b3ba3db98017821bad9aae2214927f15",
+  "c2": "589f0d9e3fef7f5608a1eed0d22ad974504c9298b494519d803cddf0fc34e208"
+ },
+ "SRD 5e/Monsters/Swarm of Centipedes.md": {
+  "c1": "2aa564367fcd86b2143e09e162ec92a843d76c4c4c0cacc32420f001254271aa",
+  "c2": "790542cb7e10c73c00ab15832f564415abd21f21c5ca53b7d49015393bd3927d"
+ },
+ "SRD 5e/Monsters/Swarm of Insects.md": {
+  "c1": "85bc25eaa0167f3384127cece20b63182ef465e2d15e782426399d79063d22e4",
+  "c2": "7c4054fc51a09c27caa4482c97a7032ba861d86f25f8da1329a396a72a26049c"
+ },
+ "SRD 5e/Monsters/Swarm of Poisonous Snakes.md": {
+  "c1": "3eadb632b06ac1b864de5fd07c4d5c7706b105360c5445ed2ef48ba668d0a154",
+  "c2": "75deec56a8e5c03e42d43453e16c005d407882617fb145b5c105128a05d5d863"
+ },
+ "SRD 5e/Monsters/Swarm of Quippers.md": {
+  "c1": "d785ec23c58384123735a04284b5abe2e38240a0c0f0a22a47df99e721162a1e",
+  "c2": "2e63603ff565dfe09903845e8986dfb48931d2a14e5d8a52470378862c8badb3"
+ },
+ "SRD 5e/Monsters/Swarm of Rats.md": {
+  "c1": "861bb962feff96e72b27bb022402a7e79672d645beeb2f36a014b40293dfd0d8",
+  "c2": "1d1b3ab3d1515bff1c81284123e0dde0dcf03a9be553f83d512a022dd08d35b9"
+ },
+ "SRD 5e/Monsters/Swarm of Ravens.md": {
+  "c1": "d473ecab741fa7ecd49b6375ddd2d87ca5cc3ba5addc37beecc9050610caed1d",
+  "c2": "2d07be9515942b3d2729eec69c91de506e0dc7154ffad6bfd42d8c9dbd03fbff"
+ },
+ "SRD 5e/Monsters/Swarm of Spiders.md": {
+  "c1": "4c82f3d7e0d5facb036d45cf231f96690ca762b09f3c8192b8c3bdcf047c73e5",
+  "c2": "16cd0d21151ed7d22b4ccf3c7d5d2f68ab7821fb732788c1d8dca3fe02152a4c"
+ },
+ "SRD 5e/Monsters/Swarm of Wasps.md": {
+  "c1": "710bc0b2947c9539f573ed61c661e2f8d3f794a3f186d6621dbb158a26fc24d4",
+  "c2": "854ccfc1fe11d874bd2a4ade188d7f5e22b7dc448cd075900f62bfb2191608e5"
+ },
+ "SRD 5e/Monsters/Tarrasque.md": {
+  "c1": "52e6bd3290685be152da6fd3d385e37fc30d5f153cce01b5b4eade6203826358",
+  "c2": "bf5cb41cb0c24e60f52f3916be8002fd1bee872fc90cb2ebd783dfb83d42df9e"
+ },
+ "SRD 5e/Monsters/Thug.md": {
+  "c1": "03459ccf92e6d2da76201736f932ed52f8c79763497dae8a150220ced343b581",
+  "c2": "c98d36d8f8efc8f47ac50f94cbac1c5111fb470b7e9e9e071dcd9149e68dc19a"
+ },
+ "SRD 5e/Monsters/Tiger.md": {
+  "c1": "e2f285db1ef9d2df48c13770b16f029232fe602cc65083e1bc4590fd40a44c2a",
+  "c2": "c33ff360918d2eb2c42ad46cac4618ac77297f7430ed7985f140280c57f5051a"
+ },
+ "SRD 5e/Monsters/Treant.md": {
+  "c1": "f4d9d56c095ff9fb4bbc852292fc5c5be12736722cf1bf4406f697b31629f5ca",
+  "c2": "9422531d0973b7fd430452013a9b435b89952a0e1b59560e35c5ba50058af98e"
+ },
+ "SRD 5e/Monsters/Tribal Warrior.md": {
+  "c1": "aa327bf14b78d33eb495248ddb42e100acf412a2093929e3c9f04bf9d1f23c78",
+  "c2": "917bb2d39ec6443a46dadd8df76654f05132bfe7efd8c6ffcb17a606460e5409"
+ },
+ "SRD 5e/Monsters/Triceratops.md": {
+  "c1": "ce3a68bb38c1f18640c1ba053fb97aecc6c30231056a9ccb659619c305f6a86b",
+  "c2": "83c5f151a3d88d292502a452f0ee4fe3ef1cf34184b5c37a87605549ac879f57"
+ },
+ "SRD 5e/Monsters/Troll.md": {
+  "c1": "604b041309db521cf7f7578a2c691e2595be75d3b9888a7239bf75eed3bfbac7",
+  "c2": "0f9a42516c6ef1609ae72f836faf376cb349291fc81035b4c8dd54eb12dc1029"
+ },
+ "SRD 5e/Monsters/Tyrannosaurus Rex.md": {
+  "c1": "b023be0e2e1ca6452c90c9b0d29e0fe5b63ea162f3d93d4a8d277b4534dcb27e",
+  "c2": "585c4bc4458456fda2e2b92b074bf1e9de2362ad82d0be05c0ac5aca06104db4"
+ },
+ "SRD 5e/Monsters/Unicorn.md": {
+  "c1": "4f4714eafa8e0284a0732dbdadb743325bfae8add56c70a29f85b1cd57a9ba26",
+  "c2": "8b86ff312a09914e89aed7800f2fa06100df2568b9c6e392f150ea972e171d43"
+ },
+ "SRD 5e/Monsters/Vampire Spawn.md": {
+  "c1": "b4ba15f8280b047b8e6aa0a43cd58f47ae7c635f4fd3ace3528bb66320e8ad18",
+  "c2": "8e8c7ffaf04da4fec84e56a1d0285ff24efaafb562784960ff6faa9ff82f23e7"
+ },
+ "SRD 5e/Monsters/Vampire.md": {
+  "c1": "e76e1d09d8dd5f675d261042b9c36d84b03e1cd17373dd10a294d03eec36b607",
+  "c2": "520a804399b94b0ced3a9c3e96cbfdba908ec5fb539462fa9dee7390b00a9ca7"
+ },
+ "SRD 5e/Monsters/Veteran.md": {
+  "c1": "c43c7f19c949f2e512c17b95be9fdc9709e1a699d39dc03f29b666248317a852",
+  "c2": "804e02ed72bacef926c870d32e9972581bfac68c331f5fb91386aa8ca59ab30f"
+ },
+ "SRD 5e/Monsters/Violet Fungus.md": {
+  "c1": "cfc43e7eca467e9428a0cb592e53a2c00f4b7c3cb030e4820fe1635a2ca53f7a",
+  "c2": "7521a80c06ed8f456677404a6e5fc3f493a13ba76687c7796fa5803fd350a36a"
+ },
+ "SRD 5e/Monsters/Vrock.md": {
+  "c1": "2872db1feb94d8f64e9a2eec894d36de98851647c318ef6ae0d71daeba342fa3",
+  "c2": "131be08c6da95cae1437baa66f4d0e8347e601519272e3394c8494c3ea8cb558"
+ },
+ "SRD 5e/Monsters/Vulture.md": {
+  "c1": "3c7f7ef4864bc18c36ead6b3cebdedc3ea51dee72d7aa7719e58e9937c3b3b1b",
+  "c2": "91e98a846db92e78711e9fe951090739ac4552714e420d26958314ef07a1db92"
+ },
+ "SRD 5e/Monsters/Warhorse Skeleton.md": {
+  "c1": "07838b99d17702d6623e22c7cad70a3827e2c265f0e88107adaebbfae677ea09",
+  "c2": "12f8d70c9c0ccd247f52ee69053b4c594bf24a6551fd42694d96066386763973"
+ },
+ "SRD 5e/Monsters/Warhorse.md": {
+  "c1": "5cf73f5c16d661b1ed29ecdddd79fc6b93303a13c4074f68cff013edb1d4a9b4",
+  "c2": "9aeaea1d6a191db26d84bdd1e5bcd5a7bf826fcecf5e6c99d4cd036a6f9054b2"
+ },
+ "SRD 5e/Monsters/Water Elemental.md": {
+  "c1": "221b5c8c3ab78740a5285ae2d829a5f60745b37ae7aa9a4ec49e5f96fcc4befb",
+  "c2": "4c359d8184d8f0b3bc287d6c9a43b2b9e1b527c074ddfe19d406d10ced10702d"
+ },
+ "SRD 5e/Monsters/Weasel.md": {
+  "c1": "ad800f4fb720ef2e4c3f4b7e6cabd6231d3de57fb161ed7341558f87aa98b9e8",
+  "c2": "b331c6664f20acf2570c4764677e0df33a3b8448ab2caca4417ac7877c91ff6d"
+ },
+ "SRD 5e/Monsters/Werebear.md": {
+  "c1": "87a7782ee620cc14df32ffba8a2e399b2ee68c82e415c8d743abe0e3904681b0",
+  "c2": "abd708f5a62bb5fb8b2d22fba0378290451c61de3b9cbbc931e14bb5e958a251"
+ },
+ "SRD 5e/Monsters/Wereboar.md": {
+  "c1": "2e61e36a6d18e8b73ce82ee97281d424fafc25573d1cd90e494e960b91ec68c9",
+  "c2": "2e6a7472fd954fd1f2751ecfc03303328ff6c8ed60c31f8853b6a6ecf5496df2"
+ },
+ "SRD 5e/Monsters/Wererat.md": {
+  "c1": "3af939af6e5a72820cda666c05ac7bfd35e9f653012c92cac6fbd93c76dacb1d",
+  "c2": "330569d12955d76ce8ead59003c050a9f1b7a66ddb1ddfac884a833e674ca805"
+ },
+ "SRD 5e/Monsters/Weretiger.md": {
+  "c1": "0ae301ae90b3a68bbcb8856abe2740d5a367842cf3de953cd5e7bae5974b0c43",
+  "c2": "80876356d6f0f6c460f6d337b3f5664d11bdc5c2c3b9953223a110e1774881e3"
+ },
+ "SRD 5e/Monsters/Werewolf.md": {
+  "c1": "6f2d21104909fc0824df8fe7ecabe68a66d6f6ae398141c062286ec20c7554be",
+  "c2": "cf991d87e7d6f04a365634e0d6a7e1e57f3a9a876108ce304816a5a3adfaae5c"
+ },
+ "SRD 5e/Monsters/White Dragon Wyrmling.md": {
+  "c1": "0ae88bd9d4e0d0224ec93e1bab5bb48e36aa17b9da9ba8571d805bc1e94de2fb",
+  "c2": "7d4e6b92a23d413fdcbf8fba0fd94c7f6afb9d4b722989a9e28fa0d52a2d63c4"
+ },
+ "SRD 5e/Monsters/Wight.md": {
+  "c1": "af9919e453bedad9f8cd384b99b5833c8c641be7d3320bd5aaca672264d72a9e",
+  "c2": "bdb41d69fabff05a08f9e10013cd7d6b812fc1657fb548d50f9b110b42e9d21a"
+ },
+ "SRD 5e/Monsters/Will-o'-Wisp.md": {
+  "c1": "fdf190e88281bcfc1a9b47e487e9dd81511c5da6d2ee9bc36f89dbd2c319b3f9",
+  "c2": "c46df630673e2277ecf41c29357e112b375510cf38e593149cdbca8b53ff6cc3"
+ },
+ "SRD 5e/Monsters/Winter Wolf.md": {
+  "c1": "9ba6f32e05ce9cb49314a0e3ffc6ed1931d205cbcb37a4de115af79ef28b2947",
+  "c2": "d941b201e2374444d8157e6e0b6b6882d9ca8e75a7a87d393ffce63875d27e44"
+ },
+ "SRD 5e/Monsters/Wolf.md": {
+  "c1": "59ac33a20648ff26f053e895a214cfc88f9454b543fbd35d5d582c79530dc6c0",
+  "c2": "fa29a3afec815e9d3313611033b5770c450ef24f9b1e30b782ba5e09fd7aac3c"
+ },
+ "SRD 5e/Monsters/Worg.md": {
+  "c1": "38eeaddb6c6696d00f4cfb9a9c4d215704bd92dde6c21be0a0b5b9405c3a6180",
+  "c2": "0064c21bbf4b4aa135d0213ef7607e74e474feee2d7c3ec52918bdf5e41b0df2"
+ },
+ "SRD 5e/Monsters/Wraith.md": {
+  "c1": "15acff71a74fba17a09e87ca5ae97444944243eb3540cdbf02b46ea22775b7cf",
+  "c2": "76ef30aa8340298a850b25d8d8db0fff9ddd4c7a2e6c459741b97023a34fb6e8"
+ },
+ "SRD 5e/Monsters/Wyvern.md": {
+  "c1": "476509031d43e38bf4ed3e863587991aed5da3757bfea41c6dddf5fe0271bc1f",
+  "c2": "ead5ad9a330c82104c53e519b0c394ac3816d6f081fdfdaacfa6ced29123e105"
+ },
+ "SRD 5e/Monsters/Xorn.md": {
+  "c1": "057f05e94ff1fb2ba38a37de80c0aacde2ab0126465869ba0aaecd39d61e1898",
+  "c2": "c8d9b8991b8cc829178200ad067724f5fbc966000db20f53956d8f6a69a7abe6"
+ },
+ "SRD 5e/Monsters/Young Black Dragon.md": {
+  "c1": "94d5c0a3a8c04609c3e8b21b32a8825fff4fbe2e847bb187356e15907140dacb",
+  "c2": "06386aa182a42ac33d37d9991612f2f76c039950c9bc2b382eb26b6e5d6b4cf4"
+ },
+ "SRD 5e/Monsters/Young Blue Dragon.md": {
+  "c1": "b37fd2dcd6552a4a282acff84be684a38cd2e2a1c53e5f5c2a368a81f3140c9d",
+  "c2": "35a93fb1705060c23b7d72ed7ebc743e3e6fbc22d924dad52f70193a9f89688d"
+ },
+ "SRD 5e/Monsters/Young Brass Dragon.md": {
+  "c1": "5835ceec52ab5c5c059751954b61eedb8b20d1c2c4e9273ec8659e57874795cc",
+  "c2": "54e94a101e84c32332c455ad152435c7fd3ac433a41be31f3fff059a4a4373af"
+ },
+ "SRD 5e/Monsters/Young Bronze Dragon.md": {
+  "c1": "ca48d19127c0617fba9831bc29b75847d51a26d858c5afe47c7210386c2b782e",
+  "c2": "a25d2253e6f5589155091ac74bdbef5b4852b3b3f89be38d34e5b711ea49a0a3"
+ },
+ "SRD 5e/Monsters/Young Copper Dragon.md": {
+  "c1": "cf3a1e947accc3a366781ea32b5db6d078d497f57ae89c8d8fbfbfa937c77856",
+  "c2": "81b4bd78bf4031bfa145592b38d3ab3fcab91dcbaeca639223e1acce8fd55ee4"
+ },
+ "SRD 5e/Monsters/Young Gold Dragon.md": {
+  "c1": "3d2b44aec4531dbb532ef4e78112ddb51021536f6b8993778f0ae0bbc77cac86",
+  "c2": "dc22296c309cbb197ade0e2737ad6f672f2d464c85026e4b9c9f5db3f24398f1"
+ },
+ "SRD 5e/Monsters/Young Green Dragon.md": {
+  "c1": "d8400374fe023157b844f604fbcf4aa8919771a737e3a36ebbba2829072823b6",
+  "c2": "de60c6541e15d0b6585f90492f0c7c58e85b5d643a699a8a905e35e556007610"
+ },
+ "SRD 5e/Monsters/Young Red Dragon.md": {
+  "c1": "2b75cd66d00985ca61e6ff480e7a3d7020e2fe72cc570ebe9287d0ecb1998354",
+  "c2": "4a2f7758f4f0c41de89d58e648d047e1e86d2530eee1fc01a307254515fdd4a0"
+ },
+ "SRD 5e/Monsters/Young Silver Dragon.md": {
+  "c1": "3281a79941cfc8578a391a25b5bf1b733044e968b3638bc5b878dcbea60b0e10",
+  "c2": "c0f55cb4e1b93d8ec9c2287cae327f1f790fa9035f6e28e6ee44f23a8ceddace"
+ },
+ "SRD 5e/Monsters/Young White Dragon.md": {
+  "c1": "2f7d2666b609a9cc77cbc4541f8cdc0f641aa16d0f39b5e6de15749a6ce12cd5",
+  "c2": "439a5a34233fca73d213451b78b397a2e135985fca35a43d63736ef9a3760fbb"
+ },
+ "SRD 5e/Monsters/Zombie.md": {
+  "c1": "00cd6df22f6affbe447a93a3b99e3e7d451969f531dd70369f621630f44b80ce",
+  "c2": "86a3abca4225b2553ca702dd2397b1b91a342609122cc715ed697f42e03ca8da"
+ },
+ "SRD 2024/Monsters/Aboleth.md": {
+  "c1": "593c8adaee0e76755666f92de20fe305794d72c5722d51981ed40cbe342bb1d5",
+  "c2": "46d25d670290f9ac84a7fe948e35b576de1df765bf12a9a598badbab0a6a18b0"
+ },
+ "SRD 2024/Monsters/Adult Black Dragon.md": {
+  "c1": "5f47b09741eff3b7a0cfa0981a4d507c53608133d456bc2021b801868f440b72",
+  "c2": "abc783e64e570e8afec1a2006a50b9f97caab22c3ac5173478fcf3945e94fd05"
+ },
+ "SRD 2024/Monsters/Adult Blue Dragon.md": {
+  "c1": "bfb9b3b755bdb78c48295deeddfe5039711be522d510e4565ce908b7652d890b",
+  "c2": "131f70f27acfa779a24a9b926bf151f20d82d098dd83082bad3a763ea1f0a0b0"
+ },
+ "SRD 2024/Monsters/Adult Brass Dragon.md": {
+  "c1": "d67797daacd6fe8d0738521eaba0f4f913e772a30548203e1fdaee7c863e2f38",
+  "c2": "b04b8a92199dfe185de08bce06599b32e3f909979a0cf5cd92ac6df41790bece"
+ },
+ "SRD 2024/Monsters/Adult Bronze Dragon.md": {
+  "c1": "c05a02fbd088118718f005f0fb48c7e4d34d1485174f3306d7f781bed4fe757f",
+  "c2": "d97347c289f7655e8936adde9dd9c8f021aa3d758e33cb45b3f297728479595d"
+ },
+ "SRD 2024/Monsters/Adult Copper Dragon.md": {
+  "c1": "b8134f6ce9bd96651e655c882cb1e866c4a6fb974d0baddb34560f3bfe04e680",
+  "c2": "981fe81e814669622c8e19e1858eff309937a7c6082180b71334602daecb3569"
+ },
+ "SRD 2024/Monsters/Adult Gold Dragon.md": {
+  "c1": "3fd535bb865e627b7914c75ac69f7a3655c1a6af33cb87471f4808f0b9e427fc",
+  "c2": "ff4cd411d551cb9520c7ab46a5884227a2411b496c7f285212c1dcf06e70c0be"
+ },
+ "SRD 2024/Monsters/Adult Green Dragon.md": {
+  "c1": "1d1b5eba18d16c4bf33ebb2bcf9b76178ee9a3a095b5ad5669ee873b5df13377",
+  "c2": "b6028be5e7670023d7927e5e0fb949d535f8612235946ecb2c38a201f7845f06"
+ },
+ "SRD 2024/Monsters/Adult Red Dragon.md": {
+  "c1": "0916d7fb72c5c97f09c3618fa09241f316dc3c71f4e29b728cd1b250780fb0a9",
+  "c2": "f96ced22cbc10698e2e66208dcb8a45d73c61d34a96d4223b2bc95c49e67e553"
+ },
+ "SRD 2024/Monsters/Adult Silver Dragon.md": {
+  "c1": "e5ec852260d92c139d560a21243fb1a4bf5f950087bb8a1189b8e8a2daea4149",
+  "c2": "c0b2509c33650315ab32857722de64a86eebbf520aa07c320ae35ec3766ec960"
+ },
+ "SRD 2024/Monsters/Adult White Dragon.md": {
+  "c1": "95d1c26c83468fa858367b3fcb443f9b98c43813bc2f84d2720fcb1730fa5dc4",
+  "c2": "8f15ffefa28d4afc8e6f8eceddd7e8d34e71afc5b8294cb4da4563bf16a17e76"
+ },
+ "SRD 2024/Monsters/Air Elemental.md": {
+  "c1": "33c7ce9b078027c08f1a1ae3dcc29aee2213cc19a350f0e2b1e9b9a749a5aefd",
+  "c2": "b0237b9b662ba9d88710eb3991d50f17c4f403f5e7cf0d4193ec56958e6d6ac2"
+ },
+ "SRD 2024/Monsters/Allosaurus.md": {
+  "c1": "7c39ceee8c88ac3cacee0150f0511453f8b76814cd50fb038b63d9171fbc81c3",
+  "c2": "70d2b22860e3181e3b72012bb53cac54e5ee4a1624bac462f71e8521213ac293"
+ },
+ "SRD 2024/Monsters/Ancient Black Dragon.md": {
+  "c1": "2065c87a69ff6b230eeb84bba863a6bb4beb32ba31443fee31a5139a8930ce0f",
+  "c2": "fe694504d6109d0429b2b47aefcbffeb0c6b038d9d290d95e8bcd87015837df3"
+ },
+ "SRD 2024/Monsters/Ancient Blue Dragon.md": {
+  "c1": "7e5e6d0f135c3078bc4dafa18691358848ca1269b022b37cfe94962e738750c4",
+  "c2": "bc85840b39f634611c21f0c6e54ff231051eca73bee7e59286fcfc4b6c7d54f7"
+ },
+ "SRD 2024/Monsters/Ancient Brass Dragon.md": {
+  "c1": "dfe72417dadc40531194f4f8d69ca37042bcf4cd74483a66817654c360b18177",
+  "c2": "38efa345d1f5a8d901efdef589ca482ee042ec71ec93d75765ba0841dce5a35c"
+ },
+ "SRD 2024/Monsters/Ancient Bronze Dragon.md": {
+  "c1": "db107d6b19400a5df84d6d5bca2720c9dc1e30125072dc9484dbaf9e551e28ba",
+  "c2": "62996298e9de718b50c94cc126b8f46bf4acc524c33b02b715ce48eef5672009"
+ },
+ "SRD 2024/Monsters/Ancient Copper Dragon.md": {
+  "c1": "a63c844d2e24497c4d0f583742fa001beb755ef9cf562c103b12ab16fd05f186",
+  "c2": "f4b6626ac570ad87ac485da22122ac186f4607cb12a4e87f2b1eb056db95e9c2"
+ },
+ "SRD 2024/Monsters/Ancient Gold Dragon.md": {
+  "c1": "22ed8cab6239f00d7c2fb685462de26fd912d1cc3652f4be11e714bda9949516",
+  "c2": "49d29969319261d3fb4ed217d6af0ee00f6f53e8fdd01c0948c397667810d117"
+ },
+ "SRD 2024/Monsters/Ancient Green Dragon.md": {
+  "c1": "6638a7248e6726ec89d6665f6a0cab0e9a490681384a6b4da8fa8d7c398e307a",
+  "c2": "9339250e0416caf20b8c14b75319143508dbc35d78ac6ade86197468a1d0afe1"
+ },
+ "SRD 2024/Monsters/Ancient Red Dragon.md": {
+  "c1": "1d4040207b174bdf37ea2594775d14de58c6a3cf4a92d52c8794c4ff4637057e",
+  "c2": "255b469fa45151206c32b5f1f97937cdcad33e5b6163838c1960313c22505018"
+ },
+ "SRD 2024/Monsters/Ancient Silver Dragon.md": {
+  "c1": "5ca40ef7d9272c4b154f2f042618c00aa293995c6807714cb738e2272f0d2492",
+  "c2": "6fc4421942cfb53be8245d5df0fddd93fbbd4e53de25e7950b1a9c3262c8325b"
+ },
+ "SRD 2024/Monsters/Ancient White Dragon.md": {
+  "c1": "72037f0bbd34d9f9bdb184e9170fd8c2e4f77770ffee47503939a2311fae679f",
+  "c2": "3612562fb52f07cbcf028a87099bcbfeb8d424ae3f5dba034cbc0f9e5cd351b5"
+ },
+ "SRD 2024/Monsters/Animated Armor.md": {
+  "c1": "a52d5810d0b3ae1b92f6e7c0d4f4cf1d2843e813e5f9439ffe064c50877957de",
+  "c2": "2b98484f91373e84f10fc311717ea13a6d3ccb92ccc2ff68eefab7f515aeaafd"
+ },
+ "SRD 2024/Monsters/Animated Flying Sword.md": {
+  "c1": "528a0f55f97118751321e547a4d839c21d00e6a833187b5cafded17278251aa7",
+  "c2": "25a20e0bfc4b991a9ab2332e54360ad53ca57c300a7221f7c6fe320fcb16c66f"
+ },
+ "SRD 2024/Monsters/Animated Rug of Smothering.md": {
+  "c1": "9bc22376847355fc49cd5e3fa001290ad64edb372f82dba4bad8f6d2f7664c68",
+  "c2": "d5069101e220870aae588545d55c158a96a678e780b21a6c2e92d1ae68af61d7"
+ },
+ "SRD 2024/Monsters/Ankheg.md": {
+  "c1": "4db178c07f6140f5aefb23783dae40b839298798ff9bcc243a677413f497bf72",
+  "c2": "202906dd5fee3963377badc5441150152c9fe0a7ce4434673fb7d88043c2fb3a"
+ },
+ "SRD 2024/Monsters/Ankylosaurus.md": {
+  "c1": "8b739e70c786846c7f7502dbec6544cdafb0ee63f659b014a295accad5ad6f3a",
+  "c2": "7ca10d88078379dbf1623a701efa0b24b20bae2a8a8b131a9e7187e31f62047f"
+ },
+ "SRD 2024/Monsters/Ape.md": {
+  "c1": "3085c4c87a47622dc9a65d0daa4d73f066e670727666ab03c4239dfc81a532c2",
+  "c2": "dad3e4272ffb0be1979a1097bc784fd1046f2880ce559b6717dd387a2c0c4c27"
+ },
+ "SRD 2024/Monsters/Archelon.md": {
+  "c1": "1e151d7b685c1276e3e19923a1eb4f044f01bbfa6553ee11c78119311e3c2271",
+  "c2": "dbcaee44a0f6410f953b9fb5b5f084b7260ce9a5203f718efee47b7f0aec773c"
+ },
+ "SRD 2024/Monsters/Archmage.md": {
+  "c1": "9d1085e26446b25fc056f71730611922bf170257b19a0d8adc85a26e12e4a515",
+  "c2": "c4e612131f6bd11318d61d4006ac6a3bc7970cd48022f18d3274cbb77246612d"
+ },
+ "SRD 2024/Monsters/Assassin.md": {
+  "c1": "9cbbb3dee1d9d0c07b0eb266010c57bbacb82651eda26a7a462b1e93a2ef8ecd",
+  "c2": "8096146b4f5902497c03b4ee614220fe7958cfe2e30c6fa3379c8738749ea764"
+ },
+ "SRD 2024/Monsters/Awakened Shrub.md": {
+  "c1": "45239f27f5b28554a3ac62b4359294bbff0584584be7886dac343abbfda1b51d",
+  "c2": "5dce8bb2b9209c81cfad077ba35b0ce1a08d28baedaf2768569022325cdb0d3c"
+ },
+ "SRD 2024/Monsters/Awakened Tree.md": {
+  "c1": "bc3f8030cdafac6dd56e8f8512df64bbc7ce231ffb2a65987cd6a819748ca287",
+  "c2": "87af0a1008dd3fc6f4f55ba24c74cb3b4fc54b5b2dcf8ab9f39257283804a7b6"
+ },
+ "SRD 2024/Monsters/Axe Beak.md": {
+  "c1": "ec303cbb701b10ab0bfb5f598bb2d3d5123204ad3b7fb57a3ccb6e1bccbd244f",
+  "c2": "dd8e75c7d18cea61a71506244fca8aeff6058a4a09b44c5b0b201e922ffb471f"
+ },
+ "SRD 2024/Monsters/Azer Sentinel.md": {
+  "c1": "902c9b41933588f71b478964f9ff9fd04855211ca306591511f9ce6ae2792943",
+  "c2": "5ca6c34b88d3a9de4279687ea127507d4d0153eb3d570c209ee6a479b0e4dad3"
+ },
+ "SRD 2024/Monsters/Baboon.md": {
+  "c1": "96555b64d573a6842ab5ce7875c2428e9576b1f4d4602295a0bb5e34e2076992",
+  "c2": "cb6abdd1d1174450ece8b2fdd274ba34633a672ac4f5773ddbe5c5cd02adeb3f"
+ },
+ "SRD 2024/Monsters/Badger.md": {
+  "c1": "4943510a8d6f5a1c9b9fc11e9df0ff4f1f9c0999a7b600d73fad8bb51f95293c",
+  "c2": "98a9d689f6620a71e68ab0155c2423a49d82d9ddc81f50b2dedf4464a9a5b48d"
+ },
+ "SRD 2024/Monsters/Balor.md": {
+  "c1": "2fdc24412fbdc89d7e375063ec90a25b17354cb8c7c116789f815cb853cb8eb8",
+  "c2": "3bb18b34c3c90158c1f1b25a220123182d92c0a86734a6f998a847913cd4e022"
+ },
+ "SRD 2024/Monsters/Bandit Captain.md": {
+  "c1": "98e5969f6e5ca21168a8754bd16de298ec38283b0cf6758c35add7efe693b5d6",
+  "c2": "c3196c32bc8958ccacc7bc87d00c93b5d7e4fcb9c37bac6b9c1370d84f5d5d4b"
+ },
+ "SRD 2024/Monsters/Bandit.md": {
+  "c1": "356e8e440ee2a44291af2f585b30b688a4270de1d1346678434b992329eafc80",
+  "c2": "e84494fb9412dd74a0e56e57381def582cf0aadc820e6d8c4c7f0e521e8365e7"
+ },
+ "SRD 2024/Monsters/Barbed Devil.md": {
+  "c1": "d2fb9b9a23d5180ffee4141bb01147635c279a7240f295f08c15a198d7afd2cd",
+  "c2": "44479935d94a028a469d3347d3246c7138b84f2285155194feec3ebf2eb0a58d"
+ },
+ "SRD 2024/Monsters/Basilisk.md": {
+  "c1": "fb87be26a31755de7bab7af338df82dae649edabcee04eeef42cd9ef54d4d996",
+  "c2": "4e8e5f1d1e655507b565b660bacad02e6bd51a0da297952c70796c7fc64e6ad3"
+ },
+ "SRD 2024/Monsters/Bat.md": {
+  "c1": "c90262dbec484e90c6a0fad5577fe16003118740e48a230f1eb19744dc841993",
+  "c2": "825ea16ee0d9d5067a83517832b129d3553c56874f34d8f6f38826886f56ac70"
+ },
+ "SRD 2024/Monsters/Bearded Devil.md": {
+  "c1": "edeeab800d3676c1f50c75f38d1de28d0fa823da6bd6d0320bb0a549a64147b4",
+  "c2": "b5ea783a6c5f82864bb26ea665dac65c7c6f2e8b59b1a4d390728d376dd7f8f1"
+ },
+ "SRD 2024/Monsters/Behir.md": {
+  "c1": "5736f3fece918e9f32bc3c495b3f355fd1f8cb13ca312e0a40e709836b8e5fa5",
+  "c2": "ca62567c6742bf1bee549fc4eecea9905d2e1b2c6a3a50b2d13a64694eb9241c"
+ },
+ "SRD 2024/Monsters/Berserker.md": {
+  "c1": "68251a0ecc759d58d9305ca6c7b9246d640fb9dffd63ffd0036e318fa8846651",
+  "c2": "4ef1f9c90a1877253cf1fbfd48c6ce115ed13c33daffe4b88fbabe84b390f604"
+ },
+ "SRD 2024/Monsters/Black Bear.md": {
+  "c1": "e0899be69ad280cd900f77bd7604f0e0c135b5d342e8e51ab4b0fee94e9aa28f",
+  "c2": "35045110652cf8856dac0839263919a5c9067f3645ae5cbd25adc57852913e3e"
+ },
+ "SRD 2024/Monsters/Black Dragon Wyrmling.md": {
+  "c1": "3b6753b2a9374ea062a814c7988766fb02514720e478d629f6c80ae153852209",
+  "c2": "94c07b4f67c967363b6c842ce6693a9c67d56e5f260d7f27d0ac108cf64817aa"
+ },
+ "SRD 2024/Monsters/Black Pudding.md": {
+  "c1": "83eeef2c82ba61c1cdb7b2ccdc40635c7e82c8f57f0ecb4f617cdc8065bb1afd",
+  "c2": "a0ba5cd738372e3105b5896b42f72ef4606a6d88e268b52c48cefddcad699928"
+ },
+ "SRD 2024/Monsters/Blink Dog.md": {
+  "c1": "61e1dd4d3d5309365f85eaa06d340eea4cddda6a51b5cc093fc3a7b5d4c611cf",
+  "c2": "2120559be588fb2607729169425afda070960bc66835f7deb1c7a494ae0162e1"
+ },
+ "SRD 2024/Monsters/Blood Hawk.md": {
+  "c1": "68c4fe5ebbc6e9f1c813d28fc7a1bda7091496b35f0f6c3fb3429e7f8c1e850d",
+  "c2": "bee967e76e14419d02fa5aa9642fa3d808e986e51d6abb2a6200a806d9818fd6"
+ },
+ "SRD 2024/Monsters/Blue Dragon Wyrmling.md": {
+  "c1": "58c268f1c831afacfe702e3cfd8537e0c62bba13729cbf42d2f142afb7f609dd",
+  "c2": "09db5c4ea48987defa476da3c39b7e945a2d9b0a65bc8cd5c3e43c35bc6fcbe8"
+ },
+ "SRD 2024/Monsters/Boar.md": {
+  "c1": "34d3205a83a1793182869ba54a2d8e98d9f71306cc24d16756708a5091d6c1f9",
+  "c2": "c886a53aad6685c4aee185483a3c7ffb757732475bb625e6e24aa4fb1646a27a"
+ },
+ "SRD 2024/Monsters/Bone Devil.md": {
+  "c1": "c4d7d69f073f52834ded7214ced01bced0f24b5a2c22798ae80b341bef2de0b1",
+  "c2": "5768781f4a0d5cb63517f6026d0481ba0d7ea1f985a9e6593eb043cb948b64d1"
+ },
+ "SRD 2024/Monsters/Brass Dragon Wyrmling.md": {
+  "c1": "621afc1ab0a01b2cb894481e08985a8dba9f5115256140606cbfc4f2643c367f",
+  "c2": "ecef3c0cdad3d587044a43d7e7c0a230d23dfd4814cfaa603a8185f44db8c5fb"
+ },
+ "SRD 2024/Monsters/Bronze Dragon Wyrmling.md": {
+  "c1": "e4e5f287101d9979dac98c6caa4c7f481da25e1714715e59619476fa09e9fe1e",
+  "c2": "54f94a5ed0bf98f85dd7cb2e0d761941f5d4d9339a064dd15ba13f169d3038ea"
+ },
+ "SRD 2024/Monsters/Brown Bear.md": {
+  "c1": "b948c2c670f8d9506be3914cfd48f910a30a616187a3ecac87564aeaa919c25b",
+  "c2": "d59cb6c64dcc1cf4f42a4b24443087a18722a36d8061ffc116de28a3a563e430"
+ },
+ "SRD 2024/Monsters/Bugbear Stalker.md": {
+  "c1": "f3cb602c1eaa4bfc9c36debac686e4e8cdedca168b5797c43f255f87e193db37",
+  "c2": "ee0fae682d0e3cfecd3da2413b3e6328526ecbb56c95de3b42a952c30ccbd2d2"
+ },
+ "SRD 2024/Monsters/Bugbear Warrior.md": {
+  "c1": "e780c558fda9b776031bb30654bd435ead7c327d5a48b804f3bbfa6397b992d1",
+  "c2": "5c8e9904943e39338b28309d9d0335c6d33d41f744ed31cbcc1991cf92839aaf"
+ },
+ "SRD 2024/Monsters/Bulette.md": {
+  "c1": "d0995058303e827d455bc74f112126a0d2ea913677e69caa379bd2a794243e8a",
+  "c2": "933511df663a1b1e1e565c17fe2479d11dba3d12d8cdbf10bcf5d5a4718b4856"
+ },
+ "SRD 2024/Monsters/Camel.md": {
+  "c1": "8295c9e97b28aefc62924b3b5c50d955197288445cf7c75ab5c78acfbee556a8",
+  "c2": "25c5adfe89791fdc5707e93c5872c4b08cf74d58ddb1fa3d2a910a3447a2a3dc"
+ },
+ "SRD 2024/Monsters/Cat.md": {
+  "c1": "177434e1feba3d23b91764214f3eb2cf4cff8bd9f5730b2a4824f36d6ca18d83",
+  "c2": "9a1133b8f10fbfe54cf0ce1b871e3926edbcc887761cce46802162c901b0ee8e"
+ },
+ "SRD 2024/Monsters/Centaur Trooper.md": {
+  "c1": "ca1d48c020c4002a3d682474890fec8eea7707ccaa5839221f437f836792a047",
+  "c2": "86be480a28229903c939cdc95dd46c6896cfefb9c71e3fadd3cec702f780c829"
+ },
+ "SRD 2024/Monsters/Chain Devil.md": {
+  "c1": "73eac673d08aed13ae2a6b5298ccba2507c7723541e8de357527ce16069b9110",
+  "c2": "c5ceb76f22049806f3340685e60eb6100aa860e7ebb3e2feae0805c2e6cf328d"
+ },
+ "SRD 2024/Monsters/Chimera.md": {
+  "c1": "fb32261fab8d295a768ba799dd216cf6e9755b1ff875a8c76c57be746a93724f",
+  "c2": "5f84e6afe701666d5a648d032adb16d013398ed512eabc7a15361f3885390800"
+ },
+ "SRD 2024/Monsters/Chuul.md": {
+  "c1": "c24c1b23b5022927069a123cbcf835719576e07f7fd2662d7e08079430479e48",
+  "c2": "5e081a640482297974da23d23d5d36fc91fdf383e56c878b2109ed02b920c0b5"
+ },
+ "SRD 2024/Monsters/Clay Golem.md": {
+  "c1": "2f4cf64790cca607a858a2af9246f40ec5d18ef5ef008c2d8aa352181120bcbb",
+  "c2": "f4106923cbaba8f5d1fea3ec389a1528f0d83bae1cdeda60eefde9f7a25695b9"
+ },
+ "SRD 2024/Monsters/Cloaker.md": {
+  "c1": "9ddcbc850b714214d78f968b13bf4fbe5d11efdcee55ee336c9878dcfa453a45",
+  "c2": "d7e414085f8c904328bea7455a9473274dec1051e611f7de1905e3dd35eceb1e"
+ },
+ "SRD 2024/Monsters/Cloud Giant.md": {
+  "c1": "d51e69aa29ddd476a1c22f7d443da1d737f98d7442f302993297bc589cddc2d1",
+  "c2": "0000e19e69b9e3288442f23c11242316dc1e849fac2b36b9c41e4d74fc9c6fcf"
+ },
+ "SRD 2024/Monsters/Cockatrice.md": {
+  "c1": "848d56bb26580fab8768084c743cff0b9ab146d5fcc99c1b865763f4fb837c41",
+  "c2": "b9defaea3c789107e02c7b507e6164973bd9ae94cb95f44406d697ec78094ce6"
+ },
+ "SRD 2024/Monsters/Commoner.md": {
+  "c1": "8806963c368b9b68d8afdd87db9911cbcf6a74df7f0727529f6c3c3d206ff8cb",
+  "c2": "83973956f4a55edd4e3283b6189e2797e18bf49ee0df045e4329912d4357214b"
+ },
+ "SRD 2024/Monsters/Constrictor Snake.md": {
+  "c1": "1a97f55d36584669d9ef2a4ef78c4c81a21fba0f8d9018b47e095cb46bde08d4",
+  "c2": "d1a3ad4a54dd163bffaf57f558ae19da4a48c2344ca0c5639123a5c6d905ffff"
+ },
+ "SRD 2024/Monsters/Copper Dragon Wyrmling.md": {
+  "c1": "79c2f33c83caa786668c3ab111c1cee8d0fe76288ad58c20c52431b2e6236650",
+  "c2": "38aeac8fb14db83cdf2f0d7cda06ab61b1cebc1829c056cf489a11639101fb3b"
+ },
+ "SRD 2024/Monsters/Couatl.md": {
+  "c1": "e1bbe9e4ebc44df6e1a595b4f52b7ea5b7fb3686bf5909fbe7c6653264c0af2e",
+  "c2": "48489581c80d3fc567b974bdba9cb0d77c5c1b025692f23b5ceba691e921399a"
+ },
+ "SRD 2024/Monsters/Crab.md": {
+  "c1": "a7e9ab9288371e80b48481b0d5a771ec89a62dce2e72ac1c0bccc8d9cf6c7d11",
+  "c2": "d8e2a9eaecaf2b3aa8d329f28b85a723746db8245e5422a04ac3d310c9ca022d"
+ },
+ "SRD 2024/Monsters/Crocodile.md": {
+  "c1": "1cad6986d6fa840b4c9b44a89f98aa0c24b77241b2dc223e49a5066e9dd10620",
+  "c2": "c958e7a27f0076b68574f672bf4692c5d68a5bd739df9cd344da85f4e3af5864"
+ },
+ "SRD 2024/Monsters/Cultist Fanatic.md": {
+  "c1": "fe3f6ed8a8a88e2cbeeee0afd14c886cbde6e88251e833fde34147d12912853f",
+  "c2": "e8d2aa64f86cfb6e48955b4fcefb2845de765ef7a05b79063d3328ea2dc6c74f"
+ },
+ "SRD 2024/Monsters/Cultist.md": {
+  "c1": "790b045c8e008efa96e8f13931f8dda293f011e0c1c8e8c7c05eff5d13fd3c71",
+  "c2": "4faca93ff830a80770a0c1c8c6de722cff8342aaa0e916ae6024e9ccec048918"
+ },
+ "SRD 2024/Monsters/Darkmantle.md": {
+  "c1": "2426e748acb4fa4a11c14252d10bd332e2be596c803c06352b3e6b44030e5367",
+  "c2": "36b69c5ea8214711d832759240a9f1e058424c7edcef0695fc4b22c6b2859543"
+ },
+ "SRD 2024/Monsters/Death Dog.md": {
+  "c1": "2ff881709bfaaa8c15521361aefaefe7a4f8b58eb9dc419504a78d7b83556f8a",
+  "c2": "7285cb213725272349864b0c237b6e8389e9e447d44d6043fe8a0704a4a2a2f6"
+ },
+ "SRD 2024/Monsters/Deer.md": {
+  "c1": "4657763ca9cad57c9a2e0262f23354074e384fee2a0230b51108d947b0f80ad9",
+  "c2": "777e5d4d67435b609b26e208f7800de99542d217999502d433d771754c8ab6e7"
+ },
+ "SRD 2024/Monsters/Deva.md": {
+  "c1": "c27e81193b72cfb9daf8d3ade60963e93090d3f51a86211b9cb089bdefa5af61",
+  "c2": "33372a22029cd540e1904dd159f94c10d3dac292aee1e20470ea03757c5f6d35"
+ },
+ "SRD 2024/Monsters/Dire Wolf.md": {
+  "c1": "9c25079ceba76f7472cf9de578b3fcb57100b7ebf9d40a221f298d34e745d0b4",
+  "c2": "f6e35474e4c9cb20376aa6fc29811ff8403dedbfe31a9bdfdff22f4623057912"
+ },
+ "SRD 2024/Monsters/Djinni.md": {
+  "c1": "cdfce2e1f2cb1adad6c0126799d20d2b44aa12aa01de5421c36bdd0660b0415d",
+  "c2": "f3869e65bf738bded9207680e6760d6cd9d0f7cb64077808ded9b5ce20d33261"
+ },
+ "SRD 2024/Monsters/Doppelganger.md": {
+  "c1": "6b58c958f3bfee71f6ae496236b251246c377f7e7608246352168a639882bfe4",
+  "c2": "4a048f4fca5e52e5e56ae9cdcfe654065e3fb5ea6b1f8ef7ee50d8968096f203"
+ },
+ "SRD 2024/Monsters/Draft Horse.md": {
+  "c1": "1c84358e07793dd8ed9ce8dab6e6b169ded4fc938f8ccdd20ac0f4db60f7def9",
+  "c2": "a94a1652fcb6d8a3ddc069fd866badd39dc1715b0f7b4f596025d4b5517804e3"
+ },
+ "SRD 2024/Monsters/Dragon Turtle.md": {
+  "c1": "30003a84cd938f8cd223f92c5ec73e0ecf1165f60df5d3c660984fb72de1139c",
+  "c2": "71408692820b69c3d9788aeb75035ebadff161c74c55f0123b0632af87655f53"
+ },
+ "SRD 2024/Monsters/Dretch.md": {
+  "c1": "6a1e18f8825b12fec96c6744284e7d8513ded89538894c8d7d1879bd2a463cc1",
+  "c2": "548e0ee97d8306f184eeb983025e491355ee7cc6acf0865e1506cfaceb7b99eb"
+ },
+ "SRD 2024/Monsters/Drider.md": {
+  "c1": "84c8435a2009ba9c74dd71e852c75a09a690d47158b9792dbb2a80891331fcc9",
+  "c2": "c05a8599ee7866b875c03b7a92ca0d37980eb688e95ae10d586f0bed1f3490b3"
+ },
+ "SRD 2024/Monsters/Druid.md": {
+  "c1": "be6f3f2c3c64ba7669ea4ba9f0224864d2384aec3f5a0df7c2de81279cf78f93",
+  "c2": "cd8e317b3229545aa921710aa3c413ad065c91297b9d6a65e63c787e696f4a2f"
+ },
+ "SRD 2024/Monsters/Dryad.md": {
+  "c1": "15e3dd6ec88f8ae5168bc47c9af25e64b75c038400add3885a064b13014aeb12",
+  "c2": "4a0f4afbb5714ee09e62fe94cbbf08e8bf224edfb34be6faccfad78d5771dfe1"
+ },
+ "SRD 2024/Monsters/Dust Mephit.md": {
+  "c1": "d10ae30b8bbe62e98c9e22015d8cd84e1408bed530eca67bc0c25ddaf5b4d4a0",
+  "c2": "894c133d7fb3c56a3c19248a440ee83f7b7fd0885b04753b14fa6dd111a4d5a5"
+ },
+ "SRD 2024/Monsters/Eagle.md": {
+  "c1": "126467f67f3f05c5a3d3136d2f11ff0da5283835f4c2467abd0ab984cd0da95e",
+  "c2": "c6703537506f476209d2360b3d7c73cdb403a04af8a2b4207e946085af9ddea9"
+ },
+ "SRD 2024/Monsters/Earth Elemental.md": {
+  "c1": "7c34aae1bf2b418294a43915f37026146d7b7b6ba9d7c17ab8eb0968813c2414",
+  "c2": "e8f8884d5a61417f30b7bedcf6013a2302313185ffbc4f96e0dba52952e7d18b"
+ },
+ "SRD 2024/Monsters/Efreeti.md": {
+  "c1": "ca862935b6b9d6ab7c29abe5e6b6e3d0099908a4dcbe28c29b3814d14cb45c4a",
+  "c2": "6f678d94e033851ca56fd36aaed022a1a0c8e907c93f0fde569716488bc11a3e"
+ },
+ "SRD 2024/Monsters/Elephant.md": {
+  "c1": "f86e6bd467b2c5e735dbdc95d80de022ac96e2510a3d71ff07364dd2ac64665e",
+  "c2": "75ffb88c373ce241b7921f41d0ba71d2948a98af9be18c27a407431d9a164120"
+ },
+ "SRD 2024/Monsters/Elk.md": {
+  "c1": "50565c6ce29a17ed5b51a42d8c35093842bd76bc68db87be67fa6217a88f738d",
+  "c2": "116c4ae184da207da315b18de29ac2391c2876079a376649b97a7da10a4891ff"
+ },
+ "SRD 2024/Monsters/Erinyes.md": {
+  "c1": "9216e6e35c5c5248164697bf6e66c0ea56c95260fe3b39ee70465b648c5f1738",
+  "c2": "02fdf3d294087bd46165b6ed817b1ea938a800dd5586abc42dc5e40e9e6f7917"
+ },
+ "SRD 2024/Monsters/Ettercap.md": {
+  "c1": "70837b5a98f9b70ca4708c6ed202578c37873e953b8ff6972d3f259cd672e7cb",
+  "c2": "96cbd48f1d774ff8de0e6310be6cf758513e89111201e623557a7a357ce54ac3"
+ },
+ "SRD 2024/Monsters/Ettin.md": {
+  "c1": "9963c7ba8ad9a01ca02f315d3c51e466d9cadb96fb2749d0e363eb47c79f987d",
+  "c2": "dbc5f049a92b6218e9c0d6e0fdb5fb840844233635f87f1f23b6acf4373ef0c0"
+ },
+ "SRD 2024/Monsters/Fire Elemental.md": {
+  "c1": "cd22077a935011d733d5b4c23a9fc288e33d4054d3b92c7f5ef42e100adf6517",
+  "c2": "c0ec750298351cfc5881150873c21da99faf3d7ac4bdfed91abc7856f4bbb903"
+ },
+ "SRD 2024/Monsters/Fire Giant.md": {
+  "c1": "ea7899889a41fee81779aa48a20a2b0570712e2c4fdb2ddeee7f88690bf16128",
+  "c2": "0d070af6d8695858f4083b9bc4e1a716cf2ffc98db1686ae0e9dcb59856aaf14"
+ },
+ "SRD 2024/Monsters/Flesh Golem.md": {
+  "c1": "0a517acbdbfd54e073b19c237ecdde9f3e29401fdc4df9c6e118bbca03028639",
+  "c2": "3ec041a14384c6f6af6f7064ac876533580323d8803cdb2d425538027a925bd5"
+ },
+ "SRD 2024/Monsters/Flying Snake.md": {
+  "c1": "c71cf8fcd73f60f9a5bc0d823485fc14e7ac185c0b46f346f1084a140ae36d82",
+  "c2": "49fd3149618e192e667324e77f5a787f0bbfbe8a3408636fd663805a531aa607"
+ },
+ "SRD 2024/Monsters/Frog.md": {
+  "c1": "418ed2d91b65bfd3b2a37ce5071cbf3345e64636672f6e3ab410f950ce8d2487",
+  "c2": "cf0a8250ac49655c40f107c42d88e577d8934b9ad01121711bc8448b1ba9f388"
+ },
+ "SRD 2024/Monsters/Frost Giant.md": {
+  "c1": "525c33ee9f2ba29f650fc38254f4a35317e758429f1b3c549772d51d64072014",
+  "c2": "6ff7f7684236f1891bbd5633f21be55b2fcfd16ad1b8bf3e123cf53093b40370"
+ },
+ "SRD 2024/Monsters/Gargoyle.md": {
+  "c1": "efd89551109aefc9abc230058453cd3d907118e1ebec24b9d35b3ddd22d444af",
+  "c2": "942f9e574b327dc8dfae12efdb516047aa1c8b9fefab022bd27ef7d4ef8ca6a1"
+ },
+ "SRD 2024/Monsters/Gelatinous Cube.md": {
+  "c1": "61a3074160a6088a98d0f06800e02fb57700f2b66976296ac4023e95ddd926ae",
+  "c2": "4a4f11a9e7056f7e5deca0d3dc294b4e0377d5e7bfb6f199f06ac9c8fa6cf916"
+ },
+ "SRD 2024/Monsters/Ghast.md": {
+  "c1": "594bfe31ff3e235c90457ec66d5b172294de9e30e43b9b59e22dc847ebe83665",
+  "c2": "c32334746ef964040f4a7957e0ce6bb0c8317836e1ea2aa5ee34d538ef5ab7f7"
+ },
+ "SRD 2024/Monsters/Ghost.md": {
+  "c1": "2a05a31a65c59f22188097bbfe60821423984bb18eb6870afb6664c93e76a80d",
+  "c2": "809b7c62e99af02f08d826c6651c040b864ac723df799cb8771c589dd20de711"
+ },
+ "SRD 2024/Monsters/Ghoul.md": {
+  "c1": "ec5740b4a1ca5d7ecf209d6cb6fdc3c01f9fe35ba8e327afe761d0ad03cf88c5",
+  "c2": "63b59bee72b7e63455bd73d92792b949306a8da11eaebd9f74896705057ab71c"
+ },
+ "SRD 2024/Monsters/Giant Ape.md": {
+  "c1": "554e7c74fd598eabb32f0e111519039f2030b334bbda640b6519515bff50c17e",
+  "c2": "18d6b02becea9368d55b8912880e0f6e37871a6ae4ede3e2e5530a84156f7189"
+ },
+ "SRD 2024/Monsters/Giant Badger.md": {
+  "c1": "2c33f4f5a69f319ec2d3a244371dc5449235e07cab8846f08d872f82dce68e2e",
+  "c2": "2acdae8e8c497f79b39939dc1fbd577d5b13673aefe2f602c8d1de9d8696f914"
+ },
+ "SRD 2024/Monsters/Giant Bat.md": {
+  "c1": "8c87fb7162da6f39f6aa7aa454d9a0532579486c6e3b4c7135ac4708dd2c5204",
+  "c2": "5c89864baf56bb289d1d49ded4f9ca17a763fd2ac84110e61edf50ff3f4790c6"
+ },
+ "SRD 2024/Monsters/Giant Boar.md": {
+  "c1": "3529a62732d0623d4e2b59d9fb1819b14dab4bc1a32673cbf1c88a10ee6eae81",
+  "c2": "ebf9c1d04e9b2e427e0711767ca950527e2b998631e85c1b881e5142b15f3ac9"
+ },
+ "SRD 2024/Monsters/Giant Centipede.md": {
+  "c1": "2fe22a4c7f09ab7d1ea27b75305f809337f0c181eec8dc968d53478061e5631b",
+  "c2": "5e9f52766a39edf281c0651f02549b464a854226a0b454f8320b3d4317b3d84d"
+ },
+ "SRD 2024/Monsters/Giant Constrictor Snake.md": {
+  "c1": "05161ac664e3a6f4c1ef2b92cef132056724f7cc9d31c17d78f621aa32b1ef71",
+  "c2": "e18cc883c075156a3cbccf9c709ac706d1d66374ae15c2b9a47eb0a055ffb2f4"
+ },
+ "SRD 2024/Monsters/Giant Crab.md": {
+  "c1": "d965ea627ddd17c684edeeabc46d35223b553ac33428285a2e3097efb4e32b8d",
+  "c2": "ca19410bb7dfa8390f7787cb281a282804cc128cb23e297ac5ddf1b18412edec"
+ },
+ "SRD 2024/Monsters/Giant Crocodile.md": {
+  "c1": "05a78b91b649bccdb1013b6533c4afd5a60379f536f376105b88bbfbdef7916c",
+  "c2": "ee97ac4160f2405eacf70739b22466ba14b1abdd738177e52c8a36aaef7429d9"
+ },
+ "SRD 2024/Monsters/Giant Eagle.md": {
+  "c1": "aee66d765d323c5c6631c1b6f8872a534d5dc7307b21c004c94b48c500d8ff28",
+  "c2": "c16893cc5d4a1a71415d2768eef7ea7776db63d389c342a191aa1d97ae1acc07"
+ },
+ "SRD 2024/Monsters/Giant Elk.md": {
+  "c1": "ac4ff325d1c41238dff67c7409da1008dd0f2e9c722214429a6f86259eeaf432",
+  "c2": "2a50a516fa4ac05da42194a00b8d7ddf5144d528387ca07d975675c72393d1ef"
+ },
+ "SRD 2024/Monsters/Giant Fire Beetle.md": {
+  "c1": "663fdf37f20249a9d316c4cdba9b82738f8f8e49cf280db79341022b4fca3c2f",
+  "c2": "d852f2f0bfed435b5e1de8cd6c39240816fed38c567d6fc339b944fc0dc9c976"
+ },
+ "SRD 2024/Monsters/Giant Fly.md": {
+  "c1": "9cf55f66640bc4848754c98701e38e5fe4cbd8c9a7b3000214e6e6b070d0ee19",
+  "c2": "bda4ef73a3bcde78e1dcd1230308f570cf4666324b1c9d38144add887f511ca6"
+ },
+ "SRD 2024/Monsters/Giant Frog.md": {
+  "c1": "452146b67c4fc83df91a558d30a33686768904a1ff5abd355218eccbc186fc42",
+  "c2": "530abc769d8196784ee372cc27001f9162365ec682b0396077fec9589274869a"
+ },
+ "SRD 2024/Monsters/Giant Goat.md": {
+  "c1": "9758a8bf66512d63c9e3707c046b2d0dada0636d2e15a16000eee36c4c7260e3",
+  "c2": "497ef59f8f43de31e40296be14635bf291f5009b85eb64d06a4c1b7a9d4f6c30"
+ },
+ "SRD 2024/Monsters/Giant Hyena.md": {
+  "c1": "1335ef36f9df68c2085855b1f9cfa08f1d4c016e4d1edbad0bffcf1842a1beff",
+  "c2": "eea34b299bb774104402123148a0872211ccc67841dcbc1cc95496fa78f27d74"
+ },
+ "SRD 2024/Monsters/Giant Lizard.md": {
+  "c1": "7509aea74fd7a7107db930fd1ba4ade17a462eaa3edad1fedb34a9db0d59eb49",
+  "c2": "14752f47cecbdd2a63ed830326e294f5ae1b4244f9ade9e190519afcd3a06826"
+ },
+ "SRD 2024/Monsters/Giant Octopus.md": {
+  "c1": "0c50329cc6c471033fd0562c20fc1b1cdd429d82f52f5b488996169605a1c236",
+  "c2": "18e290cc29828278251557e953f6174e9d4cafacdeb5bc22dda67eda06f3bc1e"
+ },
+ "SRD 2024/Monsters/Giant Owl.md": {
+  "c1": "5cc77e4986371f3f92411e35a57ac2547ded3397da65323703e2ec731c7c937a",
+  "c2": "886c5e6088646ef5b34fe34cff5cb03c9c009d4ce555ceccd42881c1c56ddffa"
+ },
+ "SRD 2024/Monsters/Giant Rat.md": {
+  "c1": "1bac9f459e887bfcbabbe71c2d0b115d54c3960cfd955b12698cba0268043b14",
+  "c2": "f8425059276fa2b7650602ec27dfa953546f4c443b3f5d2a72b95466a7e8c347"
+ },
+ "SRD 2024/Monsters/Giant Scorpion.md": {
+  "c1": "02127b696ac6d6c2707cfc2f5fe2a99d14439a33c8bd864206a8c6f1761f6c4c",
+  "c2": "c7538326a326e524f9a6a2c56203ad6822c74f8c036f980e5264b524a3ddd23a"
+ },
+ "SRD 2024/Monsters/Giant Seahorse.md": {
+  "c1": "cfe317e366b6c4e8e4dc74ae65fda26771cb58f74ac355734bd2d1f55ffeb130",
+  "c2": "9f4b7a117a153f1940e8c57b017a729b0c82c2a897e15b8032f317ee76509123"
+ },
+ "SRD 2024/Monsters/Giant Shark.md": {
+  "c1": "4020bbe1993da4bec08278d350adf205e21773e0bee4469183b9652d4d19dfd2",
+  "c2": "f30b6c8a3a6c896348556b580454e540b98fa7015786d1548dc0000b5f8b1a27"
+ },
+ "SRD 2024/Monsters/Giant Spider.md": {
+  "c1": "305c50d4f5c3c87975a66847c543c953c6e3317be50bd701b23b0056aa9a34e7",
+  "c2": "2f3d6a692711a1f657e83d62a72f83ac4498b6a38b80ebeb64c5edbe5a2a3342"
+ },
+ "SRD 2024/Monsters/Giant Toad.md": {
+  "c1": "c67e4c87672db11c9283487ba92c174b07264f36d850ccdcb98aac3de8318700",
+  "c2": "4db45dc839e07e543f3aa2fcb5f611413631851f33c678d9aabfd5311f39b3ea"
+ },
+ "SRD 2024/Monsters/Giant Venomous Snake.md": {
+  "c1": "ae771b812051312572616da939a29b56b8cfd74bd601d60a03563f33c3cce1f4",
+  "c2": "5e23f3ccc2edd9e01861609070ed655ed41fa1e73ad20ba35484427920b312f3"
+ },
+ "SRD 2024/Monsters/Giant Vulture.md": {
+  "c1": "cea7097b76eb63348714e4742b26d541dfd16fb5c64ae3bea6a2f58215b1db79",
+  "c2": "d9b3fae20170f2186b706c3c9842cf09b3a345f971acb64cce1c7f199a6f4b48"
+ },
+ "SRD 2024/Monsters/Giant Wasp.md": {
+  "c1": "9debe05c32eb346266e97b41eb3d884e46d9ddb4a53b66c58dbb46c6dda78e3b",
+  "c2": "2eda55d1b4cafa9b43d2bdafefd5c06f91fb79af9127120e22bb5f1c4a148d4f"
+ },
+ "SRD 2024/Monsters/Giant Weasel.md": {
+  "c1": "68aa5d11f668405b0b8fca665f927692a0b41b7a16e90ca6a4c2d6c1eaac423f",
+  "c2": "3e32b4095776ebeb5bc4e0b61ecc6d3844d1d21083d981f42de1dc32eb907605"
+ },
+ "SRD 2024/Monsters/Giant Wolf Spider.md": {
+  "c1": "0ff534186bb753c054f2b1dfaabda49dba8e3e12caa7a9afcc6013c36822e4c6",
+  "c2": "4436a2db90e7faba0628e5d27e64d42dcbe875f35a6864aae499a53b0510b04d"
+ },
+ "SRD 2024/Monsters/Gibbering Mouther.md": {
+  "c1": "8c8cabc089c8b04eb75857d4a4f7f4e006fd13d61f390fdcadcdc0f315b06d96",
+  "c2": "6bdceab8616130a8cf4d6c66d5c42e0211cc3f35ab31ef4cf1906332c36f854b"
+ },
+ "SRD 2024/Monsters/Glabrezu.md": {
+  "c1": "4b33391ef18c1cb81d66ccefdc4d66ee7f0f7614566f5a8bf9670096ddb7a8bf",
+  "c2": "ebc15e137ca0827bdc04d9d3084edc00fa57120028f02e751f612a6ac212525b"
+ },
+ "SRD 2024/Monsters/Gladiator.md": {
+  "c1": "b8f87965be9d52190f2e8d02d71fa64e2be82ae8a97cd9d0bcfe9487e2206bfd",
+  "c2": "10197b73db5bea3666063a450028707126b8d6e1211ecf83ee6cda99b6334194"
+ },
+ "SRD 2024/Monsters/Gnoll Warrior.md": {
+  "c1": "031f497da27d10c037babec7390499c056e42ecf1c52292e41d2fe1ba10db243",
+  "c2": "55a785f98e54338bb71e7cf7a5fe810b7c9d081a3ffecf1946c68ec45150ff4b"
+ },
+ "SRD 2024/Monsters/Goat.md": {
+  "c1": "222a9f4f316255fbf951d9c866e8457e513121411e571e9205068413da83b0d0",
+  "c2": "99be927535f1de9255f7362276fd18b12c52ab5e88d19c2d5318ced1f3f8da1d"
+ },
+ "SRD 2024/Monsters/Goblin Boss.md": {
+  "c1": "43a342645c75843553029706cd1e7bcbd4c7367a46a2cce5b281367d8db0d8d9",
+  "c2": "f80dee2f3d24a4d0713e6dd22ec30d60a33867b68df6191c6bcca527a3d097a3"
+ },
+ "SRD 2024/Monsters/Goblin Minion.md": {
+  "c1": "e8f266884bce25e62f7f253218053ac99f7443e46976d02fdcbf3092c0a9a724",
+  "c2": "8b264f2f4086f2ebae80aed322577c52b7b5c490818d12bbeb2df54ec68787e1"
+ },
+ "SRD 2024/Monsters/Goblin Warrior.md": {
+  "c1": "460980fff2074a1a7ed364c0241556d89989e7cbf089c915aa3ac18f5ff69702",
+  "c2": "15d01c7f6ea796cbab23552f9723ac411a00b7f3c256aa7be2557c8186884544"
+ },
+ "SRD 2024/Monsters/Gold Dragon Wyrmling.md": {
+  "c1": "1134bbf4dbafafd61a759854f1e28fd4ec02d8a97c353ef19ff57603bc00ee80",
+  "c2": "54c95a0833d1bb44b3da1c5a1fb49beed18feef7962f6ea09513bd06ab2cb0a2"
+ },
+ "SRD 2024/Monsters/Gorgon.md": {
+  "c1": "6ada0d03e8b8ffd2f0707cbffc5188c117b91e7823487a1bbb83da0de3faa30f",
+  "c2": "1adc72a54c5747cd2f060d972add4e1ea41ac4eda3a3f9804e84bbba6da81acf"
+ },
+ "SRD 2024/Monsters/Gray Ooze.md": {
+  "c1": "102d2def693fbf9833887b703e8bad392e94b30dc0e6ac3f98a5741e9bbf3e62",
+  "c2": "06483edf845431221dddc68acf0b5241496b09f7099cf6204f8346c7892c3290"
+ },
+ "SRD 2024/Monsters/Green Dragon Wyrmling.md": {
+  "c1": "31d2795ffbc70bc33ef44540c21c5db157c78d35c6043f0d404763ea7274321a",
+  "c2": "f3648c7be0db83c0b06e9ef4609df95d37baeadc50be6765b17d959141c64c3f"
+ },
+ "SRD 2024/Monsters/Green Hag.md": {
+  "c1": "1487b3c89dd3e599d8e1dad91ac2cffc5a8d10172a92b7f26b981934ad025c43",
+  "c2": "deda8ce18a8f77c4984ff6b0de44262d9392ebd333817e8f751d68998e59cbcd"
+ },
+ "SRD 2024/Monsters/Grick.md": {
+  "c1": "5e4f538d4e9e42fd26448f1ad77e32018db301f7e8462134f24ac2998113c47b",
+  "c2": "edd0fa3a6c2fb8b503b1e01819353dad856c032edcdb29c7edc08ec22b13923b"
+ },
+ "SRD 2024/Monsters/Griffon.md": {
+  "c1": "5841c73541dafae849ef7cb4d018cde67d228882af339e77ba339693a24f6028",
+  "c2": "92a8dc959432ef3a015f33a95102c884b343e4e91cfbf23908d7ec8f673f2efc"
+ },
+ "SRD 2024/Monsters/Grimlock.md": {
+  "c1": "b9063c3616225356128462a63f801ed980ffb43177237e656776fde277a1c9ce",
+  "c2": "75811022431de5238ee9ba978657fcfbf7990b726f43fa944fe2a71380c1eedf"
+ },
+ "SRD 2024/Monsters/Guard Captain.md": {
+  "c1": "cfefeea69a67b1004ddcc9bc330f0eb7bd2449eb7d949c36a7c85e5a12002838",
+  "c2": "9838cd88cd9efe88eabaa27fc7799d182b6b27fd6bef43e3bea8cf5a17bef3d6"
+ },
+ "SRD 2024/Monsters/Guard.md": {
+  "c1": "daec560ea176fc2e43e28ee55803785d3d2f62c118cb25538a06a531c80f934f",
+  "c2": "97c6c6d60b0bfee372b14ac0310de15d820e6606189ec44f99523bf414e9f1e6"
+ },
+ "SRD 2024/Monsters/Guardian Naga.md": {
+  "c1": "c0aaea2fd0825c38df221cf56afd96b0daa05250a44160d4ba16d93caf985566",
+  "c2": "97265e28f79c6c289fb3ee70d58b6f21f381200519194f89588f15921b7aeb0f"
+ },
+ "SRD 2024/Monsters/Half-Dragon.md": {
+  "c1": "0749fc98f4fcede3699f917f066df9b6e8d72702aa45f5f18f39db7ff6aff5ed",
+  "c2": "93372734288b89f7898e3fe6540eadea52098d4eb3cc1ac888a298b3f394541c"
+ },
+ "SRD 2024/Monsters/Harpy.md": {
+  "c1": "a0911dc1493b2436bd7eef349d567b1b20c910ea0333392a9610fca8a9721cd9",
+  "c2": "b9aa7aec7806d5740aaa0229a8a254b10dca5afc00f25416212df7334383c6ff"
+ },
+ "SRD 2024/Monsters/Hawk.md": {
+  "c1": "09d2e0bb126ee729890455f0a83d7f2f469c461013171f50271f18a9654292bb",
+  "c2": "a53cd73921a54cb8b6f70f779a7c11c9a6b0b374b4a32927b96e95fc0577ddf5"
+ },
+ "SRD 2024/Monsters/Hell Hound.md": {
+  "c1": "6badf7e23d474cc193ad30b4ca7ca1de33eb28c5d6deae3051b6458da19db1ce",
+  "c2": "12cba6f17050a0a8b0526381bd13bca5f392da6ef354899ce1419a3d03c770a9"
+ },
+ "SRD 2024/Monsters/Hezrou.md": {
+  "c1": "97256f76867f2f4b1ad8572c51296144f20e8b2c8bebc993ea844323551d24ff",
+  "c2": "859fe94c1df43eb440f5ed086c0165cce217ac080f795ef4902c7a867943ee7a"
+ },
+ "SRD 2024/Monsters/Hill Giant.md": {
+  "c1": "a4de087036c4ce4d3a5fa1f44f0921ddfad9e8c9af701b7169663306750d4468",
+  "c2": "e602150dd27e4c630b325146eeb81aaf46f45e3e5d51cfb031a20c2b3e1b201e"
+ },
+ "SRD 2024/Monsters/Hippogriff.md": {
+  "c1": "96b431d768ae2959f8ae33c7e418001983621e5b7366c535cb3dcb9e0527c5b7",
+  "c2": "36dada406c8caf5a8874915f95171b061edc449f4d3fc5ff773dd718b22c3e4f"
+ },
+ "SRD 2024/Monsters/Hippopotamus.md": {
+  "c1": "507f76184d3283f90c198c4d36520aeffbd4b8563e17d47f40c1743fa4bc22e0",
+  "c2": "3a4e49253ea3d4e570f24bf7041b94b02c480fe402014beab30e5931b80176ac"
+ },
+ "SRD 2024/Monsters/Hobgoblin Captain.md": {
+  "c1": "4b6b9bd8532f0debfd12308d38f0fc537b8684b6419a062c17050af4aa45968e",
+  "c2": "82686464ceacd2f2436417fcd35f953bde28bac96e7bf08da4416dd73fd9e021"
+ },
+ "SRD 2024/Monsters/Hobgoblin Warrior.md": {
+  "c1": "a04335899d1d63249bf1f481e06aff3c6acc82b463d8940cabaa840d346db90d",
+  "c2": "bfa0314c10d4e15ba472304ad751c67f337d7b351f6ee1a6f19803d1f01ccc54"
+ },
+ "SRD 2024/Monsters/Homunculus.md": {
+  "c1": "1c255ebb292b3576a8d67d5a92df6b3f20beed9bd603a2dc879ee427e17a548d",
+  "c2": "5181ae5c457a9069aa8a4545fc0aedcbb003641221188ce3f272821c1793c8df"
+ },
+ "SRD 2024/Monsters/Horned Devil.md": {
+  "c1": "4fe95c0ee517c52b65f16348693b5df99b104c4c71479ecb93631f90225ae024",
+  "c2": "08b8496a663addccb76d544db2586271d267a6eb774e1daedb72217540164201"
+ },
+ "SRD 2024/Monsters/Hunter Shark.md": {
+  "c1": "faa9949c6831cf4f754c6b0048a84fc38423fd70b23e32a9a07b3dcb19b3d87e",
+  "c2": "c8defbee7f8965ecb32b8a339e4400f1ac5a24c0fdf8a5d4767b6c088fe5a784"
+ },
+ "SRD 2024/Monsters/Hydra.md": {
+  "c1": "91a529a9b96fdf95318fac286728b3c60e650d94c57d3217babe08e3ae9ab01a",
+  "c2": "26bb5c5e738f8cb529797c4135579c5a9e053f488c9f544148079f37d8e280e1"
+ },
+ "SRD 2024/Monsters/Hyena.md": {
+  "c1": "72f9d306add2924cadfe5d82ae591d16d2dbc974bc4665d0908c5f4a2eae2342",
+  "c2": "5c6205705b9cef139e79626e973a28a8d3e8ea9d37176efa0d98be83d0ca1e85"
+ },
+ "SRD 2024/Monsters/Ice Devil.md": {
+  "c1": "16131feb5d78b12a741b4f55144563f4730d4fc84aa53acd7fc96a1dc44b7e7d",
+  "c2": "e09ca2418c20a0c42c8275b37c0370d18c63ec4829a6478d716a2bdf4cca244c"
+ },
+ "SRD 2024/Monsters/Ice Mephit.md": {
+  "c1": "48e82a3f076fb4e90a552ae5e3baefaf41e798f87f5a80bb843bc65cb8d4e10b",
+  "c2": "c61b69cd1367796e74ba01c74b1655deb3041ec169a8b66de32afcf2be149bc4"
+ },
+ "SRD 2024/Monsters/Imp.md": {
+  "c1": "c36e8371afa6df7ec3bfb75f21b3a227de8f5e8a1565371c74dc9182ca36151d",
+  "c2": "b44254dbee61953ec7d5ed2179630106612ada83a03519329f127a604235b448"
+ },
+ "SRD 2024/Monsters/Incubus.md": {
+  "c1": "2c285b6463a256e7ab76c4b8857c38e5d54a60c96e9732a29fe67834673c52cf",
+  "c2": "c3243de2265dbef20efe12260c6d80166b6dfa63a770878d3518b2d7d0f1f9d5"
+ },
+ "SRD 2024/Monsters/Invisible Stalker.md": {
+  "c1": "68373f2d78859f645c82529718920edb20fa72c26e2056988bacd1dae27ddffc",
+  "c2": "8dacdd8ae04d5d602ac3aaba96771363ca5fda117fd393faa98440014c0eb498"
+ },
+ "SRD 2024/Monsters/Iron Golem.md": {
+  "c1": "3af83e421a290cad3c8464e6f86eccfed8dc7949c124bac3a58477fde50cc99b",
+  "c2": "d1784bc4bb49ead79f48afdb5aa5c1238d607a38d07dec1549c2213b75b319ad"
+ },
+ "SRD 2024/Monsters/Jackal.md": {
+  "c1": "a7596ca06d3be6b1bf91cd3a36973bc9e5d1e3e08c6d685ae43b7afadbd60280",
+  "c2": "d8cab8c81b095053b94895f2ccc6cbbb57c03e6009d971948a35eb4fddf53bd3"
+ },
+ "SRD 2024/Monsters/Killer Whale.md": {
+  "c1": "f38848195ae5366d663f1febf48c90c5418224909ee79491e3ff5b8f618290fe",
+  "c2": "b3cbb2e69171eafbd837fb16f536e325a194b7453fcf67fd9e83dcc1ee7841bd"
+ },
+ "SRD 2024/Monsters/Knight.md": {
+  "c1": "10bb527327633080d2fdc8bffbae87652020e8340a3a0e6070718c528571a1f0",
+  "c2": "3aa31931c61a64a836c540231d2abb6b48b96c6454884d09d07533da16b3d78f"
+ },
+ "SRD 2024/Monsters/Kobold Warrior.md": {
+  "c1": "ca6575f4211d27f071c76aebf3b54ae154638f45ba3390f8e713f986cbd90a05",
+  "c2": "ccd04cdbda34ca16c9e464c4c74f37588d464cd59b4125c1e8be04749195f684"
+ },
+ "SRD 2024/Monsters/Kraken.md": {
+  "c1": "89f2f4c44d27c82d7707e3d0e4294e3e3e86a5d6acea56280bfff98542851765",
+  "c2": "61349fe27cf994e2269d0d40938e16066f484ec0b82eb7a12d9328d376b16495"
+ },
+ "SRD 2024/Monsters/Lamia.md": {
+  "c1": "d5050a14fd28017fa310266c5c464866ae70b4f9f41182243199715796b0ea2c",
+  "c2": "62626b1d7aab333dc29ebe4920009c6f6238387e5280253c0ab3a74b4f9f2424"
+ },
+ "SRD 2024/Monsters/Lemure.md": {
+  "c1": "3db31dbda468d60f0e201eacf0cbbf855b5cd21ea154e636fc7dd7ba3190d443",
+  "c2": "8800001ec504a07ef52a7251223f2e5e7e70ec0ecbfce42a31283f0c05278a80"
+ },
+ "SRD 2024/Monsters/Lich.md": {
+  "c1": "1994e3d5d6f6099cd58647aece439f7396361b96fc590658f38d258878b9f77a",
+  "c2": "db5d0da7868b888e5ef38b406aeb1b439e56f4e64dc2ba7273378d85a1d26398"
+ },
+ "SRD 2024/Monsters/Lion.md": {
+  "c1": "0e7a78f69f02305f0945a107e76ba6bbfe23ca1e46e9821b42182599dfee395a",
+  "c2": "666b256eee6d63c6591893b443a988df03f02d39084c1e6d1a0ff025c1683702"
+ },
+ "SRD 2024/Monsters/Lizard.md": {
+  "c1": "d26735bbd57784f11b1cc6b5398ffd2387ce16a135269f22fa9442e3fa299105",
+  "c2": "08034f490b719f87b5bb874f94591dda8959fe7ae1a8ea4c8b245c45f28a869b"
+ },
+ "SRD 2024/Monsters/Mage.md": {
+  "c1": "b9c229f88957af885a2665ed25a64d79eb0d92b31e740a5acac997c61dbfa81b",
+  "c2": "be0313e33a6414db5cc03f4736cd3603171a0af7bb88e3047f879ff9aa3e4821"
+ },
+ "SRD 2024/Monsters/Magma Mephit.md": {
+  "c1": "f5ea090504d40a29111bf5dc5b7b78e6f0a18090d477d81453b6554548a7f4f3",
+  "c2": "30e514a9b2dd4fc9772868d36f0bf3963bcbe6aa095894be2ae17777e3517000"
+ },
+ "SRD 2024/Monsters/Magmin.md": {
+  "c1": "cb6832340ddc58e1263eac8153dcaac298934ff5d6c7db9f351d0436650cfe53",
+  "c2": "1b6364b788696488e283c837100a54114770729421997a9ae7fdbd0c454a81ee"
+ },
+ "SRD 2024/Monsters/Mammoth.md": {
+  "c1": "8973f05e9a9c009bd53152304028210a214c44e7c4837ed3ff9a2e8bed473e81",
+  "c2": "7c89d43cddf71d442ef72b93dca9b56030b179a5791d5bd457014bcc88bbf362"
+ },
+ "SRD 2024/Monsters/Manticore.md": {
+  "c1": "d6bf66be58bf8747b56141756e48b3dda5982332e6684e3e279ec8ca51edb9cb",
+  "c2": "182de37310cea616fa1d3195249e9f8947359c6b3b8c834344da423feb9fa16b"
+ },
+ "SRD 2024/Monsters/Marilith.md": {
+  "c1": "ceed374ec2d70d3e229378b4a2326e346d881bb85d8d379df9fee707b83b9e4b",
+  "c2": "6e9203ca1cae6041b1aca3b705235a5519721bb361bc60147145700b4bdd0c9f"
+ },
+ "SRD 2024/Monsters/Mastiff.md": {
+  "c1": "ddf534daf3b95e40560d4620252fc4d19033d8ba451c21e603333887f52e3e1d",
+  "c2": "667dab046847920be90b9f98d4e026a26feba83028e052b968f647b11a484648"
+ },
+ "SRD 2024/Monsters/Medusa.md": {
+  "c1": "fef9d262cfdc634a70d4649204c973951d566e12b9d862c2fd3ae49c4ef6839c",
+  "c2": "43232d80c7e37f9b72fbde3d2d2e9947197d2d876d08ef76b25a906865b7e04d"
+ },
+ "SRD 2024/Monsters/Merfolk Skirmisher.md": {
+  "c1": "71e3d4c8192afff6a0e2b460a7e7d3a4832891e6b86309bde8888793ffd7f530",
+  "c2": "1acd05ceca4f0313afbc4f1367a248312d945b0fbd07535a098fbcfbc80e5138"
+ },
+ "SRD 2024/Monsters/Merrow.md": {
+  "c1": "db87d44f2a8a9ad8a0452c2af23f465058a77f0841fc5decc2a593a6c7daf34f",
+  "c2": "87e96f6966e68828ea272a8e4b102289401871fa66546fa9b2c72ecc1ee32c92"
+ },
+ "SRD 2024/Monsters/Mimic.md": {
+  "c1": "21880a3f90e45643cb6f6fce74ef665bf16e92d2bbbecb1ab8b105c1b019ab93",
+  "c2": "996c331ec25d61fe481fe38a6c08f70d9a87bc43819ffc409186fade1d5a7aef"
+ },
+ "SRD 2024/Monsters/Minotaur Skeleton.md": {
+  "c1": "6cc1444dfb396a6ccc57e6b9f3cf7c2edd5ea6cd2325f9cecbfdc2cf584addc0",
+  "c2": "077ac87c6b69cc987b6f948f760f053e456e435d9727cd47758e753989b7e1ec"
+ },
+ "SRD 2024/Monsters/Minotaur of Baphomet.md": {
+  "c1": "13289ae91fded68a3271e4b33ee8a1979a06a3dc9c5932e51cf07197db44d300",
+  "c2": "ef56dab9621c383156cd6601f8d4e265d91843050ad5f59c4b8aa9141f114afe"
+ },
+ "SRD 2024/Monsters/Mule.md": {
+  "c1": "3bdcb4cbada94312204bcbeafcc4cb0deaaa21216862ed7e69c0c529989b0fc1",
+  "c2": "413769bfdadab8bdbd1dabf982c381223c2e1e746f86cbda1385e1df8b40b8bb"
+ },
+ "SRD 2024/Monsters/Mummy Lord.md": {
+  "c1": "a481309e30907a74e8cec96c8cbcecf9b199e0ffaa7024250c024eac4e23e9f1",
+  "c2": "b4b02db52a43466db7870317220eedae5c61d2860b889a94063816ffe53e9432"
+ },
+ "SRD 2024/Monsters/Mummy.md": {
+  "c1": "688fc8f7f127d55780b6d0320b8007fe4d83db6cb9263414ffe59937159cc148",
+  "c2": "3117523da9402f5fd8204e87bbbb524a6460ce2b065704cb22068db69dcfcdc6"
+ },
+ "SRD 2024/Monsters/Nalfeshnee.md": {
+  "c1": "d7ab3a043862ec7664fca693e2c39710ce6d68c125bb1afd8955eb1c1bc3ee6d",
+  "c2": "c91fb96088fc9fb6d1b885256d2b729fd2ac78dde7d0c04841abdf221bd1620b"
+ },
+ "SRD 2024/Monsters/Night Hag.md": {
+  "c1": "e88ef656981b7f02c5b6a71274006f5980d7ffdd7b192b5ccddf1759ec38fb66",
+  "c2": "e3b70516b1a23b3fc667c43fbd4af59cbfb2dcfdc345f0e782d7304b7f3884ab"
+ },
+ "SRD 2024/Monsters/Nightmare.md": {
+  "c1": "acd28578b0d8ecdb5d7894d998edcccce7518009e993ca0ac35d00956a43f870",
+  "c2": "96e6b63873373fd8beacc1f6f588c4b224e840b6e5ca000bab894e936f33a017"
+ },
+ "SRD 2024/Monsters/Noble.md": {
+  "c1": "c7fdb4f2e0b9066fe4b3d7e97f90c272bce851031f4ca7902705bf5d6e531d97",
+  "c2": "8f0f67fe4fb39d152430758637eb7e0d835ad95af467e7eb5299aad90d0e45da"
+ },
+ "SRD 2024/Monsters/Ochre Jelly.md": {
+  "c1": "28ade41376f18b31b6bd0966976ddee818ac8745b320dd1075cfc5fd8f6b8c49",
+  "c2": "44cad5afc6489aee8ecbfb8ecbb903d92989c564e143c52e1f6b7ebc258c569a"
+ },
+ "SRD 2024/Monsters/Octopus.md": {
+  "c1": "c5378d1230994706d8bc94e3a7470be4933045c2ce2b3e8f9c363ec608731e5a",
+  "c2": "bca4e532b3c2d47f773b24e1ee11bc739d35ed03c84428d7d3369c3dcb8015e5"
+ },
+ "SRD 2024/Monsters/Ogre Zombie.md": {
+  "c1": "d7af4e2d612adcf235eadd8d0a1d024d3b29bc3a5a656db817ee941794db6cba",
+  "c2": "d78d20126f1225d598360e7df07eeb75c896fa5663a88e16b5c77f5ed1340d1f"
+ },
+ "SRD 2024/Monsters/Ogre.md": {
+  "c1": "63d2f9dc8de39941da86c11bd15fa3261f2085766c4c06de32a72fe6486ba17f",
+  "c2": "b5a9ebfb4a023c80e651fe861ee4492e5d784bbf48e7f89d28a4e9499d7a7e59"
+ },
+ "SRD 2024/Monsters/Oni.md": {
+  "c1": "42165f4a5f0a16e2924d344f305d216ee79e285617f66fe10ce6c3035c129baa",
+  "c2": "66ef47f7d0563d812905ddda1403cd43e358a1393bcc3d28afe374fc2a300d2a"
+ },
+ "SRD 2024/Monsters/Otyugh.md": {
+  "c1": "a67b33259fc59594560bdd12a2f16d3df2d192d661172c36726021502537eab6",
+  "c2": "7ad507e8322db786fea33604cc57838fc70dfe8e183681239e80857402597011"
+ },
+ "SRD 2024/Monsters/Owl.md": {
+  "c1": "0918c73af1d78e8427c19017fd76e48d1e3770d58bc46ae0ba84178f5580cbe2",
+  "c2": "504d2ab6c624371a30051c2f5cb91179f06d55a597974ea6ba1a4f042b7c51d3"
+ },
+ "SRD 2024/Monsters/Owlbear.md": {
+  "c1": "816b4f3ecfc2b6c075be2bfc5288d8e7b9a3a0dbc34abf87249810ea2b88d0ca",
+  "c2": "6d7f4599051d07ad67ad99b2522db79596b2a91ed80ce4b945adc0acc34ca5be"
+ },
+ "SRD 2024/Monsters/Panther.md": {
+  "c1": "6d64380d0061a5d34a3e25741e33fc3f1e496210bb14354af17c8caa196ce938",
+  "c2": "ace2f9005c61ad49f1eaa3d2f06bb19b892a8b83fc9e68a6f2116655206a6aaa"
+ },
+ "SRD 2024/Monsters/Pegasus.md": {
+  "c1": "522a613ca7ca3b75b173722c4a51c50af615cd5c06983b906a7dd034d7c35095",
+  "c2": "3f3395c1323ef9ae87d25c40dfc8b241fd5a3c2066dbda650b73cc285e60ee4a"
+ },
+ "SRD 2024/Monsters/Phase Spider.md": {
+  "c1": "3650287ee435d0f25381d3e11e3ccc9c40cd2497c2d556717066867ed9d5663e",
+  "c2": "d6581b8ee0823be6bb0f501531728b9e007868c309c3374049bb710c8555cbe4"
+ },
+ "SRD 2024/Monsters/Piranha.md": {
+  "c1": "f2934bb8837fd56ccf62eec525044fc91997392b4fcf1814184821be3ee2dce2",
+  "c2": "05242922436d89f42bbe16a56ff8c1986924c05f4e18b3f99c6784c847a22964"
+ },
+ "SRD 2024/Monsters/Pirate Captain.md": {
+  "c1": "ef23d405970f2f95702d35bd197fab0c187ccc055776d3d5c18461671b4fb399",
+  "c2": "ec9b8940fa3973811bed8b3bf851acf9916c2032ce597c30436c467648591ace"
+ },
+ "SRD 2024/Monsters/Pirate.md": {
+  "c1": "55425e3f1057a7e7c8fac5344e5713d79d0ef675c2d7074388f567017781eae2",
+  "c2": "78b75edada79b7dc4b7a1d2c742338cd5aa5cce09fe400a09d75c12fc7c83cd6"
+ },
+ "SRD 2024/Monsters/Pit Fiend.md": {
+  "c1": "412ed55481468dc53e460b87b135c19b8629ec6368ecd03cfc5244c990283fca",
+  "c2": "e958797f5d5d10ebe16aeca7733e947027c2e191d32ff0f30497ce3b9f6f2ad0"
+ },
+ "SRD 2024/Monsters/Planetar.md": {
+  "c1": "8d937185751b0efcfa532083eb1ebbda302e5a46aced393ad77f2756cd12ad11",
+  "c2": "9ccd3c8e6482cfcfa44d4f2a19d132c1030bdb82f5b46ca10ce2e230e4ccd5cc"
+ },
+ "SRD 2024/Monsters/Plesiosaurus.md": {
+  "c1": "cedd27bc1adb783db058f98f70a5caa6b1dfb823ee4d3c031abc93189fd87993",
+  "c2": "0ec146f3956608fa0e6c83513bcf2f521e4f8e9fcde0277c7911d0fc441e1457"
+ },
+ "SRD 2024/Monsters/Polar Bear.md": {
+  "c1": "95b696106eb45b2894975a050429cd642f1fefcd2ef6e6ac1760137eb61b7e25",
+  "c2": "8f16482d4983e4fb87ce253962f0e33f4bfef004fa63b95e8f494984c0bac951"
+ },
+ "SRD 2024/Monsters/Pony.md": {
+  "c1": "5e60d03af9a06fca05522910d10c3d8cfa3b45db92ad88a57f578eaa6d41fef1",
+  "c2": "7a507908e46f8b75b1d1d5a0efec1431e7fc9e507de28130acc62d9b1ed0b9dd"
+ },
+ "SRD 2024/Monsters/Priest Acolyte.md": {
+  "c1": "76cf0bd50340550216bb50021fe604e2e1976fa26e4b07ad27358057fbefd7c9",
+  "c2": "8dff7047d169004c0907adfa6fdce1ce22d05306022a2806d41ceccedeaf0d46"
+ },
+ "SRD 2024/Monsters/Priest.md": {
+  "c1": "7994166df40df99d6ddb77db8eb5356db1e09ebc3e9f9491237e4d37a54b4994",
+  "c2": "c4f1d0dd9224d4fe29163e14da77b58c7b7a9a3b525e6bcd68eba71deb64ba4d"
+ },
+ "SRD 2024/Monsters/Pseudodragon.md": {
+  "c1": "61b6829650b8dcb797ae4606b25fa4817487119a1bdfea4de75083996b8b23be",
+  "c2": "78a19bccf816cf26539e5647aeb46f2e376b2891ba6335d9c0cf718e06452a80"
+ },
+ "SRD 2024/Monsters/Pteranodon.md": {
+  "c1": "f126146f5be10084abc7511a6082f73a16b9f643d54e7701f96da72174e0d6dd",
+  "c2": "313d978d8c246d8141620974995b153eda043e42f440b889c0f5cd76087fb2fc"
+ },
+ "SRD 2024/Monsters/Purple Worm.md": {
+  "c1": "6601537914095aa083c535c7b3068842dd16c00ed514983f8ed2866fba9c3f46",
+  "c2": "33851eeff5768e3dcf39aa0862c10b228d4afe2315d3981b38a9909f1f6e2b72"
+ },
+ "SRD 2024/Monsters/Quasit.md": {
+  "c1": "5fdef93e49bcc6d847fe908c961b15bd01b002e4558ac89a5b86adf1c5843c3b",
+  "c2": "13f481b4d35364fd1c0f5b9b6967266a1586cafb19cc7b0fe034850a0b496a31"
+ },
+ "SRD 2024/Monsters/Rakshasa.md": {
+  "c1": "9f3347d609a575e250c1179a8be90b03c4383ae69c89fc3b1366d7f656b54076",
+  "c2": "53f949061f7a82c67fdf1c89f98366e166c0020358e16229c8f7199bbfeab419"
+ },
+ "SRD 2024/Monsters/Rat.md": {
+  "c1": "b0b547476f4f9ab237c64f318204c5b49a7dcb7f05abc3d59c8440c0a35b1a4f",
+  "c2": "0d6e5afc6cd07fb4096d09da295ddad39e62222bb1cc7d7a88322a9e6f534409"
+ },
+ "SRD 2024/Monsters/Raven.md": {
+  "c1": "b8be553ebcdd6d0c8ed0111a7b0e2cd5a58613e84b5506a654499aab9b9dc3b2",
+  "c2": "d864bfcd6457c1483e5e93c0ede982ee6c81bee4b0468482c2da93136f2645f6"
+ },
+ "SRD 2024/Monsters/Red Dragon Wyrmling.md": {
+  "c1": "f34ed4ca26c1378978f8e1c5d3220bbc82fc2f3a8c8f899c3f7e5218eec141d5",
+  "c2": "95cb368fb49c84dd45856e71986ce811f98512223c5fb78ac66e71ac17a4e6c3"
+ },
+ "SRD 2024/Monsters/Reef Shark.md": {
+  "c1": "f242778ca691eea47c2ec655c20372b3e602dc0ccab048b7a4db98ca860770d4",
+  "c2": "096baf4b5e7f5219b2cfd81869171b63eceffc911b654461f3ff6c20c127ccd2"
+ },
+ "SRD 2024/Monsters/Remorhaz.md": {
+  "c1": "339876e6df373de3ed261e5f08ba74acf9bd8c63b8fa7508d853c4338499255d",
+  "c2": "6a85a38fa07208913d99687b55c1775c3215626293c1402e6d087041d279d774"
+ },
+ "SRD 2024/Monsters/Rhinoceros.md": {
+  "c1": "ccddef445752b2cc96b6a62eb1b09ef1ca2a4427fbea2aba05c532f2e61c497b",
+  "c2": "74cd2d8f8adb34cc78ad23d266ce8b1838b7793e9c5659b7291cd8d34b6e21ce"
+ },
+ "SRD 2024/Monsters/Riding Horse.md": {
+  "c1": "ae41177ab017f6a2a8164b8107b352abc6e5a1c596fb05156542d4288d277817",
+  "c2": "cbd7d9b67c837e3ecf7055e97fef47ae109705133baecc779d4d54fcb6588cb8"
+ },
+ "SRD 2024/Monsters/Roc.md": {
+  "c1": "e9da0645a15ef315025f564e00fdccd7605888bc48071e1ded418b76ea9ae2f1",
+  "c2": "0bfa2f53f85ad41d4cd56d306e1c9146c9319e97f3103d6b751dc99c4c0808f3"
+ },
+ "SRD 2024/Monsters/Roper.md": {
+  "c1": "696fc6f0c757837a7958bda081aba1a197070e474df20bd9f5ffd0e5cd76be6f",
+  "c2": "1f54b26a2ba8ef12282481a72dacb6573acfeff06a038bc9bb90d761f3fa3f66"
+ },
+ "SRD 2024/Monsters/Rust Monster.md": {
+  "c1": "d941fcd0d0b8e7f6d5120fe38481a189807a63bb00c54525c736649490430846",
+  "c2": "42cccfe577178125e351cea220b5732f92b7191949233c0dfc9d017edcde08a1"
+ },
+ "SRD 2024/Monsters/Saber-Toothed Tiger.md": {
+  "c1": "b026b713044f4f55ad86f44e4996640052caabbaa71eb1fc7e3a135c730f66b6",
+  "c2": "e8f87d574f3ed1b1c0c75cfa343cf3f5e9b424d168c11d78bd5301173a829181"
+ },
+ "SRD 2024/Monsters/Sahuagin Warrior.md": {
+  "c1": "68e895aca80eb1911aefff5a2a2c3274ddb487f5c24a0cc8c4d305d633f530bf",
+  "c2": "cda9d9dbeb8fd3ba4ca7ad88bfe5b8a9438a377a427882fbf2a12d5e8a901aef"
+ },
+ "SRD 2024/Monsters/Salamander.md": {
+  "c1": "6b0d355e0485602a7e1c0364bbcffa2f0f4333b723a12c2aab9f25ceda993bab",
+  "c2": "273396a46c8231200b1dde200a3ae99859d6011650e22a8076c5047e08ff5d09"
+ },
+ "SRD 2024/Monsters/Satyr.md": {
+  "c1": "6c75b698fd41868908aacf00a1f81203d5a399e57b941f4de32eaa6dc32732d9",
+  "c2": "dd5114bb00d33a00f06eb69bb8b3ccfe465453cbc8126bdb94de5a37d823ab21"
+ },
+ "SRD 2024/Monsters/Scorpion.md": {
+  "c1": "5c9ea2709973a7d8543acca6310c76f241b7316b3eb48d3116402cfbb3400899",
+  "c2": "4cede4396bbfeb023757beb706134243047f38bc0715627adff786fb1b3ed01e"
+ },
+ "SRD 2024/Monsters/Scout.md": {
+  "c1": "1c94b45eed2f9f504fd7bf354b0f60d621d1cfeaf0129dbb02061468af6fe8d3",
+  "c2": "77f36726a5bb488d4b585b693646784c41ec3e0ffc76d7cf6fdfbd3bff60ab0c"
+ },
+ "SRD 2024/Monsters/Sea Hag.md": {
+  "c1": "bb1c77ffe4b3b86c190276c67ac92b0178cc5817060d502de3cc60c2a3c0b9ee",
+  "c2": "c03aa099b156239593cb868d4da0bf0d7f750fc4057f23ecef533d5d0879e855"
+ },
+ "SRD 2024/Monsters/Seahorse.md": {
+  "c1": "22680d668e683b0fb41d5199709d635693e6f19f4ea1c364053eeffac2133da7",
+  "c2": "11bb4f09def3320497916238a39cfcd626fc1a239f44e91cdf06128ef5989faf"
+ },
+ "SRD 2024/Monsters/Shadow.md": {
+  "c1": "c7784c12c9fee64bc19492b8dd3e252edc001d5f8be939baf105300907b18aba",
+  "c2": "1428252d85ad8e7b24635bfd1516989456f22ce2848dc79d9351dd684ffcccc3"
+ },
+ "SRD 2024/Monsters/Shambling Mound.md": {
+  "c1": "15c43b3d226f5d003b6a229abb5f838f37f89e77ef733d9d710c53a0dbc8e8d8",
+  "c2": "d13a9fb8be6bd6766032b7be0824e58b97849e66388895b71097e6e1dd8f28c8"
+ },
+ "SRD 2024/Monsters/Shield Guardian.md": {
+  "c1": "0e816d68495666af32ba4949360c8625539a70a698770206f118010c428c091e",
+  "c2": "db058e166a83ff2c4684c41acf0117ed5e40ecfe97bf492cfbccab2efec4405b"
+ },
+ "SRD 2024/Monsters/Shrieker Fungus.md": {
+  "c1": "a7e9287f77098b36957a623e48e0190a75c188802e6f6359f20f2987c805d0d2",
+  "c2": "2f9b3525bec467d8529bd110e92e149647e78c3808583e33064f6c540cf2ace4"
+ },
+ "SRD 2024/Monsters/Silver Dragon Wyrmling.md": {
+  "c1": "94cedf0e9166f34c3f3ca8eb53a58c2e1521f81ee6fd0dee36058f94de97c727",
+  "c2": "83abab55289764b648ce2636e0b3b24056a0b5fd2074fe1d7c0ae9945a9ccba7"
+ },
+ "SRD 2024/Monsters/Skeleton.md": {
+  "c1": "265efe161d0081c02b7cc918447bf6c2b937cc24c7be05248711d8e950934eab",
+  "c2": "6ff8c81c0cd240c2542748807b69a0b0b279b1a856fd6e04ec75e97703182f0e"
+ },
+ "SRD 2024/Monsters/Solar.md": {
+  "c1": "a4220ade884a428d105856a86ceb433b9c9901bb057dd8ce11c1017d42498711",
+  "c2": "84322654886597d92636cc060913f1b931af89542e40512902cd99d418b9ef4a"
+ },
+ "SRD 2024/Monsters/Specter.md": {
+  "c1": "ad0187a37d29279e8133bcb123e7fd27005cb9b38e416b5caeb4d72deca629f4",
+  "c2": "4f14eb615318fb761602ed220b6d22891314def1ccebf0a2765d0df0b276a52a"
+ },
+ "SRD 2024/Monsters/Sphinx of Lore.md": {
+  "c1": "fe7f4a7b5990176299637e6df3c94c8c1efdc75b3b43b31c1732d04c6dbb4b06",
+  "c2": "d31e820448cff68e91eb4eea124c70c68ec18a39dca405ef442ad0d29c6c97d4"
+ },
+ "SRD 2024/Monsters/Sphinx of Valor.md": {
+  "c1": "cf46aade83ca5597ba9aaacf6a0b3dd01b44be5cef47bc1bac2502db976b54cc",
+  "c2": "3a7536a67643b126f5cb139def45a437836c7d31861bf674bae72d0bfb16a9ed"
+ },
+ "SRD 2024/Monsters/Sphinx of Wonder.md": {
+  "c1": "d7ec441445a00ffcf1b818c8826a3f04a05543c095b1001d209c17170359696d",
+  "c2": "884013705523ed516f0a6e1165119c5bed64db5fb5fa18e0d936139efd322101"
+ },
+ "SRD 2024/Monsters/Spider.md": {
+  "c1": "bba40a3075324462579dcec56ec929eb3ebb1321b08e8a082c9f05ddb25291ba",
+  "c2": "3d608c9fc5e68517273777295e184ecd40468befea8d213591b23b232776d86c"
+ },
+ "SRD 2024/Monsters/Spirit Naga.md": {
+  "c1": "99a541085dd4ee4c76014cdd30de04f80ad1a31bcd92dd35f5bdbc6e5fee4f01",
+  "c2": "51348007f34fa1d5a148b51b429f675cd67d1f77e6a6c53bfa0725b9f4e09636"
+ },
+ "SRD 2024/Monsters/Sprite.md": {
+  "c1": "add77a3163125be4cfcd6379904c6f999ca2ee95870d61554baed76d6266a946",
+  "c2": "c226a7cc6db00b2e8504381edc00ebab33f3942c8df56938b46bf7401427a2ba"
+ },
+ "SRD 2024/Monsters/Spy.md": {
+  "c1": "958b73a6e398f942db09b59588c2dbdba9d5ce375af784411571e0030ba0c5b8",
+  "c2": "8aca7b80e6d73b253fcffba6e3c9bd843ff5a85568b8beaba81ad6de9ddf8f5d"
+ },
+ "SRD 2024/Monsters/Steam Mephit.md": {
+  "c1": "6c45383b9723310355fc128382f8787d173fc44ba3c74cae67b0235badbf8a0c",
+  "c2": "3ffd08ddaf12d2c040a2965cfcef34ab76653062b6d096c996c287a740d8c007"
+ },
+ "SRD 2024/Monsters/Stirge.md": {
+  "c1": "edc3cd95f14ebfb8b353f2d33480a36283ac54fee063ff0c8dbba96787fbc6ec",
+  "c2": "5f19fcadd147664c6f335cf61aa1d21d56de28fb131c15922f85a225f907c248"
+ },
+ "SRD 2024/Monsters/Stone Giant.md": {
+  "c1": "111b434bd334ef4d54fc2c4ff39a5876f83c633a523e01b6bab0ef27ed1be2dc",
+  "c2": "90708879dc764ff4a5b9daf4e9e2d85d47fc10ba57e74f3574a90d77770239f6"
+ },
+ "SRD 2024/Monsters/Stone Golem.md": {
+  "c1": "0a9e54eeca1d3043519d00811b7f4408cb41b314a4e4b669a3d9e43d20a99616",
+  "c2": "e9a0e8063a436e7790771fa4d36c6b038b9c6e486f1dd52592425d884f49f3a4"
+ },
+ "SRD 2024/Monsters/Storm Giant.md": {
+  "c1": "e70386c94ff509fcae33d5d9f0231fa8796ecd8987994bec89fec9ab83a1d6f9",
+  "c2": "7302b6310b00997d9757c3a1158b3b6973ba338cf9b34cc68cba17c5769ed587"
+ },
+ "SRD 2024/Monsters/Succubus.md": {
+  "c1": "22695839fc250515bb1b17b4b27b85e78d02aafe0bfa3269b30c0bc86d60db0d",
+  "c2": "757853105fdd48f32e07f1103b58e347fdb05271902744be7d88a3fd156b88b1"
+ },
+ "SRD 2024/Monsters/Swarm of Bats.md": {
+  "c1": "fbca00b23a88fd7c422feb5193f05415eb2e44118871efa211bc98d31466fbfc",
+  "c2": "a5dc935b214eed3857e0e32f333979962ff935b83385a79322d522576e7afa16"
+ },
+ "SRD 2024/Monsters/Swarm of Crawling Claws.md": {
+  "c1": "f34db6b4fdc2a50dfdf2d54a48ef88c65e8691753bbe7512c3bee01fdae2c3a6",
+  "c2": "9224ba847091beddedd10e32fadfed01f70bd617ca8cf6be41b4c44530d4cdd7"
+ },
+ "SRD 2024/Monsters/Swarm of Insects.md": {
+  "c1": "8e56777bcfa6a45af25d8e75983333f67d0b42571bca5917f5a041f9742c2560",
+  "c2": "6c9736939cc97251dec226a132093b3d95d0fe1c55cbf749d17b18f1c7951ffb"
+ },
+ "SRD 2024/Monsters/Swarm of Piranhas.md": {
+  "c1": "77de107ff0ee8c377637934aafbd9168728725f0856820cf3e633b389df650e3",
+  "c2": "df9845bc4eaf86f2136cf9f1716587e8c94348fa8714f9b0fe3c5c9e1a51ec8d"
+ },
+ "SRD 2024/Monsters/Swarm of Rats.md": {
+  "c1": "81fb19ad29163581ad7df53301953ccfb1ac7f9399aa9808cbf0051504f2b023",
+  "c2": "08698b4d92609d097a0c28d2021ff97c25df94d176a3a16148eade19ae32f306"
+ },
+ "SRD 2024/Monsters/Swarm of Ravens.md": {
+  "c1": "9c6a1024d26b3edc9025ae0091f118062fd76a6d3fbcfc56f30c04dab45bf890",
+  "c2": "ef86c0043a98f6d1b7b3f2b93da37decc2e60659c69ac0a8d671cb45a5a4a2fd"
+ },
+ "SRD 2024/Monsters/Swarm of Venomous Snakes.md": {
+  "c1": "4a1b2d6c218288d078978e610336678929e6e68735cdc8a2acb7e96cba2ff170",
+  "c2": "964f5158947f2a7cf544c11f08409ad3197fe77626798ead40f1add0a30d5166"
+ },
+ "SRD 2024/Monsters/Tarrasque.md": {
+  "c1": "8e129cd5c9bf22d99b17c374d0829552154673a1e1e3a12170342301a94cde42",
+  "c2": "498bdbfae4723af3769cec0ff1dd6d3b4e7d1a49eac8a3b5645145581e7fc342"
+ },
+ "SRD 2024/Monsters/Tiger.md": {
+  "c1": "d9b459048ab7017740da14bb8311d4b57ae708c09c77a2d2aa72fd0790a353f5",
+  "c2": "122abc21ff7fbfd28870f20c9a3f70eeee1bb93df1c0c8d60ac341e49e6dfc46"
+ },
+ "SRD 2024/Monsters/Tough Boss.md": {
+  "c1": "5fb477d324b093f4049198fd57018a78a5f038d2c92e1b3b55284adc981a99ea",
+  "c2": "2bc26ea395c5382c323a2ba17cf4dd1fd8267a3ab3cddcc6d416b39fc959f142"
+ },
+ "SRD 2024/Monsters/Tough.md": {
+  "c1": "24d761b75d09d04b9b73f00ea2e58f87b77eb6ad77250971a76093cc15640a57",
+  "c2": "d66a77fab080a823a4abfdcc4a8211fd853645ac955cca07c7641343ef371697"
+ },
+ "SRD 2024/Monsters/Treant.md": {
+  "c1": "81c8a342969cdfa83b65a0bffa640d4fe1df399f2a709107929907276bee08a3",
+  "c2": "f066464db0ac09df0b5252634bb12b77fe2d65dda8fce376274c00579c769ab8"
+ },
+ "SRD 2024/Monsters/Triceratops.md": {
+  "c1": "16ea1ae4bbd89902b14e4cdfebe248281de661b8406e586a027e6dafdcfdf602",
+  "c2": "dbbe5f4ad77712f3c97db4ca424e08c5f155b5b5f36208780c837c5633ae642a"
+ },
+ "SRD 2024/Monsters/Troll Limb.md": {
+  "c1": "60fdb7737ac3f5b0fa6309afa4a09fbd5ac2d91050311bbe0557b04909545376",
+  "c2": "af99f5e6d4dd98c58ac3dc4ecf931ad07d338736802916b3066cd21b25685410"
+ },
+ "SRD 2024/Monsters/Troll.md": {
+  "c1": "6a554d58d126ff741706b490e4bc75c4bf5592ca41c66ea55e7ca97f1c38ddb4",
+  "c2": "a4e44de122207f2f9613cef3978b638041152e16f6510c50a79738258e85512e"
+ },
+ "SRD 2024/Monsters/Tyrannosaurus Rex.md": {
+  "c1": "231bf74fdae309a2a7190264ea237489bac0181a9a79f23ad6cf608f376e287d",
+  "c2": "8830fd16f1fede17563ed38da77e7a44131987821b21bdd307d15d545c55d91c"
+ },
+ "SRD 2024/Monsters/Unicorn.md": {
+  "c1": "f1b366d0588c423e2aafdab39495f69940772bd610e42166e516514d4b72e744",
+  "c2": "5b225e01d82316f60cf95457ec3a50d0dc3a9d15b6d8112948ee547277cc2887"
+ },
+ "SRD 2024/Monsters/Vampire Familiar.md": {
+  "c1": "84ce06a68f21d60df0f9516fb28fa4b3fae70e89f4d13a23b4523c3cb37fbfb8",
+  "c2": "a7ebee01d9018c01c4632c483875a3757c4879792acc90536f1fb481fd09b26b"
+ },
+ "SRD 2024/Monsters/Vampire Spawn.md": {
+  "c1": "003af8d27b12d40b800ffe4f47304567455901930707c782247526e15cc2e93c",
+  "c2": "b378de5fb376fb0127328fa62dc38bee0313466185ddcd9bb2fb34632d0c649a"
+ },
+ "SRD 2024/Monsters/Vampire.md": {
+  "c1": "5c0ecbe23f850abb4cd6dbaed75aff9db1482b010e6c310bd854cb6ba5076fb2",
+  "c2": "e5ad07f2853be47a007b0f18afc796c25c45ca1d798b67270168190fda2ac312"
+ },
+ "SRD 2024/Monsters/Venomous Snake.md": {
+  "c1": "a4c2820375ec5363171b7769c1aca0ed9a497f0ebca73f294954d1e629989deb",
+  "c2": "5d9e6f80e5c32855878305c1af8600cfc3c9853bf24dab8019bba490f08881bc"
+ },
+ "SRD 2024/Monsters/Violet Fungus.md": {
+  "c1": "909bacd1abd37c0e89d8cbe77aebb466fcf9d0ae90823288f4212b4a102b4f03",
+  "c2": "22dff946089e52636b5c4ab8ba530e5e1d2631d35f660295238c36f0bdce7cc8"
+ },
+ "SRD 2024/Monsters/Vrock.md": {
+  "c1": "261da0f3e9e21816d70442ae8cd7d3f97aa4b9a6bd405a6444ef6bdfc78a4f26",
+  "c2": "974ef9f60f284f71bca0a2388bd627d73013181e19947f80f41e23335532d8ab"
+ },
+ "SRD 2024/Monsters/Vulture.md": {
+  "c1": "5be2eddffef27ee88c1f6a33e6c775bfbb9e756b1f3ef93b28817c9373d86e7d",
+  "c2": "16b74d63b51dddfde3f700c571bbbd985208bf15108b01e77982a06c1295d68f"
+ },
+ "SRD 2024/Monsters/Warhorse Skeleton.md": {
+  "c1": "8ad58d01dbb03679720f4f6e0a6d26a694d53d5e50096b6db776da6005bbafbf",
+  "c2": "b4794e8e777ebc914a9e01bece9c5815378a91f5fa5934df5aa02fc0e5baa9f0"
+ },
+ "SRD 2024/Monsters/Warhorse.md": {
+  "c1": "f88e49677990db58b0aea8d0635d4f743fc09e867a1c997b5875fa8cc36440fb",
+  "c2": "1ffc06b27f456a69e8a2f00c3d936301b00a04c3f2ff578407b716a41a04693c"
+ },
+ "SRD 2024/Monsters/Warrior Infantry.md": {
+  "c1": "2a160aa97258de0a7ea0a6c79eb4dac45548273d2add5ffe2377e23caeb1f1f6",
+  "c2": "44da3ca373fd9ca0d03565ad514fa35b7cd5d170602200dbd8ce3daa6bf0a1c7"
+ },
+ "SRD 2024/Monsters/Warrior Veteran.md": {
+  "c1": "c0756a324b48ee11e62bbb83ae4cafbb4e21c007a099e616948b87c656bd90c0",
+  "c2": "22c39eb654f732ca4ff9716d7a4b7b819968ef0657d1f8608c32f75372d4ad81"
+ },
+ "SRD 2024/Monsters/Water Elemental.md": {
+  "c1": "169a9369669ec54756703515679e7b68dd16b9d293c6815f8fec8122ebb47a64",
+  "c2": "2fde8c4e0fd95d3c45acddf724bca783879b004c5e37f31f590f7293ff2950e2"
+ },
+ "SRD 2024/Monsters/Weasel.md": {
+  "c1": "cb7d63a7e4802e8829eab31255667390468c1385ac969f103b7154f0192f9837",
+  "c2": "79380fb9350c828356fd1fe326e4a431d362095b1926edf7f33aab01a8ef9ff0"
+ },
+ "SRD 2024/Monsters/Werebear.md": {
+  "c1": "56b57fd964572965cf70830f2b642d3218638052de6190df78dea920555db2f2",
+  "c2": "e3a1af091c2d8abd53c46a4ddb6247db98c7b3230f5c571bbf3bcedf65c463c1"
+ },
+ "SRD 2024/Monsters/Wereboar.md": {
+  "c1": "83365784681c018f989ac47c6471baf67b905e103a86035a89947e522b790a2b",
+  "c2": "74c67df63971442b98b6cc5b5d5782fb1aad40a2769fe161d55b52008c267823"
+ },
+ "SRD 2024/Monsters/Wererat.md": {
+  "c1": "38be89dbcf66285b16afa77c96df2a315994b141146a376f2337b219e47068ff",
+  "c2": "99e25253f7742874a38b1d2395fd62dbc3d337562179df928c023a75ef96e9bf"
+ },
+ "SRD 2024/Monsters/Weretiger.md": {
+  "c1": "b8388b42643f2523ba9b4a71415a740fe34905df3018f97082eb27a7e1a5dc8d",
+  "c2": "4bfae98b25566aa343bd6b781ecbb1b4e05db61ac4b883b3db03042c6b57f45e"
+ },
+ "SRD 2024/Monsters/Werewolf.md": {
+  "c1": "e0dbfcd7e6d627307929f60a6acd6bd405abb5a255d6b53fc0a81f37d01fdc93",
+  "c2": "2766f979ebea41ffb095dc59d61099fef2f8da0e06f47268f5130a736903b16f"
+ },
+ "SRD 2024/Monsters/White Dragon Wyrmling.md": {
+  "c1": "b2ebcee98fc89910bae344ceee8b82536d489d16b9a73515eda010dbd10eeb56",
+  "c2": "3365fb3dcbb7bfee5216b64049abfb325918d42488d3399eee47cc146c69043d"
+ },
+ "SRD 2024/Monsters/Wight.md": {
+  "c1": "3fb3704b9fe623b13689083a42761ccf28dd35c9f5c7b61e741926f8fbe63a5d",
+  "c2": "607bf0113fbe1be30de6134c69c57e5a8a394a70a4ee300b663df46338653103"
+ },
+ "SRD 2024/Monsters/Will-o'-Wisp.md": {
+  "c1": "9bb3de15e3526bbbd91846e99001858884fd3c8b81d62c85cf68545b8cb3a115",
+  "c2": "41e1fea725f72724b771cde3cd1958d6af40a24e5ca816444315dfeedf1b3de3"
+ },
+ "SRD 2024/Monsters/Winter Wolf.md": {
+  "c1": "1da34cb90610b0700c0a515534224a2b31aa79a8dd21739e84a6c7097cfe96e1",
+  "c2": "b9982d13265834fdddc3ad248f637bb334db0c7a6212f6c2e26ad707e2264cb5"
+ },
+ "SRD 2024/Monsters/Wolf.md": {
+  "c1": "e1c636455acefd68120d471339c2d03fb30e1cd7f0abda637daf977c82fc9f48",
+  "c2": "5fef5b491940d398b7256cc1d6f07b0337bfa5377c1240294636507ba3aae1f6"
+ },
+ "SRD 2024/Monsters/Worg.md": {
+  "c1": "f573cd22b3efa3eb2886a2adb6ea18f5eef43c6dbfee5b0c3fedacf7e288bda8",
+  "c2": "5f251bcc9e371a8880611cd5b680385791b81df4cc157bb5624b12ed98ccad6b"
+ },
+ "SRD 2024/Monsters/Wraith.md": {
+  "c1": "8c04eaacf535ad6dd900a3a2c924794c50b809552fd0632adb2c52aff36ee5a1",
+  "c2": "e9c39b820ee545569b982e69d6d4999d6fa2b3f4b819219c41aca8723d118136"
+ },
+ "SRD 2024/Monsters/Wyvern.md": {
+  "c1": "24b7c8b46ec63eadea32f974cf28d487391f7e2e8072f747bc3cd1779982a0ff",
+  "c2": "b9b583c733c4f15ca2b851f85bf9f81290c721d84f6c50f47006e653a27ca226"
+ },
+ "SRD 2024/Monsters/Xorn.md": {
+  "c1": "5d4198e31b1b00819e3a9674bc8de9e9a166c7c9e64c6f865e0c26e772d8433e",
+  "c2": "c6ed30382700c0533a7ad0f7a2ce1c5e8cf2318744819a42a2a8e93c00a6156b"
+ },
+ "SRD 2024/Monsters/Young Black Dragon.md": {
+  "c1": "c1295e987fa11b12027ae60a859052bd5d38673c4c8d2683fbb45ff8c48f198f",
+  "c2": "955dd479a955f42c006454c76614a366c526eaea3a6006387c4967a4e5b8e9d5"
+ },
+ "SRD 2024/Monsters/Young Blue Dragon.md": {
+  "c1": "0336d11273adbb1baca963d480d5a903e503c1ae4eb5f73e5b21fa3ece81ea65",
+  "c2": "eea46aa29f367c5411b40bfb92df402d0660abc24b23a22e427cdbe0152a5ebc"
+ },
+ "SRD 2024/Monsters/Young Brass Dragon.md": {
+  "c1": "e27faeb71ae705456808820db6ab1c49793bc4b829fb68f4090a7663041815a4",
+  "c2": "cb89ea5b97f53445c7427edfd495663fff404ea2fa64f79473ea1d4a3559445f"
+ },
+ "SRD 2024/Monsters/Young Bronze Dragon.md": {
+  "c1": "500ccc438bc1fcc03f6ecdc65b034de75fda9c143f2e18521ff83d853bd04c00",
+  "c2": "6fcbc363771180cd64f6c1f66b1b71136e4964b9289c61b96b97658b472e28e5"
+ },
+ "SRD 2024/Monsters/Young Copper Dragon.md": {
+  "c1": "4efb59dbe984b39bb6df229b09767500953a8bbec997b7c5dfdbdc8d86dc3061",
+  "c2": "f88bda6e33fedbc8b477c56c219f08ea5ed1f78944994853460d683090a4027c"
+ },
+ "SRD 2024/Monsters/Young Gold Dragon.md": {
+  "c1": "8bd54d5cb590dd24dfd3c85770b9493ea716e232912271f5de8121763304c7dc",
+  "c2": "15c61ca9376f93e29b4d87aef9810a550d723fe157eda6ecb2afb7b7eac0b33d"
+ },
+ "SRD 2024/Monsters/Young Green Dragon.md": {
+  "c1": "9e1d69dc7faaedf74a82686fcd46857c5248a3d8884aa4e0436414119b0ac6c1",
+  "c2": "49627f7ae8cfae0ff2f8830da0e9a2cbb97384c33d46d7fdefb3bdf257a5b88e"
+ },
+ "SRD 2024/Monsters/Young Red Dragon.md": {
+  "c1": "923125223c69c780962ee0145fff8a3062388542f3b87ea4f6f5cfbb1cb889fa",
+  "c2": "5f94ae60aef73b0c694d5fe0a86e02f689e02f77e26326e19b9c68249e1de937"
+ },
+ "SRD 2024/Monsters/Young Silver Dragon.md": {
+  "c1": "8a8fc04111c914986fc0743c7f8bdfa058753c5fcedee97aad007310bdcf02db",
+  "c2": "6441163a6f1b7ebf8aee1e2e56302b4c5aad2ceb55cba225312249c30eb6170e"
+ },
+ "SRD 2024/Monsters/Young White Dragon.md": {
+  "c1": "d08e2402fa8acc8939eca647b6b1915152d23c5947bedd1deb31ffb53f01cab9",
+  "c2": "d819125c8efd3bac0ec4f501c3c318c5e7a33d5dc31b16a09531a0e5e7ab8833"
+ },
+ "SRD 2024/Monsters/Zombie.md": {
+  "c1": "71567bf3e372af7b79b787e03c5b0855e89cc610b1c7b9df0564fe61f5e792f1",
+  "c2": "d4954a53e4896f49e27da9c83919fd83eadf2a44f79754e0514bc6b73d0d1061"
+ }
+}

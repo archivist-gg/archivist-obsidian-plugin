@@ -14,7 +14,7 @@ import type { Archivist } from "@archivist-gg/core";
 //     exists (the doc null-guard — npc/encounter shape);
 // (c) an unknown type with no presenter returns null (lookup-first).
 // The 0c.1a "falls back to mod.parseYaml" assertion is retired by spec D8.3:
-// that path was deleted (all 11 authored types own codecs since 0c.1b).
+// that path was deleted (all 12 authored types own codecs since 0c.1b).
 // ---------------------------------------------------------------------------
 
 const KERNEL_DATA = { from: "kernel-codec" };

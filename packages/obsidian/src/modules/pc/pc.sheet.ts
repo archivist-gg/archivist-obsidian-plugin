@@ -6,6 +6,9 @@ import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.
 import type { CharacterEditState } from "./pc.edit-state";
 import type { CropParams } from "./pc.portrait";
 import { closeCoinModal } from "./components/coin-modal";
+import { closeProficiencyModal } from "./components/proficiency-edit-modal";
+import { closeDefenseTypePopover } from "./components/defense-type-popover";
+import { closeConditionsPopover } from "./components/conditions-popover";
 
 export interface RenderSheetOptions {
   root: HTMLElement;
@@ -41,9 +44,12 @@ export interface RenderSheetOptions {
 }
 
 /**
- * Pure DOM render of a resolved + derived PC into `root`. Clears the root
- * first. Top strip → ability row → combat stats → 2-col body. Warnings get
- * a banner at the very top.
+ * DOM render of a resolved + derived PC into `root`. Clears the root first.
+ * Top strip → ability row → combat stats → 2-col body. Warnings get a banner
+ * at the very top. The body is two columns (the rail left, the tabs right)
+ * whatever the active tab's height; only the pane's width stacks it, through
+ * the 499 tier in `styles/layout.css` (R4-G7 RIDER-7: the user reversed Q-6 on
+ * 2026-09-15, so the R4-G6b body-fit observer and its teardown are retired).
  */
 export function renderPCSheet(opts: RenderSheetOptions): void {
   const { root, resolved, derived, registry, services, app, warnings } = opts;
@@ -80,10 +86,45 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
 
   // Class-less character → render the Builder shell instead of the sheet.
   if (isBuilder) {
-    // Most builder steps render no CurrencyStrip, so an open coin modal
-    // would have no refresh source and could go stale after its own writes —
-    // close it on builder entry.
+    // The builder shell renders no CurrencyStrip on most steps, and no
+    // ProficienciesPanel at all (the whole sidebar is skipped below), so an open
+    // coin or proficiency modal would have no refresh source and could go stale
+    // after its own writes · close both on builder entry. This branch is
+    // reachable FROM the sheet: the header gear calls editState.openBuilder(),
+    // which flips `builder: true` and re-renders with the modal still open.
     closeCoinModal();
+    closeProficiencyModal();
+    // Same rule, one step further: the builder renders no DefensesConditionsPanel
+    // either, and that panel is where `refreshDefenseTypePopover` is called from.
+    // So builder entry takes the defense picker's ONLY refresh source away · it
+    // would keep painting the `derived.defenses` that were live when the `+` was
+    // tapped, including after its own pips write new ones, hanging off a `+` the
+    // `root.empty()` above just detached.
+    //
+    // ⚠️ SCOPE OF THE EVIDENCE, so nobody upgrades it later. What is MEASURED is
+    // that no PCSheetView teardown hook covers this path: `openBuilder()`
+    // re-renders IN PLACE, with no file switch and no unload, and with these two
+    // calls removed the openBuilder cases in
+    // tests/pc-view-popover-teardown.test.ts go red while the eight hook cases
+    // stay green. What is NOT established is a live user-facing regression. The
+    // sole caller of `openBuilder` is the header gear's own click listener
+    // (header-section.ts), which does not stopPropagation, so in an ATTACHED DOM
+    // that same click finishes bubbling to `activeDocument` and both popovers'
+    // outside-click handlers close them at the end of the very same dispatch.
+    // Measured both ways with these calls removed: detached mock contentEl (the
+    // test fixture · `isConnected === false`) leaves the picker up, attached
+    // does not. So this close is DEFENSIVE · it covers any future entry into the
+    // builder that is not a bubbling click on the gear, and it removes the
+    // within-dispatch window in which the builder is already painted while the
+    // picker is still live. R4-P5 task 14 is where that gets settled in the
+    // real app.
+    //
+    // The conditions popover rides along for the detached anchor and because the
+    // builder shows no conditions surface to float over · NOT because builder
+    // entry made it stale. It has no refresher anywhere, on the sheet or here,
+    // so unlike the three above it loses nothing at this boundary.
+    closeDefenseTypePopover();
+    closeConditionsPopover();
     safeRender(sheet, "pc-builder-host", "builder", registry, ctx, { wrap: false });
     root.scrollTop = prevScroll;
     return;

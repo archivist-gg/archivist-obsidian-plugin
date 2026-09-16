@@ -1,45 +1,119 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
+
+/** Every `clampPopoverToViewport` call, in order. The REAL implementation still runs
+ *  (the viewport-clamp test at the bottom measures it), so this adds an observable
+ *  without changing behaviour · and it is the only observable that can separate
+ *  "re-clamped against the anchor this render built" from "re-clamped against the
+ *  open-time snapshot rect", since both anchors are `<button>`s and jsdom lays
+ *  neither of them out. */
+const clampCalls = vi.hoisted(() => [] as { popover: HTMLElement; rect: DOMRect }[]);
+vi.mock("../packages/obsidian/src/modules/pc/components/popover-utils", async (importOriginal) => {
+  const actual = await importOriginal<
+    typeof import("../packages/obsidian/src/modules/pc/components/popover-utils")
+  >();
+  return {
+    ...actual,
+    clampPopoverToViewport: (popover: HTMLElement, rect: DOMRect) => {
+      clampCalls.push({ popover, rect });
+      actual.clampPopoverToViewport(popover, rect);
+    },
+  };
+});
+
 import {
   openDefenseTypePopover,
+  refreshDefenseTypePopover,
   closeDefenseTypePopover,
 } from "../packages/obsidian/src/modules/pc/components/defense-type-popover";
+import { DefensesConditionsPanel } from "../packages/obsidian/src/modules/pc/components/defenses-conditions-panel";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
-import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import { DAMAGE_TYPES } from "@archivist-gg/dnd5e/dnd/constants";
-import {
-  CONDITION_SLUGS,
-  CONDITION_DISPLAY_NAMES,
-} from "@archivist-gg/dnd5e/pc/conditions.constants";
+import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
+import { DAMAGE_TYPES, CONDITIONS } from "@archivist-gg/dnd5e/dnd/constants";
+import { CONDITION_SLUGS } from "@archivist-gg/dnd5e/pc/conditions.constants";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import { toDefenseSlug } from "@archivist-gg/dnd5e/pc/pc.defense-normalize";
 import { FIGHTER_5_CLERIC_3, clone, fakeResolved, fakeDerived } from "./fixtures/pc/rest-fixtures";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { App } from "obsidian";
 
 beforeAll(() => installObsidianDomHelpers());
-afterEach(() => closeDefenseTypePopover());
+afterEach(() => {
+  closeDefenseTypePopover();
+  clampCalls.length = 0;
+});
+
+/**
+ * The 14 shipped condition spellings, LOCAL to this file. Until R4-G2 Task 6
+ * they were imported from dnd5e's `CONDITION_DISPLAY_NAMES`, which is now
+ * retired: labels come from the registered `condition` entity, and this table
+ * is what every surface must STILL show when the ctx carries no registry — the
+ * `titleCase(slug)` fallback. Copied verbatim off the retired table so it stays
+ * an independent witness instead of a re-derivation of the code under test.
+ */
+const EXPECTED_CONDITION_LABELS: Record<string, string> = {
+  blinded: "Blinded",
+  charmed: "Charmed",
+  deafened: "Deafened",
+  frightened: "Frightened",
+  grappled: "Grappled",
+  incapacitated: "Incapacitated",
+  invisible: "Invisible",
+  paralyzed: "Paralyzed",
+  petrified: "Petrified",
+  poisoned: "Poisoned",
+  prone: "Prone",
+  restrained: "Restrained",
+  stunned: "Stunned",
+  unconscious: "Unconscious",
+};
+
+type Derived = ComponentRenderContext["derived"];
+type DefenseEntry = Derived["defenses"]["resistances"][number];
+
+type DefenseSeed = string | DefenseEntry;
+
+/**
+ * Seed a bucket with `DefenseEntry` objects. `value` is the canonical slug;
+ * `label` is the first-spelling-wins display string.
+ *
+ * A BARE STRING seeds `label === value`. Under that seed a canonical `value`
+ * compare and a `label` compare are indistinguishable, which is exactly why
+ * bug D-1 shipped green: every fixture in the file spelled both fields the
+ * same way. Pass a full entry whenever the test needs to tell them apart ·
+ * `{ value: "psychic", label: "Psychic", origin: "grant" }`.
+ */
+function ents(vals: DefenseSeed[]): DefenseEntry[] {
+  return vals.map((v) =>
+    typeof v === "string" ? { value: v, label: v, origin: "manual" as const } : v,
+  );
+}
 
 function withDefenses(over: Partial<{
-  resistances: string[];
-  immunities: string[];
-  vulnerabilities: string[];
-  condition_immunities: string[];
+  resistances: DefenseSeed[];
+  immunities: DefenseSeed[];
+  vulnerabilities: DefenseSeed[];
+  condition_immunities: DefenseSeed[];
 }> = {}) {
   const character = clone(FIGHTER_5_CLERIC_3);
   const resolved = fakeResolved(character);
-  const derived = fakeDerived(character) as { hp: { max: number; current: number; temp: number }; defenses: { resistances: string[]; immunities: string[]; vulnerabilities: string[]; condition_immunities: string[] } };
+  // Typed against the REAL `DerivedStats` (via ComponentRenderContext) so the
+  // `defenses` seeding below is checked against the engine shape rather than a
+  // hand-written local one that can silently drift out of date.
+  const derived = fakeDerived(character) as Derived;
   derived.defenses = {
-    resistances: over.resistances ?? [],
-    immunities: over.immunities ?? [],
-    vulnerabilities: over.vulnerabilities ?? [],
-    condition_immunities: over.condition_immunities ?? [],
+    resistances: ents(over.resistances ?? []),
+    immunities: ents(over.immunities ?? []),
+    vulnerabilities: ents(over.vulnerabilities ?? []),
+    condition_immunities: ents(over.condition_immunities ?? []),
   };
   const onChange = vi.fn();
-  const editState = new CharacterEditState(character, () => ({ resolved, derived: derived as never }), onChange);
+  const editState = new CharacterEditState(character, () => ({ resolved, derived }), onChange);
   const anchor = document.createElement("button");
   document.body.appendChild(anchor);
   const ctx: ComponentRenderContext = {
     resolved,
-    derived: derived as never,
+    derived,
     services: {} as never,
     app: {} as App,
     editState,
@@ -89,6 +163,57 @@ function conditionPip(slug: string): HTMLButtonElement {
   return pip(conditionRow(slug), "immunity");
 }
 
+/**
+ * The ctx object a LATER sheet render hands the panel: a brand-new `derived`
+ * (the resolver rebuilds it every pass) carrying the SAME `editState` instance.
+ * The identity is the whole point · it is what tells a repaint apart from a file
+ * switch, and `{ ...prev }` is how the real sheet composes it too.
+ */
+function nextCtx(prev: ComponentRenderContext, over: Partial<{
+  resistances: DefenseSeed[];
+  immunities: DefenseSeed[];
+  vulnerabilities: DefenseSeed[];
+  condition_immunities: DefenseSeed[];
+}> = {}): ComponentRenderContext {
+  return {
+    ...prev,
+    derived: {
+      ...prev.derived,
+      defenses: {
+        resistances: ents(over.resistances ?? []),
+        immunities: ents(over.immunities ?? []),
+        vulnerabilities: ents(over.vulnerabilities ?? []),
+        condition_immunities: ents(over.condition_immunities ?? []),
+      },
+    } as Derived,
+  };
+}
+
+/**
+ * An anchor with a STATED box. jsdom runs no layout, so every real element's
+ * `getBoundingClientRect()` is all-zero · two anchors would be indistinguishable
+ * by rect, which is exactly the question the rebind tests ask.
+ */
+function anchorAt(left: number, bottom: number): HTMLElement {
+  const el = document.createElement("button");
+  el.getBoundingClientRect = () => ({
+    bottom, top: bottom - 20, left, right: left + 30,
+    width: 30, height: 20, x: left, y: bottom - 20, toJSON() { return this; },
+  } as DOMRect);
+  document.body.appendChild(el);
+  return el;
+}
+
+/** A real, bubbling click · the document-level outside-click handler only ever
+ *  sees events that reach `document`. */
+function clickOn(el: HTMLElement): void {
+  el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+}
+
+function isOpen(): boolean {
+  return document.body.querySelector(".pc-def-popover") !== null;
+}
+
 describe("defense popover — structure", () => {
   it("renders two tabs labeled Damages and Conditions, Damages active by default", () => {
     const { ctx, anchor } = withDefenses();
@@ -129,12 +254,14 @@ describe("defense popover — structure", () => {
     }
   });
 
-  it("displays condition rows by their CONDITION_DISPLAY_NAMES label", () => {
+  it("displays every condition row by its entity-backed label (registry-less fallback)", () => {
     const { ctx, anchor } = withDefenses();
     openDefenseTypePopover(anchor, ctx);
-    expect(conditionRow("charmed").querySelector(".pc-def-popover-name")?.textContent).toBe(
-      CONDITION_DISPLAY_NAMES.charmed,
-    );
+    // All 14, not just charmed: the fallback is a per-slug transform now, so one
+    // sample could pass while another slug's spelling drifted.
+    for (const [slug, expected] of Object.entries(EXPECTED_CONDITION_LABELS)) {
+      expect(conditionRow(slug).querySelector(".pc-def-popover-name")?.textContent).toBe(expected);
+    }
   });
 });
 
@@ -178,6 +305,63 @@ describe("defense popover — initial state mirrors derived.defenses", () => {
     const { ctx, anchor } = withDefenses({ condition_immunities: ["charmed"] });
     openDefenseTypePopover(anchor, ctx);
     expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+});
+
+describe("defense popover · seeding keys on the canonical value (bug D-1)", () => {
+  it("checks the R pip for a Title-Case granted resistance", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "psychic", label: "Psychic", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+  });
+
+  it("checks the I and V pips for Title-Case granted damage entries", () => {
+    const { ctx, anchor } = withDefenses({
+      immunities: [{ value: "cold", label: "Cold", origin: "grant" }],
+      vulnerabilities: [{ value: "fire", label: "Fire", origin: "equipment" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(pip(damageRow("Cold"), "immunity").classList.contains("on")).toBe(true);
+    expect(pip(damageRow("Fire"), "vulnerability").classList.contains("on")).toBe(true);
+  });
+
+  it("checks the immunity pip for a Title-Case granted condition immunity", () => {
+    const { ctx, anchor } = withDefenses({
+      condition_immunities: [{ value: "charmed", label: "Charmed", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+
+  // A pip that mis-seeds OFF turns one tap into `addDefense` on a value the
+  // character already has, writing a manual duplicate of a grant into the note.
+  // Seeding ON makes the same tap the intended `removeDefense`.
+  it("tapping a Title-Case granted resistance removes it instead of adding a duplicate", () => {
+    const { ctx, editState, anchor } = withDefenses({
+      resistances: [{ value: "psychic", label: "Psychic", origin: "grant" }],
+    });
+    const addSpy = vi.spyOn(editState, "addDefense");
+    const removeSpy = vi.spyOn(editState, "removeDefense");
+    openDefenseTypePopover(anchor, ctx);
+    pip(damageRow("Psychic"), "resistance").click();
+    expect(removeSpy).toHaveBeenCalledWith("resistances", "psychic");
+    expect(addSpy).not.toHaveBeenCalled();
+  });
+
+  it("addresses every damage row by its canonical value in data-type", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(damageRow("Psychic").dataset.type).toBe("psychic");
+    for (const row of panel("damages").querySelectorAll<HTMLElement>(".pc-def-popover-row")) {
+      const shown = row.querySelector(".pc-def-popover-name")?.textContent ?? "";
+      // Oracle is `toDefenseSlug`, not `shown.toLowerCase()`. The two agree on every value
+      // in today's vocabulary, but `toLowerCase` is the exact expression the row key would
+      // be WRONG to use, so encoding it here would make this assertion fail against correct
+      // code the moment a whitespace-irregular display value entered the list.
+      expect(row.dataset.type).toBe(toDefenseSlug(shown));
+    }
   });
 });
 
@@ -251,6 +435,527 @@ describe("defense popover — condition pip clicks", () => {
   });
 });
 
+/**
+ * The option list each tab renders is `union(shipped vocabulary, everything in
+ * `derived.defenses`)` KEYED BY `toDefenseSlug`. PROTECTIVE, not corrective: zero
+ * off-vocabulary values exist in the product today, so none of these assertions
+ * describes anything a user can currently see. What they pin is the behaviour when
+ * one appears · the picker surfaces it rather than silently hiding it, and it does
+ * so WITHOUT the keyless union's duplicate row.
+ *
+ * Every fixture below deliberately spells `label` differently from `value`, because
+ * a `label === value` seed cannot tell which field a row read.
+ */
+describe("defense popover · the option list is a KEYED union (Task 8)", () => {
+  function damageRows(): HTMLElement[] {
+    return [...panel("damages").querySelectorAll<HTMLElement>(".pc-def-popover-row")];
+  }
+  function condRows(): HTMLElement[] {
+    return [...panel("conditions").querySelectorAll<HTMLElement>(".pc-def-popover-row")];
+  }
+
+  // The real vault case the keying exists for: a hand-typed lowercase `fire` sitting
+  // beside `DAMAGE_TYPES`' Title-Case "Fire". Keyless, this is a 14th row.
+  it("renders ONE row when derived and DAMAGE_TYPES disagree only on case", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "fire", label: "fire", origin: "manual" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(panel("damages").querySelectorAll('.pc-def-popover-row[data-type="fire"]')).toHaveLength(1);
+    expect(damageRows()).toHaveLength(DAMAGE_TYPES.length);
+  });
+
+  it("shows the DAMAGE_TYPES spelling, not the derived label, for a slug the vocabulary knows", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "fire", label: "fire", origin: "manual" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>('.pc-def-popover-row[data-type="fire"]');
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe("Fire");
+  });
+
+  it("renders a row for an off-vocabulary damage value present in derived", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "void", label: "Void", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>('.pc-def-popover-row[data-type="void"]');
+    expect(row).not.toBeNull();
+    // Display falls back to the entry's authored label · "Void" appears nowhere in DAMAGE_TYPES.
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe("Void");
+    expect(damageRows()).toHaveLength(DAMAGE_TYPES.length + 1);
+  });
+
+  // A realistically SHAPED off-vocabulary value · multi-word, punctuated, and absent from
+  // the picker's vocabulary, which carries only DAMAGE_TYPES. It is NOT a value any PC path
+  // emits: DAMAGE_NONMAGICAL_VARIANTS' only PRODUCTION consumer is the monster editor's damage
+  // presets (modules/monster/edit/info-editor.ts); tests consume it as well, so that is a claim
+  // about product code, not an absolute. The fixture is chosen for its shape.
+  it("renders an off-vocabulary NONMAGICAL variant with its full authored label", () => {
+    const label = "Bludgeoning, Piercing, and Slashing from Nonmagical Attacks";
+    const { ctx, anchor } = withDefenses({
+      immunities: [{ value: toDefenseSlug(label), label, origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>(
+      `.pc-def-popover-row[data-type="${toDefenseSlug(label)}"]`,
+    );
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe(label);
+    expect(pip(row as HTMLElement, "immunity").classList.contains("on")).toBe(true);
+  });
+
+  // What this fixture separates is `toDefenseSlug` from a BARE `toLowerCase`: the label's
+  // double space survives `.trim().toLowerCase()` ("ionized  plasma") and is collapsed by
+  // `toDefenseSlug` ("ionized plasma"), so a key that skips the whitespace step misses the
+  // row this test asks for.
+  //
+  // ⚠️ It does NOT separate keying on `value` from keying on `label` · `toDefenseSlug`
+  // maps both spellings to the same string, and a probe keying on `toDefenseSlug(label)`
+  // survives the whole suite. Nor does it constrain the SHIPPED call site's
+  // normalizer: that keys off `value`, which is already canonical, so a bare lowercase
+  // THERE survives too. The name says "of the label" because that is the only expression
+  // this fixture can speak about. Measured, not assumed · read no more into it than that.
+  it("keys on a whitespace-collapsed string, not a bare lowercase of the label", () => {
+    const { ctx, anchor } = withDefenses({
+      vulnerabilities: [{ value: "ionized plasma", label: "Ionized  Plasma", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>(
+      '.pc-def-popover-row[data-type="ionized plasma"]',
+    );
+    expect(row).not.toBeNull();
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe("Ionized  Plasma");
+  });
+
+  // Row COUNT alone does not pin the tie-break: last-derived-wins collapses to one row too.
+  // The label assertion is what fixes FIRST-derived-wins, which is what seeding order gives
+  // and what a literal per-entry `??` fallback would have inverted. Buckets are visited
+  // resistances, immunities, vulnerabilities, so "Void" must beat the later "VOID".
+  it("collapses an off-vocabulary value repeated across two buckets, first label winning", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "void", label: "Void", origin: "grant" }],
+      vulnerabilities: [{ value: "void", label: "VOID", origin: "manual" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const rows = panel("damages").querySelectorAll<HTMLElement>('.pc-def-popover-row[data-type="void"]');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].querySelector(".pc-def-popover-name")?.textContent).toBe("Void");
+    expect(damageRows()).toHaveLength(DAMAGE_TYPES.length + 1);
+  });
+
+  it("writes the off-vocabulary damage row through its canonical slug", () => {
+    const { ctx, editState, anchor } = withDefenses({
+      resistances: [{ value: "void", label: "Void", origin: "grant" }],
+    });
+    const removeSpy = vi.spyOn(editState, "removeDefense");
+    const addSpy = vi.spyOn(editState, "addDefense");
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>('.pc-def-popover-row[data-type="void"]');
+    // Seeded ON from derived, so the first tap is the REMOVE half, not a duplicate add.
+    expect(pip(row as HTMLElement, "resistance").classList.contains("on")).toBe(true);
+    pip(row as HTMLElement, "resistance").click();
+    expect(removeSpy).toHaveBeenCalledWith("resistances", "void");
+    expect(addSpy).not.toHaveBeenCalled();
+  });
+
+  // ─── Conditions half · ruling C-1 ────────────────────────────────────────
+  it("renders a row for an off-vocabulary condition immunity present in derived", () => {
+    const { ctx, anchor } = withDefenses({
+      condition_immunities: [{ value: "bewildered", label: "Bewildered", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = conditionRow("bewildered");
+    expect(row.querySelector(".pc-def-popover-name")?.textContent).toBe("Bewildered");
+    expect(conditionPip("bewildered").classList.contains("on")).toBe(true);
+    expect(condRows()).toHaveLength(CONDITION_SLUGS.length + 1);
+  });
+
+  it("writes the off-vocabulary condition row through its canonical slug", () => {
+    const { ctx, editState, anchor } = withDefenses({
+      condition_immunities: [{ value: "bewildered", label: "Bewildered", origin: "grant" }],
+    });
+    const spy = vi.spyOn(editState, "removeConditionImmunity");
+    openDefenseTypePopover(anchor, ctx);
+    conditionPip("bewildered").click();
+    expect(spy).toHaveBeenCalledWith("bewildered");
+  });
+
+  it("collapses a lowercase derived condition onto its CONDITION_SLUGS row", () => {
+    const { ctx, anchor } = withDefenses({
+      condition_immunities: [{ value: "charmed", label: "charmed", origin: "manual" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(condRows()).toHaveLength(CONDITION_SLUGS.length);
+    // Display stays the canonical condition-entity spelling (here its
+    // registry-less `titleCase` fallback), not the derived label.
+    expect(conditionRow("charmed").querySelector(".pc-def-popover-name")?.textContent).toBe("Charmed");
+  });
+
+  // Ruling C-1, first half. `CONDITIONS` carries a 15th member `CONDITION_SLUGS` omits.
+  // The union is PROTECTIVE, so it may not inject that member: adding an "Exhaustion" row
+  // to a shipped picker is a corrective product change, and it would misrepresent a
+  // level-based condition as a boolean immunity.
+  it("never injects Exhaustion, the CONDITIONS-only member CONDITION_SLUGS omits", () => {
+    expect(CONDITIONS).toContain("Exhaustion");
+    expect(CONDITION_SLUGS as readonly string[]).not.toContain("exhaustion");
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(condRows()).toHaveLength(CONDITION_SLUGS.length);
+    expect(condRows().map((r) => r.dataset.slug)).not.toContain("exhaustion");
+    expect(condRows().map((r) => r.querySelector(".pc-def-popover-name")?.textContent))
+      .not.toContain("Exhaustion");
+  });
+
+  it("leaves both option lists equal to the shipped vocabulary when derived is empty", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(damageRows().map((r) => r.querySelector(".pc-def-popover-name")?.textContent))
+      .toEqual([...DAMAGE_TYPES]);
+    expect(condRows().map((r) => r.dataset.slug)).toEqual([...CONDITION_SLUGS]);
+  });
+});
+
+/**
+ * The repaint hook (Task 10). An open picker used to be a SNAPSHOT: every row seeded
+ * its state from the ctx that opened it and never read another one, so a sheet render
+ * that changed `derived.defenses` (an item equipped, a `×` on a chip in the panel
+ * behind it, a rules grant recomputed) left the picker showing state the sheet had
+ * already moved past.
+ *
+ * The fix is the shape shipped four times over for modals · `refreshProficiencyModal`
+ * and friends · plus one delta no modal has: the popover hangs off the panel's `+`
+ * button, and the panel DESTROYS that button on every render.
+ *
+ * Every fixture below spells `label` differently from `value` where it can, because a
+ * `label === value` seed cannot say which field a row read.
+ */
+describe("defense popover · repaint hook (Task 10)", () => {
+  const PSYCHIC = { value: "psychic", label: "Psychic", origin: "grant" as const };
+
+  it("no-ops when nothing is open", () => {
+    const { ctx, anchor } = withDefenses();
+    expect(() => refreshDefenseTypePopover(ctx, anchor)).not.toThrow();
+    expect(isOpen()).toBe(false);
+  });
+
+  it("repaints a damage pip ON from the NEW ctx", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(false);
+    refreshDefenseTypePopover(nextCtx(ctx, { resistances: [PSYCHIC] }), anchor);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+  });
+
+  it("repaints a damage pip OFF when the new ctx no longer carries the entry", () => {
+    const { ctx, anchor } = withDefenses({ resistances: [PSYCHIC] });
+    openDefenseTypePopover(anchor, ctx);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+    refreshDefenseTypePopover(nextCtx(ctx), anchor);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(false);
+  });
+
+  it("repaints a condition pip from the NEW ctx", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(conditionPip("charmed").classList.contains("on")).toBe(false);
+    refreshDefenseTypePopover(
+      nextCtx(ctx, { condition_immunities: [{ value: "charmed", label: "Charmed", origin: "grant" }] }),
+      anchor,
+    );
+    expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+
+  // Pip classes alone would survive a repaint that only re-toggled the EXISTING rows.
+  // An off-vocabulary value has no row to toggle: it can only appear if the repaint
+  // re-ran `unionDefenseOptions` against the new ctx, in both tabs.
+  it("re-runs the option union, so a value only the NEW ctx carries grows a row", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(panel("damages").querySelectorAll(".pc-def-popover-row")).toHaveLength(DAMAGE_TYPES.length);
+    refreshDefenseTypePopover(nextCtx(ctx, {
+      immunities: [{ value: "void", label: "Void", origin: "grant" }],
+      condition_immunities: [{ value: "bewildered", label: "Bewildered", origin: "grant" }],
+    }), anchor);
+    const row = panel("damages").querySelector<HTMLElement>('.pc-def-popover-row[data-type="void"]');
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe("Void");
+    expect(pip(row as HTMLElement, "immunity").classList.contains("on")).toBe(true);
+    expect(panel("damages").querySelectorAll(".pc-def-popover-row")).toHaveLength(DAMAGE_TYPES.length + 1);
+    expect(conditionRow("bewildered").querySelector(".pc-def-popover-name")?.textContent).toBe("Bewildered");
+    expect(panel("conditions").querySelectorAll(".pc-def-popover-row"))
+      .toHaveLength(CONDITION_SLUGS.length + 1);
+  });
+
+  // The tab bar and the two panels are SKELETON: rebuilt by nothing. A repaint that
+  // rebuilt the popover wholesale would throw the user back to Damages mid-task, which
+  // is the popover's version of the proficiency modal losing its typed filter text.
+  it("keeps the Conditions tab active across a repaint", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    tab("conditions").click();
+    refreshDefenseTypePopover(
+      nextCtx(ctx, { condition_immunities: [{ value: "charmed", label: "Charmed", origin: "grant" }] }),
+      anchor,
+    );
+    expect(tab("conditions").classList.contains("active")).toBe(true);
+    expect(panel("conditions").classList.contains("active")).toBe(true);
+    expect(panel("damages").classList.contains("active")).toBe(false);
+    expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+
+  // The popover-only half of the hook. `onClick` closes on any click that is neither
+  // inside the popover nor inside the anchor, and the panel destroys the anchor on
+  // every render · so a picker that kept the open-time node would be measuring
+  // outside-clicks against a node no longer in the document.
+  //
+  // Both halves are load-bearing: the first fails when the new anchor is never bound,
+  // the second when the old one is not RELEASED.
+  it("rebinds the anchor · the re-rendered + button is inside, the destroyed one is not", () => {
+    const { ctx } = withDefenses();
+    const oldPlus = anchorAt(10, 100);
+    openDefenseTypePopover(oldPlus, ctx);
+    const newPlus = anchorAt(300, 400);
+    refreshDefenseTypePopover(ctx, newPlus);
+    clickOn(newPlus);
+    expect(isOpen(), "a click on the rebound anchor must not close the picker").toBe(true);
+    clickOn(oldPlus);
+    expect(isOpen(), "the open-time anchor is now just another outside node").toBe(false);
+  });
+
+  it("re-places and re-clamps against the NEW anchor's rect, not the open-time snapshot", () => {
+    const { ctx } = withDefenses();
+    openDefenseTypePopover(anchorAt(10, 100), ctx);
+    const popover = getPopover();
+    expect(clampCalls).toHaveLength(1);
+    expect(clampCalls[0].rect.left).toBe(10);
+    expect(popover.style.top).toBe("104px");
+
+    refreshDefenseTypePopover(ctx, anchorAt(300, 400));
+    expect(clampCalls).toHaveLength(2);
+    expect(clampCalls[1].popover).toBe(popover);
+    // The rect handed to the clamp is READ FRESH from the new anchor. A repaint that
+    // rebound the anchor but reused the open-time `anchorRect` lands 10 here, and the
+    // clamp would keep deciding whether to flip above a button that no longer exists.
+    expect(clampCalls[1].rect.left).toBe(300);
+    // `top` is the un-nudged half of the placement: 400 (new bottom) + 0 (scrollY) + 4.
+    expect(popover.style.top).toBe("404px");
+    // 300 from the new anchor PLUS the clamp's own 8px left-edge margin. jsdom lays
+    // nothing out, so the popover always measures 0x0 at the origin and the left-edge
+    // nudge always fires · which is what makes this assertion evidence that the clamp
+    // ran on the NEW placement rather than evidence about the margin.
+    expect(popover.style.left).toBe("308px");
+  });
+
+  it("keeps the existing binding when the render passes no anchor", () => {
+    const { ctx } = withDefenses();
+    const plus = anchorAt(10, 100);
+    openDefenseTypePopover(plus, ctx);
+    refreshDefenseTypePopover(nextCtx(ctx, { resistances: [PSYCHIC] }), null);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+    expect(clampCalls, "no anchor means nothing to re-place against").toHaveLength(1);
+    clickOn(plus);
+    expect(isOpen(), "the open-time binding survives an anchor-less repaint").toBe(true);
+  });
+
+  it("closes when the render carries a DIFFERENT editState (a file switch)", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    // A second sheet, with its own CharacterEditState instance · what a split view
+    // rendering character B while B's picker is open over character A looks like.
+    const other = withDefenses({ resistances: [PSYCHIC] });
+    refreshDefenseTypePopover(other.ctx, other.anchor);
+    expect(isOpen()).toBe(false);
+  });
+
+  // ⚠️ Behaviour test, NOT an isolation of the `!ctx.editState` disjunct: `openedWith`
+  // is never null, so the identity check alone already closes here. Measured: deleting
+  // the disjunct leaves this and the whole suite green. See the comment on
+  // `refreshDefenseTypePopover`.
+  it("closes when the render has no editState (read mode)", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    refreshDefenseTypePopover({ ...ctx, editState: null }, null);
+    expect(isOpen()).toBe(false);
+  });
+});
+
+/**
+ * A repaint that happens DURING event dispatch · the case every other test in this
+ * file structurally cannot see.
+ *
+ * The real loop is synchronous and re-entrant: a pip tap calls
+ * `editState.addDefense`, whose `onChange` is `PCView.handleChange`, which runs
+ * `renderSheet` · `DefensesConditionsPanel.render` · `refreshDefenseTypePopover` ·
+ * `paintDamages` · `damageList.empty()` before the tap has finished bubbling. The
+ * tapped pip is therefore DETACHED by the time the document-level outside-click
+ * listener runs, so a `contains()`-based containment test reads the tap as an outside
+ * click and closes the picker on every single tap.
+ *
+ * That regression shipped in 13833b1a and was caught in review, not by these tests:
+ * every other test here drives the refresh out of band (calling the refresher
+ * directly, or `root.empty(); panel.render(...)` between clicks), so none of them
+ * ever repaints mid-dispatch. The fixture below is the review probe, kept.
+ */
+describe("defense popover · a repaint DURING the tap's own dispatch (Task 10 review)", () => {
+  /** A live sheet: a REAL `CharacterEditState` whose `onChange` does what
+   *  `PCView.handleChange` does · fresh ctx, `root.empty()`, re-render · inside the
+   *  click that caused the write. `after` stands in for the resolver's next answer. */
+  function liveSheet(after: Parameters<typeof nextCtx>[1]) {
+    const character = clone(FIGHTER_5_CLERIC_3);
+    const resolved = fakeResolved(character);
+    const derived = fakeDerived(character) as Derived;
+    derived.defenses = {
+      resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [],
+    };
+    const root = mountContainer();
+    const sheetPanel = new DefensesConditionsPanel();
+    let ctx: ComponentRenderContext;
+    let renders = 0;
+    const onChange = () => {
+      renders++;
+      ctx = nextCtx(ctx, after);
+      root.empty();
+      sheetPanel.render(root, ctx);
+    };
+    const editState = new CharacterEditState(character, () => ({ resolved, derived }), onChange);
+    ctx = { resolved, derived, services: {} as never, app: {} as App, editState };
+    sheetPanel.render(root, ctx);
+    clickOn(root.querySelector<HTMLButtonElement>(".pc-def-add-main")!);
+    return { renders: () => renders };
+  }
+
+  it("survives a DAMAGE pip tap, and shows the state that tap produced", () => {
+    const sheet = liveSheet({ resistances: [{ value: "psychic", label: "Psychic", origin: "manual" }] });
+    expect(isOpen(), "picker opens").toBe(true);
+    clickOn(pip(damageRow("Psychic"), "resistance"));
+    expect(sheet.renders(), "the write drove a synchronous re-render").toBeGreaterThan(0);
+    expect(isOpen(), "the picker must survive its own tap").toBe(true);
+    // Re-queried on purpose: the row the tap landed on was destroyed mid-dispatch, so
+    // this pip can only be ON because the in-dispatch repaint seeded it from the new
+    // ctx · the optimistic `renderRow` afterwards toggles the DETACHED old pip.
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+  });
+
+  it("survives a CONDITION pip tap, and shows the state that tap produced", () => {
+    liveSheet({ condition_immunities: [{ value: "charmed", label: "Charmed", origin: "manual" }] });
+    expect(isOpen(), "picker opens").toBe(true);
+    clickOn(conditionPip("charmed"));
+    expect(isOpen(), "the picker must survive its own tap").toBe(true);
+    expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+});
+
+/**
+ * `.pc-def-popover-list` is `overflow-y: auto` under a 240px cap (components.css) and
+ * both tabs carry more rows than that shows, so a rebuild that ignored the scroll
+ * offset would yank a scrolled user back to the top on every tap.
+ *
+ * ⚠️ These assert the ACCESS PATTERN, not a surviving value, and that is forced:
+ * jsdom performs no layout, so `list.empty()` does NOT zero `scrollTop` there the way
+ * a browser does (measured: 120 before, 120 after). "Set it, repaint, assert it
+ * survived" would therefore pass against an implementation that does nothing at all ·
+ * vacuous. Recording WHEN the property is read and written, against the row count
+ * live at that moment, is falsifiable: it pins the read to before the rebuild and the
+ * write to after it, which is the half a browser actually needs (a scrollTop written
+ * to an emptied list clamps to 0). Same technique as pc-proficiencies-panel.test.ts'
+ * `refreshAtChildCount`, which proves call ordering by recording childElementCount.
+ */
+describe("defense popover · the repaint preserves each list's scroll offset", () => {
+  type ScrollOp = { op: "get" | "set"; value: number; rows: number };
+
+  /** Replace `scrollTop` with a recording accessor that round-trips its value and
+   *  logs the row count live at each access. */
+  function traceScroll(list: HTMLElement): ScrollOp[] {
+    const log: ScrollOp[] = [];
+    let value = 0;
+    Object.defineProperty(list, "scrollTop", {
+      configurable: true,
+      get() { log.push({ op: "get", value, rows: list.childElementCount }); return value; },
+      set(v: number) { value = v; log.push({ op: "set", value: v, rows: list.childElementCount }); },
+    });
+    return log;
+  }
+
+  function listOf(t: "damages" | "conditions"): HTMLElement {
+    const el = panel(t).querySelector<HTMLElement>(".pc-def-popover-list");
+    if (!el) throw new Error(`no list in the ${t} panel`);
+    return el;
+  }
+
+  it("reads the DAMAGE list's offset before the rebuild and writes it back after", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    const log = traceScroll(listOf("damages"));
+    listOf("damages").scrollTop = 120;
+    // An OFF-VOCABULARY value, so the row count differs before and after the rebuild ·
+    // that difference is what makes "before" and "after" distinguishable at all.
+    refreshDefenseTypePopover(
+      nextCtx(ctx, { immunities: [{ value: "void", label: "Void", origin: "grant" }] }),
+      anchor,
+    );
+    const during = log.slice(1);
+    expect(during.map((o) => o.op)).toEqual(["get", "set"]);
+    expect(during[0].rows, "read while the OLD rows are still mounted").toBe(DAMAGE_TYPES.length);
+    expect(during[1].value, "the same offset goes back").toBe(120);
+    expect(during[1].rows, "written only once the NEW rows exist").toBe(DAMAGE_TYPES.length + 1);
+  });
+
+  it("reads the CONDITION list's offset before the rebuild and writes it back after", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    const log = traceScroll(listOf("conditions"));
+    listOf("conditions").scrollTop = 90;
+    refreshDefenseTypePopover(
+      nextCtx(ctx, { condition_immunities: [{ value: "bewildered", label: "Bewildered", origin: "grant" }] }),
+      anchor,
+    );
+    const during = log.slice(1);
+    expect(during.map((o) => o.op)).toEqual(["get", "set"]);
+    expect(during[0].rows, "read while the OLD rows are still mounted").toBe(CONDITION_SLUGS.length);
+    expect(during[1].value, "the same offset goes back").toBe(90);
+    expect(during[1].rows, "written only once the NEW rows exist").toBe(CONDITION_SLUGS.length + 1);
+  });
+});
+
+/**
+ * The wiring, against the REAL panel rather than a mock of it: what the panel owes is
+ * a call on EVERY render, read-mode included. Both assertions below are observations
+ * of the picker, so neither can drift the way a mocked module signature can.
+ */
+describe("DefensesConditionsPanel · repaint wiring (Task 10)", () => {
+  it("a panel re-render repaints an open picker from THAT render's ctx", () => {
+    const { ctx } = withDefenses();
+    const root = mountContainer();
+    const panel_ = new DefensesConditionsPanel();
+    panel_.render(root, ctx);
+    root.querySelector<HTMLButtonElement>(".pc-def-add-main")!.click();
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(false);
+
+    // What the sheet does on an edit: empty the container (destroying the `+` the
+    // picker is anchored to) and render again from a fresh ctx.
+    const ctx2 = nextCtx(ctx, { resistances: [{ value: "psychic", label: "Psychic", origin: "grant" }] });
+    root.empty();
+    panel_.render(root, ctx2);
+    expect(isOpen()).toBe(true);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+  });
+
+  it("a READ-MODE panel re-render closes an open picker", () => {
+    const { ctx } = withDefenses();
+    const root = mountContainer();
+    const panel_ = new DefensesConditionsPanel();
+    panel_.render(root, ctx);
+    root.querySelector<HTMLButtonElement>(".pc-def-add-main")!.click();
+    expect(isOpen()).toBe(true);
+
+    // A read-mode render draws no `+` at all, so this is also the case that fixes the
+    // call OUTSIDE the `if (ctx.editState)` block: guarded, the picker would survive a
+    // switch out of edit mode with no anchor left to close it.
+    root.empty();
+    panel_.render(root, { ...ctx, editState: null });
+    expect(isOpen()).toBe(false);
+  });
+});
+
 describe("defense popover — viewport clamp", () => {
   it("invokes the clamp after rendering both panels (right-edge anchor stays inside)", () => {
     const { ctx, anchor } = withDefenses();
@@ -264,5 +969,225 @@ describe("defense popover — viewport clamp", () => {
     const popover = getPopover();
     const rect = popover.getBoundingClientRect();
     expect(rect.right).toBeLessThanOrEqual(1016);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// R4-G2 Task 6 · entity-backed labels + the tooltip append (spec §6, floor §11.6)
+// ---------------------------------------------------------------------------
+
+/** A condition entity as the vault registers it: `data` is the fenced
+ *  code-block payload, so `description` is a real key on it. */
+function conditionEntity(slug: string, name: string, description = "", compendium = "SRD 2024") {
+  return {
+    slug,
+    name,
+    entityType: "condition",
+    compendium,
+    data: { slug, name, edition: "2024", source: "SRD 5.2", description },
+  };
+}
+
+/**
+ * A sheet ctx with a REAL `EntityRegistry` behind `services.entities` (never an
+ * ad-hoc `search` stub) and the plugin's real `hiddenCompendiums` shape behind
+ * `services.plugin.settings`.
+ */
+function sheetCtx(p: {
+  entities?: Parameters<typeof buildMockRegistry>[0];
+  hiddenCompendiums?: string[];
+  conditions?: string[];
+  exhaustion?: number;
+  condition_immunities?: DefenseSeed[];
+  effects?: Array<{ condition: string; effects: string[] }>;
+} = {}): ComponentRenderContext {
+  const character = clone(FIGHTER_5_CLERIC_3);
+  // Annotated, not inferred: `fakeResolved` returns `as never`, which is
+  // assignable everywhere but has no readable properties.
+  const resolved: ComponentRenderContext["resolved"] = fakeResolved(character);
+  resolved.state.conditions = (p.conditions ?? []) as never;
+  resolved.state.exhaustion = p.exhaustion ?? 0;
+  const derived = fakeDerived(character) as Derived;
+  derived.defenses = {
+    resistances: ents([]), immunities: ents([]), vulnerabilities: ents([]),
+    condition_immunities: ents(p.condition_immunities ?? []),
+  };
+  (derived as { conditionEffects?: unknown }).conditionEffects =
+    p.effects === undefined ? undefined : ({ sources: p.effects } as never);
+  return {
+    resolved,
+    derived,
+    services: {
+      entities: buildMockRegistry(p.entities ?? []),
+      plugin: { settings: { hiddenCompendiums: p.hiddenCompendiums ?? [] } },
+    } as never,
+    app: {} as App,
+    editState: null,
+  };
+}
+
+function renderPanel(ctx: ComponentRenderContext): HTMLElement {
+  const root = mountContainer();
+  new DefensesConditionsPanel().render(root, ctx);
+  return root;
+}
+
+function condChipLabels(root: HTMLElement): (string | null)[] {
+  // `Array.from`, not a spread: this file's tsconfig has no DOM.Iterable, so a
+  // NodeList spread is a tsc error (the file carries 8 of them already · TS2488).
+  return Array.from(
+    root.querySelectorAll(".pc-cond-chip:not(.pc-cond-chip-exhaustion) .pc-cond-chip-label"),
+  ).map((n) => n.textContent);
+}
+
+describe("condition labels come from the registered entity", () => {
+  it("the picker row shows the ENTITY name, not the title-cased slug", () => {
+    const ctx = withDefenses().ctx;
+    (ctx as { services: unknown }).services = {
+      entities: buildMockRegistry([conditionEntity("srd-2024_condition_charmed", "Charmed (2024 text)")]),
+      plugin: { settings: { hiddenCompendiums: [] } },
+    };
+    openDefenseTypePopover(anchorAt(0, 0), ctx);
+    const shown = conditionRow("charmed").querySelector(".pc-def-popover-name")?.textContent;
+    expect(shown).toBe("Charmed (2024 text)");
+    expect(shown).not.toBe(EXPECTED_CONDITION_LABELS.charmed);
+  });
+
+  it("the PC condition chip shows the ENTITY name", () => {
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      entities: [conditionEntity("srd-2024_condition_prone", "Prone (2024 text)")],
+    }));
+    expect(condChipLabels(root)).toEqual(["Prone (2024 text)"]);
+  });
+
+  it("a hidden compendium's copy loses to a visible one", () => {
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      hiddenCompendiums: ["SRD 5e"],
+      entities: [
+        conditionEntity("srd-5e_condition_prone", "Alpha Prone", "", "SRD 5e"),
+        conditionEntity("srd-2024_condition_prone", "Zulu Prone", "", "SRD 2024"),
+      ],
+    }));
+    expect(condChipLabels(root)).toEqual(["Zulu Prone"]);
+  });
+
+  it("with NO condition entities registered, all 14 chips keep the retired spellings", () => {
+    const root = renderPanel(sheetCtx({ conditions: Object.keys(EXPECTED_CONDITION_LABELS) }));
+    expect(condChipLabels(root)).toEqual(Object.values(EXPECTED_CONDITION_LABELS));
+  });
+});
+
+describe("the exhaustion chip label · parity with the inline literal it replaces", () => {
+  it("renders `Exhaustion 3` with no registry, exactly as the literal did", () => {
+    const root = renderPanel(sheetCtx({ exhaustion: 3 }));
+    expect(root.querySelector(".pc-cond-chip-exhaustion .pc-cond-chip-label")?.textContent)
+      .toBe("Exhaustion 3");
+  });
+
+  it("takes the registered Exhaustion entity's name when one is present", () => {
+    const root = renderPanel(sheetCtx({
+      exhaustion: 2,
+      entities: [conditionEntity("srd-2024_condition_exhaustion", "Weariness")],
+    }));
+    expect(root.querySelector(".pc-cond-chip-exhaustion .pc-cond-chip-label")?.textContent)
+      .toBe("Weariness 2");
+  });
+});
+
+describe("the condition-immunity chip stays NON-total (spec §6's stated exception)", () => {
+  it("an OUT-OF-VOCABULARY immunity keeps its authored label, never a title-cased slug", () => {
+    const root = renderPanel(sheetCtx({
+      condition_immunities: [{ value: "bewildered", label: "BEWILDERED!!", origin: "grant" }],
+    }));
+    const chip = root.querySelector('.pc-def-cond-left .pc-def-chip[data-type="bewildered"]');
+    expect(chip?.querySelector(".pc-def-chip-label")?.textContent).toBe("BEWILDERED!!");
+    // What `conditionDisplayName` would have produced · the substitution this
+    // site must not make.
+    expect(chip?.querySelector(".pc-def-chip-label")?.textContent).not.toBe("Bewildered");
+  });
+
+  it("an IN-VOCABULARY immunity takes the registered entity name over the authored label", () => {
+    const root = renderPanel(sheetCtx({
+      condition_immunities: [{ value: "charmed", label: "CHARMED", origin: "grant" }],
+      entities: [conditionEntity("srd-2024_condition_charmed", "Charmed")],
+    }));
+    expect(
+      root.querySelector('.pc-def-cond-left .pc-def-chip[data-type="charmed"] .pc-def-chip-label')
+        ?.textContent,
+    ).toBe("Charmed");
+  });
+});
+
+describe("chip tooltips append the entity's authored first paragraph", () => {
+  const PRONE_DESC = "While you have the Prone condition, you experience the following effects.\n\n**Speed 0.** Your Speed is 0.";
+  const EXH_DESC = "Exhaustion is measured in six levels.\n\n| Level | Effect |";
+
+  function tip(root: HTMLElement, selector: string): string | null {
+    return root.querySelector(selector)?.getAttribute("aria-label") ?? null;
+  }
+
+  it("condition chip: engine lines first, the authored paragraph under them", () => {
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      effects: [{ condition: "prone", effects: ["Disadvantage on attack rolls"] }],
+      entities: [conditionEntity("srd-2024_condition_prone", "Prone", PRONE_DESC)],
+    }));
+    expect(tip(root, ".pc-cond-chip:not(.pc-cond-chip-exhaustion)")).toBe(
+      "Disadvantage on attack rolls\n\nWhile you have the Prone condition, you experience the following effects.",
+    );
+  });
+
+  it("condition chip: the authored paragraph ALONE when the engine produced no lines", () => {
+    // Today's guard sets NO tooltip in this case · Gate 2 I-9.
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      entities: [conditionEntity("srd-2024_condition_prone", "Prone", PRONE_DESC)],
+    }));
+    expect(tip(root, ".pc-cond-chip:not(.pc-cond-chip-exhaustion)")).toBe(
+      "While you have the Prone condition, you experience the following effects.",
+    );
+  });
+
+  it("condition chip: an UNRESOLVABLE entity leaves the engine-only tooltip unchanged", () => {
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      effects: [{ condition: "prone", effects: ["Disadvantage on attack rolls"] }],
+    }));
+    expect(tip(root, ".pc-cond-chip:not(.pc-cond-chip-exhaustion)"))
+      .toBe("Disadvantage on attack rolls");
+  });
+
+  it("condition chip: no entity and no engine lines still means NO tooltip", () => {
+    const root = renderPanel(sheetCtx({ conditions: ["prone"] }));
+    expect(tip(root, ".pc-cond-chip:not(.pc-cond-chip-exhaustion)")).toBeNull();
+  });
+
+  it("exhaustion chip: its own branch appends the same way", () => {
+    const root = renderPanel(sheetCtx({
+      exhaustion: 4,
+      effects: [{ condition: "exhaustion", effects: ["Hit point maximum halved"] }],
+      entities: [conditionEntity("srd-2024_condition_exhaustion", "Exhaustion", EXH_DESC)],
+    }));
+    expect(tip(root, ".pc-cond-chip-exhaustion")).toBe(
+      "Hit point maximum halved\n\nExhaustion is measured in six levels.",
+    );
+  });
+
+  it("exhaustion chip: the authored paragraph ALONE when the engine produced no lines", () => {
+    const root = renderPanel(sheetCtx({
+      exhaustion: 1,
+      entities: [conditionEntity("srd-2024_condition_exhaustion", "Exhaustion", EXH_DESC)],
+    }));
+    expect(tip(root, ".pc-cond-chip-exhaustion")).toBe("Exhaustion is measured in six levels.");
+  });
+
+  it("exhaustion chip: unresolvable entity leaves the engine-only tooltip unchanged", () => {
+    const root = renderPanel(sheetCtx({
+      exhaustion: 6,
+      effects: [{ condition: "exhaustion", effects: ["Death"] }],
+    }));
+    expect(tip(root, ".pc-cond-chip-exhaustion")).toBe("Death");
   });
 });

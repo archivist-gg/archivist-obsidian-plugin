@@ -47,6 +47,16 @@ function buildGrendalRegistry(): EntityRegistry {
       name: "Cloak of Protection",
       data: CLOAK_OF_PROTECTION,
     },
+    // R4-G2 Task 6: condition chip / condition-immunity labels come from the
+    // registered `condition` entity, not from a table in the engine. A real
+    // vault has the condition compendium installed, so this end-to-end registry
+    // does too — Grendal is immune to `charmed`.
+    {
+      slug: "srd-2024_condition_charmed",
+      entityType: "condition",
+      name: "Charmed",
+      data: { slug: "srd-2024_condition_charmed", name: "Charmed", edition: "2024", source: "SRD 5.2", description: "" },
+    },
   ]);
 }
 

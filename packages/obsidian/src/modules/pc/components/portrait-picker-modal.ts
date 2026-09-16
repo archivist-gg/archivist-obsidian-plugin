@@ -1,4 +1,5 @@
-import { Modal, Notice, setIcon, type App, type TFile } from "obsidian";
+import { Notice, setIcon, type App, type TFile } from "obsidian";
+import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import { PORTRAIT_IMAGE_EXTENSIONS, coverCrop, marqueeToCrop, isCoverCrop, type CropParams } from "../pc.portrait";
 
 export interface PortraitPickerOptions {
@@ -86,7 +87,7 @@ function originFor(corner: Corner, anchorX: number, anchorY: number, side: numbe
   return { mx: right ? anchorX : anchorX - side, my: bottom ? anchorY : anchorY - side };
 }
 
-export class PortraitPickerModal extends Modal {
+export class PortraitPickerModal extends PaneCenteredModal {
   private stage: "grid" | "crop" = "grid";
 
   // Grid-stage state.
@@ -126,12 +127,11 @@ export class PortraitPickerModal extends Modal {
     this.refreshCandidates();
     this.renderGridStage(true);
 
-    this.scope.register([], "Escape", () => {
-      if (this.stage === "crop") {
-        this.backToGrid();
-        return false;
-      }
-      return true;
+    // Escape backs out one stage at a time: from the crop stage it returns to
+    // the grid, and from the grid it closes the modal.
+    this.takeOverEscape(() => {
+      if (this.stage === "crop") this.backToGrid();
+      else this.close();
     });
     this.scope.register([], "Enter", () => {
       if (this.stage === "crop" && this.commitEnabled) {

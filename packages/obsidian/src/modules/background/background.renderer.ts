@@ -5,8 +5,13 @@ import type {
   BackgroundLanguageProficiency,
 } from "@archivist-gg/dnd5e/background/background.types";
 import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment-grant";
-import { el, createIconProperty, sourceBadgeText, grantLabel } from "../../shared/rendering/renderer-utils";
+import { el, createIconProperty, sourceBadgeText, fixedGrantLines } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
+import {
+  renderBackgroundTables,
+  renderSuggestedCharacteristics,
+  tablesNotInDescription,
+} from "../../shared/rendering/background-tables";
 
 /** Capitalize only the first letter of each whitespace-delimited word. Anchoring
  *  on start/whitespace (rather than `\b`) avoids uppercasing the letter after an
@@ -45,7 +50,7 @@ function languageText(l: BackgroundLanguageProficiency): string {
  *  grants), or a gold amount. */
 function equipmentText(e: StartingEquipmentEntry): string {
   if (e.kind === "choice") return e.options.map((o) => o.label).join(" or ");
-  if (e.kind === "fixed") return e.label ?? e.grants.map(grantLabel).join(", ");
+  if (e.kind === "fixed") return fixedGrantLines(e);
   return `${e.amount} GP`;
 }
 
@@ -123,6 +128,23 @@ export async function renderBackgroundBlock(
       await renderMarkdownDescription(body, data.feature.description, app, component);
     }
   }
+
+  // R4-G3b §10: the converter roll tables and the suggested characteristics
+  // render on the BLOCK element, so the `.archivist-background-block
+  // table.archivist-table` dress reaches them; every cell text goes through the
+  // shared markdown path.
+  // R4-G3b Task 15: on the NOTE the prose's OWN copy wins. The converter emits
+  // every one of its 88 roll tables twice · as a `tables:` entry and as a pipe
+  // table inside prose · and BOTH prose fields above go through the markdown
+  // path, which `.archivist-table`-tags the tables it renders. So only the
+  // tables neither field embeds are rendered structurally here.
+  // R4-G3b Task 15c: the split is 84 inside `description` and the remaining 4
+  // inside the feature's description (Astral Drifter, GGtR Dimir Operative,
+  // GGtR Rakdos Cultist, SCAG Inheritor; none is in neither), which is why the
+  // filter is handed both fields. The builder step filters too, against the
+  // feature's description alone: it shows the background description as text.
+  renderBackgroundTables(block, tablesNotInDescription(data.tables, data.description, data.feature?.description), app, component);
+  renderSuggestedCharacteristics(block, data.suggested_characteristics, app, component);
 
   return wrapper;
 }

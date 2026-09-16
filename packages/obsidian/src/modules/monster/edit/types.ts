@@ -79,6 +79,7 @@ export function getAbilityScore(m: EditableMonster | Monster, key: string): numb
   return m.abilities[key as keyof Abilities] ?? 10;
 }
 
-export function formatXP(xp: number): string {
-  return xp.toLocaleString();
-}
+/** dnd5e's `formatXP`, re-exported: ONE thousands separator across the whole monster surface. The retired twin here
+ *  was `toLocaleString`, which prints `155.000` under a non-en locale while the rendered block prints `155,000` for
+ *  the same monster; dnd5e's is ICU-independent and deterministic across Node and Electron. */
+export { formatXP } from "@archivist-gg/dnd5e/monster/monster.format";

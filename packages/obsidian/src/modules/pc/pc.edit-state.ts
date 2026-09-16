@@ -1,6 +1,6 @@
 import type { Ability, SkillSlug } from "@archivist-gg/dnd5e";
 import type { EntityRegistry } from "@archivist-gg/core";
-import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ProficiencyTri, ResolvedCharacter, SlotKey } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { GrantedEntry } from "./builder/equipment-seed";
 import type { ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { characterToYaml } from "./pc.yaml-serializer";
@@ -8,12 +8,27 @@ import * as eq from "./pc.equipment-edit";
 import type { Coin } from "./pc.coin-math";
 import { resolveEntityForEntry } from "@archivist-gg/dnd5e/pc/pc.slotting";
 import { computeRestPlan, type RestCategoryId } from "@archivist-gg/dnd5e/pc/pc.rest";
+import { computeEffectiveProficiencies } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { toProfSlug } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
+import { toDefenseSlug } from "@archivist-gg/dnd5e/pc/pc.defense-normalize";
 import { applyRestResets } from "./pc.rest";
 
 export interface EditStateContext {
   resolved: ResolvedCharacter;
   derived: DerivedStats;
 }
+
+/** The four defense buckets, DERIVED from the suppression store rather than re-typed, so a
+ *  fifth bucket cannot be added on one side only. `character.defenses` carries the same four. */
+type DefenseBucket = keyof NonNullable<Character["overrides"]["defenses"]>;
+
+/** The three damage buckets the public `add/removeDefense` pair accepts · condition
+ *  immunities keep their own named pair because the picker and the panel call them that. */
+type DamageDefenseKind = Exclude<DefenseBucket, "condition_immunities">;
+
+const DEFENSE_BUCKETS: readonly DefenseBucket[] = [
+  "resistances", "immunities", "vulnerabilities", "condition_immunities",
+];
 
 /** Wrap a bare compendium slug as a [[wikilink]]; pass through existing links;
  *  empty string returns empty. Mirrors the inline wrapping done elsewhere in
@@ -22,6 +37,21 @@ function toRef(slug: string): string {
   const s = slug.trim();
   if (!s) return s;
   return /^\[\[.+\]\]$/.test(s) ? s : `[[${s}]]`;
+}
+
+/** The EXISTING key of a tools tri record that folds to `slug` under `toProfSlug`, or
+ *  `undefined` when the record has none (R4-G4 §9.3, review I-2).
+ *
+ *  `overrides.tools.proficiency` is an OPEN key space, and the ENGINE normalises every key it
+ *  reads (`computeEffectiveProficiencies` runs `toProfSlug` on the key), so a hand-edited note
+ *  may spell one any way it likes and the tri still applies. Both writers below match through
+ *  here so they WRITE THROUGH the key that is already in the note, keeping its own spelling,
+ *  instead of writing a second one beside it (review M-4: nothing here re-spells a key, so
+ *  "repair" never meant "normalise"): indexing by the slug alone left `addProficiency` nothing
+ *  to clear (it then stacked
+ *  an inert `add[]` on top of a live `none`) and made `setToolProficiency` duplicate the key. */
+function triKeyFor(record: Record<string, ProficiencyTri>, slug: string): string | undefined {
+  return Object.keys(record).find((k) => toProfSlug(k) === slug);
 }
 
 /**
@@ -240,6 +270,28 @@ export class CharacterEditState {
   }
 
   // ─── Defenses ──────────────────────────────────────────────────────
+  //
+  // Spec R4-P5 §3.5. These are POSTCONDITION mutators, like the proficiency pair below:
+  // `overrides.defenses.<bucket>.remove[]` SUPPRESSES a value some rule currently supplies
+  // (a grant, a worn item), while `character.defenses.<bucket>` is the additive manual list.
+  // There is deliberately NO additive override channel · see the store's comment in
+  // pc.schema.ts for why completing that pattern would recreate the divergence R4-P5 removes.
+  //
+  // Values are stored RAW and compared CANONICALLY through `toDefenseSlug`, so the authored
+  // spelling ("Psychic") survives a round trip while two spellings of one value can never
+  // both be stored.
+  //
+  // ⚠️ The pair is NOT symmetric with `addProficiency`/`removeProficiency`, and the reason is
+  // easy to get wrong. P3b re-asks `computeEffectiveProficiencies` AFTER its mutation because
+  // that is a pure exported function. Defenses have no such function: they are composed only
+  // inside `recalc`, and `derived` does not recompute inside a mutator. Worse, a suppressed
+  // value is ABSENT from `derived.defenses` entirely (recalc subtracts it), so in the ADD
+  // direction there is no `DefenseEntry` whose `origin` could be read at all.
+  //
+  // The resolution is an INVARIANT, not a query: `removeDefense` writes a suppression ONLY
+  // when `origin !== "manual"`, therefore MEMBERSHIP IN `remove[]` IS ITSELF THE PROOF that a
+  // non-manual source existed. `addDefense` needs no lookup.
+
   private ensureDefenses(): NonNullable<Character["defenses"]> {
     if (!this.character.defenses) {
       this.character.defenses = {
@@ -257,34 +309,133 @@ export class CharacterEditState {
     return d;
   }
 
-  addDefense(kind: "resistances" | "immunities" | "vulnerabilities", type: string): void {
-    const d = this.ensureDefenses();
-    const list = d[kind]!;
-    if (!list.includes(type)) list.push(type);
+  private ensureDefenseOverride(bucket: DefenseBucket) {
+    const o = this.character.overrides;
+    // No `!` on either return path: `??=` already narrows, and the repo's
+    // no-unnecessary-type-assertion rule rejects the redundant assertion.
+    o.defenses ??= {};
+    const d = o.defenses;
+    d[bucket] ??= {};
+    return d[bucket];
+  }
+
+  /** Empty arrays and empty containers go back to `delete`, never to `[]`/`{}` (precedent:
+   *  `pruneProfOverride` below). Without this a suppress-then-restore round trip leaves a
+   *  residual `defenses: { resistances: {} }` and the note does not return to its bytes. */
+  private pruneDefenseOverride(bucket: DefenseBucket): void {
+    const d = this.character.overrides.defenses;
+    if (!d) return;
+    const s = d[bucket];
+    if (s) {
+      if (s.remove?.length === 0) delete s.remove;
+      if (!s.remove) delete d[bucket];
+    }
+    if (Object.keys(d).length === 0) delete this.character.overrides.defenses;
+  }
+
+  /** Same rule for the ADDITIVE store. A note that never carried a `defenses:` key at all
+   *  (the common case) must not gain one just because the user suppressed and restored a
+   *  grant, so an all-empty container is deleted outright. Once the key IS present the
+   *  schema materializes all four buckets on parse regardless, so only key-less notes are
+   *  at byte risk. */
+  private pruneDefenses(): void {
+    const d = this.character.defenses;
+    if (!d) return;
+    for (const bucket of DEFENSE_BUCKETS) {
+      if (d[bucket]?.length === 0) delete d[bucket];
+    }
+    if (Object.keys(d).length === 0) delete this.character.defenses;
+  }
+
+  /** Postcondition: the value IS supplied afterwards. Shared by all four public mutators ·
+   *  A-N8 requires the condition bucket to behave identically, and one body is the only way
+   *  to guarantee that it keeps doing so. */
+  private addDefenseValue(bucket: DefenseBucket, value: string): void {
+    const slug = toDefenseSlug(value);
+    const store = this.character.overrides.defenses?.[bucket];
+    const before = store?.remove ?? [];
+    if (store && before.some((v) => toDefenseSlug(v) === slug)) {
+      store.remove = before.filter((v) => toDefenseSlug(v) !== slug);
+      // STOP. Membership in remove[] was itself proof that a non-manual source existed,
+      // because removeDefense only ever writes a suppression when origin !== "manual".
+      // Stripping it restores that source, so pushing to the manual list here would
+      // duplicate the value and change the bytes.
+      //
+      // Two other shapes can put a value in remove[], and they do NOT behave alike:
+      //   · a hand-authored suppression of a value that IS in the manual list heals on THIS
+      //     tap · the subtraction was the only thing hiding it, so it reappears at once;
+      //   · a suppression whose source has since disappeared needs a SECOND tap, which finds
+      //     nothing in remove[] and adds it manually.
+    } else {
+      // Membership test BEFORE `ensureDefenses()`: a duplicate add must neither materialize
+      // four arrays on a key-less note nor dirty the file.
+      const manual = this.character.defenses?.[bucket] ?? [];
+      if (manual.some((v) => toDefenseSlug(v) === slug)) return;
+      this.ensureDefenses()[bucket]!.push(value);
+    }
+    // §3.5 addDefense step 4, "prune BOTH sides", and it applies to BOTH paths. The push path
+    // needs it as much as the strip path: `ensureDefenses()` materializes all four buckets, so
+    // without this an add on a key-less note emits three `[]` siblings that the next
+    // `removeDefenseValue` would delete again · the note's shape would flip-flop with whichever
+    // mutator ran last. Assert the SERIALIZED yaml, not the object: `[]` and a deleted key are
+    // indistinguishable through `?? []` readers, which is why this went unguarded.
+    this.pruneDefenses();
+    this.pruneDefenseOverride(bucket);
     this.onChange();
   }
 
-  removeDefense(kind: "resistances" | "immunities" | "vulnerabilities", type: string): void {
-    const d = this.ensureDefenses();
-    const list = d[kind]!;
-    const i = list.indexOf(type);
-    if (i >= 0) list.splice(i, 1);
+  /** Postcondition: the value is NOT supplied afterwards. */
+  private removeDefenseValue(bucket: DefenseBucket, value: string): void {
+    const slug = toDefenseSlug(value);
+    const manual = this.character.defenses?.[bucket] ?? [];
+    const i = manual.findIndex((v) => toDefenseSlug(v) === slug);
+    // `entry.value` is canonical by construction (the engine builds it with toDefenseSlug),
+    // so this compares slug to slug. Read off the PRE-mutation derived · the `getContext`
+    // closure `PCSheetView.renderResolvedData` passes to this constructor closes over the
+    // view's `this.derived`, and the only recompute on the edit path is the `recalc` call
+    // inside `PCSheetView.handleChange`, which runs after our `onChange()`.
+    // Cited by SYMBOL, not line: the line form of this cite was true when written and was
+    // falsified by a later commit on this same branch that inserted lines above the target.
+    const entry = this.getContext().derived.defenses[bucket].find((e) => e.value === slug);
+    if (i < 0 && !entry) return;   // genuine no-op: do NOT dirty the file
+    // `i >= 0` proves `manual` is the live array, not the `?? []` fallback.
+    if (i >= 0) manual.splice(i, 1);
+    // If anything other than the manual list supplies this value, dropping the manual entry
+    // is not enough and the value must be suppressed.
+    if (entry && entry.origin !== "manual") {
+      const store = this.ensureDefenseOverride(bucket);
+      // ⚠️ This dedupe is DEFENSIVE, not a live guard, and a mutation test that kills it is
+      // reporting a fixture artifact. In production a second tap cannot reach here: `onChange`
+      // runs `handleChange` synchronously, which recomputes `derived`, and `suppress()` has by
+      // then subtracted the value · so the second tap finds `i < 0 && !entry` and returns at
+      // the no-op guard above. Only a test harness holding `derived` static reaches this line.
+      // It stays because a hand-authored `remove[]` can already contain the value.
+      if (!(store.remove ?? []).some((v) => toDefenseSlug(v) === slug)) {
+        (store.remove ??= []).push(value);
+      }
+    }
+    this.pruneDefenses();
+    this.pruneDefenseOverride(bucket);
     this.onChange();
   }
 
-  addConditionImmunity(slug: ConditionSlug): void {
-    const d = this.ensureDefenses();
-    const list = d.condition_immunities!;
-    if (!list.includes(slug)) list.push(slug);
-    this.onChange();
+  addDefense(kind: DamageDefenseKind, type: string): void {
+    this.addDefenseValue(kind, type);
   }
 
-  removeConditionImmunity(slug: ConditionSlug): void {
-    const d = this.ensureDefenses();
-    const list = d.condition_immunities!;
-    const i = list.indexOf(slug);
-    if (i >= 0) list.splice(i, 1);
-    this.onChange();
+  removeDefense(kind: DamageDefenseKind, type: string): void {
+    this.removeDefenseValue(kind, type);
+  }
+
+  /** `string`, not `ConditionSlug` (C-1): the picker unions in whatever
+   *  `derived.condition_immunities` holds, which an overlay can populate with a condition
+   *  outside `CONDITION_SLUGS`. Widening is backwards-compatible with every caller. */
+  addConditionImmunity(slug: string): void {
+    this.addDefenseValue("condition_immunities", slug);
+  }
+
+  removeConditionImmunity(slug: string): void {
+    this.removeDefenseValue("condition_immunities", slug);
   }
 
   // ─── Hit dice ──────────────────────────────────────────────────────
@@ -645,6 +796,148 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Proficiency overrides (languages / tools) ─────────────────────
+  //
+  // Spec R4-P3b §3.6 / §8. These are POSTCONDITION mutators, not token swaps:
+  // `remove[]` SUPPRESSES a rules-granted entry ("a dwarf who doesn't know
+  // dwarvish"), so which array a value belongs in depends on what the rules
+  // currently grant, which changes under the character's feet when the race,
+  // class, background or feats change.
+  //
+  // Values are stored RAW and compared CANONICALLY through `toProfSlug` (§3.3),
+  // so the user's casing survives a round trip while two spellings of one value
+  // (`Thieves' Tools` / `Thieves’ Tools`) can never both be stored.
+  //
+  // On-disk conflict (a hand edit or a merge puts one value in BOTH arrays):
+  // `remove` wins, which is what the engine's effective set already does, and
+  // what `removeProficiency` below produces. Nothing special-cases it.
+
+  private ensureProfOverride(domain: "languages" | "tools") {
+    const o = this.character.overrides;
+    // No `!` on the return: `??=` already narrows it, and the repo's
+    // no-unnecessary-type-assertion rule rejects the redundant assertion.
+    o[domain] ??= {};
+    return o[domain];
+  }
+
+  /** Empty arrays and an empty container go back to `delete`, never to `[]`/`{}`
+   *  (precedent: `toggleActiveBuff` and `clearSaveBonusOverride` above). Without
+   *  this a suppress-then-restore round trip leaves a residual `languages: {}` and
+   *  the note does not return to its original bytes. */
+  private pruneProfOverride(domain: "languages" | "tools"): void {
+    const s = this.character.overrides[domain];
+    if (!s) return;
+    if (s.add?.length === 0) delete s.add;
+    if (s.remove?.length === 0) delete s.remove;
+    // The tools tri is a THIRD leaf (R4-G4 §9.3), emptied here like its two siblings so a
+    // hand-authored `proficiency: {}` cannot keep the container alive where the pre-tri code
+    // deleted it (review M-3). `setToolProficiency` also runs its own emptiness delete; this is
+    // the arm that catches a record NO writer emptied. `in` is what narrows the
+    // `languages | tools` union: only the tools member declares the key.
+    if ("proficiency" in s && s.proficiency && Object.keys(s.proficiency).length === 0) delete s.proficiency;
+    if (!s.add && !s.remove && !("proficiency" in s && s.proficiency)) delete this.character.overrides[domain];
+  }
+
+  /** Ask the ENGINE whether the value is currently effective. Reads
+   *  `getContext().resolved`, whose `definition` is the very object this class
+   *  mutates (`pc.view.ts` passes `parsed.data` to both, `pc.resolver.ts` sets
+   *  `definition: character`), so this sees the LIVE, just-mutated overrides. */
+  private isEffective(domain: "languages" | "tools", value: string): boolean {
+    const eff = computeEffectiveProficiencies(this.getContext().resolved);
+    const slug = toProfSlug(value);
+    return eff[domain].some((e) => toProfSlug(e.value) === slug);
+  }
+
+  /** Postcondition: the value IS effective afterwards. */
+  addProficiency(domain: "languages" | "tools", value: string): void {
+    const slug = toProfSlug(value);
+    const store = this.ensureProfOverride(domain);
+    if (store.remove) store.remove = store.remove.filter((v) => toProfSlug(v) !== slug);
+    // R4-G4 §9.3 (UR1): a `none` tri suppresses exactly as `remove` does, so the
+    // candidate row's pip (which calls this method, unchanged) must CLEAR it. Without
+    // this the pip would stack an `add[]` entry on top of a live `none`, the engine
+    // would go on suppressing the value, and the note could never return to its
+    // original bytes. Matched through `triKeyFor`, never by a direct index, so a
+    // hand-typed key is cleared too (review I-2). Narrowed by `in`, like
+    // pruneProfOverride: languages carry no tri.
+    if ("proficiency" in store && store.proficiency) {
+      const triKey = triKeyFor(store.proficiency, slug);
+      if (triKey !== undefined && store.proficiency[triKey] === "none") {
+        delete store.proficiency[triKey];
+        if (Object.keys(store.proficiency).length === 0) delete store.proficiency;
+      }
+    }
+    // Re-evaluate AFTER the removal, against the live overrides object. Evaluating
+    // BEFORE would drop the value from remove[] AND push it to add[], so restoring a
+    // suppressed grant would leave `{add:["dwarvish"]}` instead of returning the note
+    // to its original bytes. Both orders satisfy the postcondition sentence · only the
+    // byte comparison in the tests tells them apart.
+    if (!this.isEffective(domain, value)) {
+      store.add ??= [];
+      if (!store.add.some((v) => toProfSlug(v) === slug)) store.add.push(value);
+    }
+    this.pruneProfOverride(domain);
+    this.onChange();
+  }
+
+  /** Postcondition: the value is NOT effective afterwards. */
+  removeProficiency(domain: "languages" | "tools", value: string): void {
+    const slug = toProfSlug(value);
+    const store = this.ensureProfOverride(domain);
+    if (store.add) store.add = store.add.filter((v) => toProfSlug(v) !== slug);
+    // Same AFTER-the-mutation rule as addProficiency: a value that is still granted
+    // once its manual add is gone needs a real suppression, or the chip never leaves
+    // the sheet.
+    if (this.isEffective(domain, value)) {
+      store.remove ??= [];
+      if (!store.remove.some((v) => toProfSlug(v) === slug)) store.remove.push(value);
+    }
+    this.pruneProfOverride(domain);
+    this.onChange();
+  }
+
+  /** R4-G4 §9.3 (UR1): the per-tool manual tri. `expertise` and `none` persist;
+   *  `proficient` is the DATA default and deletes the key, so a note that never
+   *  disagreed with its grants stays byte-identical (a manual-add tool keeps its
+   *  place through `add`). Prunes like the add / remove pair.
+   *
+   *  THE REACHABLE STATES, because the persistence rule and the modal cycle are not
+   *  the same thing:
+   *    - on a PLAIN data grant the modal cycles three ways · proficient -> expertise
+   *      -> none, at which point the chip DISAPPEARS (the engine applies the tri and
+   *      the modal's chips ARE `computeEffectiveProficiencies`' output), and the
+   *      candidate row's pip calls `addProficiency`, which clears the `none`;
+   *    - on a DATA-EXPERTISE tool (a 2014 Rogue 6's thieves' tools) the cycle is TWO
+   *      ways · expertise -> none -> the pip -> expertise. No modal click ever
+   *      persists `proficient` there, so the engine's "proficient clears a data
+   *      expertise" arm is reachable only from a hand-edited note.
+   *  Recorded as a known limitation, not redesigned. */
+  setToolProficiency(value: string, tri: ProficiencyTri): void {
+    // A key this writer CREATES is `toProfSlug`'s output, apostrophe RETAINED, so a note
+    // it wrote reads `overrides: { tools: { proficiency: { "thieves'-tools": expertise } } }`.
+    // An ASCII apostrophe inside a YAML mapping key round-trips unquoted through
+    // js-yaml, and the engine's own tool vocabulary keeps the apostrophe (dnd5e
+    // types/choice.ts), so no second normalisation is introduced here. A key the note
+    // ALREADY carries is left in its own spelling · see `triKeyFor` below.
+    const slug = toProfSlug(value);
+    // NOT `this.ensureProfOverride("tools")`: its return is the `languages | tools`
+    // union, on which `.proficiency` is a tsc error. The tools container is read
+    // directly, with the same `??=` narrowing the helper uses.
+    const o = this.character.overrides;
+    o.tools ??= {};
+    const store = o.tools;
+    store.proficiency ??= {};
+    // Write to the key the note ALREADY carries when one folds to this slug, else to the slug
+    // itself: the engine reads every key through `toProfSlug`, so writing the slug beside a
+    // hand-typed spelling would leave TWO entries for one tool and the modal's cycle could never
+    // leave the pair behind (review I-2, probes E4 / E5). The spelling in the note is preserved.
+    const key = triKeyFor(store.proficiency, slug) ?? slug;
+    if (tri === "proficient") delete store.proficiency[key]; else store.proficiency[key] = tri;
+    if (Object.keys(store.proficiency).length === 0) delete store.proficiency;
+    this.pruneProfOverride("tools");
+    this.onChange();
+  }
+
   // ─── Conditions ────────────────────────────────────────────────────
   toggleCondition(slug: ConditionSlug): void {
     const list = this.character.state.conditions;
@@ -657,7 +950,9 @@ export class CharacterEditState {
   /** Toggle an activatable buff's id/slug in state.active_buffs. While present,
    *  the matching activatable feature/boon's effects fold in recalc; removing it
    *  drops the buff. Empties the array back to undefined so a no-buff file carries
-   *  no `active_buffs:` line (delete, not set-[]). Mirrors toggleCondition. */
+   *  no `active_buffs:` line (delete, not set-[]). Mirrors toggleCondition.
+   *  R4-G5 §4.4.2: the rest path applies the same delete-when-empty rule in
+   *  `applyRestResets`'s `buff:` arm. */
   toggleActiveBuff(slug: string): void {
     const list = (this.character.state.active_buffs ??= []);
     const i = list.indexOf(slug);
@@ -727,34 +1022,46 @@ export class CharacterEditState {
   }
 
   // ─── Builder: Equipment step ───────────────────────────────────
-  /** Replace all `builder:starting` provenance entries with `entries` (each
-   *  tagged `builder:starting`) and set `currency.gp` from the summed starting
-   *  gold. Leaves hand-managed (untagged) + `builder:gold-buy` entries untouched.
+  /** Replace all `builder:starting` provenance entries with `entries` (each tagged
+   *  `builder:starting`). Leaves hand-managed (untagged) + `builder:gold-buy`
+   *  entries untouched, and **never touches `currency`** · the wallet is settled
+   *  separately by the Equipment step's gold reconcile, against a session baseline
+   *  it owns (see `goldStep`).
+   *
    *  Idempotent + resume-safe: NO-OP (skips onChange, returns early) when the
-   *  resulting `builder:starting` set + gp are unchanged, so the Equipment step
-   *  may call it on every render without triggering a re-render loop. */
-  syncStartingEquipment(entries: GrantedEntry[], gold: number): void {
+   *  resulting `builder:starting` set is unchanged, so the Equipment step may call
+   *  it on every render without triggering a re-render loop.
+   *
+   *  ⚠️ Dropping the old `curGp === nextGp` term from the guard below is precisely
+   *  what fixes the reported bug. In Volker's shape · a reopened finished character
+   *  whose selections resolve to nothing · `prevStarting` and `nextStarting` are
+   *  both empty, so this returns early: no `onChange`, no file mutation. Where the
+   *  kit resolves NON-empty (9 of the 12 SRD-2014 classes carry a `kind: fixed`
+   *  entry that seeds gear with no user input) `prevStarting` is empty because
+   *  `finishBuild` deleted every `granted_by`, `nextStarting` is not, and this
+   *  guard does NOT fire; there the write is suppressed one level up, by
+   *  `reconcileGear` in `components/builder/equipment-step.ts`, which returns
+   *  before calling this whenever `alreadySeeded` (`builder/equipment-reconcile.ts`
+   *  · a multiset containment of the resolved kit against the file's untagged
+   *  entries) holds. Previously the gp term alone could fail the guard and rewrite
+   *  the wallet on pure navigation. */
+  syncStartingEquipment(entries: GrantedEntry[]): void {
     const STARTING = "builder:starting";
     const prevStarting = this.character.equipment.filter((e) => e.granted_by === STARTING);
-    const nextGp = Math.max(0, Math.floor(Number.isFinite(gold) ? gold : 0));
-    // Build the next builder:starting entries from the resolved grants.
     const nextStarting: EquipmentEntry[] = entries.map((g) => {
       const entry: EquipmentEntry = { item: `[[${g.slug}]]`, equipped: g.equipped, granted_by: STARTING };
       if (g.slot) entry.slot = g.slot;
       if (g.qty > 1) entry.qty = g.qty;
       return entry;
     });
-    // No-op guard: compare the serialized prev vs next starting set + gp. The
+    // No-op guard: compare the serialized prev vs next starting set. The
     // identity-bearing fields (item/equipped/slot/qty) are normalized into a
     // stable shape so key order cannot produce a false diff.
     const serialize = (arr: EquipmentEntry[]): string =>
       JSON.stringify(arr.map((e) => ({ item: e.item, equipped: e.equipped, slot: e.slot ?? null, qty: e.qty ?? null })));
-    const curGp = this.character.currency?.gp ?? 0;
-    if (serialize(prevStarting) === serialize(nextStarting) && curGp === nextGp) return;
+    if (serialize(prevStarting) === serialize(nextStarting)) return;
     this.character.equipment = this.character.equipment.filter((e) => e.granted_by !== STARTING);
     this.character.equipment.push(...nextStarting);
-    if (!this.character.currency) this.character.currency = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
-    this.character.currency.gp = nextGp;
     this.onChange();
   }
 
@@ -939,6 +1246,16 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Spend `amount` uses of an owned resource (R4-G4 §3.2.4): the clamped primitive, no new store.
+   *  A no-op on an unseeded key, so the spend control and this method agree on ownership; the amount
+   *  is floored at 1 so a malformed `consumes.amount` can never restore a use. */
+  spendFeatureUse(featureKey: string, amount: number): void {
+    const fu = this.character.state.feature_uses?.[featureKey];
+    if (!fu) return;
+    eq.setFeatureUse(this.character, featureKey, fu.used + Math.max(1, Math.floor(amount)));
+    this.onChange();
+  }
+
   setAttunementLimitOverride(n: number): void {
     if (!Number.isFinite(n)) return;
     this.character.overrides.attunement_limit = Math.max(0, Math.floor(n));
@@ -1009,6 +1326,18 @@ export class CharacterEditState {
       slot.used = Math.max(0, slot.used - Math.max(0, Math.floor(count)));
     }
     fu.used += 1;
+    this.onChange();
+  }
+
+  /** The manual "Regain N" arm (R4-G4 §7.2.3): regain `amount` uses of an owned resource, or all. No cooldown is
+   *  tracked (the entry's own `reset` is the ACTION's recharge, rendered as a caption; G8). The amount is floored at
+   *  1 and truncated before it is subtracted, and `used` is clamped at 0 · the mirror of `spendFeatureUse`'s own
+   *  floor, so a malformed `recovery.amount` can never SPEND a use here (review M-15). Described, never quoted:
+   *  reproducing the subtraction verbatim made the recorded mutant pattern over it match twice (review C-2). */
+  regainFeatureUses(resourceId: string, amount: number | "all"): void {
+    const fu = this.character.state.feature_uses?.[resourceId];
+    if (!fu) return;
+    fu.used = amount === "all" ? 0 : Math.max(0, fu.used - Math.max(1, Math.floor(amount)));
     this.onChange();
   }
 

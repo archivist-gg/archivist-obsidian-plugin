@@ -1,12 +1,18 @@
 import type { ComponentRenderContext } from "../components/component.types";
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
-import type { FeatureSource } from "@archivist-gg/dnd5e/pc/pc.types";
-import type { Resource } from "@archivist-gg/dnd5e/types/resource";
+import type { FeatureSource, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { Resource, ResourceRecovery } from "@archivist-gg/dnd5e/types/resource";
 import { resourceBindings } from "@archivist-gg/dnd5e/pc/pc.resource-seed";
+import { resolveRecovery } from "@archivist-gg/dnd5e/pc/pc.resources";
 import { evaluateMaxFormula } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import { type App } from "obsidian";
 import { createIconProperty } from "../../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../../shared/rendering/markdown-description";
+import { plainText } from "../../../shared/rendering/plain-text";
+// R4-G3a §8.2 (3): the reset-label twin that used to live here is retired onto
+// the single `ResetTrigger`-keyed table shared with the row trackers.
+import { RESET_LABELS, CUSTOM_RESET_TIP } from "../components/actions/reset-labels";
+import { renderCostBadge } from "../components/actions/cost-badge";
 
 /**
  * Shared feature/resource block-card renderer.
@@ -16,18 +22,22 @@ import { renderMarkdownDescription } from "../../../shared/rendering/markdown-de
  * (crimson header rule, serif title, top-right source badge, icon property-lines,
  * justified description). It was previously trapped as a private, Resource-keyed
  * helper in `components/actions/resource-badge.ts` that rendered `feature.description`
- * ONLY — so `entries`-only features (racial traits, some class features, Invoke
+ * ONLY, so `entries`-only features (racial traits, some class features, Invoke
  * Hell) rendered blank. Generalizing here adds the `description ?? entries`
- * fallback and a resource-less path (no Recharge/Die line, no recovery action)
- * so the consolidated first-tab rows (Task 3/4/5) can all share ONE card.
+ * fallback and a path for a feature with no resource behind it (no Die line, no
+ * recovery action) so the consolidated first-tab rows (Task 3/4/5) can all share
+ * ONE card.
+ *
+ * The properties block is no longer resource-keyed. It renders when there is a Die
+ * value (resource-keyed) OR a Save/DC line, and the Save/DC line is read straight
+ * off the feature, so a DIE-LESS racial trait such as the SRD Dragonborn's Breath
+ * Weapon now carries one (R4-G3a §10.2.2). Die-less, not resource-less: that trait
+ * does own a resource (SRD 5e's `dragonborn:breath-weapon`, one use, short rest;
+ * the SRD 2024 twin is prof-sized on a long rest) and so gets a tracker on its
+ * row; what it has never had is a die, and therefore no properties block at all
+ * until the Save line. The `recharge` option that used to sit beside Die had zero
+ * producers and was retired with its label twin (R4-G3a §8.2 (3)).
  */
-
-/** Title-cased reset labels (the row label is CSS-uppercased; the block meta is
- *  shown as-is). */
-export const RESET_LABEL: Record<string, string> = {
-  "short-rest": "Short Rest", "long-rest": "Long Rest", "dawn": "Dawn",
-  "dusk": "Dusk", "turn": "Per Turn", "round": "Per Round", "custom": "Special",
-};
 
 /** A chosen `select-inline` pick surfaced on the parent feature's card. */
 export interface FeatureCardChosen {
@@ -35,8 +45,9 @@ export interface FeatureCardChosen {
   description?: string;
 }
 
-/** Recovery-action context (Arcane Recovery). Present only for resource-keyed
- *  cards whose resource authors a `recovery`. */
+/** Recovery-action context. Present only for resource-keyed cards whose resource
+ *  authors a `recovery`; since R4-G4 §7 that is every recovery carrier, not only the
+ *  Wizard's Arcane Recovery, and `renderRecoveryAction` picks the arm from the entry. */
 export interface FeatureCardRecovery {
   resource: Resource;
   source: FeatureSource;
@@ -53,14 +64,14 @@ export interface FeatureCardOptions {
   sourceLabel?: string;
   /** Edition source-badge text (top-right); null/undefined → no badge. */
   sourceBadge?: string | null;
-  /** Recharge-cadence property-line value (resource-keyed). Omit → no Recharge line. */
-  recharge?: string;
   /** Die property-line value (resource-keyed). Omit → no Die line. */
   die?: string;
   /** Explicit description prose; overrides the {@link feature} fallback when set. */
   description?: string;
-  /** Source feature; description falls back to `description ?? entries` when
-   *  {@link description} is absent (see {@link featureCardDescription}). */
+  /** Source feature. Feeds TWO things: the description falls back to
+   *  `description ?? entries` when {@link description} is absent (see
+   *  {@link featureCardDescription}), and the Save/DC property line is rendered from
+   *  its `save` (or, failing that, its bare `dc_formula`) as authored TEXT. */
   feature?: Feature;
   /** Chosen inline picks → "Chose · <label>: <description>" (or "Chose · <label>"). */
   chosenInline?: FeatureCardChosen[];
@@ -82,11 +93,12 @@ export function featureCardDescription(feature?: Feature): string | undefined {
 
 /**
  * The shared expand card. Renders (in order): source badge (top-right), header
- * (title + italic source subtitle), property-lines (Recharge/Die — resource-keyed
- * only), the description + any chosen-inline picks, and finally the recovery
- * action (resource-keyed only).
+ * (title + italic source subtitle), the property lines (a Die value when the card is
+ * resource-keyed, and/or the feature's Save/DC line; the whole block is omitted when
+ * there is neither), the description + any chosen-inline picks, and finally the
+ * recovery action (resource-keyed only).
  *
- * The block is informational; usage is NEVER spent here — it lives in the list
+ * The block is informational; usage is NEVER spent here, it lives in the list
  * row's tracker (unchanged rule).
  */
 export function renderFeatureCard(parent: HTMLElement, opts: FeatureCardOptions): void {
@@ -101,13 +113,27 @@ export function renderFeatureCard(parent: HTMLElement, opts: FeatureCardOptions)
   header.createEl("h3", { cls: "archivist-item-name", text: opts.title });
   if (opts.sourceLabel) header.createDiv({ cls: "archivist-item-subtitle", text: opts.sourceLabel });
 
-  // Properties — recharge cadence (and die, when the pool has one). Same
-  // icon-property rhythm as an item block's Weight/Cost lines. Resource-keyed
-  // cards pass `recharge`; a resource-less feature/passive/boon card has neither.
-  if (opts.recharge || opts.die) {
+  // R4-G3a §10.2.2 · the Save / DC line. `feature.save` is the canonical nested key (the two
+  // Dragonborns carry it); a bare `feature.dc_formula` is the prose fallback (208 converter
+  // carriers, "your spell save DC" ×56). The formula is ECHOED as authored, through the shared
+  // `plainText` stripper, and NEVER evaluated: `{prof_bonus}` is not a `resource-formula` ident, so
+  // the SRD Dragonborn's own DC would THROW, and teaching the DSL that spelling fixes 87 of the 208
+  // carriers while breaking 121. Rendering the authored text is the whole feature.
+  const feature = opts.feature;
+  const saveLine = feature?.save
+    ? `${feature.save.ability.toUpperCase()} · ${plainText(feature.save.dc_formula)}`
+    : feature?.dc_formula ? plainText(feature.dc_formula) : undefined;
+
+  // Properties · the die line, when the pool has one, and the Save/DC line. Same icon-property
+  // rhythm as an item block's Weight/Cost lines; a card with neither renders no properties block at
+  // all. (The `recharge` option that used to sit here had zero producers and was retired with the
+  // label twin, R4-G3a §8.2 (3).)
+  if (opts.die || saveLine) {
     const props = block.createDiv({ cls: "archivist-item-properties" });
-    if (opts.recharge) createIconProperty(props, "rotate-ccw", "Recharge:", opts.recharge);
     if (opts.die) createIconProperty(props, "dices", "Die:", opts.die);
+    // The label is narrowed on `saveLine` rather than on `feature.save` so the value stays a
+    // `string` for `createIconProperty` (which takes no undefined).
+    if (saveLine) createIconProperty(props, "shield", feature?.save ? "Save:" : "DC:", saveLine);
   }
 
   // Description (information only) — `description ?? entries` — plus any chosen
@@ -137,7 +163,8 @@ export function renderFeatureCard(parent: HTMLElement, opts: FeatureCardOptions)
     }
   }
 
-  // Recovery action (Arcane Recovery) — the only ACTION in the block.
+  // Recovery action: the only ACTION in the block. Which arm it renders (or none at all)
+  // is `renderRecoveryAction`'s decision, from the entry's kind and flavour (R4-G4 §7).
   if (opts.recovery) {
     renderRecoveryAction(block, opts.recovery.resource, opts.recovery.source, opts.recovery.ctx, opts.recovery.fu);
   }
@@ -151,12 +178,24 @@ export function sourceBadgeText(edition: string | undefined): string | null {
 }
 
 /**
- * The recovery action, rendered directly inside the resource's info block (no
- * toggle button). One row per spell level 1..5 that currently has expended
- * slots, each showing one ✗ pip per expended slot. Unticking a pip selects it
- * for recovery (within the level-total budget); over-budget pips are dimmed and
- * not selectable. Recover calls `useRecovery(id, picks)` and is disabled until
- * at least one pip is selected.
+ * The recovery action, rendered directly inside the resource's info block (no toggle
+ * button), in TWO arms picked from the entry's resolved KIND first and FLAVOUR second
+ * (R4-G4 §7.2, invariant 12; `resolveRecovery` in dnd5e's `pc/pc.resources.ts` is the one
+ * router, so nothing here matches on the entry's `name`).
+ *
+ * A `uses` entry of REST flavour renders NOTHING: the rest modal restores it, through the partial
+ * category `computeRestPlan` now emits (Rage, Second Wind) OR through the resource's own `reset`
+ * when that already fires at the rest, in which case `pushPartialRecoveries`'s guard suppresses the
+ * partial so the row is not listed twice (the PHB 2014 Cleric's Channel Divinity, this task's own
+ * double-list fixture). A `uses` entry of MANUAL flavour (it carries an `action`, or it resets on
+ * `custom`) takes {@link renderUsesRecovery}, the "Regain N" button. A `spell-slots` entry takes
+ * the slot picker below whatever its `action` / `reset` say.
+ *
+ * The picker: one row per spell level 1..5 that currently has expended slots, each showing
+ * one ✗ pip per expended slot. Unticking a pip selects it for recovery (within the
+ * level-total budget); over-budget pips are dimmed and not selectable. Recover calls
+ * `useRecovery(id, picks)` and is disabled until at least one pip is selected. Its header is
+ * the entry's own `name`.
  *
  * When the recovery resource's own use is already spent (`fu.used >= fu.max`),
  * the interactive picker is suppressed: we render only the header and a muted
@@ -164,19 +203,29 @@ export function sourceBadgeText(edition: string | undefined): string | null {
  * would be a silent no-op, so we don't offer it.)
  */
 export function renderRecoveryAction(block: HTMLElement, resource: Resource, source: FeatureSource, ctx: ComponentRenderContext, fu?: { used: number; max: number }): void {
-  const rec = resource.recovery?.[0];
+  const rec = resource.recovery?.[0];   // the card reads ONE entry (R4-G4 §7.1); the rest plan walks them all
   const id = resource.id;
   if (!rec || !id) return;
+  const { kind, flavour } = resolveRecovery(rec);   // KIND first, FLAVOUR second (invariant 12)
+  if (kind === "uses") {
+    if (flavour === "rest") return;   // restored by the rest modal (Rage, Second Wind, Channel Divinity, …): nothing to click
+    renderUsesRecovery(block, resource, rec, fu, ctx);
+    return;
+  }
 
+  // kind === "spell-slots": the slot picker, headed by the entry's OWN name. Both shipped
+  // carriers, the bundle Wizard's two Arcane Recovery rows (SRD 5e and SRD 2024, measured
+  // 2026-09-05), name that entry "Recover spell slots", so the literal that used to live here
+  // was an unreachable fallback, and an unreachable fallback is a false document: Gate 0 Q5.
   // The action area always renders so the recover option is visible in the
   // block whatever the slot state — only the body below the header varies.
   const actions = block.createDiv({ cls: "pc-resource-actions" });
   const head = actions.createDiv({ cls: "pc-recover-head" });
-  head.createSpan({ cls: "pc-recover-title", text: "Recover spell slots" });
+  head.createSpan({ cls: "pc-recover-title", text: rec.name });
 
   // Use already spent → show a spent hint instead of an interactive picker.
   if (fu && fu.used >= fu.max) {
-    actions.createDiv({ cls: "pc-recover-hint", text: `Already used — recharges on a ${RESET_LABEL[resource.reset] ?? "Special"}.` });
+    actions.createDiv({ cls: "pc-recover-hint", text: `Already used · recharges on a ${RESET_LABELS[resource.reset]}.` });
     return;
   }
 
@@ -260,24 +309,85 @@ export function renderRecoveryAction(block: HTMLElement, resource: Resource, sou
   refresh();
 }
 
+/** The manual "Regain N" arm (R4-G4 §7.2.3): one button, the `action` cost badge, the entry's `reset` as a caption
+ *  (the ACTION's recharge, no cooldown tracked: G8), disabled at `used === 0`; a `custom` reset is a MANUAL OVERRIDE
+ *  the design chooses (Gate 0 I10), and says so.
+ *
+ *  A PROSE `amount` returns EARLY with that text ALONE as the caption, which makes it the one arm that renders neither
+ *  the cost badge nor the reset caption. Deliberate, not an oversight (review I-1): a prose amount carries its own
+ *  wording, so wrapping it in "Regain <prose> <name> (described in this feature's text)" read as nonsense on every
+ *  carrier. Measured 2026-09-05 by walking every `recovery:` block of every NOTE (`.md`) in the converter corpus and
+ *  the bundle: 35 entries (33 converter, 2 bundle), ALL 35 carrying an `amount`, 5 distinct values, THREE of the
+ *  ENTRIES prose (review M-19: counted over the entries, not over the five values). All three are Arcane Ward and
+ *  NONE carries an `action`, so the skipped badge drops nothing that ships. Their
+ *  SHAPES differ and this arm renders each VERBATIM: both "School of Abjuration" notes carry a whole sentence with its
+ *  own trigger ("Whenever you cast an abjuration spell of 1st level or higher, …", capitalised, full stop), while the
+ *  2024 Abjurer's "Arcane Ward Hit Points" carries a lowercase FRAGMENT with no trigger and no terminal period ("the
+ *  ward regains a number of Hit Points equal to twice the level of the spell slot"), which therefore reaches the sheet
+ *  as a bare fragment: a converter-side data shape, booked to G7, not something this renderer repairs. */
+function renderUsesRecovery(block: HTMLElement, resource: Resource, rec: ResourceRecovery, fu: { used: number; max: number } | undefined, ctx: ComponentRenderContext): void {
+  const actions = block.createDiv({ cls: "pc-resource-actions pc-regain-actions" });
+  const amount = rec.amount === "all" ? "all" : typeof rec.amount === "number" ? rec.amount : Number(rec.amount);
+  if (amount !== "all" && !Number.isFinite(amount)) {
+    actions.createDiv({ cls: "pc-regain-note", text: String(rec.amount) });
+    return;
+  }
+  const row = actions.createDiv({ cls: "pc-regain-row" });
+  const btn = row.createEl("button", { cls: "pc-regain", text: `Regain ${amount === "all" ? "all" : amount} ${resource.name}` });
+  btn.disabled = !fu || fu.used === 0;
+  if (rec.action) renderCostBadge(row.createSpan({ cls: "pc-regain-cost" }), rec.action);
+  row.createSpan({ cls: "pc-regain-reset", text: RESET_LABELS[rec.reset], attr: rec.reset === "custom" ? { title: CUSTOM_RESET_TIP } : {} });
+  if (rec.reset === "custom" && !rec.action) actions.createDiv({ cls: "pc-regain-note", text: "The rules restore this on a condition described in the feature's text; this button is a manual override." });
+  btn.addEventListener("click", (e) => { e.stopPropagation(); ctx.editState?.regainFeatureUses(resource.id, amount); });
+}
+
 /** Feature source → italic subtitle label ("Battle Master 3", "Background:
  *  Drifter", …). Relocated here as the surviving copy (the `features-table.ts`
- *  twin dies with that file in Task 5). */
-export function formatSourceLabel(source: FeatureSource | undefined): string {
+ *  twin dies with that file in Task 5).
+ *
+ *  `resolved` is the DISPLAY-NAME source (R4 {G5, G6} live rider N-3-17). A slug is an identifier, not
+ *  a name: the converter's carry the edition and the book, so title-casing one printed
+ *  `Oath Of Devotion 2024 Xphb 20` and `Battle Master 5e 3` under a row's name. The character already
+ *  holds the entity for every one of the five source kinds, and the entity holds the name the book
+ *  prints. `capitalizeSlug` stays as the fallback for a source the character does not carry and for
+ *  every caller that passes no character (the test suite's direct calls, and any future one). */
+export function formatSourceLabel(source: FeatureSource | undefined, resolved?: ResolvedCharacter): string {
   if (!source) return "";
+  // R4-G7 T8 RIDER-23 (F-FEATSRC): a feat's row is TITLED with the feat's own name (the resolver synthesizes one feature
+  // per feat), so `Feat: <that name>` repeated the title on every feat row. The line names the SLOT instead: dnd5e's
+  // `via` is a class or a background source, formatted by its own arm ("Cleric 4", "Background: Soldier"); with no `via`
+  // the line is the bare kind, never the feat's name.
+  if (source.kind === "feat") return source.via ? formatSourceLabel(source.via, resolved) : "Feat";
+  const name = sourceEntityName(source, resolved) ?? capitalizeSlug(source.slug);
   switch (source.kind) {
     case "class":
     case "subclass":
-      return `${capitalizeSlug(source.slug)} ${source.level}`;
+      return `${name} ${source.level}`;
     case "race":
-      return capitalizeSlug(source.slug);
+      return name;
     case "background":
-      return `Background: ${capitalizeSlug(source.slug)}`;
-    case "feat":
-      return `Feat: ${capitalizeSlug(source.slug)}`;
+      return `Background: ${name}`;
     default:
       return "";
   }
+}
+
+/** The `name` the character's own resolved entity carries for this source, or undefined when the
+ *  character carries no entity with that slug (and when the caller passed no character). Every arm
+ *  matches on the entity slug the resolver stamps into `FeatureSource.slug`, so the lookup is an
+ *  identity match and never a heuristic. The `?? []` guards are for the cast fixtures that build a
+ *  `ResolvedCharacter` without these fields. */
+function sourceEntityName(source: FeatureSource, resolved: ResolvedCharacter | undefined): string | undefined {
+  if (!resolved) return undefined;
+  type Named = { slug?: string; name?: string } | null | undefined;
+  const candidates: Named[] =
+    source.kind === "class" ? (resolved.classes ?? []).map((c) => c.entity)
+    : source.kind === "subclass" ? (resolved.classes ?? []).map((c) => c.subclass)
+    : source.kind === "race" ? [resolved.race]
+    : source.kind === "background" ? [resolved.background]
+    // A feat never reaches this lookup: `formatSourceLabel` formats its `via` or prints "Feat" (R4-G7 T8 RIDER-23).
+    : [];
+  return candidates.find((e) => e?.slug === source.slug)?.name;
 }
 
 function capitalizeSlug(slug: string): string {

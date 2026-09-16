@@ -31,7 +31,7 @@ describe("Monster renderer with structured attacks", () => {
         },
       ],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("+9");
@@ -62,7 +62,7 @@ describe("Monster renderer with structured attacks", () => {
         },
       ],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("+5");
@@ -92,7 +92,7 @@ describe("Monster renderer with structured attacks", () => {
         },
       ],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("plus");
@@ -113,7 +113,7 @@ describe("Monster renderer with structured attacks", () => {
         },
       ],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("Melee Weapon Attack");
@@ -140,7 +140,7 @@ describe("Monster renderer with structured attacks", () => {
         },
       ],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("Custom prose");
@@ -161,7 +161,7 @@ describe("Monster renderer Feature.recharge suffix", () => {
         },
       ],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("Acid Breath (Recharge 5–6).");
@@ -179,7 +179,7 @@ describe("Monster renderer Feature.recharge suffix", () => {
         },
       ],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("Lucky Strike (Recharge 6).");
@@ -198,7 +198,7 @@ describe("Monster renderer Feature.recharge suffix", () => {
         },
       ],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("Enslave (3/Day).");
@@ -221,7 +221,7 @@ describe("Monster renderer Feature.recharge suffix", () => {
         },
       ],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("Daily (1/Long Rest).");
@@ -234,7 +234,7 @@ describe("Monster renderer Feature.recharge suffix", () => {
       name: "Goblin",
       actions: [{ name: "Scimitar", entries: ["..."] }],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     expect(text).toContain("Scimitar.");
@@ -251,7 +251,7 @@ describe("Monster renderer Legendary Resistance toggle widget", () => {
       legendary_actions: [{ name: "Pounce", entries: ["..."] }],
       legendary_resistance: 3,
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     const text = root.textContent ?? "";
     // Label is rendered (without redundant prose)
@@ -271,7 +271,7 @@ describe("Monster renderer Legendary Resistance toggle widget", () => {
       name: "Goblin Boss",
       legendary_actions: [{ name: "Pounce", entries: ["..."] }],
     };
-    const wrapper = renderMonsterBlock(monster);
+    const { el: wrapper } = renderMonsterBlock(monster);
     root.appendChild(wrapper);
     expect(wrapper.querySelector(".archivist-legendary-resistance")).toBeNull();
   });

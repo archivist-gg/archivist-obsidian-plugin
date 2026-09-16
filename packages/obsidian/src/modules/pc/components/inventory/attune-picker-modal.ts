@@ -1,4 +1,5 @@
-import { Modal, type App } from "obsidian";
+import { type App } from "obsidian";
+import { PaneCenteredModal } from "../../../../shared/modals/pane-centered-modal";
 import type { VisibleEntry } from "./filter-state";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
@@ -9,7 +10,7 @@ export interface AttunePickerOptions {
   onPick: (entryIndex: number) => void;
 }
 
-export class AttunePickerModal extends Modal {
+export class AttunePickerModal extends PaneCenteredModal {
   constructor(app: App, private readonly opts: AttunePickerOptions) {
     super(app);
   }

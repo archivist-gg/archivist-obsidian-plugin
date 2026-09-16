@@ -38,9 +38,13 @@ export class BuilderView implements SheetComponent {
 
     // Step rail.
     const rail = layout.createDiv({ cls: "pc-builder-rail" });
+    // The rail CELL keeps spanning the column (its border and tint run the full
+    // height); the step list is a separate box so it alone can be `position:
+    // sticky` and pin to the pane top while the user scrolls (R4-G6b §7, Q-5).
+    const steps = rail.createDiv({ cls: "pc-builder-rail-steps" });
     for (const [i, step] of BUILDER_STEPS.entries()) {
       const done = this.isStepDone(step.id, ctx);
-      const item = rail.createDiv({
+      const item = steps.createDiv({
         cls: `pc-builder-step${step.id === activeStep ? " active" : ""}${done ? " done" : ""}`,
         attr: { "data-step": step.id },
       });

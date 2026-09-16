@@ -53,10 +53,14 @@ export function renderFeatureCard(
 }
 
 /**
- * Looks up the features array stored under a section key on the
- * editable monster. Returns `undefined` for unknown keys; returns an
- * empty array if the section is active but the array hasn't been
- * initialised yet, so that the "add feature" button still renders.
+ * Looks up the features array stored under a section key on the editable monster. Returns `undefined` for unknown
+ * and inactive keys; returns an empty array if the section is ACTIVE but carries no array, so that the "add
+ * feature" button still renders.
+ *
+ * R4-G7 §7.4 · the answer is decided by SHAPE (`Array.isArray`), never by truthiness. An authored scalar under a
+ * section key (`traits: some text`) is truthy, so the old test handed the STRING back cast as `Feature[]` and the
+ * tab rendered one blank feature card per character of it. This is the only exported reader of a section array
+ * (there is no exported `addFeature`; `MonsterEditState.addFeature` reads the key directly).
  */
 export function getFeatures(m: EditableMonster, key: string): Feature[] | undefined {
   const featureMap: Record<string, Feature[] | undefined> = {
@@ -66,8 +70,5 @@ export function getFeatures(m: EditableMonster, key: string): Feature[] | undefi
     legendary_actions: m.legendary_actions,
   };
   const result = featureMap[key] ?? (m as unknown as Record<string, unknown>)[key] as Feature[] | undefined;
-  // If the section is active but has no features array yet, return empty array
-  // so the add button still renders
-  if (!result && m.activeSections?.includes(key)) return [];
-  return result;
+  return Array.isArray(result) ? result : (m.activeSections?.includes(key) ? [] : undefined);
 }

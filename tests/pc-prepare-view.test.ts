@@ -11,7 +11,7 @@ const REG = buildMockRegistry([{ slug: "fireball", entityType: "spell", data: { 
 
 function sp(name: string, level: number, prepared: boolean, alwaysPrepared = false): ResolvedSpell {
   return { entity: { name, level } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),
-    classSlug: "wizard", source: "class", prepared, alwaysPrepared };
+    classSlug: "wizard", source: "class", prepared, alwaysPrepared, persisted: true };
 }
 function ctx(spells: ResolvedSpell[], editState: unknown, preparation: "prepared" | "known" = "prepared"): ComponentRenderContext {
   return {
@@ -22,6 +22,7 @@ function ctx(spells: ResolvedSpell[], editState: unknown, preparation: "prepared
       spellLimits: [{ classSlug: "wizard", kind: "prepared", cantripsKnown: 5, preparedOrKnown: 8 }],
     } as never,
     services: { entities: REG } as never, app: {} as never, editState: editState as never,
+    builderUiState: new Map<string, unknown>(),
   };
 }
 
@@ -51,6 +52,23 @@ describe("renderPrepareView", () => {
     expect(removeKnownSpell).not.toHaveBeenCalled();           // first click = arm confirm
     rm.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(removeKnownSpell).toHaveBeenCalledWith("magic-missile");
+  });
+
+  it("a granted (non-persisted) row renders no ✕ and keeps its locked prepared box", () => {
+    // R4-G3b §6.2.3: the ✕ calls removeKnownSpell, which is a silent no-op off
+    // character.spells.known, so it renders only for a row that LIVES there
+    // (ResolvedSpell.persisted). A grant carries no such entry whatever its `source`
+    // (a class-table, feat or race grant): no ✕, and the always-prepared box stays
+    // locked as it already did.
+    // RED FIRST before Task 7 (plugin 7bb5d39b): the ✕ was rendered unconditionally,
+    // so this row showed a .pc-spell-remove that removed nothing.
+    const root = mountContainer();
+    const granted = sp("Magic Missile", 1, true, true);
+    delete granted.persisted;
+    renderPrepareView(root, ctx([granted], { togglePrepared: vi.fn(), removeKnownSpell: vi.fn() }));
+    expect(root.querySelector(".pc-spell-remove")).toBeNull();
+    const box = root.querySelector(".pc-spell-prep-row .archivist-toggle-box") as HTMLElement;
+    expect(box.classList.contains("pc-box-locked")).toBe(true);
   });
 
   it("known casters render no prepared boxes (Manage mode)", () => {
@@ -155,6 +173,62 @@ describe("renderPrepareView", () => {
     renderPrepareView(root2, ctx([sp("Fire Bolt", 0, true)], { togglePrepared: vi.fn() }));
     expect([...root2.querySelectorAll(".pc-spell-name")].map((n) => n.textContent)).toContain("Fire Bolt");
   });
+
+  it("the add-drawer survives a whole-sheet re-render (R4-G3b §12)", () => {
+    // R4-G3b §12.2.1: the open state is a flag in the per-file builderUiState bag, so the
+    // whole-sheet re-render that every editState mutation fires cannot close the drawer.
+    // RED FIRST before Task 8 (plugin 5775b45c): `adding` was a render-scoped closure local,
+    // so the second render came back on the prepared list and the marked query returned null
+    // ("expected null not to be null"). The root1 assertion below passed before the fix too:
+    // it is the control that pins the SECOND render as what changed, and it goes red itself
+    // if the renderAddDrawer call is fenced off, so this case cannot pass vacuously.
+    const x = ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn(), addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() });
+    const root1 = mountContainer();
+    renderPrepareView(root1, x);
+    (root1.querySelector(".pc-spell-addbtn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root1.querySelector(".pc-spell-adddrawer")).not.toBeNull();
+    const root2 = mountContainer();
+    renderPrepareView(root2, x);                                            // what handleChange does: a fresh render, the SAME ctx/bag
+    expect(root2.querySelector(".pc-spell-adddrawer")).not.toBeNull();     // RED FIRST
+    expect(root2.querySelector(".pc-spell-addbtn")?.textContent).toContain("Done");
+  });
+
+  it("the drawer's filter state survives the re-render too", () => {
+    // R4-G3b §12.2.2: `state` (and the expanded-row set) live in the same bag, and draw()
+    // writes the query back into the toolbar input the new render just built.
+    // RED FIRST before Task 8 (plugin 5775b45c): the second render carried no drawer at all,
+    // so this line threw "Cannot read properties of null (reading 'value')"; with only the
+    // open-state flag fixed and `state` still re-created per render it read "" (measured).
+    const x = ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn(), addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() });
+    const root1 = mountContainer(); renderPrepareView(root1, x);
+    (root1.querySelector(".pc-spell-addbtn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const search = root1.querySelector(".pc-spell-search") as HTMLInputElement;
+    search.value = "fire"; search.dispatchEvent(new Event("input", { bubbles: true }));
+    const root2 = mountContainer(); renderPrepareView(root2, x);
+    expect((root2.querySelector(".pc-spell-search") as HTMLInputElement).value).toBe("fire");   // RED FIRST
+  });
+
+  it("an expanded drawer row survives the re-render too (spec §12.3)", () => {
+    // R4-G3b §12.3's second half: the expanded-row Set lives in the same bag as the filter
+    // state, and renderRow re-opens any row whose slug that Set still holds (add-drawer.ts
+    // `if (expanded.has(c.slug)) toggleExpand();`).
+    // RED FIRST before Task 8 fix 1: measured at f9c8e8ee with the `expanded` hoist reverted
+    // to a per-render `new Set<string>()` (the pre-Task-8 shape, which is exactly what mutant
+    // M-47b restores) the second render dropped the open block and this query returned null.
+    // The hoist itself shipped in f9c8e8ee; fix 1 adds the fixture that pins it.
+    const x = ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn(), addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() });
+    const root1 = mountContainer(); renderPrepareView(root1, x);
+    (root1.querySelector(".pc-spell-addbtn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const row1 = root1.querySelector(".pc-spell-add-table .pc-spell-add-row") as HTMLElement;
+    row1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root1.querySelector(".pc-spell-expand-row")).not.toBeNull();
+    const root2 = mountContainer(); renderPrepareView(root2, x);
+    expect(root2.querySelector(".pc-spell-expand-row")).not.toBeNull();   // RED FIRST
+    // and it comes back IN PLACE: the row is marked open and the block is its next sibling.
+    const row2 = root2.querySelector(".pc-spell-add-row") as HTMLElement;
+    expect(row2.classList.contains("pc-row-open")).toBe(true);
+    expect(row2.nextElementSibling?.className).toContain("pc-spell-expand-row");
+  });
 });
 
 describe("renderPrepareView — D1 spell-block persistence", () => {
@@ -169,5 +243,14 @@ describe("renderPrepareView — D1 spell-block persistence", () => {
     const root2 = mountContainer();
     renderPrepareView(root2, { ...ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }), builderUiState: bag });
     expect(root2.querySelector(".pc-spell-prep-row-host > .pc-spell-expand")).not.toBeNull();
+  });
+});
+
+// R4-G7 T8 RIDER-17 (F-ALWAYS (a)): the Prepare view prints the SAME always-prepared label as the Cast view.
+describe("renderPrepareView · the always-prepared marker (R4-G7 T8 RIDER-17)", () => {
+  it("an always-prepared row's marker reads `Always prepared`, never the bare lowercase `always`", () => {
+    const root = mountContainer();
+    renderPrepareView(root, ctx([sp("Bless", 1, true, true)], { togglePrepared: vi.fn() }));
+    expect(root.querySelector(".pc-spell-prep-row .pc-spell-always")?.textContent).toMatch(/^Always prepared$/);
   });
 });

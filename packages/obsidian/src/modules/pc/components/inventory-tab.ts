@@ -80,10 +80,12 @@ export class InventoryTab implements SheetComponent {
       meta.empty();
       const heading = meta.createEl("h4", { cls: "pc-tab-heading", text: "Inventory" });
       const carried = ctx.derived.carriedWeight ?? 0;
+      // The count is equipment ENTRIES (a `qty: 2` entry is one item). R4-G7 T8 RIDER-24: the noun agrees with it, so a
+      // one-entry inventory reads "1 item", never "1 items".
       const count = ctx.resolved.definition.equipment?.length ?? 0;
       heading.createSpan({
         cls: "pc-inv-meta-suffix",
-        text: ` ${count} items · ${carried.toFixed(carried % 1 === 0 ? 0 : 1)} lb carried`,
+        text: ` ${count} ${count === 1 ? "item" : "items"} · ${carried.toFixed(carried % 1 === 0 ? 0 : 1)} lb carried`,
       });
     };
 

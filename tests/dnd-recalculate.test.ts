@@ -18,10 +18,16 @@ const GOBLIN: Monster = {
 };
 
 describe("recalculate", () => {
+  // R4-G7 §7.4 truth maintenance: the two HP rows send `"abilities"`, the ONLY ability field name the app writes
+  // (`edit/abilities-editor.ts:41` sends the whole object under it). Their former `"abilities.con"` never reaches
+  // `recalculate` from any editor, and since the HP recompute is gated on the measured field set it would no longer
+  // exercise either row: the first would pass on a name that cannot occur, the second would pass without its
+  // override guard. The saves / skills / passive-perception rows below recompute for EVERY field, so their
+  // `"abilities.<key>"` names stay as authored.
   it("recalculates HP when CON changes", () => {
     const editable = monsterToEditable(GOBLIN);
     editable.abilities!.con = 14;
-    const result = recalculate(editable, "abilities.con");
+    const result = recalculate(editable, "abilities");
     expect(result.hp?.average).toBe(11);
   });
   it("does NOT recalculate HP when HP is overridden", () => {
@@ -29,7 +35,7 @@ describe("recalculate", () => {
     editable.overrides.add("hp");
     editable.hp = { average: 15, formula: "2d6" };
     editable.abilities!.con = 14;
-    const result = recalculate(editable, "abilities.con");
+    const result = recalculate(editable, "abilities");
     expect(result.hp?.average).toBe(15);
   });
   it("recalculates saves when ability changes", () => {

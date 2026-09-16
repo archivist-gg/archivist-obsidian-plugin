@@ -122,7 +122,10 @@ const bg2024 = {
   slug: "soldier", name: "Soldier", edition: "2024", source: "", description: "",
   skill_proficiencies: ["athletics", "intimidation"],
   tool_proficiencies: [{ kind: "fixed", items: ["gaming-set"] }],
-  language_proficiencies: [],
+  // Refreshed to the live `SRD 2024/Backgrounds/Soldier.md`: every 2024 SRD
+  // background grants a FIXED `common` here and carries its language CHOICE in
+  // `choices[]` (a `select-proficiency`), which this block does not read.
+  language_proficiencies: [{ kind: "fixed", languages: ["common"] }],
   equipment: [{ kind: "gold", amount: 50 }],
   feature: { name: "Background Feature", description: "(No description provided.)" },
   ability_score_increases: { pool: ["str", "dex", "con"] },
@@ -294,6 +297,34 @@ describe("PassiveFeaturesTab", () => {
       expect(block.textContent).toContain("Intimidation");
     });
 
+    // R4-P3b §12: the Languages reference reads the FIXED entries only, by
+    // POLICY rather than because a `kind:"choice"` entry cannot occur · it can,
+    // and the 2014 fixture below is modelled on the one shipped background that
+    // has one (`srd-5e_background_acolyte`). The old "choose N" fallback was
+    // dropped because this block references APPLIED grants; an unresolved pick is
+    // the builder's to render, from the parallel `select-proficiency` in
+    // `choices[]`. No 2024 background carries a `kind:"choice"` language entry.
+    it("2024 background: the Languages reference is PRESENT and reads the fixed grant", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
+      const block = bgBlock(c)!;
+      expect(propLabels(block)).toContain("Languages");
+      const langProp = [...block.querySelectorAll(".pc-cb-prop")].find(
+        (p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Languages")!;
+      expect(langProp.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Common");
+    });
+
+    it("2014 background whose only language entry is a CHOICE: the Languages row is ABSENT, not blank", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([], { background: bg2014 }));
+      const block = bgBlock(c)!;
+      // `prop()` omits an empty value, so the row is GONE rather than blank ·
+      // asserted as an exact label set, which also proves the block's reference
+      // lines rendered at all (so the absence is not vacuous).
+      expect(propLabels(block)).toEqual(["Skills"]);
+      expect(propLabels(block)).not.toContain("Languages");
+    });
+
     it("renders 'Origin Feat: <name>' WITHOUT 'see Feats' when no matching feat row is present (pre-3b)", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
@@ -304,9 +335,21 @@ describe("PassiveFeaturesTab", () => {
       expect(line.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Savage Attacker");
     });
 
+    it("R4-G4 §8: with NO stamped origin feat, a same-TAILED class-slot feat does not light 'see Feats' (the retired helper would have)", () => {
+      const c = mountContainer();
+      const classSlotAlert = { feature: { name: "Alert" }, source: { kind: "feat", slug: "players-handbook-2024_feat_alert" } } as never;
+      const ctx = renderCtx([classSlotAlert], { background: { ...bg2024, origin_feat: "[[SRD 2024/Feats/Alert]]" } as never });
+      new PassiveFeaturesTab().render(c, ctx);   // originFeatSlug UNSET: the resolver found no candidate
+      expect(bgBlock(c)!.querySelector(".pc-bg-origin span:not(.pc-cb-prop-l)")!.textContent).toBe("Alert");
+    });
+
     it("auto-upgrades to 'Origin Feat: <name> · see Feats' once a matching feat feature is present (post-3b)", () => {
       const c = mountContainer();
-      new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat, savageAttackerFeat], { background: bg2024 }));
+      const ctx = renderCtx([bgPlaceholderFeat, savageAttackerFeat], { background: bg2024 });
+      // R4-G4 §8: the block now reads the resolver's `originFeatSlug` stamp instead of re-deriving
+      // the tail, so the ctx carries the stamp the pipeline would have taken for this background.
+      (ctx.resolved as { originFeatSlug?: string }).originFeatSlug = "srd-2024_savage-attacker";
+      new PassiveFeaturesTab().render(c, ctx);
       const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
       expect(line.querySelector(".pc-cb-prop-l")!.textContent).toBe("Origin Feat");
       expect(line.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Savage Attacker · see Feats");
@@ -457,33 +500,51 @@ describe("PassiveFeaturesTab", () => {
 
   // ── Relocated boon cases (from pc-actions-boons.test.ts) ────────────────────
   describe("relocated boon rows", () => {
-    it("files a free boon under Passive & Free Actions → Boons (NOT under an 'Interdict Boons' head)", () => {
+    it("files a free boon under Passive & Free Actions → its pool's own label (R4-G4 §10 REVERSED the 'NOT under an Interdict Boons head' decision under UR3; the FILING is unchanged)", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ selected: [entry("wrath", { name: "Boon of Wrath", action_cost: "free", description: "Deal extra damage." })] })],
       }));
       expect(boonNames(c)).toEqual(["Boon of Wrath"]);
       expect(economyForBoon(c, "Boon of Wrath")).toBe("Passive & Free Actions");
-      expect(subGroupTitles(c)).toContain("Boons");
+      expect(subGroupTitles(c)).toContain("Interdict Boons");
       expect(headings(c)).not.toContain("Interdict Boons");
     });
 
-    it("files a passive boon under Passive & Free Actions → Boons", () => {
+    it("files a passive boon under Passive & Free Actions, its sub-group head reading the pool's own label", () => {
+      // Review I-1: the old name said "→ Boons", which this fixture never renders · the `pool()`
+      // builder's label is "Interdict Boons", and the head reads it. Asserted, not just renamed.
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ selected: [entry("stoic", { name: "Boon of Endurance", passive: true, description: "Always on." })] })],
       }));
+      expect(subGroupTitles(c)).toContain("Interdict Boons");
       expect(economyForBoon(c, "Boon of Endurance")).toBe("Passive & Free Actions");
       expect(headings(c)).not.toContain("Interdict Boons");
     });
 
-    it("files a granted boon (no action_cost) under Passive → Boons", () => {
+    it("files a granted boon (no action_cost) under Passive, its sub-group head reading the pool's own label", () => {
+      // Review I-1, the granted half of the pair above: same rename, same added assertion.
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ grants: [entry("sight", { name: "Boon of Sight", description: "See in the dark." })] })],
       }));
+      expect(subGroupTitles(c)).toContain("Interdict Boons");
       expect(boonNames(c)).toEqual(["Boon of Sight"]);
       expect(economyForBoon(c, "Boon of Sight")).toBe("Passive & Free Actions");
+    });
+
+    // R4 {G5, G6} live rider 2, X-2-12: a picked pool entry filed on THIS tab reads the same economy
+    // and cost sub-line its pool row reads. The Passive tab drops the badge column, so before this the
+    // row carried no economy anywhere, while the same entry on its pool tab read
+    // `Passive · 1 Superiority Dice`. The composer is the pool row's own.
+    it("carries the pool row's economy and cost sub-line on a picked entry", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([], {
+        pools: [pool({ selected: [entry("wrath", { name: "Boon of Wrath", passive: true, consumes: { resource: "seals", amount: 1 } })] })],
+      }));
+      const row = boonRowByName(c, "Boon of Wrath");
+      expect(row.querySelector(".pc-action-row-sub")?.textContent).toBe("Passive · 1 seals");
     });
 
     it("shows an Active toggle wired to editState for an activatable selected boon", () => {
@@ -700,5 +761,95 @@ describe("D1 background-block expand persistence", () => {
     new PassiveFeaturesTab().render(c2, { ...renderCtx([], { background: bg2024 }), builderUiState: bag });
     const expand = rowByName(c2, "Soldier").nextElementSibling as HTMLElement & { hidden: boolean };
     expect(expand.hidden).toBe(false);
+  });
+});
+
+// R4-G1a D5 / G9: the converter's passthrough grant keys in the passive Background block.
+describe("PassiveFeaturesTab · the background block's fixed-entry Equipment text (R4-G1a D5, G9)", () => {
+  const withEquipment = (equipment: unknown[]): BackgroundEntity =>
+    ({ ...bg2024, equipment }) as unknown as BackgroundEntity;
+
+  it("prefers display_name and still humanizes the undecorated slug beside it", () => {
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: withEquipment([
+      { kind: "fixed", grants: [
+        { item: "holy-symbol", display_name: "holy symbol (a gift to you when you entered the priesthood)" },
+        { item: "pouch", contains_value: 1500 },
+      ] },
+    ]) }));
+    expect(bgBlock(c)!.textContent).toContain("holy symbol (a gift to you when you entered the priesthood)");
+    // The undecorated item arm humanizes its slug, so the rendered token is "Pouch".
+    expect(bgBlock(c)!.textContent).toContain("Pouch");
+  });
+
+  it("a fixed entry with no grants array renders with no throw and no Equipment line", () => {
+    const c = mountContainer();
+    const bg = withEquipment([{ kind: "fixed" } as never]);
+    expect(() => new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg })))
+      .not.toThrow();
+    expect(bgBlock(c)!.textContent).not.toContain("Equipment");
+  });
+});
+
+describe("PassiveFeaturesTab · the active-effects rail (R4-G5 §4.4.1)", () => {
+  const rageFeat = rf({ id: "rage", name: "Rage", activatable: true, duration: { amount: 1, unit: "minute" } });
+
+  it("lists an active class feature by `feature.id` with an End control that clears it", () => {
+    const toggleActiveBuff = vi.fn();
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([rageFeat], { activeBuffs: ["rage"], editState: { toggleActiveBuff } }));
+    expect(c.querySelector(".pc-ae-tile .pc-ae-name")!.textContent).toBe("Rage");
+    c.querySelector<HTMLElement>(".pc-ae-tile .pc-ae-end")!.click();
+    expect(toggleActiveBuff).toHaveBeenCalledWith("rage");
+  });
+
+  it("RED FIRST (row 21): an active POOL ENTRY gets a tile too (the second keyspace: entry slugs, not feature ids)", () => {
+    const c = mountContainer();
+    const p = pool({ selected: [entry("tce_frost-rune", { name: "Frost Rune", activatable: true })] });
+    new PassiveFeaturesTab().render(c, renderCtx([], { pools: [p], activeBuffs: ["tce_frost-rune"] }));
+    expect(c.querySelector(".pc-ae-tile .pc-ae-name")!.textContent).toBe("Frost Rune");
+    // R4 {G5, G6} live rider 2, X-8-3: the caption is the POOL's own label, from the data, not the
+    // invented "Active boon"; the class-feature arm above keeps the neutral "Active".
+    expect(c.querySelector(".pc-ae-tile .pc-ae-label")!.textContent).toBe("Interdict Boons");
+  });
+
+  it("RED FIRST (row 38): a buff stored under the OTHER edition's twin still shows ONE tile (the bare-slug match)", () => {
+    const c = mountContainer();
+    const p = pool({ selected: [entry("phb2014_optional-feature_frost-rune", { name: "Frost Rune", activatable: true })] });
+    new PassiveFeaturesTab().render(c, renderCtx([], {
+      pools: [p], activeBuffs: ["phb2024_optional-feature_frost-rune"],
+    }));
+    expect(c.querySelectorAll(".pc-ae-tile").length).toBe(1);
+    expect(c.querySelector(".pc-ae-tile .pc-ae-name")!.textContent).toBe("Frost Rune");
+  });
+
+  it("RED FIRST: the rail renders ABOVE the empty-state line on a character with no passive rows", () => {
+    // The buff must reach the rail WITHOUT producing a passive row, or the early return never fires:
+    // a COSTED activatable feature files under the Actions tab, so the passive sections are empty here
+    // while the rail still has its tile. FIXTURE-ONLY (spec §4.5, row 45): 0 activatable AND costed
+    // class features ship on either corpus (a cost-less feature or pool entry would file into the
+    // Passive sections and fill them). The RED assertion is FIRST (invariant 4); the control follows.
+    const smite = rf({ id: "smite", name: "Smite", action: "action", activatable: true });
+    const withRail = mountContainer();
+    new PassiveFeaturesTab().render(withRail, renderCtx([smite], { activeBuffs: ["smite"] }));
+    const kids = Array.from(withRail.querySelector(".pc-tab-body")!.children).map((n) => n.className);
+    expect(kids[0]).toContain("pc-ae-rail");                       // RED FIRST (row 45: the rail before the early return)
+    expect(kids[1]).toContain("pc-empty-line");
+    const bare = mountContainer();
+    new PassiveFeaturesTab().render(bare, renderCtx([smite], { activeBuffs: [] }));
+    expect(bare.querySelector(".pc-empty-line")!.textContent).toBe("(No passive or free actions.)");
+    expect(bare.querySelector(".pc-ae-rail")).toBeNull();          // no buff, no rail (the control)
+  });
+
+  it("an unmatched buff id renders no tile and warns once", async () => {
+    const { __resetWarnOnceForTests } = await import("@archivist-gg/dnd5e/dnd/warn-once");
+    __resetWarnOnceForTests();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([], { pools: [], activeBuffs: ["ghost", "ghost"] }));
+    expect(c.querySelector(".pc-ae-tile")).toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0].join(" ")).toContain("ghost");
+    warn.mockRestore();
   });
 });

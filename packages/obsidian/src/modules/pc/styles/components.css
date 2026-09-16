@@ -79,7 +79,29 @@
    * so the img itself is a plain rectangle the host clips to a circle. */
   border-radius: 0;
 }
-.archivist-pc-sheet .pc-identity { flex: 1 1 auto; min-width: 0; }
+/* R4-G7 T8 RIDER-27 (F-IDENT) · the identity wraps its TEXT beside the avatar. `.pc-header-root` wraps its flex line, and with
+   `flex: 1 1 auto` the identity's flex base size was its one-line max-content width, so a subtitle wider than the room beside the
+   avatar moved the WHOLE block onto its own line under the avatar. MEASURED LIVE in W-Dr at the default 1024 x 800 window:
+   `conv-battle-smith-2024-efa-20`'s subtitle needs about 512 px, the room is 507.5 px, the block sat at [352.5, 241.9] under the
+   96 px avatar. A zero basis lets the line break read the identity as small, but ALONE it also let the hero cluster share the first
+   line on wider sheets and squeezed the identity to 14 px (760 px sheet) and 154 px (900), the name on 5 to 7 lines, measured with
+   the sheet width emulated. The floor is the fix for that: the identity's hypothetical size is at least min(100%, 320px), so the
+   hero cluster joins the first line only when the identity keeps 320 px. THAT SENTENCE IS THE FIRST WRITING'S HISTORY (R4-G7 T8 wave E,
+   truth maintenance): fix round 1's second `min-width` below narrows it, so a SHORT identity floors at its own max-content and only a
+   long one at 320 px; an engine without `calc-size()` drops that declaration and behaves exactly as this paragraph describes.
+   Measured on three notes: the default window reads beside,
+   the battle-smith's subtitle on two lines; 760 and 900 px sheets read exactly as before; at 1200 px the battle-smith's hero
+   cluster now shares the first line and its long fixture name and subtitle wrap to two lines each in 454 px. Below a 700 px sheet the
+   floor has no job (the hero cluster is `width: 100%` there and never shares the first line) and it did harm: a floor wider than the
+   room beside the avatar moved the whole block under it on every sheet under about 420 px, short names included (fix round 1, review
+   Important 1). The `@container pc-sheet (max-width: 699px)` block that wraps the hero cluster sets `min-width: 0`, later in this file.
+   Fix round 1, review Minor 1: a 320 px floor for EVERY identity made a short one need 320 px on the first line, so its hero cluster sat
+   alone on the second line where the earlier layout shared the first. Measured in a headless-Chrome replica of these rules (pc-sheet
+   container widths, 20 px steps): a 212 px identity at 920..1000 px, the Illrigger's 279 px identity at 1000..1020 px. The second
+   `min-width` is min(max-content, 320px) through calc-size() (Chromium 129 and up; Obsidian's is 132): a short identity floors at its
+   own width and a long one at 320 px, and at 700..1400 px all five measured identities put the hero cluster on the first line exactly
+   when the avatar, that floor and the hero cluster fit. An engine without calc-size() drops the declaration and keeps the plain floor. */
+.archivist-pc-sheet .pc-identity { flex: 1 1 0; min-width: min(100%, 320px); min-width: calc-size(max-content, min(size, 320px)); }
 .archivist-pc-sheet .pc-name {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-display);
@@ -175,10 +197,16 @@
 }
 /* Distance reading (e.g. Darkvision "60 ft.") — quiet serif text aligned in
    the value column, NOT the boxed-numeral treatment used for passive scores. */
+/* R4 {G5, G6} live rider N-2-8: a sense DISTANCE now wears `.pc-sense-val`'s box (the span carries both
+   classes), and this rule only widens it: a distance reads "120 ft.", which will not fit the 28 px
+   square a passive score sits in, so the box grows with its text while keeping the square's height,
+   border and centring. */
 .archivist-pc-sheet .pc-sense-dist {
   order: 0;
+  width: auto;
   min-width: 28px;
-  text-align: right;
+  padding: 0 6px;
+  text-align: center;
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-body);
   color: var(--pc-text-primary);
@@ -198,6 +226,38 @@
 .archivist-pc-sheet .pc-prof-line:last-child { border-bottom: none; }
 .archivist-pc-sheet .pc-prof-key { font-weight: 700; color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-prof-vals { color: var(--pc-text-primary); }
+/* Editable proficiency rows (Tools, Languages), which open the override modal.
+   The WHOLE row is the click target, so the pointer sits on the row rather than
+   on the mockup's key span · that matches .pc-currency-row.pc-currency-clickable,
+   the existing row-as-one-target precedent. The mockup's .pc-prof-edit badge is
+   unused and deliberately not shipped. */
+.archivist-pc-sheet .pc-prof-line.editable { cursor: pointer; }
+.archivist-pc-sheet .pc-prof-line.editable:hover .pc-prof-vals { text-decoration: underline dotted var(--pc-tan); }
+
+/* Tool expertise marker (R4-G4 §9.2) · one `.pc-prof-val` span per aggregate
+   entry, marked when the entry carries `expertise`.
+   The declarations are copied from the SKILL rows' emphasis block further down
+   in this file (`.pc-skill-row:has(.archivist-prof-toggle.proficient/.expertise)`):
+   crimson, 700, a dotted underline at the same 2px offset, and the same U+25CE
+   glyph ahead of the text. That block fires for proficient AND expertise on a
+   skill row · the pip's own `outline` in archivist-edit.css is what tells the two
+   apart there. On these lines every entry listed is already proficient, so the
+   emphasis is free to mean expertise and nothing else. */
+.archivist-pc-sheet .pc-prof-val.expertise {
+  color: var(--pc-crimson);
+  font-weight: 700;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.archivist-pc-sheet .pc-prof-val.expertise::before {
+  content: "\25CE";
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 0.85em;
+  color: var(--pc-crimson);
+  text-decoration: none;
+  vertical-align: baseline;
+}
 /* Tab content body — flat on parchment, no card/border. */
 .archivist-pc-sheet .pc-tab-body { padding: 0; background: transparent; border: none; border-radius: 0; }
 .archivist-pc-sheet .pc-tab-heading {
@@ -260,6 +320,32 @@
 /* the shared block wrapper centers with wide gutters + 1.5em margin; tighten it
    for an inline list expand so the card sits snug under its row. */
 .archivist-pc-sheet .pc-resource-card.archivist-item-block-wrapper { width: 100%; margin: var(--pc-space-1) 0 var(--pc-space-2); }
+/* R4-G6b T13 live rider R-4 (B9 N-3; a PRE-G6b owner, fixed under the standing directive): the
+   card's source badge never paints over the card's title. The shared block dress
+   (`src/styles/archivist-dnd.css`) positions `.source-badge` ABSOLUTELY at `top: 8px; right: 8px`,
+   so it has no width in flow and the `<h3>` title's line box runs the full card width underneath
+   it; at the 252 px column the live run caught `SRD 2024` printed letter-on-letter over
+   `Holy Nimbus`.
+   The badge becomes a RIGHT FLOAT instead. A float DOES take part in flow, so the title's line
+   boxes shorten by exactly the badge's own width, whatever that text is (`SRD 2024`, `SRD 5e`) and
+   in whatever face the theme renders it: no width is hardcoded here, so the reserve can never be
+   the wrong size. The 8 px margins reproduce the absolute offsets exactly, because
+   `.archivist-item-block` carries no padding and no border and its content box IS its border box,
+   which is why the badge paints where it does today at the wide widths the eye pass judged clean.
+   Only the title's FIRST line is shortened: the float is about 15 px tall from y = 8 while the
+   23 px title's line box is 27.6 px, so the italic subtitle under it keeps the full width.
+   Scoped to the SHEET's feature card, the one surface the live run judged: the note-embedded
+   spell / item / race / feat / background / condition blocks keep the shared dress. */
+.archivist-pc-sheet .pc-resource-card .source-badge { position: static; float: right; margin: 8px 8px 0 0; }
+/* R4-G6b T13 live rider R-5 (B9 N-4; the same PRE-G6b owner): the card's prose reads left-aligned
+   at every width. The shared block dress justifies `.description-paragraph`
+   (`src/styles/archivist-dnd.css`, the one place in the plugin that does), which a magazine-width
+   item block can carry but a card in the sheet's 252 px column cannot: the live run caught word
+   gaps about four times the normal space on the Holy Nimbus card at w400. No tier, because
+   justification is not what the sheet's own prose does at ANY width; every alignment the pc
+   partials state is left, right, centre or inherit. The 1 em first-line indent stays: it is the
+   card's look, and it was not what broke. */
+.archivist-pc-sheet .pc-resource-card .description-paragraph { text-align: left; }
 
 /* ---- recovery special ACTION (shown directly in the block, no extra button) ---- */
 .archivist-pc-sheet .pc-resource-actions { margin-top: var(--pc-space-3); padding-top: var(--pc-space-3); border-top: 1px solid var(--pc-tan-muted); }
@@ -486,6 +572,10 @@
   color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-hp-temp .pc-hp-val { color: var(--pc-text-muted); }
+/* R4-G6b §6: a current HP above the maximum (the character file's value) is shown as written and flagged: a crimson
+   value and a small superscript mark (its own dress; NOT the `.archivist-override-mark` pill, which is a click target). */
+.archivist-pc-sheet .pc-hp-current.pc-hp-over .pc-hp-val { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-hp-over-mark { font-size: 0.7em; vertical-align: super; color: var(--pc-crimson); margin-left: 2px; cursor: help; }
 .archivist-pc-sheet .pc-hp-label {
   text-align: center;
   font-family: var(--pc-font-serif);
@@ -1013,6 +1103,10 @@
   }
   .archivist-pc-sheet .pc-hp-widget { min-width: 0; flex: 1 1 280px; }
   .archivist-pc-sheet .pc-hd-widget { min-width: 0; flex: 1 1 160px; }
+  /* R4-G7 T8 RIDER-27 fix round 1 (review Important 1): the hero cluster above takes its own line, so the identity's 320 px floor
+     (the base rule near the top of this file) has nothing to keep off the first line here; zeroed, the identity stays beside the
+     avatar and wraps its text at every sheet width of this tier. Same specificity as the base rule: it wins by source order. */
+  .archivist-pc-sheet .pc-identity { min-width: 0; }
 
   .archivist-pc-sheet .pc-ability-row {
     row-gap: 18px;
@@ -1487,6 +1581,13 @@
 .archivist-pc-sheet .pc-def-chip .pc-def-chip-x:hover {
   opacity: 1;
 }
+/* Not manually added (a rules grant or a worn item): dashed border + softer ink,
+   matching the shipped `.pc-prof-modal-chip.granted`. It keeps its ×, because
+   suppressing a granted entry is what the remove list is for. */
+.archivist-pc-sheet .pc-def-chip.granted {
+  border-style: dashed;
+  color: var(--pc-text-soft);
+}
 
 /* SP4b — single + button on the DEFENSES title row (mirrors .pc-cond-add). */
 .archivist-pc-sheet .pc-def-cond-left .pc-def-add-main {
@@ -1764,6 +1865,30 @@
   border: 1px solid var(--pc-crimson);
   color: var(--pc-crimson);
 }
+/* R4-G3a §5.2/§6 · two neutral tag colours beside the three above.
+   `rider` carries the roll-modifier modes that are neither advantage nor disadvantage
+   ("RR", "+D4"): they change HOW you roll, not whether the roll is better or worse, so
+   neither the crimson nor the rare-blue reading is right for them.
+   `outcome` carries the save-outcome rail ("0/½"), which is a damage result, not a roll.
+   Its `letter-spacing` override is the load-bearing one: the shared .pc-cond-tag rule sets
+   0.1em for the micro-caps word tags, which pushes the glyphs of a "0/½" fraction apart until
+   it reads as three symbols rather than one ratio. `text-transform: none` beside it is purely
+   DEFENSIVE and changes nothing today (uppercasing "0", "/" and "½" is a no-op); it is there so
+   a later outcome glyph with a lower-case letter cannot be silently upper-cased. */
+.archivist-pc-sheet .pc-cond-tag-rider {
+  border: 1px solid var(--pc-text-muted);
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-cond-tag-outcome {
+  border: 1px solid var(--pc-text-muted);
+  color: var(--pc-text-muted);
+  text-transform: none;
+  letter-spacing: 0.03em;
+}
+/* R4-G7 T8 RIDER-20 (F-ADV) · a CONDITIONAL tag (the entry carries a condition, or a scope the normaliser could not map).
+   Its TEXT already carries dnd5e's CONDITIONAL_TAG_MARK (`ADV*`); the dashed border repeats the reading for an eye that
+   scans the rail's shapes rather than its letters. Colour stays the mode's own, so ADV* is still advantage-blue. */
+.archivist-pc-sheet .pc-cond-tag-conditional { border-style: dashed; }
 /* Used when the save chip swaps its numeric bonus for an AUTO-FAIL tag. */
 .archivist-pc-sheet .pc-save-bn.is-hidden { display: none; }
 
@@ -1843,6 +1968,136 @@
     overflow-x: visible;
     row-gap: 2px;
   }
+  /* R4 {G5, G6} live rider V-1: wrapping was reached BEFORE the strip was ever
+   * compacted, so the default sheet layout (`.pc-content` 356 px, the file
+   * explorer open) dropped INVENTORY onto a row of its own on all 15 sheet
+   * fixtures. Measured from the run's own tab rectangles
+   * (`.superpowers/sdd/2026-09-06-r4-g5-choice-gated-mechanics/evidence/g5-t12-shot/new-visual/book13/index.json`,
+   * `open.tabRects`): ACTIONS 76 + PASSIVE & FEATURES 144 + SPELLS 64 +
+   * INVENTORY 93 = 377 px, plus three 2 px gaps = 383 px against a 356 px
+   * column. Those widths carry 12 px of padding a side and 0.5 px of
+   * letter-spacing over 40 characters, so the labels themselves measure 261 px;
+   * at 7 px of padding and 0.25 px of letter-spacing the four tabs measure
+   * 261 + 10 + 56 + 6 = 333 px and fit the column with 23 px to spare, at the
+   * same 11 px type. The label is never clipped and `flex-wrap` above stays the
+   * fallback for the sheets that carry pool tabs (a Warlock's strip is six tabs
+   * wide and still wraps). */
+  .archivist-pc-sheet .pc-tab-btn {
+    padding: 6px 7px;
+    letter-spacing: 0.25px;
+  }
+}
+
+/* Below tiny tier: one more compaction step before the wrap, on the same
+ * measurement. At 10 px the 261 px of labels scale to about 237, so the strip
+ * measures 237 + 8 + 48 + 6 = 299 px and still fits the ~300 px column a
+ * 400 px window leaves. */
+@container pc-content (max-width: 399px) {
+  .archivist-pc-sheet .pc-tab-btn {
+    padding: 5px 6px;
+    font-size: 10px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* R4 {G5, G6} live rider 2, V-1 at 252: a third step, where compaction alone has run out.
+ * The tier above was measured against "the ~300 px column a 400 px window leaves"; the live
+ * re-verify measured that column as **252** px, and the 299 px strip wrapped again, INVENTORY onto
+ * a row of its own on every four-tab sheet (`viewports/R4G5_Paladin2024-20_S__400x700__panel-passive__3.png`).
+ * Below 300 px the strip therefore renders each tab's DECLARED short label (`tabs-container.ts`
+ * writes `data-short` on every button; only `Passive & Features` declares a shorter form, and a
+ * data-declared pool tab repeats its own label), and the button's own text is zeroed rather than
+ * clipped. On the same measurement the 399 tier's comment carries: of the 261 px the four labels
+ * take at 11 px, `PASSIVE & FEATURES` is 111 px and `PASSIVE` about 47, so the four labels measure
+ * about 197 px at 11 px and 179 at 10 px; with 5 px of padding a side, 0.2 px of letter-spacing over
+ * 29 characters and three 2 px gaps the strip measures about 231 px and fits the 252 px column with
+ * roughly 20 px to spare, at the same 10 px type. A pool-tab strip (five and six tabs) may still
+ * wrap, as it does at the tier above. No label is clipped: `::before` renders the whole short form.
+ * The pseudo-element carries its own `font-size` and `letter-spacing`; case, weight and family
+ * inherit from the button. */
+@container pc-content (max-width: 299px) {
+  .archivist-pc-sheet .pc-tab-btn {
+    padding: 5px 5px;
+    font-size: 0;
+    letter-spacing: 0;
+  }
+  .archivist-pc-sheet .pc-tab-btn::before {
+    content: attr(data-short);
+    font-size: 10px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* R4-G7 RIDER-8: the SAME short-label mechanism, reached earlier by a strip that carries a pool tab.
+ * RIDER-7 (Q-6 reversed) keeps the tab body right of the rail on every tab, so the strip always lives in
+ * the right column, and a fifth tab wrapped there on every S01 row that had one. MEASURED at W-A, not
+ * guessed: the right column is 355.5 px at the default 1024 x 800 window and 856 px at 2560 x 1440 (the
+ * sheet's 1200 px cap); the labels were measured in the live window by laying the sheet's own
+ * `.pc-body > .pc-content > .pc-tabs-bar` out off screen at every content width from 204 to 1000
+ * (`evidence/g7-live/wa-strip-lab.js`; its control reproduced the live button rects to 0.5 px). With full
+ * labels under the tiers above, the widest strip of each length in the converter corpus, the user's
+ * vault and the sweep's multiclass rows first holds one line at:
+ *   five tabs   Elemental Disciplines                          489 px
+ *   six tabs    Fighting Style + Champion Fighting Style       618 px
+ *   seven tabs  Fighting Style + Eldritch Invocations + Pact Boon (2014 Paladin / Warlock)   678 px (rows only; 769 px
+ *               gated on scrollWidth, see the fix-round note below)
+ * so each length switches to the declared short labels one pixel below its own measurement. The short
+ * dress drops the letter-spacing and one pixel of padding a side against the 299 px tier, because at
+ * 355.5 px that tier's dress still wrapped Elemental Disciplines (357.7 px of buttons): in this dress the
+ * widest five-tab strip is 346.7 px and every five-tab strip in the corpus holds one line from 347 px
+ * up. Six and seven tabs FIT one line from 455 px and 505 px up (measured); below the width at which a strip
+ * of any length fits, the EVEN GRID blocks after these take over (fix round 1). A strip of four tabs never
+ * matches these short-label rules and keeps its full labels.
+ * FIX ROUND 1 (review Minor 3): the first scan counted rows only, and above 699 px the base strip does not
+ * wrap, it scrolls sideways under a hidden scrollbar. Gated on `scrollWidth <= clientWidth`, the widest
+ * seven-tab strip FITS with full labels only at 678..699 and from 769 px up: at 700..768 the base dress is
+ * 769 px of buttons in the bar. The seven-tab threshold is therefore 768, not 677. */
+@container pc-content (max-width: 488px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+@container pc-content (max-width: 617px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+@container pc-content (max-width: 768px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+
+/* R4-G7 RIDER-8 FIX ROUND 1 (controller ruling 2026-09-15): the strip never leaves a tab alone on a line. Where a
+ * strip would wrap, it lays out as an EVEN GRID of ceil(n / 2) equal columns instead: 4 tabs 2 x 2, 5 tabs 3 + 2,
+ * 6 tabs 3 x 2, 7 tabs (and more) 4 + 3. A label wraps inside its own centred cell; the cell stretches, so the
+ * active highlight fills it; the type stays the short-label dress above (10 px). Each block starts ONE pixel below
+ * the content width at which the widest measured strip of that length first FITS one line (one row AND
+ * `scrollWidth <= clientWidth`), read by `evidence/g7-live/wa-strip-lab.js` over every corpus strip from 204 to
+ * 1000 px on build pair I:
+ *   four   229 px   (Actions / Passive & Features / Spells / Inventory; the 299 px tier's short dress)
+ *   five   347 px   (+ Elemental Disciplines)
+ *   six    455 px   (+ Fighting Style + Champion Fighting Style)
+ *   seven  505 px   (+ Fighting Style + Eldritch Invocations + Pact Boon, the 2014 Paladin / Warlock)
+ * The same scan found orphans, a row holding ONE tab, at 204..228 (four), 215..346 (five), 306..454 (six) and
+ * 437..504 (seven). With these blocks the scan reads 0 orphan widths and every strip fits contiguously from its
+ * threshold to 1000 px. The selectors count EXACTLY (`:nth-child(n):last-child`), because `:has(> :nth-child(5))`
+ * alone also matches every longer strip; seven is "seven or more". `overflow-wrap: anywhere` lets a word wider than
+ * its cell break inside it rather than paint over the neighbour: MEASURED, `break-word` did not (the `::before`
+ * flex item keeps its min-content width), and seven tabs at 204..283 px overflowed their cells with it; with
+ * `anywhere` 0 cells overflow at any width and no word breaks at the default window's 355.5 px column. */
+@container pc-content (max-width: 228px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(4):last-child) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(4):last-child) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
+}
+@container pc-content (max-width: 346px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5):last-child) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5):last-child) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
+}
+@container pc-content (max-width: 454px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6):last-child) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6):last-child) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
+}
+@container pc-content (max-width: 504px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
 }
 
 /* Portrait picker modal (two-stage: grid + crop) */
@@ -2076,3 +2331,62 @@
 .pc-portrait-picker .pc-portrait-crop-handle-ne { top: 0; left: 100%; cursor: nesw-resize; }
 .pc-portrait-picker .pc-portrait-crop-handle-sw { top: 100%; left: 0; cursor: nesw-resize; }
 .pc-portrait-picker .pc-portrait-crop-handle-se { top: 100%; left: 100%; cursor: nwse-resize; }
+
+/* ---------- R4-G6b §10 · separated captions (Q-8) ----------
+   The ruling: a caption's separator must never START a wrapped line. The primitive
+   (`components/separated-caption.ts`) writes each part as a UNIT holding an out-of-flow separator
+   and the bare segment, so the mark hangs to the LEFT of its part, inside the inter-part gap. What
+   makes it disappear at a line start is what that gap is made of: a collapsible space (the inline
+   hosts) or the flex `gap` (`.pc-charge-boxes`, `.pc-point-pool`), and NEITHER exists at a line
+   start. A leading space is removed at a line break and `gap` is never applied at a flex line
+   start, so a mid-line separator sits in the gap and shows, while a separator whose segment starts
+   a line sits at negative x and is clipped away by the host.
+
+   Out of flow: `.pc-cap-sep` is absolutely positioned, so it has NO horizontal advance and line
+   breaking is identical whether the mark is visible or not. It is anchored by its RIGHT edge at
+   `100% + var(--pc-cap-clip)` from the unit, so it sits at least the clip margin outside the
+   unit's box and is hidden BY CONSTRUCTION when the unit starts a line, never by the width of the
+   trailing space it carries. That space is not decoration: it is what keeps the composed
+   `textContent` byte-identical to the joined strings these captions printed before (invariant 9),
+   so the separator BOX is the mark PLUS the space, held together by `white-space: pre`.
+
+   `overflow-x: clip`, not `hidden`: in Chromium 132 `clip` on one axis leaves the other `visible`,
+   so nothing a host paints above or below its box is cut, and `overflow-clip-margin` is the slack
+   a focus or hover outline on a control at a line edge needs (`.pc-action-buff`'s Obsidian-painted
+   checkbox, the inline `<input>` `makeInlineInput` swaps into `.pc-point-pool`'s value). The T0
+   live probe measured the flex baseline under `clip` on `.pc-feature-track .pc-charge-boxes`: the
+   box's and its first pip's `getBoundingClientRect().top` were IDENTICAL before and after (delta
+   0 / 0, height 36 / 36), so the flex container itself is the clipping host and the captions need
+   no inner wrapper.
+
+   `word-spacing` rides on `.pc-cap-spaced` ALONE, the class only a host that emits the inter-unit
+   space node carries: the two flex hosts supply their own `gap`, emit no space and never carry it,
+   so their other children (`.pc-point-pool-value` "20 / 25", `.pc-point-pool-name`) keep today's
+   spacing by construction. The unit and the segment reset it to `normal`, or the host's widened
+   spacing would loosen every multi-word part ("10 minutes", "Long Rest", "Bonus Action") and only
+   the host's own inter-unit space is meant to widen.
+
+   THE GAP, MEASURED (2026-09-09, live in the vault on the deployed build, evidence
+   `g6b-t8-sep-width.txt`: ONE hidden `white-space: pre` span inside the sheet, dressed in the
+   computed font of a real `.pc-charge-recovery`, italic 11px "Libre Baskerville", removed and its
+   absence asserted). The separator BOX measures `· ` 6.063 px and `/ ` 7.328 px at 11 px, and
+   6.609 px / 7.984 px at 12 px; a plain space measures 3.031 px at 11 px. The required inter-part
+   distance is the box plus `--pc-cap-clip`, so 6.063 + 2 = 8.063 px on an inline host at 11 px.
+   The distance an inline host supplies is the space's own advance plus `--pc-cap-gap`.
+
+   T13 live rider R-2: clearing the requirement is not what the eye reads. At `0.6em` the distance
+   was 3.031 + 6.6 = 9.631 px, only 1.568 px more than the 8.063 px the box and its clip margin
+   occupy, so the mark sat about 1.6 px from the word on its left where the OLD build's plain ` · `
+   text had a whole space (3.031 px) there, and every inline carrier read as glued
+   (`Lay On Hands Healing Pool· Long Rest`, `Active· 1 minute`: B1 N-1, B9 N-1). At `0.75em` the
+   distance is 3.031 + 8.25 = 11.281 px, which leaves the mark 3.218 px of left air, the space the
+   OLD text had. The margin still only grows with the type size (box and space are both
+   em-proportional while the 2 px clip is not). Every host on the live sheet measured
+   `padding-left: 0px`, which is where `overflow` clips. The two flex hosts state their own distance
+   beside their own rules in `actions.css`. */
+.archivist-pc-sheet { --pc-cap-clip: 2px; --pc-cap-gap: 0.75em; }
+.archivist-pc-sheet .pc-cap-host { overflow-x: clip; overflow-y: visible; overflow-clip-margin: var(--pc-cap-clip); }
+.archivist-pc-sheet .pc-cap-spaced { word-spacing: var(--pc-cap-gap); }
+.archivist-pc-sheet .pc-cap-unit { position: relative; white-space: nowrap; word-spacing: normal; }
+.archivist-pc-sheet .pc-cap-seg { word-spacing: normal; }
+.archivist-pc-sheet .pc-cap-sep { position: absolute; right: calc(100% + var(--pc-cap-clip)); top: 0; white-space: pre; }

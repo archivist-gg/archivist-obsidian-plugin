@@ -15,11 +15,21 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseClass } from "@archivist-gg/dnd5e/class/class.parser";
+import { parseRace } from "@archivist-gg/dnd5e/race/race.parser";
+import { parseSubclass } from "@archivist-gg/dnd5e/subclass/subclass.parser";
+import { PCResolver } from "@archivist-gg/dnd5e/pc/pc.resolver";
+import { parseEntityFile } from "../../packages/obsidian/src/shared/entities/entity-vault-store";
+import { buildDraftCharacter } from "../../packages/obsidian/src/modules/pc/builder/character-stub";
+import { buildMockRegistry } from "../fixtures/pc/mock-entity-registry";
 
 const BUNDLE_INDEX = path.resolve(__dirname, "../../.compendium-bundle/index.json");
 
+interface RaceLike {
+  traits: Array<{ name: string; action?: string; action_cost?: string }>;
+}
+
 interface ClassLike {
-  features_by_level: Record<string, Array<{ id?: string; name: string; action?: string }>>;
+  features_by_level: Record<string, Array<{ id?: string; name: string; action?: string; action_cost?: string }>>;
 }
 
 function loadClassBundleEntry(bundleKey: string): ClassLike {
@@ -32,6 +42,30 @@ function loadClassBundleEntry(bundleKey: string): ClassLike {
   const result = parseClass(m[1]);
   if (!result.success) throw new Error(`parseClass failed for ${bundleKey}: ${JSON.stringify(result.error)}`);
   return result.data as ClassLike;
+}
+
+function loadRaceBundleEntry(bundleKey: string): RaceLike {
+  const raw = fs.readFileSync(BUNDLE_INDEX, "utf-8");
+  const bundle = JSON.parse(raw) as Record<string, string>;
+  const md = bundle[bundleKey];
+  if (!md) throw new Error(`Bundle entry not found: ${bundleKey}`);
+  const m = md.match(/```race\r?\n([\s\S]*?)\r?\n```/);
+  if (!m) throw new Error(`No race codeblock in ${bundleKey}`);
+  const result = parseRace(m[1]);
+  if (!result.success) throw new Error(`parseRace failed for ${bundleKey}: ${JSON.stringify(result.error)}`);
+  return result.data as unknown as RaceLike;
+}
+
+function loadSubclassBundleEntry(bundleKey: string): ClassLike {
+  const raw = fs.readFileSync(BUNDLE_INDEX, "utf-8");
+  const bundle = JSON.parse(raw) as Record<string, string>;
+  const md = bundle[bundleKey];
+  if (!md) throw new Error(`Bundle entry not found: ${bundleKey}`);
+  const m = md.match(/```subclass\r?\n([\s\S]*?)\r?\n```/);
+  if (!m) throw new Error(`No subclass codeblock in ${bundleKey}`);
+  const result = parseSubclass(m[1]);
+  if (!result.success) throw new Error(`parseSubclass failed for ${bundleKey}: ${JSON.stringify(result.error)}`);
+  return result.data as unknown as ClassLike;
 }
 
 function findFeature(cls: ClassLike, id: string): { id?: string; name: string; action?: string } | undefined {
@@ -64,5 +98,128 @@ describe("SRD 2024 bundle: authored feature action economy (Task E)", () => {
     const rage = findFeature(barbarian, "rage");
     expect(rage, "Rage must exist in Barbarian.md").toBeDefined();
     expect(rage?.action).toBe("bonus-action");
+  });
+});
+
+/**
+ * R4-G3a §10.2.1/§10.3 · the RACE half of the same guarantee, on the REAL bundle bytes.
+ *
+ * `action_cost` at feature level exists only here, on race traits, and the parser aliases it onto
+ * the canonical `action` the badge router reads. These are all five carriers spec §10.1 enumerates.
+ * The dnd5e package cannot make this assertion against the real files (it ships to npm and holds no
+ * bundle), so its own suite pins byte-verbatim COPIES in `tests/feature-alias-action-cost.test.ts`;
+ * this is the pin that reads the shipped bytes and would catch those copies drifting.
+ */
+const RACE_ACTION_COST_CARRIERS: ReadonlyArray<readonly [string, string, string]> = [
+  ["SRD 5e/Races/Half-Orc.md", "Relentless Endurance", "special"],
+  ["SRD 5e/Races/Dragonborn.md", "Breath Weapon", "action"],
+  ["SRD 2024/Races/Dwarf.md", "Stonecunning", "bonus-action"],
+  ["SRD 2024/Races/Orc.md", "Adrenaline Rush", "bonus-action"],
+  ["SRD 2024/Races/Dragonborn.md", "Breath Weapon", "action"],
+];
+
+describe("bundle race traits: action_cost aliases onto action (R4-G3a §10.2.1)", () => {
+  const bundleExists = fs.existsSync(BUNDLE_INDEX);
+  if (!bundleExists) {
+    it.skip("bundle index not built; run `npm run build:srd-canonical` first", () => {});
+    return;
+  }
+
+  it.each(RACE_ACTION_COST_CARRIERS)("%s · %s carries action: %s", (file, traitName, expected) => {
+    const race = loadRaceBundleEntry(file);
+    const trait = race.traits.find((t) => t.name === traitName);
+    expect(trait, `${traitName} must exist in ${file}`).toBeDefined();
+    expect(trait?.action).toBe(expected);        // the alias wrote the canonical key
+    expect(trait?.action_cost).toBe(expected);   // the declared one is retained, never deleted
+  });
+
+  // The sweep covers the three fence kinds Task 7 wired the alias into: race, class and subclass
+  // (`aliasFeaturesByLevelActionCost` over `features_by_level` for the latter two).
+  // A race-only sweep under a "whole population" title would be blind to a class or subclass feature
+  // gaining `action_cost`, which is a feature-level carrier exactly like a race trait. Measured
+  // 2026-09-02: 22 race + 24 class + 24 subclass fences, all parsing, 5 carriers, all on races.
+  it("those five are the WHOLE population, so a new carrier cannot appear unpinned", () => {
+    const bundle = JSON.parse(fs.readFileSync(BUNDLE_INDEX, "utf-8")) as Record<string, string>;
+    const found: string[] = [];
+    let racesSeen = 0, classesSeen = 0, subclassesSeen = 0;
+
+    for (const [key, md] of Object.entries(bundle)) {
+      if (/```race\r?\n/.test(md)) {
+        racesSeen++;
+        for (const t of loadRaceBundleEntry(key).traits ?? []) {
+          if (t.action_cost) found.push(`${key}::${t.name}`);
+        }
+      }
+      if (/```class\r?\n/.test(md)) {
+        classesSeen++;
+        for (const f of Object.values(loadClassBundleEntry(key).features_by_level ?? {}).flat()) {
+          if (f.action_cost) found.push(`${key}::${f.name}`);
+        }
+      }
+      if (/```subclass\r?\n/.test(md)) {
+        subclassesSeen++;
+        for (const f of Object.values(loadSubclassBundleEntry(key).features_by_level ?? {}).flat()) {
+          if (f.action_cost) found.push(`${key}::${f.name}`);
+        }
+      }
+    }
+
+    // Guard the sweep itself: a regex that stopped matching would make the population trivially
+    // "correct" by looking at nothing. These counts are the bundle's, measured.
+    expect({ racesSeen, classesSeen, subclassesSeen }).toEqual({ racesSeen: 22, classesSeen: 24, subclassesSeen: 24 });
+    expect(found.sort()).toEqual(
+      RACE_ACTION_COST_CARRIERS.map(([f, t]) => `${f}::${t}`).sort(),
+    );
+  });
+
+  /**
+   * R4-G3a Task 12 · the SHEET's path, which is NOT the parser's path.
+   *
+   * Every assertion above goes through `parseRace`. The PC sheet never calls it: the registry is
+   * filled by `CompendiumManager.loadAllEntities` → `parseEntityFile` (raw `yaml.load` of the fence,
+   * no dnd5e parser anywhere), and `PCResolver.resolve` → `collectResolvedFeatures` pushes
+   * `race.traits` into `resolved.features`, which is what the badge router reads. So a parser-side
+   * alias is invisible to the sheet, and Task 11's live verification measured all four 2014/2024
+   * carriers still routing to Passive on a real character. This walks that exact path on the shipped
+   * bundle bytes: raw note → real `EntityRegistry` → the dnd5e resolver. Measured RED before the
+   * resolve-time alias landed: all five resolved to `action: undefined`.
+   */
+  it("the five carriers route through the SHEET's own path: raw note → registry → resolver", () => {
+    const bundle = JSON.parse(fs.readFileSync(BUNDLE_INDEX, "utf-8")) as Record<string, string>;
+    const resolvedActions: Record<string, string | undefined> = {};
+
+    for (const [file, traitName] of RACE_ACTION_COST_CARRIERS) {
+      const note = parseEntityFile(bundle[file]);
+      if (!note) throw new Error(`parseEntityFile returned null for ${file}`);
+      // A REAL core `EntityRegistry` (the helper only builds the entries), registered from the raw
+      // note exactly as `CompendiumManager.loadAllEntities` does: `note.data` is the untouched
+      // `yaml.load` of the ```race fence, no dnd5e parser between the file and the registry.
+      const registry = buildMockRegistry([
+        {
+          slug: note.slug,
+          name: note.name,
+          entityType: note.entityType,
+          filePath: file,
+          data: note.data,
+          compendium: note.compendium,
+          readonly: true,
+        },
+      ]);
+
+      const character = { ...buildDraftCharacter("Action Cost Pin"), race: `[[${note.slug}]]` };
+      const resolved = new PCResolver(registry).resolve(character);
+      // Filter on the SOURCE kind, not the name alone: `collectChosenGrantedFeatures` also pushes
+      // race-sourced synthetics, and a trait name is only unique within its own race entity.
+      const rf = resolved.character.features.find(
+        (f) => f.source.kind === "race" && f.feature.name === traitName,
+      );
+      resolvedActions[`${file}::${traitName}`] = rf?.feature.action;
+    }
+
+    // One record comparison rather than five assertions: a regression shows every carrier it broke
+    // in a single run, and a trait that stopped resolving at all reads as `undefined`, not as absent.
+    expect(resolvedActions).toEqual(
+      Object.fromEntries(RACE_ACTION_COST_CARRIERS.map(([f, t, action]) => [`${f}::${t}`, action])),
+    );
   });
 });

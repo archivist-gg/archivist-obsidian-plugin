@@ -80,4 +80,70 @@ describe("renderChargeBoxes", () => {
     renderChargeBoxes(root, { used: 0, max: 1, recovery: { amount: "0", reset: "special" } });
     expect(root.querySelector(".pc-charge-recovery")?.textContent?.toLowerCase()).toContain("special");
   });
+
+  // R4-G3a §8.2 (viii): `recovery` is a discriminated shape. The FEATURE path
+  // passes a caption STRING built from `RESET_LABELS`; the ITEM path keeps the
+  // persisted `dawn|short|long|special` vocabulary and its own four-member map
+  // (invariant 4 · the item enum is untouched on both the persist and the
+  // display side).
+  it("renders the caption-STRING form verbatim (the feature path)", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 1, recovery: { amount: "1", label: "Short or Long Rest" } });
+    expect(root.querySelector(".pc-charge-recovery")?.textContent).toBe("/ Short or Long Rest");
+  });
+
+  it("still reads the ITEM four-member map on the `reset` form", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 1, recovery: { amount: "1", reset: "dawn" } });
+    expect(root.querySelector(".pc-charge-recovery")?.textContent).toBe("/ Dawn");
+  });
+
+  it("hangs `recoveryTitle` on the caption as a title attribute (the `custom` tooltip)", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, {
+      used: 0, max: 1,
+      recovery: { amount: "1", label: "Special" },
+      recoveryTitle: "Recovery is described in this feature's text",
+    });
+    const rec = root.querySelector(".pc-charge-recovery");
+    expect(rec?.textContent).toBe("/ Special");
+    expect(rec?.getAttribute("title")).toBe("Recovery is described in this feature's text");
+  });
+
+  it("sets NO title attribute when `recoveryTitle` is absent", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 1, recovery: { amount: "1", label: "Short Rest" } });
+    expect(root.querySelector(".pc-charge-recovery")?.getAttribute("title")).toBeNull();
+  });
+});
+
+describe("R4-G4 §5.2.2 · the ceiling and the at-will sentinel", () => {
+  it("RED FIRST: max 25 with a renderLarge routes to it and draws no boxes", () => {
+    const root = mountContainer();
+    const large = vi.fn((parent: HTMLElement) => parent.createDiv({ cls: "large-stub" }));
+    renderChargeBoxes(root, { used: 0, max: 25, renderLarge: large });
+    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(0);
+    expect(large).toHaveBeenCalledTimes(1);
+  });
+
+  it("max 12 (the boundary) still draws 12 boxes", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 12, renderLarge: (p) => p.createDiv({ cls: "large-stub" }) });
+    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(12);
+  });
+
+  it("RED FIRST: atWill renders the text and no boxes, even with a renderLarge", () => {
+    const root = mountContainer();
+    const large = vi.fn((parent: HTMLElement) => parent.createDiv({ cls: "large-stub" }));
+    renderChargeBoxes(root, { used: 0, max: 999, atWill: true, renderLarge: large });
+    expect(root.querySelector(".pc-charge-at-will")!.textContent).toBe("at will");
+    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(0);
+    expect(large).not.toHaveBeenCalled();
+  });
+
+  it("without a renderLarge the boxes are drawn whatever the max (the spell-slot / item / race sites)", () => {
+    const root = mountContainer();
+    renderChargeBoxes(root, { used: 0, max: 20 });
+    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(20);
+  });
 });

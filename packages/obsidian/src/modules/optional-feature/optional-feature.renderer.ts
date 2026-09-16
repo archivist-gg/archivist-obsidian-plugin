@@ -1,12 +1,13 @@
 import type { OptionalFeatureEntity, OptionalFeaturePrerequisite } from "@archivist-gg/dnd5e/types/optional-feature.types";
+import { wikilinkDisplayName } from "@archivist-gg/dnd5e/entities/wikilink-display";
 import type { RenderContext } from "../../shared/rendering/entity-presenter";
 
 function describePrerequisite(p: OptionalFeaturePrerequisite): string {
   switch (p.kind) {
     case "level":
-      return `level ${p.min}`;
+      return p.class ? `level ${p.min} (${p.class.name})` : p.subclass ? `level ${p.min} (${p.subclass.name})` : `level ${p.min}`;
     case "spell-known":
-      return `knows ${p.spell}`;
+      return `knows ${wikilinkDisplayName(p.spell)}`;
     case "pact":
       return `Pact of the ${p.pact.charAt(0).toUpperCase()}${p.pact.slice(1)}`;
     case "class":
@@ -15,6 +16,8 @@ function describePrerequisite(p: OptionalFeaturePrerequisite): string {
       return `${p.ability.toUpperCase()} ${p.min}+`;
     case "other":
       return p.detail;
+    case "optionalfeature": return `knows ${wikilinkDisplayName(p.optionalfeature)}`;
+    case "spell-choose": return `knows ${p.entry ?? p.entry_summary ?? p.choose}`;
   }
 }
 

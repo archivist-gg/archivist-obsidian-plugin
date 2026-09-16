@@ -1,11 +1,12 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
+import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
 import { renderChargeBoxes } from "../actions/charge-boxes";
-import { spellEffectAtSlot, upcastLevelsFor } from "@archivist-gg/dnd5e/spell/spell.scaling";
+import { spellEffectPartsAtSlot, spellEffectAtCharacterLevel, upcastLevelsFor, type SpellEffectParts } from "@archivist-gg/dnd5e/spell/spell.scaling";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
-import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters } from "./spell-display";
+import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters, EMPTY_CELL, ALWAYS_PREPARED_LABEL } from "./spell-display";
 import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
 import { confirm } from "../../../../shared/modals/ConfirmModal";
 
@@ -46,10 +47,11 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
   const pactClassSlugs = ctx.derived.spellcastingClasses.filter((c) => c.casterType === "pact").map((c) => c.classSlug);
 
   const dcFor = (s: ResolvedSpell): number => {
-    // Feat-granted spells (classSlug null) carry their OWN spellcasting ability;
-    // their DC lives in derived.abilitySpellcasting, not a class. On a non-caster
-    // the class list is empty, so without this branch the DC would fall to 0.
-    if ((s.source === "feat" || s.classSlug == null) && s.ability) {
+    // A grant whose descriptor sets ownAbility (feat and race grants today) carries
+    // its OWN spellcasting ability, as does any classSlug-less row; that DC lives in
+    // derived.abilitySpellcasting, not a class. On a non-caster the class list is
+    // empty, so without this branch the DC would fall to 0.
+    if ((spellSource(s).ownAbility || s.classSlug == null) && s.ability) {
       const own = ctx.derived.abilitySpellcasting?.[s.ability]?.saveDC;
       if (own != null) return own;
     }
@@ -57,11 +59,11 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     return cls?.saveDC ?? ctx.derived.spellcastingClasses[0]?.saveDC ?? 0;
   };
 
-  // Attack-roll to-hit, mirroring dcFor but reading .attackBonus. Feat-granted or
-  // captured-ability spells (classSlug null) carry their OWN ability; their attack
-  // bonus lives in derived.abilitySpellcasting, not a class.
+  // Attack-roll to-hit, mirroring dcFor but reading .attackBonus. An ownAbility
+  // grant or a captured-ability spell (classSlug null) carries its OWN ability;
+  // their attack bonus lives in derived.abilitySpellcasting, not a class.
   const atkFor = (s: ResolvedSpell): number => {
-    if ((s.source === "feat" || s.classSlug == null) && s.ability) {
+    if ((spellSource(s).ownAbility || s.classSlug == null) && s.ability) {
       const own = ctx.derived.abilitySpellcasting?.[s.ability]?.attackBonus;
       if (own != null) return own;
     }
@@ -70,14 +72,20 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
   };
 
   // ── Cantrips: At Will, no slots, no button ──
-  // Item (scroll) spells never mix into the class/feat sections; they surface in
-  // their own "Scrolls & Consumables" section below.
-  const cantrips = castable.filter((s) => s.source !== "item" && (s.entity.level ?? 0) === 0);
-  if (cantrips.length) {
+  // Only rows whose descriptor section is "spellbook" mix into the class/grant
+  // sections; a "consumable" row (a scroll) surfaces in its own "Scrolls &
+  // Consumables" section below.
+  const cantrips = castable.filter((s) => spellSource(s).section === "spellbook" && (s.entity.level ?? 0) === 0);
+  // R4-G6b §9 (Q-7): the section renders whenever the character CAN cast cantrips, from the class table's
+  // Cantrips column through spellLimits; empty, it reads "None prepared." in the leveled twin's shape. The optional
+  // chain is load-bearing: fixture-built `derived` objects omit `spellLimits` behind an `as never` cast.
+  const canCastCantrips = cantrips.length > 0 || (ctx.derived.spellLimits ?? []).some((l) => (l.cantripsKnown ?? 0) > 0);
+  if (canCastCantrips) {
     const head = root.createDiv({ cls: "pc-spell-sec" });
     head.createSpan({ cls: "pc-spell-sec-label", text: "Cantrips" });
     const body = tableFor(root);
-    for (const s of cantrips) renderRow(body, s, 0, ctx, dcFor, atkFor, { cantrip: true });
+    if (cantrips.length) for (const s of cantrips) renderRow(body, s, 0, ctx, dcFor, atkFor, { cantrip: true });
+    else body.createDiv({ cls: "pc-spell-empty-row", text: "None prepared." });
   }
 
   // ── Leveled sections: slot boxes + CAST ──
@@ -97,8 +105,8 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     });
 
     const body = tableFor(root);
-    const base = castable.filter((s) => s.source !== "item" && (s.entity.level ?? 0) === lvl && !pactClassSlugs.includes(s.classSlug ?? ""));
-    const upcasts = castable.filter((s) => s.source !== "item" && !pactClassSlugs.includes(s.classSlug ?? "") && upcastLevelsFor(s.entity, ownedLevels).includes(lvl));
+    const base = castable.filter((s) => spellSource(s).section === "spellbook" && (s.entity.level ?? 0) === lvl && !pactClassSlugs.includes(s.classSlug ?? ""));
+    const upcasts = castable.filter((s) => spellSource(s).section === "spellbook" && !pactClassSlugs.includes(s.classSlug ?? "") && upcastLevelsFor(s.entity, ownedLevels).includes(lvl));
     for (const s of base) renderRow(body, s, lvl, ctx, dcFor, atkFor, {});
     for (const s of upcasts) renderRow(body, s, lvl, ctx, dcFor, atkFor, { upcast: true });
     if (!base.length && !upcasts.length) {
@@ -106,14 +114,15 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     }
   }
 
-  // ── Feat-granted leveled spells with no owned slot (non-caster free casts) ──
-  // A feat like Magic Initiate grants a level-1 spell to a character who owns no
-  // slot at that level (e.g. a Fighter). It has no slot to spend, so surface it
-  // in its own level section as an always-prepared, free cast (no slot tracker;
-  // the per-long-rest economy is out of scope here). Feat spells at a level the
-  // character DOES own already render in the owned-slot section above.
+  // ── Granted leveled spells with no owned slot (non-caster free casts) ──
+  // A grant whose descriptor sets freeCastWhenNoSlot (a feat like Magic Initiate,
+  // or a race trait like an Air Genasi's Levitate) can land a leveled spell on a
+  // character who owns no slot at that level (e.g. a Fighter). It has no slot to
+  // spend, so surface it in its own level section as an always-prepared, free cast
+  // (no slot tracker; the per-long-rest economy is out of scope here). Such spells
+  // at a level the character DOES own already render in the owned-slot section above.
   const freeFeat = castable.filter((s) =>
-    s.source === "feat" && (s.entity.level ?? 0) > 0 && !ownedLevels.includes(s.entity.level ?? 0));
+    spellSource(s).freeCastWhenNoSlot && (s.entity.level ?? 0) > 0 && !ownedLevels.includes(s.entity.level ?? 0));
   const freeLevels = [...new Set(freeFeat.map((s) => s.entity.level ?? 0))].sort((a, b) => a - b);
   for (const lvl of freeLevels) {
     const head = root.createDiv({ cls: "pc-spell-sec" });
@@ -138,7 +147,7 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     });
     const body = tableFor(root);
     const pactSpells = castable.filter((s) =>
-      s.source !== "item" && (s.entity.level ?? 0) > 0 && (pactClassSlugs.length === 0 || pactClassSlugs.includes(s.classSlug ?? "")));
+      spellSource(s).section === "spellbook" && (s.entity.level ?? 0) > 0 && (pactClassSlugs.length === 0 || pactClassSlugs.includes(s.classSlug ?? "")));
     for (const s of pactSpells) renderRow(body, s, pact.level, ctx, dcFor, atkFor, { pact: true });
     if (!pactSpells.length) {
       body.createDiv({ cls: "pc-spell-empty-row", text: "No spells." });
@@ -150,7 +159,7 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
   // spending a slot. The T3 segmented dedupe already yields one source:"item"
   // spell per equipment entry (keyed by entryIndex), so this renders one row per
   // scroll instance. Cast at the spell's own level (a scroll never upcasts here).
-  const scrolls = castable.filter((s) => s.source === "item");
+  const scrolls = castable.filter((s) => spellSource(s).section === "consumable");
   if (scrolls.length) {
     const head = root.createDiv({ cls: "pc-spell-sec" });
     head.createSpan({ cls: "pc-spell-sec-label", text: "Scrolls & Consumables" });
@@ -171,8 +180,8 @@ function renderRow(
   if (opts.cantrip) {
     actTd.createSpan({ cls: "pc-spell-atwill", text: "At Will" });
   } else if (opts.free) {
-    // Feat-granted, always-prepared leveled spell with no class slot: a free
-    // cast, surfaced as an affordance rather than a slot-consuming CAST button.
+    // An always-prepared granted leveled spell with no class slot (feat or race):
+    // a free cast, surfaced as an affordance rather than a slot-consuming CAST button.
     actTd.createSpan({ cls: "pc-spell-atwill pc-spell-free", text: "Free" });
   } else if (opts.scroll) {
     // A scroll is cast by CONSUMING the item (one unit / the whole stack's last
@@ -214,11 +223,12 @@ function renderRow(
   const nameTd = tr.createDiv({ cls: "pc-spell-namecell" });
   const nl = nameTd.createDiv({ cls: "pc-spell-nl" });
   nl.createSpan({ cls: "pc-spell-name", text: spell.entity.name });
-  // Always-prepared spells (feat grants, domain spells) carry the shared "always"
-  // marker used in the prepare view, so a free feat cast reads as always-ready.
-  // A scroll is flagged alwaysPrepared by the resolver only to make it castable;
-  // it is a one-shot consumable, not "always ready", so suppress the marker there.
-  if (spell.alwaysPrepared && !opts.scroll) nl.createSpan({ cls: "pc-spell-always", text: "always" });
+  // Always-prepared spells (feat, race and domain grants) carry the always-prepared
+  // marker the prepare view also prints (ONE label, RIDER-17), so a free granted cast
+  // reads as always-ready. A scroll is flagged alwaysPrepared by the resolver only to
+  // make it castable; it is a one-shot consumable, not "always ready", so suppress the
+  // marker there.
+  if (spell.alwaysPrepared && !opts.scroll) nl.createSpan({ cls: "pc-spell-always", text: ALWAYS_PREPARED_LABEL });
   if (spell.entity.concentration) nl.createSpan({ cls: "pc-spell-cr c", text: "C", attr: { title: "Concentration" } });
   if (spell.entity.ritual) nl.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
   if (opts.upcast) nl.createSpan({ cls: "pc-spell-up", text: `↑ ${ordinal(level)}` });
@@ -250,7 +260,10 @@ function renderRow(
   if (isRowExpanded(ctx, expandKey)) openBlock();
 
   // TIME / RANGE
-  tr.createDiv({ cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time) });
+  // RIDER-4: the compacted label is the cell, the FULL authored token is its tooltip, so a reaction
+  // that carries its trigger loses nothing by being shortened to `1R`.
+  tr.createDiv({ cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time),
+    attr: spell.entity.casting_time ? { title: spell.entity.casting_time } : {} });
   tr.createDiv({ cls: "pc-spell-range", text: formatRange(spell.entity.range) });
 
   // HIT / DC. A no-ability scroll (no own casting ability + no per-instance
@@ -282,33 +295,50 @@ function renderRow(
   // EFFECT
   const effTd = tr.createDiv({ cls: "pc-spell-effcell" });
   const eff = effectDescriptor(spell);
-  const scaled = (opts.upcast || opts.pact) ? spellEffectAtSlot(spell.entity, level) : null;
-  if (scaled) {
+  // RIDER-15: a cantrip scales with the character's TOTAL level (`player_level_<N>`, a roll), a slot row with its slot.
+  const cantripRoll = opts.cantrip ? spellEffectAtCharacterLevel(spell.entity, ctx.derived.totalLevel) : null;
+  const scaled: SpellEffectParts | null = cantripRoll
+    ? { field: "damage_roll", value: cantripRoll }
+    : (opts.upcast || opts.pact) ? spellEffectPartsAtSlot(spell.entity, level) : null;
+  // RIDER-16: where the value prints is decided by its FIELD, never by a spell list. A roll is the chip wearing the
+  // damage icon; a target count is a plain chip; a duration replaces the duration text below; an authored sentence
+  // is a caption line under the type word, never the chip.
+  const damageChip = scaled?.field === "damage_roll";
+  if (scaled && (damageChip || scaled.field === "target_count")) {
     const chip = effTd.createSpan({ cls: "pc-spell-eff" });
-    if (eff.damageType && hasDamageTypeIcon(eff.damageType)) {
+    if (damageChip && eff.damageType && hasDamageTypeIcon(eff.damageType)) {
       setDamageTypeIcon(chip.createSpan({ cls: "pc-spell-dtype-icon dmg" }), eff.damageType);
     }
-    chip.createSpan({ text: scaled });
+    chip.createSpan({ text: scaled.value });
   }
   if (eff.damageType) {
     const dt = effTd.createSpan({ cls: "pc-spell-dtype" });
-    if (!scaled && hasDamageTypeIcon(eff.damageType)) {
+    if (!damageChip && hasDamageTypeIcon(eff.damageType)) {
       setDamageTypeIcon(dt.createSpan({ cls: "pc-spell-dtype-icon dmg" }), eff.damageType);
     }
     dt.appendText(eff.damageType);
   }
+  if (scaled?.field === "desc" && scaled.value) effTd.createDiv({ cls: "pc-spell-eff-note", text: scaled.value });
 
   // COMPONENTS / duration
   const comp = tr.createDiv({ cls: "pc-spell-comp" });
-  if (spell.entity.components) {
-    const { letters } = componentLetters(spell.entity.components);
-    if (letters.length) {
-      // Compact "V S M"; full material prose available on hover, not dumped into the cell.
-      comp.createDiv({ text: letters.join(" "), attr: { title: spell.entity.components } });
-    }
+  const letters = componentLetters(spell.entity.components).letters;
+  if (letters.length) {
+    // Compact "V S M"; full material prose available on hover, not dumped into the cell.
+    // `letters` is non-empty only when `components` is a string, but that is a fact about
+    // `componentLetters`, not one tsc can read, so the attribute is spread rather than asserted.
+    comp.createDiv({ text: letters.join(" "), ...(spell.entity.components ? { attr: { title: spell.entity.components } } : {}) });
+  } else {
+    // R4 {G5, G6} live rider N-1-19: a spell whose document carries no `components` (the live
+    // Paladin's Protection from Evil and Good) used to leave this cell empty, so its row read a line
+    // short beside `V` and `V S M` neighbours. It prints the SAME placeholder the Range cell already
+    // prints for an absent range · one constant, one glyph, and P8 still owns which glyph that is.
+    comp.createDiv({ text: EMPTY_CELL });
   }
-  if (spell.entity.duration) {
-    const d = spell.entity.concentration ? `Conc · ${spell.entity.duration}` : spell.entity.duration;
+  // RIDER-16: a `duration` value at this slot IS the row's duration, so it replaces the base one.
+  const duration = scaled?.field === "duration" ? scaled.value : spell.entity.duration;
+  if (duration) {
+    const d = spell.entity.concentration ? `Conc · ${duration}` : duration;
     comp.createDiv({ cls: "pc-spell-dur", text: d });
   }
 }

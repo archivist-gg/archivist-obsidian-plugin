@@ -153,11 +153,22 @@ export function generateCompendiumMetadata(comp: Compendium): string {
  * Parses the existing frontmatter, sets/updates ONLY the given keys, and
  * re-serializes preserving every other key (in original order) AND the body
  * below the frontmatter verbatim. This is the required write path for
- * mutating existing compendium metadata: the bundle-shipped files carry keys
- * the Compendium model does not own (`edition`,
- * `archivist_compendium_version`, `archivist_compendium_imported_at`), and
- * `archivist_compendium_version` gates bootstrap re-copy, so a regenerating
- * writer would trigger a full bundle re-install on the next load.
+ * mutating existing compendium metadata: the on-disk files carry keys the
+ * Compendium model does not own (`edition`, `archivist_compendium_version`,
+ * and in vaults installed before R4-P4 also `archivist_compendium_imported_at`),
+ * and `archivist_compendium_version` is the stamp the bootstrap compares with the bundle's own
+ * (compendium-init/compendium-version.ts), so a writer that dropped it would make the next
+ * load plan an upgrade.
+ *
+ * `archivist_compendium_imported_at` is a LEGACY key: the generator stopped emitting it, so
+ * freshly shipped bundles do not carry it. It stays in the preserve set because a vault
+ * installed earlier still holds it on disk. The bootstrap's upgrade path (compendium-init/
+ * compendium-index.ts, `mergeCompendiumIndex`) writes `_compendium.md` through THIS function
+ * too, refreshing the bundle-owned keys (and restoring an undeclared `readonly` from the
+ * bundle; a declared `readonly` or `hidden` is never touched, and `hidden` is never written
+ * on that path even when undeclared), so a legacy key survives upgrades as well. The flip
+ * side is that a key the generator DROPS can no longer be removed by an upgrade; the
+ * wholesale overwrite that used to do that is gone.
  *
  * New keys (not present in the file) are inserted directly after `readonly`
  * when that key exists, else appended at the end of the frontmatter.
@@ -275,6 +286,17 @@ export class CompendiumManager {
   /** Look up a specific compendium by name. */
   getByName(name: string): Compendium | undefined {
     return this.compendiums.get(name);
+  }
+
+  /** The compendium whose folder CONTAINS `filePath` (R4-G6b §3.1): the `/` boundary is load-bearing
+   *  (`Compendium/SRD 5e` must not claim `Compendium/SRD 5e Homebrew/x.md`); the longest folder wins, which is
+   *  defensive (discover() registers direct children of the root only) and serves a hand-added nested compendium. */
+  getByPath(filePath: string): Compendium | undefined {
+    let best: Compendium | undefined;
+    for (const c of this.getAll()) {
+      if (filePath.startsWith(c.folderPath + "/") && (!best || c.folderPath.length > best.folderPath.length)) best = c;
+    }
+    return best;
   }
 
   /** Add a compendium to the internal Map. */

@@ -1,4 +1,5 @@
-import { type App, Modal, Setting } from "obsidian";
+import { type App, Setting } from "obsidian";
+import { PaneCenteredModal } from "../../../../shared/modals/pane-centered-modal";
 
 /** Standard Obsidian confirm dialog for the add-drawer "Reset filters" action.
  *  Calls `onConfirm` only when the user clicks the warning Reset button. */
@@ -6,7 +7,7 @@ export function confirmResetFilters(app: App, onConfirm: () => void): void {
   new ResetFiltersModal(app, onConfirm).open();
 }
 
-class ResetFiltersModal extends Modal {
+class ResetFiltersModal extends PaneCenteredModal {
   constructor(app: App, private readonly onConfirm: () => void) {
     super(app);
   }

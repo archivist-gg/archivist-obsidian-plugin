@@ -3,22 +3,10 @@ import type { RaceEntity } from "@archivist-gg/dnd5e/race/race.types";
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
+import { renderFirstResourceTracker } from "../actions/feature-rows";
+import { featureEconomy } from "../actions/action-model";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
-
-/**
- * The pseudo-traits surfaced as glance tiles (Size / Speed / Darkvision) and so
- * folded OUT of the trait rows, matched by lowercased trait name.
- *
- * This mirrors the builder's fold set *conceptually* but is deliberately a
- * NARROWER filter than `race-step.ts:120-123`: the builder ALSO drops
- * `!t.choices?.length`, moving decision-bearing traits into its decision strip.
- * The stateless Passive & Features tab has no strip, so copying that clause would
- * HIDE choice-bearing racial traits (Elf/Gnome "Lineage", "Keen Senses"). We fold
- * ONLY the three size/speed/darkvision pseudo-traits; a literal "Creature Type"
- * trait (Kalashtar) is not in the set and renders as a normal row (spec §3.2,
- * R1-F4/#7).
- */
-export const RACE_TILE_FOLD = new Set(["size", "speed", "darkvision"]);
+import { RACE_STRUCTURAL_PSEUDO } from "@archivist-gg/dnd5e/race/race.structural";
 
 const cap = (s: string): string => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
@@ -82,8 +70,8 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
   nameCell.createDiv({ cls: "pc-action-row-name", text: race.name });
   if (race.size) nameCell.createDiv({ cls: "pc-action-row-sub", text: cap(race.size) });
 
-  // Detail column kept present-but-empty so the 3-col feature-row grid
-  // (name | detail | caret) stays aligned with its siblings.
+  // Detail column kept present-but-empty, the feature rows' (name | detail | caret) cell order. Being EMPTY, it leaves the
+  // grid and its track goes to the name (R4-G7 T8 wave D fix round 1, W-D-D6, `styles/actions.css` `.pc-feature-detail:empty`).
   row.createDiv({ cls: "pc-feature-detail" });
   row.createDiv({ cls: "pc-action-caret", text: "›" });
 
@@ -122,17 +110,43 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
       ...(race.speed?.walk != null ? [{ label: "Speed", value: String(race.speed.walk), small: "ft." }] : []),
       ...(darkvision ? [{ label: "Darkvision", value: String(darkvision), small: "ft." }] : []),
     ],
-    // Body: trait rows under a "Traits" rule — every trait that is NOT a
-    // size/speed/darkvision pseudo-trait, INCLUDING choice-bearing ones (which the
-    // stateless tab must not hide; the narrower RACE_TILE_FOLD keeps them). No
-    // decision strip / subrace row — those are builder-only.
+    // Body: trait rows under a "Traits" rule: every trait whose NAME is not in
+    // RACE_STRUCTURAL_PSEUDO (dnd5e `race/race.structural`: the size/speed/darkvision pseudo-traits
+    // already shown as tiles above; this file's own literal was retired into that shared set by
+    // R4-G3b Task 6, which also gave the resolver's additional_spells race gate a reader of it,
+    // keyed on select-inline CHOICE IDS rather than names). Choice-bearing traits are INCLUDED here
+    // (the stateless tab must not hide them): the builder's `renderTraits` filter is the wider one,
+    // dropping `!t.choices?.length` as well because it has a decision strip to move them into. No
+    // decision strip / subrace row: those are builder-only.
     body: (host) => {
-      const traits = (race.traits ?? []).filter((t) => !RACE_TILE_FOLD.has(t.name.toLowerCase()));
+      const traits = (race.traits ?? []).filter((t) => !RACE_STRUCTURAL_PSEUDO.has(t.name.toLowerCase()));
       if (!traits.length) return;
       renderSectionRule(host, "Traits", "from the species entry");
       for (const t of traits) {
         const traitRow = host.createDiv({ cls: "pc-cb-trait" });
         traitRow.createDiv({ cls: "pc-cb-trait-n", text: t.name });
+        // A trait carrying `resources[]` gets the SAME first-resource tracker the
+        // feature rows use (§11): its uses are seeded into `state.feature_uses`
+        // and listed in the rest modal. R4-G3b §11 (user ruling 2026-09-03) narrows
+        // that to the COSTLESS subset, which is the subset that needs it: a costless
+        // race trait never reaches a feature row (the passive tab drops the `race`
+        // sub-group), so this host is the only place its uses can be spent, while a
+        // ROUTED carrier (the SRD Dragonborn's Breath Weapon) already has a
+        // first-class Actions-tab row whose tracker spends the same `feature_uses`
+        // id, and a second copy here was redundant.
+        //
+        // The gate reads the RAW registry trait, which spells the routing cost two
+        // ways: the converter writes `action`, the SRD bundle writes `action_cost`.
+        // The bundle carriers carry NO `action` key at all, so reading `action`
+        // alone would be blind to them and the nullish fallback is what reaches
+        // them. Routing goes through the ONE economy map (invariant 5), never a
+        // local copy of the vocabulary, so `free` / `special` / absent all read as
+        // passive. Only the tracker's own host is added here, so a trait without
+        // resources renders exactly as before.
+        if (t.resources?.length && featureEconomy(t.action ?? t.action_cost) === "passive") {
+          const trackHost = traitRow.createDiv({ cls: "pc-cb-trait-track" });
+          renderFirstResourceTracker(trackHost, t, ctx);
+        }
         // The description renders through the SHARED markdown path (ctx.app threaded,
         // async) so a trait carrying a pipe table shows a real table, not raw `|...|`
         // text. The `.catch` paints a visible error div; the `.pc-cb-trait-d`

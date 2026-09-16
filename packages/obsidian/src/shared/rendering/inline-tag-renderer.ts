@@ -1,5 +1,5 @@
 import { setIcon, Notice } from 'obsidian';
-import { InlineTag, InlineTagType } from '@archivist-gg/dnd5e/inline-tag-parser';
+import { InlineTag, InlineTagType, parseInlineTag } from '@archivist-gg/dnd5e/inline-tag-parser';
 import { extractDiceNotation, rollDiceWithRender } from './renderer-utils';
 
 interface InlineTagConfig {
@@ -39,6 +39,17 @@ export function renderInlineTag(tag: InlineTag, doc: Document = activeDocument):
   textEl.textContent = config.format(tag.content);
   span.appendChild(textEl);
 
+  // THE TAG'S OWN IDENTITY, on EVERY widget (R4-G7 T8 wave E, B026-D11). This widget is context-free: it is built by the
+  // global post-processor, which knows nothing about the monster whose prose it is decorating, so a block renderer has to
+  // UPGRADE it afterwards (`renderMarkdownDescription`'s walker) with the formula context that resolves `dc:INT` to a
+  // number. The walker could only do that for a ROLLABLE tag, because only those carried `data-dice-*`; for `dc` and
+  // `check` it fell back to re-parsing the widget's TEXT, and "DC INT" is not a parseable tag, so the context-free widget
+  // stayed and 279 SRD monster notes printed the ability instead of the number. These two attributes carry the type and
+  // the RAW content of every tag, rollable or not. They are deliberately NOT the `data-dice-*` pair: those announce a
+  // rollable notation to the dice-roller integration, and `dc` / `check` are not rollable.
+  span.setAttribute('data-tag-type', tag.type);
+  span.setAttribute('data-tag-content', tag.content);
+
   if (config.rollable) {
     span.setAttribute('data-dice-notation', tag.content);
     span.setAttribute('data-dice-type', tag.type);
@@ -63,4 +74,22 @@ export function renderInlineTag(tag: InlineTag, doc: Document = activeDocument):
   }
 
   return span;
+}
+
+/**
+ * THE GLOBAL INLINE-TAG POST-PROCESSOR, the body `main.ts` registers with `registerMarkdownPostProcessor`. It lives
+ * here, beside the widget it builds, so a test can run the REGISTERED function instead of a copy of it: every jsdom
+ * test of the monster prose injected its own render and so never ran this at all, which is how B026-D11 shipped
+ * (R4-G7 T8 wave E). Obsidian runs it over everything `MarkdownRenderer.render` emits, including the prose of a monster
+ * feature, so the widgets it makes here are what `renderMarkdownDescription`'s walker later upgrades.
+ */
+export function replaceInlineTagCodes(element: HTMLElement | Element): void {
+  element.querySelectorAll('code').forEach((codeEl) => {
+    const text = codeEl.textContent ?? '';
+    const parsed = parseInlineTag(text);
+    if (parsed) {
+      const tagEl = renderInlineTag(parsed, codeEl.ownerDocument);
+      codeEl.replaceWith(tagEl);
+    }
+  });
 }

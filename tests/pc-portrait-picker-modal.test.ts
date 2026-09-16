@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { PortraitPickerModal } from "../packages/obsidian/src/modules/pc/components/portrait-picker-modal";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { TFile } from "obsidian";
+import type { ScopeEntry } from "./__mocks__/obsidian";
 
 beforeAll(() => installObsidianDomHelpers());
 beforeEach(() => vi.useFakeTimers());
@@ -319,5 +320,37 @@ describe("portrait picker crop-stage CSS contract", () => {
   it("marquee is a circle (border-radius: 50%)", () => {
     const body = ruleOf(".pc-portrait-picker .pc-portrait-crop-marquee");
     expect(body).toMatch(/border-radius:\s*50%/);
+  });
+});
+
+function scopeOf(modal: unknown): { keys: ScopeEntry[] } {
+  return (modal as { scope: { keys: ScopeEntry[] } }).scope;
+}
+
+describe("Escape ownership (4.1)", () => {
+  it("onOpen unregisters the built-in, leaving exactly one Escape handler", () => {
+    const { modal } = open();
+    expect(scopeOf(modal).keys.filter((k) => k.key === "Escape").length).toBe(1);
+  });
+
+  it("crop-stage Escape returns to the grid and consumes the key", () => {
+    const { modal, el } = open();
+    (cells(el)[0] as HTMLElement).click();          // grid → crop
+    expect(el.querySelector(".pc-portrait-crop-stage")).toBeTruthy();
+
+    // `find`, not an index into a captured filter: this reproduces real
+    // Obsidian's FIFO stop-at-first-match dispatch.
+    const esc = scopeOf(modal).keys.find((k) => k.key === "Escape")!;
+    expect(esc.func()).toBe(false);                 // only `false` preventDefaults
+    expect(el.querySelector(".pc-portrait-picker-grid")).toBeTruthy();
+    expect(el.querySelector(".pc-portrait-crop-stage")).toBeFalsy();
+  });
+
+  it("grid-stage Escape closes the modal", () => {
+    const { modal } = open();
+    const closeSpy = vi.spyOn(modal, "close");
+    const esc = scopeOf(modal).keys.find((k) => k.key === "Escape")!;
+    expect(esc.func()).toBe(false);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
   });
 });

@@ -10,6 +10,7 @@ const reg: SeedRegistry = {
       "dungeoneers-pack": { fullSlug: "srd-2024_dungeoneers-pack", entityType: "item", packContents: ["backpack", "crowbar"] },
       "backpack": { fullSlug: "srd-2024_backpack", entityType: "item" },
       "crowbar": { fullSlug: "srd-2024_crowbar", entityType: "item" },
+      "pouch": { fullSlug: "srd-2024_pouch", entityType: "item" },
     };
     return map[bare] ?? null;
   },
@@ -54,5 +55,36 @@ describe("resolveGrants", () => {
       { "cat-0": "srd-2024_weapon_greatsword" }, reg, ["cat-0"],
     );
     expect(entries.map((e) => e.slug)).toContain("srd-2024_greatsword");
+  });
+});
+
+// R4-G3b Task 10: the converter records the coin INSIDE a granted container as
+// `contains_value`, in COPPER (1500 = 15 gp). Before this task the seeder read
+// only `{gold}` grants and the copper was dropped on the floor.
+describe("contains_value seeds as gold (R4-G3b §9)", () => {
+  it("1500 cp inside a pouch is 15 gp", () => {
+    const { gold, entries } = resolveGrants([{ item: "pouch", contains_value: 1500 }], {}, reg);
+    expect(gold).toBe(15);                          // RED FIRST: read 0 before Task 10
+    expect(entries.map((e) => e.slug)).toContain("srd-2024_pouch");
+  });
+
+  it("the coin lands even when the container slug is unresolved (placement OUTSIDE pushBare)", () => {
+    // The converter's `purse` carrier resolves to nothing (no Purse.md in either
+    // corpus), so a seed line inside pushBare would lose the coin with the container.
+    const { gold, entries } = resolveGrants([{ item: "does-not-exist", contains_value: 1500 }], {}, reg);
+    expect(gold).toBe(15);
+    expect(entries).toHaveLength(0);
+  });
+
+  it("{gold: 15} and a 1500-cp pouch produce the same wallet", () => {
+    expect(resolveGrants([{ gold: 15 }], {}, reg).gold)
+      .toBe(resolveGrants([{ item: "pouch", contains_value: 1500 }], {}, reg).gold);
+  });
+
+  it("worth_value is NEVER seeded", () => {
+    // A CONTROL, not a RED-first case: it was green before Task 10 too (nothing
+    // was seeded at all). It is the fixture that kills the `?? g.worth_value` mutant,
+    // which would mint 10 gp out of Far Traveler's jewel.
+    expect(resolveGrants([{ item: "pouch", worth_value: 1000 }], {}, reg).gold).toBe(0);
   });
 });

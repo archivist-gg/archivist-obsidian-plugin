@@ -15,6 +15,14 @@ import type { DecisionLedger } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 
 const emptyLedger = (): DecisionLedger => ({ classes: [], origin: [] });
 
+/** One ledger item, in the shape `buildDecisionLedger` pushes (X-9-4's fixture). */
+const dItem = (over: Record<string, unknown>): unknown => ({
+  key: "k", source: { kind: "class", slug: "bard", level: 1 }, level: 1, featureName: "Feature",
+  choice: { kind: "select-inline", id: "k", options: [{ value: "_", label: "_" }] },
+  options: [], selected: undefined, status: "unresolved", satisfied: false,
+  ...over,
+});
+
 beforeAll(() => installObsidianDomHelpers());
 
 const BARD_SKILLS = [
@@ -205,6 +213,39 @@ describe("collectBrowseDecisions", () => {
     const l3 = rows.filter((r) => r.level === 3);
     expect(l3).toEqual([{ level: 3, name: "Bard Subclass" }]); // single authored row, no synthesized duplicate
   });
+
+  // A Bard's "three musical instruments of your choice" is authored on the CLASS
+  // entity (`ClassEntity.choices`), not on any L1 feature · Bardic Inspiration and
+  // Spellcasting can host neither. The owned card's ledger emits one item per
+  // entity-level choice at L1, so the browse card's "What you decide · N ahead"
+  // must count them too, or the two views of the same class disagree the moment
+  // the overlay data lands. Scope here is entity-level `choices` ONLY: the
+  // separate, pre-existing divergence over the L1 skill_choices row is parked.
+  it("counts ONE L1 row per entity-level class choice, labelled by the choice", () => {
+    const d = bardData();
+    // TWO choices, deliberately: one row per choice is the property that keeps
+    // this preview's count aligned with the ledger's one-item-per-choice, and it
+    // is the only thing that separates the real loop from a `d.choices?.length`
+    // test emitting a single lumped row. A single-choice fixture cannot see it.
+    d.choices = [
+      { kind: "select-proficiency", id: "bard-instruments", label: "Musical Instruments",
+        count: 3, domain: "tool", from: ["bagpipes", "drum", "lute"] },
+      { kind: "select-proficiency", id: "bard-extra-tool", label: "Artisan's Tools",
+        count: 1, domain: "tool", from: ["calligrapher's-supplies"] },
+    ];
+    const rows = collectBrowseDecisions(d);
+    expect(rows).toContainEqual({ level: 1, name: "Musical Instruments" });
+    expect(rows).toContainEqual({ level: 1, name: "Artisan's Tools" });
+    // bardData's own L1 features carry no choices, so every L1 row here is an
+    // entity-level one: exactly two, never one lumped row and never a duplicate.
+    expect(rows.filter((r) => r.level === 1)).toHaveLength(2);
+  });
+
+  it("falls back to the ledger's 'Proficiencies' header for an unlabelled entity-level choice", () => {
+    const d = bardData();
+    d.choices = [{ kind: "select-proficiency", id: "bard-instruments", count: 3, domain: "tool" }];
+    expect(collectBrowseDecisions(d)).toContainEqual({ level: 1, name: "Proficiencies" });
+  });
 });
 
 describe("renderClassChronicle (browse)", () => {
@@ -239,6 +280,36 @@ describe("renderClassChronicle (owned band)", () => {
     renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger: emptyLedger(), stateKey: "t" });
     expect(c.querySelector(".pc-cb-sub")!.textContent).not.toContain("Level 5 of 20");
     expect(c.querySelector(".pc-cb-sub")!.textContent).toContain("Class");
+  });
+
+  // R4 {G5, G6} live rider 2, X-9-4: the strip lists a gained feature ONCE. The decision engine emits
+  // an informational card for every gained feature AND a real decision for the ones that carry a
+  // choice, so on the converted 2024 Fighter `Fighting Style` and `Fighter Subclass` each had two rows
+  // at the same level, one of them a card with nothing to answer. The SRD copy of the same class shows
+  // each once, which is why the run read it as a duplicate. The engine keeps both (the informational
+  // card is R4-G5 §3.2.4's guarantee that a suppressed feature never vanishes from the ledger); the
+  // CARD drops the twin it would otherwise print under its own decision.
+  it("lists a feature once when its informational card and its decision share a level", () => {
+    const c = mountContainer();
+    const ledger: DecisionLedger = {
+      classes: [{
+        classIndex: 0,
+        levels: [{
+          level: 1,
+          items: [
+            dItem({ key: "fighting-style-info", level: 1, featureName: "Fighting Style", status: "informational" }),
+            dItem({ key: "fighting-style", level: 1, featureName: "Fighting Style", status: "unresolved" }),
+            dItem({ key: "second-wind", level: 1, featureName: "Second Wind", status: "informational" }),
+          ],
+        }],
+      }],
+      origin: [],
+    } as unknown as DecisionLedger;
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger, stateKey: "t" });
+    const names = [...c.querySelectorAll(".pc-dstrip-row .pc-dstrip-name")].map((n) => n.textContent);
+    expect(names.filter((n) => n === "Fighting Style").length).toBe(1);
+    // The control: an informational card whose feature has NO decision keeps its row.
+    expect(names).toContain("Second Wind");
   });
 
   it("renders the bandRight hook into the band's right-side controls and the prereq `pre` into the body", () => {
@@ -406,6 +477,51 @@ describe("equipment & proficiencies fold", () => {
       .find((p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Equipment")!;
     expect(equipProp.textContent).toContain("Leather Armor");
     expect(equipProp.textContent).toContain("Dagger");
+  });
+
+  // R4-G1a D5 / G9: the converter's passthrough grant keys on the Equipment prop.
+  /** The `Equipment` prop, located by its label (the fold HEADER also says "Equipment",
+   *  so a whole-root text assertion could not tell an absent prop from the header). */
+  const equipProp = (c: HTMLElement) => Array.from(c.querySelectorAll(".pc-cb-prop"))
+    .find((p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Equipment");
+
+  const mountWith = (startingEquipment: unknown[]) => {
+    const data = bardData();
+    data.starting_equipment = startingEquipment as never;
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), {
+      entity: { ...bardEntity(), data: data as unknown as Record<string, unknown> },
+      level: 1, mode: "browse", stateKey: "t",
+    });
+    openEquipment(c);
+    return c;
+  };
+
+  it("a fixed entry prefers display_name and still humanizes the undecorated slug beside it", () => {
+    const c = mountWith([{ kind: "fixed", grants: [
+      { item: "holy-symbol", display_name: "holy symbol (a gift to you when you entered the priesthood)" },
+      { item: "pouch", contains_value: 1500 },
+    ] }]);
+    expect(equipProp(c)!.textContent).toContain("holy symbol (a gift to you when you entered the priesthood)");
+    // The undecorated item arm humanizes its slug, so the rendered token is "Pouch".
+    expect(equipProp(c)!.textContent).toContain("Pouch");
+  });
+
+  it("a fixed entry with no grants array degrades with no throw: the entry after it still renders", () => {
+    // This fold renders inside a CLICK handler and jsdom does not propagate a
+    // listener's exception out of `click()`, so a bare `.not.toThrow()` here is
+    // VACUOUS (measured: it survives removing the Array.isArray guard). A second,
+    // well-formed entry after the degraded one is the observable: it only renders
+    // if the loop survived, and it is the ONLY Equipment prop if the first one
+    // really contributed no text.
+    const c = mountWith([
+      { kind: "fixed" },
+      { kind: "fixed", grants: [{ item: "dagger" }] },
+    ]);
+    const props = Array.from(c.querySelectorAll(".pc-cb-prop"))
+      .filter((p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Equipment");
+    expect(props).toHaveLength(1);
+    expect(props[0].textContent).toContain("Dagger");
   });
 });
 

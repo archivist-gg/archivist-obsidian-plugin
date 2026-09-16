@@ -62,7 +62,22 @@ export function applyRestResets(
     if (cat.id.startsWith("feature:")) {
       const key = cat.id.slice("feature:".length);
       const fu = character.state.feature_uses?.[key];
-      if (fu) fu.used = 0;
+      if (!fu) continue;
+      // R4-G4 §7.2.2: a partial recovery category regains N uses (or all); the own reset regains to 0.
+      fu.used = cat.restore === undefined || cat.restore === "all" ? 0 : Math.max(0, fu.used - cat.restore);
+      continue;
+    }
+
+    if (cat.id.startsWith("buff:")) {
+      // R4-G5 §4.4.2: end an active buff whose carrier declares a structured `duration`. The stored key is the
+      // id's tail. The emptied array is DELETED, not left as [], so a no-buff file carries no `active_buffs:`
+      // line: the same rule `CharacterEditState.toggleActiveBuff` applies, and the two writers must not drift.
+      const key = cat.id.slice("buff:".length);
+      const list = character.state.active_buffs;
+      if (!list) continue;
+      const i = list.indexOf(key);
+      if (i >= 0) list.splice(i, 1);
+      if (list.length === 0) delete character.state.active_buffs;
       continue;
     }
 

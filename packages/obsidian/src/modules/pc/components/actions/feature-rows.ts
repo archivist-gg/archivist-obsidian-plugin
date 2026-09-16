@@ -3,23 +3,25 @@ import type { ResolvedCharacter, ResolvedFeature } from "@archivist-gg/dnd5e/pc/
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { renderCostBadge } from "./cost-badge";
-import { renderChargeBoxes } from "./charge-boxes";
+import { CHARGE_BOX_LIMIT } from "./charge-boxes";
+import { renderResourceTracker } from "./resource-tracker";
+import { renderEffectCaptions } from "./effect-captions";
+import { renderSpendControl } from "./spend-control";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
+import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
+import { resourceLevelFor } from "@archivist-gg/dnd5e/pc/pc.resources";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
-
-/** Reset trigger → the charge-box recovery bucket (moved verbatim from actions-tab.ts). */
-const RESET_TO_RECOVERY: Record<string, "dawn" | "short" | "long" | "special"> = {
-  "short-rest": "short", "long-rest": "long", "dawn": "dawn", "dusk": "long",
-  "turn": "special", "round": "special", "custom": "special",
-};
+import { renderSeparated } from "../separated-caption";
 
 /**
  * One unified feature/passive row:
  *   [cost badge (empty on the Passive tab)] · [name (+ source sub-label) · right detail · caret]
- * Right detail is the FIRST resource tracker, else the feature's attack note.
- * Extra resources render inside the expand card; when a tracker occupies the
- * single in-row slot the attack note moves to that card too (Finding B). Click
+ * Right detail is the FIRST resource tracker, else the R4-G4 §3.2.5 spend
+ * control, else the feature's attack note.
+ * Extra resources render inside the expand card; when a tracker or a control
+ * occupies the single in-row slot the attack note moves to that card too
+ * (Finding B). Click
  * (outside the tracker / buff toggle) reveals the shared `.archivist-item-block` card.
  *
  * `merged` (spec §2 / D2-1): same-parent subclass features collapsed onto this
@@ -53,12 +55,14 @@ export function renderFeatureRow(
   );
   const title = featureRowTitle(rf, ctx.resolved);
   // Sub-label joins the primary source with each merged (subclass) source; for a
-  // lone feature this is exactly `formatSourceLabel(rf.source)` (no behavior
-  // change). Empty labels are dropped so the " · " separator never dangles.
-  const sourceLabel = [rf, ...secondaries]
-    .map((r) => formatSourceLabel(r.source))
-    .filter(Boolean)
-    .join(" · ");
+  // lone feature this is exactly `formatSourceLabel(rf.source, ctx.resolved)` (no behavior
+  // change). Empty labels are dropped so the separator never dangles. The ARRAY is what the
+  // row's own sub-line renders (R4-G6b §10: one `pc-cap-unit` per source, the ` · ` out of flow);
+  // the joined string is derived from it for `renderFeatureCard`, whose `sourceLabel` is text.
+  const sourceLabels = [rf, ...secondaries]
+    .map((r) => formatSourceLabel(r.source, ctx.resolved))
+    .filter(Boolean);
+  const sourceLabel = sourceLabels.join(" · ");
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
@@ -84,7 +88,14 @@ export function renderFeatureRow(
   // keeps the toggle click from bubbling into the row-expand handler.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
   nameCell.createDiv({ cls: "pc-action-row-name", text: title });
-  if (sourceLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: sourceLabel });
+  if (sourceLabels.length) renderSeparated(nameCell.createDiv({ cls: "pc-action-row-sub" }), sourceLabels, { sep: "·" });
+  // R4-G3a §4: the caption line for heal / temp-hp / extra-action and for every
+  // effect imposed on someone else. It hangs off the NAME cell, not the detail
+  // slot: that slot is single-occupancy and the resource tracker wins it on
+  // exactly the flagship bearers (Second Wind, Action Surge), which are the rows
+  // a caption matters most on. Boon rows do not come through here; since R4-G4 §10
+  // `renderBoonRow` makes the same call into its OWN name cell.
+  renderEffectCaptions(nameCell, rf.feature.effects ?? [], ctx);
   if (feature.activatable && feature.id) {
     const buffId = feature.id;
     const buffWrap = nameCell.createDiv({ cls: "pc-action-buff" });
@@ -98,19 +109,56 @@ export function renderFeatureRow(
       e.stopPropagation();
       ctx.editState?.toggleActiveBuff(buffId);
     });
+    // The line is the label, one plain space and the duration UNIT, whose separator is out of flow
+    // and clipped when the unit starts a line: R4-G6b §10 (Q-8). `renderSeparated` writes the space
+    // itself (the host already has the label as a child), so the composed `Active · 1 minute` is
+    // byte-identical to what the two elements plus an explicit " · " printed before. The unit is a
+    // counted English noun and takes an English plural when the amount is not 1 ("10 minutes"),
+    // which is copy about a number, not game vocabulary: the four units dnd5e's `durationSchema`
+    // admits (round, minute, hour, day) all pluralise regularly, and no branch here reads WHICH unit
+    // it is.
     if (feature.duration && typeof feature.duration === "object") {
-      buffWrap.createSpan({ cls: "pc-action-buff-duration", text: `${feature.duration.amount} ${feature.duration.unit}` });
+      const { amount, unit } = feature.duration;
+      renderSeparated(buffWrap, [`${amount} ${unit}${amount === 1 ? "" : "s"}`], { sep: "·", leading: true, segCls: "pc-action-buff-duration" });
     }
   }
 
-  // Right detail — first resource tracker, else the feature's attack note.
-  // Compute the note ONCE: it renders in-row only when no tracker took the
-  // single detail slot; when a tracker occupies the slot the note moves to the
-  // expand card below (Finding B — the detail is never dropped).
+  // Right detail, in order: first resource tracker, then the spend control, then the feature's
+  // attack note. The tracker and the control are INDEPENDENT (the tracker is keyed on
+  // `resources`, the control on `consumes`, R4-G4 §3.2.5) and can share the detail, which is how
+  // a feature that owns `resources[0]` while spending a FOREIGN id renders both side by side. The
+  // note is the one that yields: compute it ONCE and render it in-row only when NEITHER of the
+  // other two rendered; when either did, it moves to the expand card below (Finding B: the detail
+  // is never dropped).
   const detail = row.createDiv({ cls: "pc-feature-detail" });
   const hasTracker = renderFirstResourceTracker(detail, feature, ctx);
-  const attackNote = formatFeatureAttackNote(feature, ctx.resolved.totalLevel);
-  if (!hasTracker && attackNote) {
+  const consumes = feature.consumes;
+  const spendId = consumes?.resource;
+  const ownsIt = !!spendId && (feature.resources ?? []).some((r) => r.id === spendId);
+  const fu = spendId ? ctx.resolved.state.feature_uses?.[spendId] : undefined;
+  // The former `&& fu.max !== AT_WILL_MAX` clause is DROPPED (review M-6). It cannot change the
+  // result while `AT_WILL_MAX` (999, dnd5e dnd/resource-formula.ts) is above `CHARGE_BOX_LIMIT`
+  // (12, ./charge-boxes.ts): the sentinel already fails `fu.max <= CHARGE_BOX_LIMIT` on its own,
+  // and THAT INEQUALITY is the invariant the drop depends on. Were either constant to move so the
+  // sentinel fitted under the limit, an at-will resource would read `trackerIsBoxes === true` here
+  // and still change nothing, because this flag's ONE consumer is `controlInCard` below, which is
+  // independently gated `!isAtWill`. The boxes-versus-"at will" WIDGET choice is
+  // `renderChargeBoxes`' own `atWill` opt, never this flag.
+  const trackerIsBoxes = !!fu && fu.max <= CHARGE_BOX_LIMIT;
+  const isAtWill = !!fu && fu.max === AT_WILL_MAX;
+  // Owner-and-spender (R4-G4 §3.2.5) across the THREE tracker widgets `renderChargeBoxes` can
+  // pick. BOXES: a click already spends exactly 1, so a feature that owns what it spends renders
+  // NO control at `amount === 1` (Rage) and renders it inside the card at `amount > 1`, where no
+  // single click spends the right count (Lay on Hands). NUMERIC (`max` above CHARGE_BOX_LIMIT):
+  // the card control, at every amount. AT WILL (`max === AT_WILL_MAX`): no control anywhere, because
+  // the widget renders the words "at will" and tracks no count for a spend to move. A pure spender
+  // (Flurry of Blows), which owns nothing, takes the row slot whatever the owner's widget is.
+  const controlInSlot = !!spendId && !ownsIt;
+  const controlInCard = !!spendId && ownsIt && !isAtWill && !(consumes.amount === 1 && trackerIsBoxes);
+  let hasControl = false;
+  if (controlInSlot && consumes) hasControl = renderSpendControl(detail, { consumes, ctx }) !== null;
+  const attackNote = formatFeatureAttackNote(feature, ctx);
+  if (!hasTracker && !hasControl && attackNote) {
     detail.createSpan({ cls: "pc-feature-attack-note", text: attackNote });
   }
 
@@ -138,12 +186,14 @@ export function renderFeatureRow(
     ...(rf.chosenInline ?? []),
     ...secondaries.flatMap((m) => m.chosenInline ?? []),
   ];
-  // Recovery picker (Arcane Recovery): when the PRIMARY feature owns a resource
-  // that authors a `recovery` array, feed `opts.recovery` so the card renders the
-  // interactive recover-spell-slots picker (`renderRecoveryAction`). Arcane
-  // Recovery is a standalone class feature (never a merged secondary), so scanning
-  // `feature.resources` with `rf.source` is sufficient. Regressed v0.2.26 — the
-  // renderer stayed intact but `opts.recovery` was never populated here.
+  // Recovery: when the PRIMARY feature owns a resource that authors a `recovery` array,
+  // feed `opts.recovery` and the card decides the arm from the entry's kind and flavour
+  // (R4-G4 §7); `recovery[]` presence is still the only gate here. So a rest-triggered
+  // entry reaches `renderRecoveryAction` and renders nothing, by that function's rule, not
+  // by a second gate in this file. The scan reads the PRIMARY's `resources` with `rf.source`,
+  // the rule this line has always had, so a recovery authored by a merged SECONDARY does not
+  // reach the card through it. Regressed v0.2.26: the renderer stayed intact but
+  // `opts.recovery` was never populated here.
   const recoveryRes = (feature.resources ?? []).find((r) => r.recovery?.length && r.id);
   renderFeatureCard(inner, {
     title,
@@ -163,9 +213,13 @@ export function renderFeatureRow(
   for (const m of secondaries) {
     for (const res of m.feature.resources ?? []) renderCardResource(inner, res, ctx);
   }
-  // Finding B: when a tracker occupied the single in-row detail slot, the
-  // feature's attack note lands here in the expand card instead of being lost.
-  if (hasTracker && attackNote) {
+  // The owner-and-spender control (R4-G4 §3.2.5): the row kept its tracker, so the
+  // spend lands here beside the card's other resource lines.
+  if (controlInCard && consumes) renderSpendControl(inner, { consumes, ctx });
+  // Finding B: when a tracker OR a spend control occupied the single in-row detail
+  // slot, the feature's attack note lands here in the expand card instead of being
+  // lost.
+  if ((hasTracker || hasControl) && attackNote) {
     inner.createDiv({ cls: "pc-feature-card-attack", text: `Attack: ${attackNote}` });
   }
 
@@ -181,19 +235,27 @@ export function renderFeatureRow(
   });
 }
 
-/** An additional resource tracker (resources[1..N]) rendered inside the card. */
+/** The level a resource's die and count scale against: the OWNER's class level when the index knows the
+ *  owner (R4-G4 §6.2.4), else the total level (a resource with no index entry has no owner; fixtures cast
+ *  a ResolvedCharacter without `resources`). */
+function resourceLevel(id: string | undefined, ctx: ComponentRenderContext): number {
+  const owner = id ? ctx.resolved.resources?.get(id)?.owner : undefined;
+  return owner ? resourceLevelFor(owner.source, ctx.resolved) : ctx.resolved.totalLevel;
+}
+
+/** A resource tracker rendered inside the card. `renderFeatureRow` calls it from TWO loops over
+ *  its expand card: one over the primary's `(feature.resources ?? []).slice(1)`, and one over every
+ *  resource of each merged secondary in `secondaries` · so the call COUNT is the size of those two
+ *  sets, not two (review M-10). */
 export function renderCardResource(parent: HTMLElement, resource: Resource, ctx: ComponentRenderContext): void {
   const id = resource.id;
   const fu = id ? ctx.resolved.state.feature_uses?.[id] : undefined;
   if (!id || !fu) return;
   const line = parent.createDiv({ cls: "pc-card-resource" });
   line.createSpan({ cls: "pc-card-resource-name", text: resource.name });
-  if (resource.die) line.createSpan({ cls: "pc-resource-die", text: resolveScalingDie(resource.die, ctx.resolved.totalLevel) });
-  const track = line.createSpan({ cls: "pc-feature-track" });
-  renderChargeBoxes(track, {
-    used: fu.used,
-    max: fu.max,
-    recovery: { amount: String(fu.max), reset: RESET_TO_RECOVERY[resource.reset] ?? "special" },
+  renderResourceTracker(line, ctx, {
+    id, name: resource.name, reset: resource.reset,
+    die: resource.die, level: resource.die ? resourceLevel(resource.id, ctx) : undefined,
     onExpend: () => ctx.editState?.expendFeatureUse(id),
     onRestore: () => ctx.editState?.restoreFeatureUse(id),
   });
@@ -204,22 +266,28 @@ export function renderCardResource(parent: HTMLElement, resource: Resource, ctx:
  * `feature_uses[resources[0].id ?? feature.id]`, spent via
  * `editState.expend/restoreFeatureUse` (identical to the retired features-table).
  * Returns true when a tracker was rendered.
+ *
+ * Exported (R4-G3a §11) for the Passive tab's race block, whose trait rows host
+ * the same tracker for a COSTLESS trait carrying `resources[]` (R4-G3b §11 gates
+ * routed ones out). The case it exists for is the COSTLESS one: those traits never
+ * reach a feature row, so before the export their seeded uses had no UI to spend.
  */
-function renderFirstResourceTracker(detail: HTMLElement, feature: Feature, ctx: ComponentRenderContext): boolean {
+export function renderFirstResourceTracker(detail: HTMLElement, feature: Feature, ctx: ComponentRenderContext): boolean {
   const res0 = feature.resources?.[0];
   const key = res0?.id ?? feature.id;
-  const fu = key ? ctx.resolved.state.feature_uses?.[key] : undefined;
-  if (!fu || !key) return false;
-  const reset = res0?.reset ?? "long-rest";
-  const track = detail.createSpan({ cls: "pc-feature-track" });
-  renderChargeBoxes(track, {
-    used: fu.used,
-    max: fu.max,
-    recovery: { amount: String(fu.max), reset: RESET_TO_RECOVERY[reset] ?? "special" },
+  if (!key) return false;
+  return renderResourceTracker(detail, ctx, {
+    id: key,
+    name: res0?.name ?? feature.name,
+    reset: res0?.reset ?? "long-rest",
+    // R4-G5 §4.3.1, the ONE delta on the class feature row: the owner's die, which this site never
+    // read, so a Bard's own Bardic Inspiration row showed boxes and no face while the card and the
+    // pool head both printed it. The level is resolved INSIDE the ternary (see ResourceTrackerOpts).
+    die: res0?.die,
+    level: res0?.die ? resourceLevel(res0.id, ctx) : undefined,
     onExpend: () => ctx.editState?.expendFeatureUse(key),
     onRestore: () => ctx.editState?.restoreFeatureUse(key),
   });
-  return true;
 }
 
 /**
@@ -227,17 +295,18 @@ function renderFirstResourceTracker(detail: HTMLElement, feature: Feature, ctx: 
  * `collectFeatureAttacks` logic, including the scaling-die-from-resource
  * fallback: a feature that owns a scaling die surfaces it as the damage for any
  * attack that omits its own static `damage` (static damage always wins; the die
- * is resolved at totalLevel to match the resource tracker). Homebrew authors the
+ * is resolved at the OWNER's class level through `resourceLevel`, matching the
+ * tracker the seed sizes at that level: R4-G4 §6.2.4). Homebrew authors the
  * loose `{ name?, to_hit?, damage? }` attack shape, read via cast as the old
  * surface did.
  */
-function formatFeatureAttackNote(feature: Feature, totalLevel: number): string | undefined {
+function formatFeatureAttackNote(feature: Feature, ctx: ComponentRenderContext): string | undefined {
   const attacks = (feature as unknown as {
     attacks?: Array<{ name?: string; to_hit?: string; damage?: string }>;
   }).attacks;
   if (!attacks?.length) return undefined;
   const dieRes = (feature.resources ?? []).find((r) => r.die);
-  const scalingDie = dieRes?.die ? resolveScalingDie(dieRes.die, totalLevel) : undefined;
+  const scalingDie = dieRes?.die ? resolveScalingDie(dieRes.die, resourceLevel(dieRes.id, ctx)) : undefined;
   const lines: string[] = [];
   for (const a of attacks) {
     const seg: string[] = [];

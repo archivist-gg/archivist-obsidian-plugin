@@ -9,7 +9,11 @@
   /* Form C — fixed cells for icons, fluid name, intrinsic trailing meta.
    * Areas let the trailing cells reflow below the name at narrow widths
    * without dropping content. */
-  grid-template-columns: 18px 18px minmax(0, 1fr) 96px 42px 56px;
+  /* R4-G7 RIDER-9 fix round 1 (review Minor 2): the weight track is a FLOOR at the widest corpus weight, the same
+   * measurement as the narrow tier below (`0.0625 lb` renders 52.2 px). The fixed 42 px track let it spill 10 px past
+   * the track into the quantity cell at 500 and 856 px (the inventory lab with the widest values written into a row:
+   * `pc-inv-weight 52 > 42`); with the floor, 0 spills from 288 to 856 px. */
+  grid-template-columns: 18px 18px minmax(0, 1fr) 96px minmax(53px, auto) 56px;
   grid-template-areas: "toggle icon name stat weight qty";
   gap: var(--pc-space-2);
   align-items: center;
@@ -207,11 +211,24 @@
 }
 
 /* ---------- Toolbar (search + add/done) ---------- */
+/* R4 {G5, G6} live rider 2, X-7-1: the search field yields to the button instead of pushing it out
+   of the column. Measured on the `9fb865df` build at the 400 px viewport (`.pc-content` 252): the
+   toolbar's own items spanned about 323 px, the search box holding 205 of them and `+ ADD ITEM`
+   starting past the column's right edge, so the button read `+ ADD IT` on every sheet
+   (`viewports/R4G5_SrdFighter4_S__400x900__panel-inventory__2.png`). The search box grows from a
+   zero basis but carried the flex default `min-width: auto`, and its `<input>` child brings an
+   intrinsic field width with it, so the box could not be shrunk below that width and the row
+   overflowed rather than dividing. `min-width: 0` makes the field the part that gives; `flex-wrap`
+   is the fallback below any width where even that is not enough, and the button never breaks its
+   own label. */
 .archivist-pc-sheet .pc-inv-toolbar {
   display: flex;
   gap: var(--pc-space-2);
   margin-bottom: var(--pc-space-2);
   align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-inv-search {
   display: flex;
@@ -222,12 +239,23 @@
   padding: 4px 8px;
   background: rgba(255, 248, 220, 0.45);
   flex: 1;
+  min-width: 0;
 }
 .archivist-pc-sheet .pc-inv-search-icon svg {
   width: 13px; height: 13px;
   color: var(--pc-text-muted);
   stroke-width: 1.5;
 }
+/* R4 {G5, G6} live rider 3, Z-6-2: what does not fit ends in an ellipsis instead of being cut inside a
+   word. X-7-1 above made the search box the part that gives, which is right for the button, and at
+   `.pc-content` 252 what it gives is most of the field: the placeholder
+   "search items, types, tags…" (`inventory-toolbar.ts`, `InventoryToolbar.render`) read
+   `search items, t`, cut mid-word with no mark that anything
+   followed (`viewports/R4G5_Warlock5Stranded_S__400x700__panel-inventory__3.png`, and the same on every
+   other sheet at that width). The declaration goes on the INPUT and not on `::placeholder`: Chromium
+   applies the input's own `text-overflow` to the placeholder text and ignores the property when it is
+   set on the pseudo-element. An unfocused long VALUE now ellipsizes the same way, which is the shipped
+   behaviour of every other single-line field the reader meets. */
 .archivist-pc-sheet .pc-inv-search input {
   border: none;
   background: transparent;
@@ -237,6 +265,8 @@
   outline: none;
   color: var(--pc-text-primary);
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .archivist-pc-sheet .pc-inv-search input::placeholder {
   color: var(--pc-text-muted);
@@ -244,6 +274,8 @@
 }
 .archivist-pc-sheet .pc-inv-add,
 .archivist-pc-sheet .pc-inv-done {
+  flex: 0 0 auto;
+  white-space: nowrap;
   padding: 5px 12px;
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
@@ -389,11 +421,23 @@
   padding: var(--pc-space-2) 0;
   flex-wrap: wrap;
 }
+/* R4 {G5, G6} live rider 2, W-2: the attunement box gives way instead of pushing the column open.
+   Measured on the `9fb865df` build: `.pc-header-attune` and the `.pc-attune-strip` inside it both
+   read 371 px on all 15 sheet fixtures, which is `.pc-attune-head` (about 71 px) + a 12 px gap +
+   three 88 px medallion wrappers with two 12 px gaps; `.pc-content` then read clientWidth/scrollWidth
+   356/371 and 252/371, the ONLY root overflow in the run's 15 x 6 x 3 sweep, with the third medallion
+   and the right half of the `+ ADD ITEM` control outside the visible column. A flex item's default
+   `min-width: auto` floors it at that intrinsic width, so the box could not shrink and the strip had
+   no wrap point to fall back on. With both flex rows wrapping and the floor released, the medallion
+   row falls under the ATTUNED head, and below it the medallions themselves wrap: nothing is cut at
+   any column width and the medallion keeps its size. */
 .archivist-pc-sheet .pc-header-attune {
   display: flex;
   align-items: stretch;
   gap: var(--pc-space-4);
   flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-header-divider {
   width: 1px;
@@ -411,6 +455,10 @@
   display: flex;
   align-items: center;
   gap: var(--pc-space-3);
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-2);
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-attune-head {
   display: flex;
@@ -442,6 +490,10 @@
   display: flex;
   gap: var(--pc-space-3);
   align-items: flex-start;
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-2);
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* ---------- Attune popover ---------- */
@@ -769,15 +821,46 @@
 
 /* ---------- Responsive ---------- */
 
-/* Below narrow tier: header divider hides; qty/cost lifts under name. */
+/* Below narrow tier: header divider hides; the row keeps one line on narrowed meta tracks (RIDER-9). */
 @container pc-content (max-width: 499px) {
   .archivist-pc-sheet .pc-header-divider { display: none; }
   .archivist-pc-sheet .pc-header-attune,
   .archivist-pc-sheet .pc-header-currency { flex: 1 1 100%; }
 
-  /* Row reflow: keep all data, restack trailing meta under name.
-   * Row 1: toggle + icon + name + stat (the headline meta).
-   * Row 2: weight + qty-cost (the secondary meta), under the name. */
+  /* R4-G7 RIDER-9: the row stays ONE row, every cell in its own track. RIDER-7 keeps the tab body right
+   * of the rail, so the Inventory tab now always lives in the 355.5 px right column at the default window,
+   * where the old reflow put stat, weight and quantity each on a line of its own under the name (S01
+   * B001-D9, B010-D3). The base template's meta tracks (96 / 42 / 56) leave the name 76 px there, so this
+   * tier narrows them to the widest value each cell renders in the corpus, MEASURED in the live sheet's
+   * own `.pc-inv-stat` / `.pc-inv-weight` / `.pc-inv-qty-cost` dress (11 px serif, tabular nums):
+   *   stat    `AC 14 + Dex`  66.6 px  (the longest of the 34 distinct weapon damage and armor AC strings)
+   *   weight  `0.0625 lb`    52.2 px  (the longest of the 65 distinct weights)
+   *   qty     `×1000`        34.2 px  (no corpus item carries a numeric `value`, so `gp` never renders)
+   * Each is a FLOOR, not a cap (`minmax(<floor>, auto)`): a value wider than the corpus's widest grows its
+   * own row's track instead of spilling into its neighbour, and the browse drawer's `+ Add` cell (48.6 px)
+   * takes its width the same way. The gap drops to `--pc-space-1` so the name gets 20 px back. Witnessed
+   * with the sheet's own rows laid out off screen (`evidence/g7-live/wa-inv-lab.js`): at 356 px the
+   * Illrigger's nine rows read 0 meta cells below the name cell and 0 overlaps, the name track 135 px. */
+  .archivist-pc-sheet .pc-inv-row {
+    grid-template-columns: 18px 18px minmax(0, 1fr) minmax(67px, auto) minmax(53px, auto) minmax(35px, auto);
+    grid-template-areas: "toggle icon name stat weight qty";
+    column-gap: var(--pc-space-1);
+  }
+  /* R4-G7 RIDER-9 fix round 1 (controller ruling 2026-09-15): in this narrower name track the name WRAPS, whole,
+   * instead of the base dress's one-line ellipsis. MEASURED on the Illrigger's rows (inventory lab, the RIDER-1
+   * method: line counts from height over line height): at 355.5 px `Greatsword of Wounding` read
+   * `Greatsword of Woundi...` (1 line, cut); now 2 lines x 14.4 px beside a 4-line sub-line, row 91 px, the meta
+   * cells still one line each in their tracks. From 288 to 499 px 0 names are cut. `overflow-wrap: anywhere` only
+   * breaks a word wider than the whole track (the 67 px track at 288 px). */
+  .archivist-pc-sheet .pc-inv-name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+}
+
+/* R4-G7 RIDER-9: the reflow the tier above used to start at 499 px, now reached only where one row would
+ * leave the name track narrower than the stat track's 67 px floor: 18 + 18 + 67 + 53 + 35 + 4 x 5 gaps +
+ * 10 px of row padding + 67 = 288 px, MEASURED as the first one-row width by the same off-screen scan.
+ * Row 1: toggle + icon + name + stat (the headline meta).
+ * Row 2: weight + qty-cost (the secondary meta), under the name. */
+@container pc-content (max-width: 287px) {
   .archivist-pc-sheet .pc-inv-row {
     grid-template-columns: 18px 18px minmax(0, 1fr) auto;
     grid-template-areas:
@@ -787,9 +870,24 @@
   }
 }
 
-/* Below tiny tier: stat lifts under the name too, freeing the
- * top-right cell entirely. All data still visible. */
+/* Below tiny tier: the filter rows tighten. (R4-G7 RIDER-9 moved this tier's four-line row stack to its
+ * own block below: at 399 px it was the stack S01 saw in the right column.) */
 @container pc-content (max-width: 399px) {
+  .archivist-pc-sheet .pc-inv-filter-row { gap: var(--pc-space-2); }
+  /* R4 {G5, G6} live rider V-4: the chip groups WRAP at this tier, they do not scroll. The
+     `nowrap` + `overflow-x: auto` pair put every group on one line inside a scroller the reader has
+     no reason to suspect, so at the default 356 px column the TYPE row simply ended mid-word
+     ("Weapons Armor Wondrous Rin") and the RARITY row ended flush at the edge with `Very Rare` cut.
+     The base rule already wraps and already supplies the row gap through its `gap`, so the group
+     inherits it and every chip stays on screen and clickable. */
+  .archivist-pc-sheet .pc-inv-filter-group { max-width: 100%; }
+}
+
+/* R4-G7 RIDER-9: stat lifts under the name too, freeing the top-right cell entirely; all data still
+ * visible. Reached only where the two-row reflow above would leave the name track narrower than the stat
+ * track's 67 px: 18 + 18 + 67 + 3 x 4 gaps + 10 px of padding + 67 = 192 px, so from 191 px down (a
+ * stacked body in a very narrow pane; the right column never gets there, its floor is 204 px). */
+@container pc-content (max-width: 191px) {
   .archivist-pc-sheet .pc-inv-row {
     grid-template-columns: 18px 18px minmax(0, 1fr);
     grid-template-areas:
@@ -799,8 +897,6 @@
       ".      .    qty";
     row-gap: 2px;
   }
-  .archivist-pc-sheet .pc-inv-filter-row { gap: var(--pc-space-2); }
-  .archivist-pc-sheet .pc-inv-filter-group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
 }
 
 /* ── P4 · Scroll & unidentified-item inventory treatments (Task 5) ──────────

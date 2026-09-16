@@ -1,4 +1,4 @@
-import { Plugin, Notice, setIcon } from "obsidian";
+import { Plugin, Notice, setIcon, normalizePath, parseLinktext } from "obsidian";
 
 // Entity module presenters
 import { monsterModule } from "./modules/monster/monster.module";
@@ -13,10 +13,10 @@ import { optionalFeatureModule } from "./modules/optional-feature/optional-featu
 import { pcModule } from "./modules/pc/pc.module";
 import { armorModule } from "./modules/armor/armor.module";
 import { weaponModule } from "./modules/weapon/weapon.module";
+import { conditionModule } from "./modules/condition/condition.module";
 
-import { parseInlineTag } from "@archivist-gg/dnd5e/inline-tag-parser";
-import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
-import { createErrorBlock } from "./shared/rendering/renderer-utils";
+import { replaceInlineTagCodes } from "./shared/rendering/inline-tag-renderer";
+import { createErrorBlock, setWikilinkResolver } from "./shared/rendering/renderer-utils";
 
 // Edit mode scaffolding (shared across entity modules)
 import { renderSideButtons } from "./shared/edit/side-buttons";
@@ -53,7 +53,7 @@ import {
   setEntityPresenterKernel,
   setEntityPresenterPlugin,
 } from "./shared/rendering/entity-presenter-dispatch";
-import { bootstrapCompendiums } from "./shared/compendium-init/wiring";
+import { planCompendiumBootstrap, applyCompendiumBootstrap, describeBootstrapResult } from "./shared/compendium-init/wiring";
 import { CompendiumManager } from "./shared/entities/compendium-manager";
 import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";
 import { hiddenCompendiumSet, reconcileHiddenCompendiums } from "./shared/entities/compendium-visibility";
@@ -115,12 +115,12 @@ export default class ArchivistPlugin extends Plugin {
       notify: makeNoticeSink(),
     });
 
-    // The 11 entity presenters: how each authored type is DRAWN. Keyed by
+    // The 12 entity presenters: how each authored type is DRAWN. Keyed by
     // `type` into the presenter map the shared dispatch reads (D3/D4).
     const presenterList: EntityPresenter[] = [
       monsterModule, spellModule, itemModule, classModule, raceModule,
       subclassModule, backgroundModule, featModule, optionalFeatureModule,
-      armorModule, weaponModule,
+      armorModule, weaponModule, conditionModule,
     ];
     this.presenters = new Map(presenterList.map((p) => [p.type, p]));
 
@@ -132,6 +132,17 @@ export default class ArchivistPlugin extends Plugin {
     setEntityPresenters(this.presenters);
     setEntityPresenterPlugin(this);
     setEntityPresenterKernel(this.archivist);
+    // R4 {G5, G6} live rider V-12: the vault half of the shared renderer's wikilink arm, injected the
+    // same way and in the same place as the three setters above. Obsidian's `parseLinktext` splits the
+    // subpath off (`Note#Heading` resolves on `Note`), and a target that is ONLY a subpath (`[[#Top]]`)
+    // points at the note the reader is already in, so it always resolves. The source path is "", which
+    // resolves a link by name across the vault: the blocks this renders sit in many notes and the seam
+    // carries no per-render path, so a RELATIVE target ("../Foo") would be reported unresolved. Every
+    // link the shipped data carries is vault-absolute or a bare note name.
+    setWikilinkResolver((target) => {
+      const { path } = parseLinktext(target);
+      return path === "" || this.app.metadataCache.getFirstLinkpathDest(path, "") !== null;
+    });
     // Register the real dnd5e pack: the only pack the kernel knows.
     this.archivist.registerPack(dnd5ePack);
     // Direct composition: pc is a stateful-app, wired with a typed PCServices
@@ -148,17 +159,11 @@ export default class ArchivistPlugin extends Plugin {
       this.registerEntityCodeBlock(p);
     }
 
-    // Inline tag post-processor
-    this.registerMarkdownPostProcessor((element) => {
-      element.querySelectorAll("code").forEach((codeEl) => {
-        const text = codeEl.textContent ?? "";
-        const parsed = parseInlineTag(text);
-        if (parsed) {
-          const tagEl = renderInlineTag(parsed);
-          codeEl.replaceWith(tagEl);
-        }
-      });
-    });
+    // Inline tag post-processor. The body lives beside the widget it builds (`replaceInlineTagCodes`,
+    // `shared/rendering/inline-tag-renderer.ts`) so a test can run THE REGISTERED FUNCTION rather than a copy of it:
+    // R4-G7 T8 wave E (B026-D11) found that every jsdom test of the monster prose injected a render and so never ran
+    // this processor at all, which is why an ability-keyed `dc:` tag printed "DC INT" on 279 SRD notes with a green suite.
+    this.registerMarkdownPostProcessor((element) => replaceInlineTagCodes(element));
 
     // Compendium ref post-processor for Reading mode ({{type:slug}} -> rendered stat block).
     // Dispatches rendering through the shared presenter dispatch via
@@ -268,6 +273,10 @@ export default class ArchivistPlugin extends Plugin {
   async loadSettings(): Promise<void> {
     const data = (await this.loadData()) as { settings?: Partial<ArchivistSettings> } | null | undefined;
     this.settings = Object.assign({}, DEFAULT_SETTINGS, data?.settings);
+    // The one user-defined path this subsystem consumes, normalized ONCE (obsidian rule 22) so
+    // the CompendiumManager constructed in onload and the bootstrap below agree on it; a
+    // trailing slash in data.json must not install under one path and discover() another.
+    this.settings.compendiumRoot = normalizePath(this.settings.compendiumRoot);
   }
 
   async saveSettings(): Promise<void> {
@@ -287,29 +296,32 @@ export default class ArchivistPlugin extends Plugin {
   private async initializeCompendiumsInner(): Promise<void> {
     if (!this.compendiumManager || !this.srdStore) return;
 
-    // Canonical pipeline bootstrap: delete the legacy `Compendium/SRD/` folder,
-    // then copy the embedded `SRD 5e/` and `SRD 2024/` bundles into the vault.
-    // eslint-disable-next-line obsidianmd/ui/sentence-case -- proper noun: "SRD" is an acronym (System Reference Document)
-    const n = new Notice("Archivist: setting up SRD compendiums...", 0);
+    // Canonical pipeline bootstrap: plan first (a pure read), tell the user only when the
+    // plan has work (a fresh install, an upgrade, an error, or the legacy `Compendium/SRD/`
+    // folder to trash), then apply. The bundle's own `_compendium.md` stamp is the only
+    // version authority, so an up-to-date vault does nothing and shows nothing.
+    const rootFolder = this.settings.compendiumRoot;
+    let notice: Notice | null = null;
     try {
-      const result = await bootstrapCompendiums({
-        vault: this.app.vault,
-        fileManager: this.app.fileManager,
-        rootFolder: this.settings.compendiumRoot,
-        pluginVersion: this.manifest.version,
-        removeLegacySrdFolder: true,
-      });
-      const copied = result.perCompendium.filter(c => c.action === "copied").map(c => c.compendium);
-      const summary = copied.length > 0
-        ? `installed ${copied.join(" + ")}`
-        : "compendiums up-to-date";
-      const legacy = result.legacySrdRemoved ? " (legacy SRD removed)" : "";
-      n.setMessage(`Archivist: ${summary}${legacy}`);
-      activeWindow.setTimeout(() => n.hide(), 3000);
-      this.settings.srdImported = true;
-      await this.saveSettings();
+      const plan = await planCompendiumBootstrap({ vault: this.app.vault, rootFolder, removeLegacySrdFolder: true });
+      if (plan.shouldNotify) {
+        // eslint-disable-next-line obsidianmd/ui/sentence-case -- proper noun: "SRD" is an acronym (System Reference Document)
+        notice = new Notice("Archivist: setting up SRD compendiums...", 0);
+      }
+      const result = await applyCompendiumBootstrap(
+        { vault: this.app.vault, fileManager: this.app.fileManager, rootFolder, removeLegacySrdFolder: true },
+        plan,
+      );
+      for (const r of result.perCompendium) {
+        if (r.action === "error") console.error(`Archivist: compendium bootstrap: ${r.reason ?? r.compendium}`);
+      }
+      if (notice) {
+        const n = notice;
+        n.setMessage(describeBootstrapResult(result));
+        activeWindow.setTimeout(() => n.hide(), 3000);
+      }
     } catch (err) {
-      n.hide();
+      notice?.hide();
       console.error("Archivist: compendium bootstrap failed", err);
       new Notice("Archivist: compendium bootstrap failed; existing compendiums will still load.");
     }
@@ -426,6 +438,9 @@ export default class ArchivistPlugin extends Plugin {
       // Side buttons container
       const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
 
+      // R4-G6b §3.3: evaluated on EVERY call, never cached per block (the compendiums are discovered after onload).
+      const hostReadonly = (): boolean => this.compendiumManager?.getByPath(ctx.sourcePath)?.readonly === true;
+
       const deleteBlock = () => {
         const info = ctx.getSectionInfo(el);
         if (!info) return;
@@ -470,12 +485,13 @@ export default class ArchivistPlugin extends Plugin {
         // Delegate to the presenter's edit-mode renderer. The presenter reads
         // `plugin` / `ctx` from the EditContext and invokes `onExit` when it
         // needs to restore the view-mode render without a content change
-        // (e.g. cancel with no edits). Only monster/spell/item define it.
+        // (e.g. cancel with no edits). Only monster/spell/item/condition define it.
         pres.renderEditMode?.(el, codecResult.data, {
           plugin: this,
           ctx,
           source,
           onExit: exitEditMode,
+          hostReadonly: hostReadonly(),
         });
       };
 
@@ -514,6 +530,7 @@ export default class ArchivistPlugin extends Plugin {
           state: isEditMode ? "editing" : "default",
           isColumnActive: supportsColumns && columns === 2,
           showColumnToggle: supportsColumns,
+          isHostReadonly: hostReadonly(),
           onEdit: () => {
             if (isEditMode) {
               exitEditMode();
@@ -539,6 +556,11 @@ export default class ArchivistPlugin extends Plugin {
         });
       };
       updateSideButtons();
+
+      // R4-G6b §3.3: a block rendered during the cold-start window (the manager is constructed in onload, its
+      // compendiums discovered from onLayoutReady) reads no compendium yet; re-render the bar once they are known.
+      // `!isEditMode` is load-bearing: the editors reuse this element for their pending bar.
+      void this.compendiumsReady.then(() => { if (sideBtns.isConnected && !isEditMode) updateSideButtons(); });
     });
   }
 }

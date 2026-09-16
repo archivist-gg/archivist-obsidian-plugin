@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll, vi } from "vitest";
 import { PCSheetView } from "../packages/obsidian/src/modules/pc/pc.view";
 import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { renderPCSheet } from "../packages/obsidian/src/modules/pc/pc.sheet";
+import { renderAvatarContent } from "../packages/obsidian/src/modules/pc/components/avatar-content";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
@@ -84,5 +85,21 @@ describe("header portrait rendering", () => {
     const root = await renderWith(null, onOpen);
     (root.querySelector("button.pc-avatar") as HTMLButtonElement).click();
     expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+  it("falls back to the d20 placeholder when the portrait image fails to load", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);                       // isConnected must be true
+    renderAvatarContent(host, "app://dead/portrait.png", { x: 0.1, y: 0.2, size: 0.5 });
+
+    const img = host.querySelector<HTMLImageElement>("img.pc-avatar-img")!;
+    expect(img).toBeTruthy();
+    expect(host.classList.contains("pc-avatar-cropped")).toBe(true);
+
+    img.dispatchEvent(new Event("error"));
+
+    expect(host.querySelector("img.pc-avatar-img")).toBeFalsy();
+    expect(host.querySelector("svg")).toBeTruthy();          // the d20
+    expect(host.classList.contains("pc-avatar-cropped")).toBe(false);
+    expect(host.style.getPropertyValue("--pc-crop-w")).toBe("");
   });
 });

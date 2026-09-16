@@ -1,5 +1,6 @@
 // src/modules/pc/components/rest-modal.ts
-import { Modal, type App } from "obsidian";
+import { type App } from "obsidian";
+import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../pc.edit-state";
 import type { EntityRegistry } from "@archivist-gg/core";
@@ -15,7 +16,7 @@ import {
  * (added in Slice 5). HD spends fire editState primitives immediately;
  * opt-out resets commit only on Confirm.
  */
-export class RestModal extends Modal {
+export class RestModal extends PaneCenteredModal {
   private optouts = new Set<RestCategoryId>();
   private rollLog: Array<{ die: string; value: number; tag?: "manual" | "avg" }> = [];
   private manualOpen = false;
@@ -38,12 +39,32 @@ export class RestModal extends Modal {
     // `archivist-modal` brings the shared parchment frame, tokens, checkbox,
     // and primary-button theme. `pc-rest-modal` adds rest-specific layout.
     this.contentEl.addClass("archivist-modal", "pc-rest-modal");
+    // Two-stage Escape: Escape #1 collapses the open manual-heal input,
+    // Escape #2 (or Escape with the input closed) closes the modal.
+    this.takeOverEscape(() => this.escapeStage());
     this.render();
   }
 
   onClose(): void {
     this.contentEl.empty();
     this.onCloseCallback?.();
+  }
+
+  /**
+   * One stage of Escape: collapse the open manual-heal input if there is one,
+   * otherwise close the modal.
+   *
+   * Deliberately a method rather than an inline callback: BOTH Escape paths
+   * route through it (the `Scope` handler in `onOpen` and the manual-input
+   * keydown listener in `renderHdButtons`), so the two can never drift apart.
+   */
+  private escapeStage(): void {
+    if (this.manualOpen) {
+      this.manualOpen = false;
+      this.render();
+    } else {
+      this.close();
+    }
   }
 
   /** Recompute plan from current state and re-render. Cheap. */
@@ -240,9 +261,19 @@ export class RestModal extends Modal {
       apply.addEventListener("click", submit);
       input.addEventListener("keydown", (e: KeyboardEvent) => {
         if (e.key === "Enter") submit();
+        // In the MAIN window this Escape branch can never fire: `onOpen`'s scope
+        // handler returns a strict `false`, the only return that makes `Keymap`
+        // call `preventDefault()` + `stopPropagation()`, and `Keymap` is bound to
+        // `window` at the CAPTURE phase, so the event is already stopped before
+        // it can bubble to this listener. It is load-bearing in POP-OUT windows,
+        // where `Keymap` (bound to the main window only) never fires at all,
+        // which makes this the SOLE Escape path there. Do not delete it as dead
+        // code. Same shape as the adjust-input keydown in coin-modal.ts. Both
+        // paths call `escapeStage()`
+        // so main-window and pop-out Escape can never diverge.
         if (e.key === "Escape") {
-          this.manualOpen = false;
-          this.render();
+          e.preventDefault();
+          this.escapeStage();
         }
       });
     }

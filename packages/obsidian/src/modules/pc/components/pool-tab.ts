@@ -1,14 +1,22 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedPool, ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-feature.types";
-import { levelPrereqMax } from "@archivist-gg/dnd5e/pc/pc.pools";
+import { levelPrereqMax, strandedPicks } from "@archivist-gg/dnd5e/pc/pc.pools";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../shared/entities/compendium-visibility";
 import type { PoolLayout } from "@archivist-gg/dnd5e/types/selection-pool";
 import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "./row-expand-state";
+import { renderSpendControl } from "./actions/spend-control";
+import { CHARGE_BOX_LIMIT } from "./actions/charge-boxes";
+import { renderPointPool } from "./actions/point-pool";
+import { renderPickTracker } from "./actions/pick-tracker";
+import { renderAffordanceCaption, renderControlGroup } from "./actions/entry-affordance";
+import { COST_LABELS, consumeCost, metaSub, renderMetaSub } from "./actions/entry-meta";
+import { renderResourceTracker } from "./actions/resource-tracker";
+import { RESET_LABELS, CUSTOM_RESET_TIP } from "./actions/reset-labels";
+import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
+import { resourceLevelFor, poolSaveDC } from "@archivist-gg/dnd5e/pc/pc.resources";
 
-const COST_LABELS: Record<string, string> = {
-  action: "1 Action", "bonus-action": "1 Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
-};
 
 /** Generic tab that renders one selection pool, reusing the Spells "Prepare"
  *  vocabulary: an active-effects rail, an "X / N" counter, level bands, and
@@ -23,16 +31,32 @@ export class PoolTab implements SheetComponent {
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const root = el.createDiv({ cls: "pc-tab-body" });
-    const pool = ctx.resolved?.pools?.find((p) => p.id === this.poolId);
-    if (!pool) {
+    const found = ctx.resolved?.pools?.find((p) => p.id === this.poolId);
+    if (!found) {
       root.createDiv({ cls: "pc-empty-line", text: "No data for this pool." });
       return;
     }
-    if (this.layout === "blocks") this.renderBlocks(root, pool, ctx);
-    else this.renderSpellLike(root, pool, ctx);
+    // R4-G5 §3.2.2: the sheet's half of the ONE visibility predicate, applied ONCE here and BEFORE the
+    // `LAYOUTS` dispatch, on a SHALLOW COPY whose `available` is filtered over the `compendium` string
+    // `resolvePool` stamps at resolve time (§9.2.1). All four layout entries inherit it from one place.
+    // `selected` and `grants` are untouched, and therefore so is `strandedPicks`: the only entries this
+    // removes are UNSELECTED candidates, because the predicate exempts the current selection exactly as
+    // the builder's does. The executed order is collapse (in `resolvePool`, which has no visibility
+    // input) THEN filter (here). The optional chain is load-bearing: the sheet's fixtures cast an empty
+    // `services`, and `hiddenCompendiumSet` fails open on a nullish argument.
+    const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
+    const picked = new Set(found.selected.map((e) => e.slug));
+    const pool: ResolvedPool = {
+      ...found,
+      available: found.available.filter((e) => entityCompendiumVisible(e, hidden) || picked.has(e.slug)),
+    };
+    const renderer = LAYOUTS.get(this.layout) ?? LAYOUTS.get("spell-like")!;
+    renderer.call(this, root, pool, ctx);
   }
 
-  private renderSpellLike(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
+  /** @internal Reached through the `LAYOUTS` registry below, after `renderPoolHead`, from every entry
+   *  that names it (R4-G5 §5.2 gave the head to all four), never from outside this module. */
+  renderSpellLike(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
     const activeBuffs = ctx.resolved?.state?.active_buffs ?? [];
     renderActiveEffectsRail(root, activeItems(pool, activeBuffs, ctx));
     renderCounter(root, pool);
@@ -60,12 +84,11 @@ export class PoolTab implements SheetComponent {
         this.row(list, entry, {
           selected: selectedSlugs.has(entry.slug),
           atCap,
-          active: activeBuffs.includes(entry.slug),
         }, pool, ctx);
       }
     }
 
-    const stranded = strandedSelections(pool);
+    const stranded = strandedPicks(pool);
     if (stranded.length) {
       root.createDiv({ cls: "pc-actions-section-head" }).createSpan({ text: "Selected · prerequisite unmet" });
       const list = root.createDiv({ cls: "pc-spell-list" });
@@ -73,7 +96,6 @@ export class PoolTab implements SheetComponent {
         this.row(list, entry, {
           selected: true,
           atCap,
-          active: activeBuffs.includes(entry.slug),
         }, pool, ctx);
       }
     }
@@ -88,7 +110,7 @@ export class PoolTab implements SheetComponent {
   private row(
     parent: HTMLElement,
     entry: ResolvedPoolEntry,
-    opts: { selected: boolean; atCap: boolean; active: boolean },
+    opts: { selected: boolean; atCap: boolean },
     pool: ResolvedPool,
     ctx: ComponentRenderContext,
   ): void {
@@ -111,22 +133,29 @@ export class PoolTab implements SheetComponent {
 
     const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
     nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
-    const sub = metaSub(e);
-    if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
+    renderMetaSub(nameWrap, metaSub(e, ctx));
+    renderAffordanceCaption(nameWrap, entry, ctx);
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
     if (isRowExpanded(ctx, descKey)) openDesc(host, e);
 
-    if (opts.selected && e.activatable) {
-      const actv = row.createEl("button", {
-        cls: `pc-pool-active${opts.active ? " on" : ""}`,
-        text: opts.active ? "Active" : "Activate",
-      });
-      actv.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        ctx.editState?.toggleActiveBuff(entry.slug);
-      });
-    }
+    // The shared spend control (R4-G4 §3.2.4). Measured 2026-09-05 with
+    // `grep -rn "renderSpendControl(" packages/obsidian/src`: six call EXPRESSIONS across three
+    // calling FILES, three of them on this tab. All three render on the KNOWN entries only: this
+    // row when its entry is SELECTED, `grantedRow` unconditionally because it is reached only over
+    // `pool.grants`, and `blockCard` when its entry is granted OR selected, because `renderBlocks`
+    // sends that method every available candidate as well. A bare candidate the character has not
+    // picked is not spendable, so it carries the Cost meta and no button. `renderBoonRow` is
+    // reached only with a `kind` of "selected" or "granted", so the Actions / Passive boon surface
+    // already had this property. An unowned id renders nothing and warns once (§13), so a
+    // cross-book row is unchanged. R4-G5 §4.2.2 (b) gave it ONE new sibling here and on the boon
+    // row: the `.pc-buff-group` created immediately before it, never a parent of it.
+
+    // R4-G5 §4.2.2 (b): the pick's own tracker (which MOVES out of `.pc-spell-namewrap`) and its Active
+    // toggle (which MOVES from the row's end) in ONE group, created BEFORE the spend control so the
+    // group is the sibling that precedes it. Tracker-then-toggle: this row's shipped relative order.
+    renderControlGroup(row, entry, ctx, { selected: opts.selected, order: "tracker-first" });
+    if (opts.selected && e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
   }
 
   private grantedRow(parent: HTMLElement, entry: ResolvedPoolEntry, pool: ResolvedPool, ctx: ComponentRenderContext): void {
@@ -136,14 +165,20 @@ export class PoolTab implements SheetComponent {
     const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
     nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
     nameWrap.createSpan({ cls: "pc-spell-always", text: "granted" });
-    const sub = metaSub(e);
-    if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
+    // A granted pick tracks its own `uses` exactly like a selected one (R4-G4 §12).
+    renderPickTracker(nameWrap, entry, ctx);
+    renderMetaSub(nameWrap, metaSub(e, ctx));
+    renderAffordanceCaption(nameWrap, entry, ctx);
     const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
     nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
     if (isRowExpanded(ctx, descKey)) openDesc(host, e);
+    // A granted entry is KNOWN, so it spends like a selected one (R4-G4 §3.2.4): the same control
+    // the blocks layout's `blockCard` and the boon row already render for granted entries.
+    if (e.consumes?.resource) renderSpendControl(row, { consumes: e.consumes, ctx });
   }
 
-  private renderBlocks(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
+  /** @internal Reached through the `LAYOUTS` registry below, never from outside this module. */
+  renderBlocks(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
     const activeBuffs = ctx.resolved?.state?.active_buffs ?? [];
     renderActiveEffectsRail(root, activeItems(pool, activeBuffs, ctx));
     renderCounter(root, pool);
@@ -155,7 +190,7 @@ export class PoolTab implements SheetComponent {
         granted: false, selected: selectedSlugs.has(entry.slug), atCap, active: activeBuffs.includes(entry.slug),
       }, pool, ctx);
     }
-    for (const entry of strandedSelections(pool)) {
+    for (const entry of strandedPicks(pool)) {
       this.blockCard(root, entry, {
         granted: false, selected: true, atCap, active: activeBuffs.includes(entry.slug),
       }, pool, ctx);
@@ -200,27 +235,111 @@ export class PoolTab implements SheetComponent {
       });
       actv.addEventListener("click", () => ctx.editState?.toggleActiveBuff(entry.slug));
     }
+    // The same control on the blocks layout, hosted by the card's control strip instead of the
+    // row, under the same KNOWN-entries gate: `renderBlocks` calls this method for every
+    // `pool.available` candidate as well as for the stranded picks and the grants, so a card
+    // needs its own `granted || selected` test exactly as `row()` needs `selected`.
+    if ((opts.granted || opts.selected) && e.consumes?.resource) renderSpendControl(controls, { consumes: e.consumes, ctx });
 
     const meta = section.createDiv({ cls: "pc-block-meta" });
     const lvl = levelPrereqMax(e);
     metaItem(meta, "Level", lvl ? String(lvl) : "—");
     if (e.action_cost) metaItem(meta, "Cost", COST_LABELS[e.action_cost] ?? e.action_cost);
-    if (e.consumes?.amount) {
-      const word = e.consumes.resource ?? e.consumes.column ?? "resource";
-      const display = e.consumes.amount === 1 ? word.replace(/s$/, "") : word;
-      metaItem(meta, "Cost", `${e.consumes.amount} ${display.charAt(0).toUpperCase()}${display.slice(1)}`);
-    }
+    if (e.consumes?.amount) metaItem(meta, "Cost", consumeCost(e.consumes, ctx));
     if (e.passive) metaItem(meta, "Type", "Passive");
+
+    // R4-G5 §4.2.2 (a): the caption is a line of its own under the card's meta row, not a meta item:
+    // `.pc-block-meta` holds `.pc-meta-line` pairs and this is a sentence, not a label / value pair.
+    renderAffordanceCaption(section, entry, ctx);
 
     if (e.description) section.createEl("p", { cls: "pc-block-description", text: e.description });
   }
 }
 
-/** Selected picks no longer present in `available` (their prereq is now unmet);
- *  the resolver keeps them in `selected`, so we surface them as removable rows. */
-function strandedSelections(pool: ResolvedPool): ResolvedPoolEntry[] {
-  const avail = new Set(pool.available.map((e) => e.slug));
-  return pool.selected.filter((e) => !avail.has(e.slug));
+type LayoutRenderer = (this: PoolTab, root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext) => void;
+
+/** The ONE layout → renderer registry (R4-G4 §4.2.6, invariant 3; the entity-presenter-dispatch
+ *  pattern): an unknown key degrades to spell-like and never throws, which is what the fallback to
+ *  this map's own `spell-like` entry buys `render`. EVERY entry calls `renderPoolHead` (R4-G5 §5.2),
+ *  whose own three-way guard (`pool.resource`, its seeded `feature_uses` entry, its `resolved.resources`
+ *  index entry) decides whether the WIDGET is drawn: an unhinted pool that OWNS a resource gets the
+ *  widget, and one that owns none draws no widget. Only `point-pool` passes the `points`
+ *  shape, because the head's own `numeric` computation already routes a large `dice` head to the numeric
+ *  widget without being told. CONSEQUENCE, stated: the §11 pool save-DC line, which the head prints
+ *  BEFORE the resource gate, now reaches the spell-like and blocks layouts too whenever a DC resolves.
+ *  MEASURED 2026-09-07 on the 13-book install, three read-only scripts over the converted corpus: ZERO
+ *  shipped pools gain a DC line, because the only DC-shaped pool owner, Way of the Four Elements,
+ *  already derives `point-pool`; and the whole shipped widget delta is ONE head, the XGE Arcane Archer
+ *  (5e)'s Arcane Shot Uses (2 boxes, "/ Short Rest", no die), the only unhinted pool whose members
+ *  consume a resource the owner declares.
+ *  A pool whose members carry an UNMAPPED hint never reaches the hinted entries BY DERIVATION: dnd5e's
+ *  `RENDERING_HINT_LAYOUT` maps two hints, so `derivePoolLayout` returns undefined for the three G5
+ *  families (pool-selection, granted-die-to-ally, stance) and `TabsContainer` falls through to
+ *  spell-like absent an authored layout. An AUTHORED `TabDecl.renders.layout` still can reach them: it
+ *  is the same four-member union and it OUTRANKS the derived value (§4.2.5). No shipped document
+ *  authors one (measured 2026-09-05, read-only: zero `.md` files under the pristine bundle and the
+ *  converter corpus name a tab `layout`, and the bundle index carries no `"layout"` key; spec §4.1
+ *  measures the same as undefined on all 23 `TabDecl`s), so on both corpora a PHB 2024 Arcane Archer,
+ *  whose members carry the `pool-selection` hint, renders spell-like. */
+const LAYOUTS: ReadonlyMap<PoolLayout, LayoutRenderer> = new Map<PoolLayout, LayoutRenderer>([
+  ["spell-like", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "dice"); this.renderSpellLike(root, pool, ctx); }],
+  ["blocks", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "dice"); this.renderBlocks(root, pool, ctx); }],
+  ["dice-pool", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "dice"); this.renderSpellLike(root, pool, ctx); }],
+  ["point-pool", function (root, pool, ctx) { renderPoolHead(root, pool, ctx, "points"); this.renderSpellLike(root, pool, ctx); }],
+]);
+
+/** The tab-head owner widget plus the §11 pool save-DC line.
+ *
+ *  The DC line first, whenever `poolSaveDC` is non-null (a Four Elements Monk's tab prints it with no
+ *  widget beside it). Then the widget, but ONLY when all three of `pool.resource`, its seeded
+ *  `feature_uses` entry and its `resolved.resources` index entry exist: a pool whose members consume
+ *  nothing the character owns renders NO widget (Four Elements is the live witness: its tab prints the
+ *  DC line and then the list), and a fixture that casts a `ResolvedCharacter` with no index reads
+ *  `undefined` through the optional chain instead of throwing (§4.2.6, confirmation r6 M-1; `state` and
+ *  `classes` are required and are read unguarded here, as they are in `renderSpendControl` and
+ *  `renderCardResource`).
+ *  The head div itself is created on FIRST use, so a pool with neither a DC nor an owned resource
+ *  emits no empty spacer.
+ *
+ *  `dice` hands off to `renderResourceTracker` (`./actions/resource-tracker`, R4-G5 §4.3.2), which
+ *  since the extraction owns the die span, the at-will sentinel, the `CHARGE_BOX_LIMIT` ceiling and
+ *  the recovery caption for all four tracker sites. The head still computes the LEVEL that die is
+ *  resolved at, the OWNER's class level (`resourceLevelFor`, the same expression `renderSpendControl`
+ *  carries; `renderCardResource` reaches the same derivation through `feature-rows.ts`'s
+ *  module-private `resourceLevel` helper). `points` goes straight to the numeric widget, which is
+ *  exactly what the hint is load-bearing for (a point-pool below the box limit, §4.1).
+ *
+ *  THE NAME IS PRINTED ONCE. `renderPointPool` writes its own `.pc-point-pool-name`, so the head
+ *  writes `.pc-pool-head-name` only on the paths where that widget does NOT run: the points shape
+ *  always runs it, and the dice shape's helper hands off to it through `renderLarge` whenever
+ *  `max > CHARGE_BOX_LIMIT`, EXCEPT at will, where `renderChargeBoxes` returns before it consults
+ *  `renderLarge` (`AT_WILL_MAX` is itself above the limit, so a guard on the max alone would leave an
+ *  at-will head nameless). */
+function renderPoolHead(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext, shape: "dice" | "points"): void {
+  let head: HTMLElement | undefined;
+  const headEl = (): HTMLElement => (head ??= root.createDiv({ cls: "pc-pool-head" }));
+  const dc = poolSaveDC(ctx.resolved, ctx.derived, pool);
+  if (dc !== null) headEl().createDiv({ cls: "pc-pool-dc", text: `${pool.label} save DC ${dc}` });
+  const id = pool.resource;
+  const fu = id ? ctx.resolved.state.feature_uses?.[id] : undefined;
+  const res = id ? ctx.resolved.resources?.get(id) : undefined;
+  if (!id || !fu || !res) return;
+  const resetLabel = RESET_LABELS[res.reset];
+  const resetTitle = res.reset === "custom" ? CUSTOM_RESET_TIP : undefined;
+  const isAtWill = fu.max === AT_WILL_MAX;
+  const numeric = shape === "points" || (!isAtWill && fu.max > CHARGE_BOX_LIMIT);
+  const pointOpts = { id, name: res.name, used: fu.used, max: fu.max, resetLabel, resetTitle, onSet: (n: number) => ctx.editState?.setFeatureUse(id, n) };
+  const line = headEl().createDiv({ cls: "pc-pool-head-resource" });
+  if (!numeric) line.createSpan({ cls: "pc-pool-head-name", text: res.name });
+  if (shape === "dice") {
+    renderResourceTracker(line, ctx, {
+      id, name: res.name, reset: res.reset,
+      die: res.die, level: res.die ? resourceLevelFor(res.owner.source, ctx.resolved) : undefined,
+      onSet: (n) => ctx.editState?.setFeatureUse(id, n),
+    });
+  } else {
+    renderPointPool(line, pointOpts);
+  }
 }
 
 /** Active-effects rail items: each selected, activatable, currently-on boon. */
@@ -228,7 +347,11 @@ function activeItems(pool: ResolvedPool, activeBuffs: string[], ctx: ComponentRe
   return pool.selected
     .filter((e) => e.entity.activatable && activeBuffs.includes(e.slug))
     .map((e) => ({
-      label: "Active boon",
+      // R4 {G5, G6} live rider 2, X-8-3: the tile's caption is the POOL's own label, from the data.
+      // The literal it replaces, "Active boon", was a game noun this renderer invented, and on a
+      // Warlock it sat beside a real Pact Boon tab. A pool with no label falls back to the neutral
+      // word the class-feature tiles already use.
+      label: pool.label || "Active",
       name: e.entity.name,
       onEnd: () => ctx.editState?.toggleActiveBuff(e.slug),
     }));
@@ -242,19 +365,6 @@ function renderCounter(parent: HTMLElement, pool: ResolvedPool): void {
   if (pool.selected.length > pool.count) b.classList.add("over");
 }
 
-/** Italic meta sub-line: "Passive", action cost, and consume cost. */
-function metaSub(e: OptionalFeatureEntity): string {
-  const parts: string[] = [];
-  if (e.passive) parts.push("Passive");
-  if (e.action_cost) parts.push(COST_LABELS[e.action_cost] ?? e.action_cost);
-  if (e.consumes?.amount) {
-    const word = e.consumes.resource ?? e.consumes.column ?? "resource";
-    const display = e.consumes.amount === 1 ? word.replace(/s$/, "") : word;
-    const label = `${display.charAt(0).toUpperCase()}${display.slice(1)}`;
-    parts.push(`${e.consumes.amount} ${label}`);
-  }
-  return parts.join(" · ");
-}
 
 /** One crimson-labelled meta item inside a pc-block-meta row. */
 function metaItem(parent: HTMLElement, label: string, value: string): void {

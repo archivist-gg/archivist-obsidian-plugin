@@ -1,7 +1,39 @@
+import { renderSeparated } from "../separated-caption";
+
+/** A PRESENTATIONAL constant (renderer-side, not game vocabulary: Gate 0 Q3): above this many points
+ *  the feature sites switch to the numeric widget. RE-MEASURED 2026-09-07 with
+ *  `grep -rn "renderChargeBoxes(" packages/obsidian/src`, after R4-G5 §4.3.2 folded the four tracker
+ *  tails into one helper: FOUR call expressions besides this declaration. `renderResourceTracker`
+ *  (`components/actions/resource-tracker.ts`) is the ONE that passes `limit` / `atWill` /
+ *  `renderLarge`, and every feature-resource tracker now reaches the boxes through it
+ *  (`renderCardResource` and `renderFirstResourceTracker`, `renderPickTracker`, and `renderPoolHead`'s
+ *  dice shape). The spell-slot site (`renderCastView`, twice) and the item site (`renderItemRow`) still
+ *  call `renderChargeBoxes` directly, pass none of the three, and keep drawing boxes. The race block
+ *  does NOT: it rides `renderFirstResourceTracker` into the helper, so it receives all three opts like
+ *  any other feature tracker. That is
+ *  harmless by the spec's measurement (R4-G4 §5.1: 228 race resource declarations, re-measured
+ *  2026-09-06 across the converter corpus (222) and the bundle (6) as all `1` (x149), `prof` (x78)
+ *  or a bare ability modifier (`con_mod`, x1), none 999, none above 12), so no race trait reaches
+ *  either new branch today (review M-5: "all `prof` or small literals" missed the one `con_mod`). */
+export const CHARGE_BOX_LIMIT = 12;
+
 export interface ChargeBoxesOpts {
   used: number;
   max: number;
-  recovery?: { amount: string; reset: "dawn" | "short" | "long" | "special" };
+  /**
+   * The recovery caption under the boxes, in one of TWO shapes (R4-G3a §8.2 (viii)):
+   *   - `{ amount, reset }` · the ITEM path. `reset` is the PERSISTED item-charge
+   *     vocabulary (`pc.schema.ts` `equipmentEntryStateSchema.recovery.reset`),
+   *     rendered through {@link RESET_LABEL} below. Untouched (invariant 4).
+   *   - `{ amount, label }` · the FEATURE path. `label` is already a caption,
+   *     built by the caller from `RESET_LABELS` (the `ResetTrigger`-keyed table
+   *     in ./reset-labels), and is rendered verbatim.
+   */
+  recovery?:
+    | { amount: string; reset: "dawn" | "short" | "long" | "special" }
+    | { amount: string; label: string };
+  /** Optional `title` for the recovery caption (the `custom` recovery tooltip). */
+  recoveryTitle?: string;
   /**
    * Atomic per-click setter. Receives the new `used` count after applying
    * legendary-style click semantics:
@@ -16,6 +48,12 @@ export interface ChargeBoxesOpts {
    */
   onExpend?: () => void;
   onRestore?: () => void;
+  /** Boxes above this count route to `renderLarge` (default CHARGE_BOX_LIMIT). */
+  limit?: number;
+  /** The `max === AT_WILL_MAX` case: render the text "at will" and no boxes. Checked FIRST. */
+  atWill?: boolean;
+  /** The fallback the caller supplies for `max > limit` (the feature sites pass renderPointPool). */
+  renderLarge?: (parent: HTMLElement, opts: ChargeBoxesOpts) => HTMLElement;
 }
 
 const RESET_LABEL: Record<"dawn" | "short" | "long" | "special", string> = {
@@ -28,6 +66,12 @@ const RESET_LABEL: Record<"dawn" | "short" | "long" | "special", string> = {
 const CHECKED = "archivist-toggle-box-checked";
 
 export function renderChargeBoxes(parent: HTMLElement, opts: ChargeBoxesOpts): HTMLElement {
+  if (opts.atWill) {
+    const wrap = parent.createDiv({ cls: "pc-charge-boxes pc-charge-boxes-at-will" });
+    wrap.createSpan({ cls: "pc-charge-at-will", text: "at will" });
+    return wrap;
+  }
+  if (opts.renderLarge && opts.max > (opts.limit ?? CHARGE_BOX_LIMIT)) return opts.renderLarge(parent, opts);
   const wrap = parent.createDiv({ cls: "pc-charge-boxes" });
   const boxRow = wrap.createDiv({ cls: "archivist-toggle-box-row" });
   const boxes: HTMLElement[] = [];
@@ -71,12 +115,21 @@ export function renderChargeBoxes(parent: HTMLElement, opts: ChargeBoxesOpts): H
 
   if (opts.recovery) {
     const label = formatRecovery(opts.recovery);
-    wrap.createDiv({ cls: "pc-charge-recovery", text: `/ ${label}` });
+    // R4-G6b §10 (Q-8): the caption is a UNIT holding its `/ ` separator out of flow, so the mark is
+    // clipped away when the caption falls onto its own line under the pips and never starts it. The
+    // element is a `span` now rather than a `div` (harmless: it is a flex item of an `inline-flex`
+    // host and `.pc-charge-recovery` declares no `display`), it keeps the class and the `title`, and
+    // its `textContent` is still `/ <label>`.
+    const [cap] = renderSeparated(wrap, [label], { sep: "/", leading: true, spaces: false, unitCls: "pc-charge-recovery" });
+    if (opts.recoveryTitle) cap.setAttribute("title", opts.recoveryTitle);
   }
   return wrap;
 }
 
-function formatRecovery(rec: { amount: string; reset: "dawn" | "short" | "long" | "special" }): string {
+function formatRecovery(rec: NonNullable<ChargeBoxesOpts["recovery"]>): string {
+  // The feature path hands over a finished caption; only the item path consults
+  // the four-member map (and only it carries the dawn "N per dawn" suffix).
+  if ("label" in rec) return rec.label;
   const base = RESET_LABEL[rec.reset];
   if (rec.reset === "dawn" && rec.amount && rec.amount !== "1") {
     return `${base} ${rec.amount}`;

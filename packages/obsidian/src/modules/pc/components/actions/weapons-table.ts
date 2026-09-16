@@ -1,12 +1,15 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { ACTerm, AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { ActionEntry } from "./action-model";
-import { renderConditionTag } from "../condition-tag";
-import { renderCostBadge, type ActionCost } from "./cost-badge";
+import { renderConditionTags, rollModifierTagSpec, type ConditionTagSpec } from "../condition-tag";
+import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
+import type { ActionCost } from "@archivist-gg/dnd5e/types/resource";
+import { renderCostBadge } from "./cost-badge";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderSituationalRows } from "../situational-rows";
 import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
+import { CHOSEN_DAMAGE_TYPE_NOTE, isChosenDamageType, isRenderableDamageText } from "@archivist-gg/dnd5e/dnd/math";
 
 const attackDisSources = new Set([
   "blinded", "frightened", "poisoned", "prone", "restrained", "grappled", "exhaustion",
@@ -38,10 +41,14 @@ export function renderWeaponsGroup(
   const header = list.createDiv({ cls: "pc-weapon-header" });
   if (hasMastery) header.addClass("has-mastery");
   header.createDiv({ cls: "pc-weapon-header-cost" }); // blank leading cell over the cost badge
-  header.createDiv({ cls: "pc-weapon-header-cell", text: "Name" });
-  header.createDiv({ cls: "pc-weapon-header-cell", text: "Range" });
-  header.createDiv({ cls: "pc-weapon-header-cell", text: "Hit" });
-  header.createDiv({ cls: "pc-weapon-header-cell", text: "Damage" });
+  // R4-G6b live rider F-C: each label carries its own class beside the shared one, completing the
+  // idiom `pc-weapon-header-cost` and `pc-weapon-header-mastery` already used. The narrow tier moves
+  // these cells onto a second grid line and needs to name them; a positional selector would read the
+  // header by source order, which no rule in this partial does.
+  header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-name", text: "Name" });
+  header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-range", text: "Range" });
+  header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-hit", text: "Hit" });
+  header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-damage", text: "Damage" });
   if (hasMastery) {
     header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-mastery", text: "Mastery" });
   }
@@ -59,7 +66,11 @@ export function renderWeaponsGroup(
  *
  * Everything display-only (cost badge, range, to-hit / damage inline tags,
  * condition/roll-modifier chips, damage riders, versatile, crit caption,
- * situational sub-line) is preserved verbatim from the former in-loop builder.
+ * situational sub-line) came verbatim from the former in-loop builder, with THREE
+ * later changes: R4-G7 T6a routes a rider whose printed form cannot be a dice
+ * chip to the row's `.pc-weapon-note` caption instead of into the damage text,
+ * R4-G7 T8 RIDER-12 routes a rider that carries a `condition` there too, and
+ * RIDER-13 routes a rider whose type is the player's `chosen` pick there, type-less.
  *
  * `hasMastery` is the group-level flag from `renderWeaponsGroup`: when set, the
  * row switches to the 6-col has-mastery grid and (for a row that actually has
@@ -105,29 +116,33 @@ export function renderWeaponRow(
   const hitCell = row.createDiv({ cls: "pc-weapon-hit" });
   renderTextWithInlineTags(`\`atk:${formatSigned(a.toHit)}\``, hitCell, false);
 
+  // R4-G7 T8 RIDER-20: the HIT cell's tags are collected, then rendered once so same-text tags merge.
+  const specs: ConditionTagSpec[] = [];
   const ce = ctx.derived.conditionEffects;
   if (ce) {
     if (ce.attack_disadvantage) {
       const sources = ce.sources
         .filter((s) => attackDisSources.has(s.condition))
         .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
-      renderConditionTag(hitCell, "DIS", `Disadvantage from ${sources.join(", ")}`);
+      specs.push({ kindClass: "dis", text: ROLL_MODE_TAG.disadvantage, tooltip: `Disadvantage from ${sources.join(", ")}` });
     }
     if (ce.attack_advantage) {
-      renderConditionTag(hitCell, "ADV", `Advantage from invisible`);
+      specs.push({ kindClass: "adv", text: ROLL_MODE_TAG.advantage, tooltip: `Advantage from invisible` });
     }
     const isAction = cost === "action" || cost === "reaction" || cost === "bonus-action";
     if (isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
   }
 
   // Structured roll-modifier effects scoped to attacks (feature-granted
-  // advantage/disadvantage). Order-preserving; one chip per matching entry.
+  // advantage/disadvantage). Order-preserving; one spec per entry. The cell matches no
+  // scope (every weapon row carries every attack entry), so R4-G7 T8 RIDER-20 reads `scope`
+  // for the mark only: the converter left the attack qualifier IN `scope` ("your next attack
+  // roll on the current turn"), and an unmapped scope marks the tag conditional.
   for (const rm of ctx.derived.rollModifiers ?? []) {
     if (rm.roll !== "attack") continue;
-    const tag = rm.mode === "advantage" ? "ADV" : "DIS";
-    const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-    renderConditionTag(hitCell, tag, tip);
+    specs.push(rollModifierTagSpec(rm));
   }
+  renderConditionTags(() => hitCell, specs);
 
   // Damage (inline italic; versatile shows both stacked)
   const dmgCell = row.createDiv({ cls: "pc-weapon-damage" });
@@ -137,9 +152,27 @@ export function renderWeaponRow(
     false,
   );
   if (a.damageRiders?.length) {
+    // R4-G7 T6a E-4 (c): a damage chip is a ROLL, so only a dice expression or a number (optionally
+    // with a canonical damage type) may go inside the damage text. A rider whose amount is prose
+    // ("your Wisdom modifier", "half your fighter level") is collected here and printed as the row's
+    // CAPTION instead, beside the attack notes under the weapon name. The amount and the damage type
+    // arrive already resolved (the engine's merge site), so what is prose here is prose in the DATA.
+    // R4-G7 T8 RIDER-12: a rider that carries a `condition` is not damage on every hit, so it goes to the
+    // caption as well, with its condition after its source, whatever its amount: the decision is the
+    // FIELD, never the condition's wording. The damage cell keeps the unconditional riders only.
+    // R4-G7 T8 RIDER-13: a rider whose type is the schema's `chosen` sentinel (the engine keeps it, never
+    // inherits the row's type) prints its amount with NO type, captioned with dnd5e's note for the player's
+    // choice; the sentinel word itself is never printed.
+    const riderCaptions: string[] = [];
     for (const rider of a.damageRiders) {
+      const chosen = isChosenDamageType(rider.damage_type);
+      const dice = rider.damage_type && !chosen ? `${rider.amount} ${rider.damage_type}` : rider.amount;
+      if (chosen || rider.condition || !isRenderableDamageText(dice)) {
+        const notes = [chosen ? CHOSEN_DAMAGE_TYPE_NOTE : undefined, rider.condition];
+        riderCaptions.push(riderCaption(dice, rider.source, notes));
+        continue;
+      }
       dmgCell.appendText(" + ");
-      const dice = rider.damage_type ? `${rider.amount} ${rider.damage_type}` : rider.amount;
       renderTextWithInlineTags(`\`damage:${dice}\``, dmgCell, false);
       // Attribute the rider to its source on hover (source is NOT shown
       // inline — it disambiguates same-type chips, e.g. two necrotic riders).
@@ -148,6 +181,11 @@ export function renderWeaponRow(
         const chip = chips[chips.length - 1] as HTMLElement | undefined;
         if (chip) chip.title = chip.title ? `${chip.title} — ${rider.source}` : rider.source;
       }
+    }
+    // One caption line for every rider that could not be a chip, in the `.pc-weapon-note` idiom the
+    // attack notes already use (a muted line under the weapon name), joined by the same " · ".
+    if (riderCaptions.length) {
+      nameCell.createDiv({ cls: "pc-weapon-note", text: riderCaptions.join(" · ") });
     }
   }
   if (a.versatile?.damageDice) {
@@ -158,8 +196,11 @@ export function renderWeaponRow(
   // Expanded crit threshold caption (e.g. "crit 19–20") from a crit-range
   // feature effect. Display-only; shown whenever the row carries a lowered
   // critRange (the recalc fold leaves it undefined at the normal 20).
+  // R4-G7 T8 RIDER-25 (F-CRIT): a BLOCK element, its own line under the damage text. As a span it followed the damage
+  // tag with no separator and read "1+2 bludgeoningcrit / 18-20"; the line break is the separator (measured live in W-Dr:
+  // 0 px beside the tag inline, 1.6 px below it as a block with `actions.css`'s 2 px margin).
   if (a.critRange && a.critRange < 20) {
-    dmgCell.createSpan({ cls: "pc-weapon-crit", text: `crit ${a.critRange}–20` });
+    dmgCell.createDiv({ cls: "pc-weapon-crit", text: `crit ${a.critRange}–20` });
   }
 
   // 2024 Weapon Mastery: a REAL trailing 6th grid cell (only when the group
@@ -180,24 +221,32 @@ export function renderWeaponRow(
   // Expand block = a full-width sibling div AFTER the row, rendered once and
   // toggled via `hidden` (no container redraw). Built eagerly like the feature
   // rows; the inventory expand is a pure read of the resolved equipment.
-  // AttackRow.id is `${index}:standard` — unique per equipped weapon slot and
-  // self-healing on index shift (same D1 contract as the item rows).
+  // AttackRow.id is `${index}:standard` for a weapon slot and `unarmed-strike`
+  // for the engine's unarmed row (R4-G6b §5): unique per equipped weapon slot
+  // and self-healing on index shift (same D1 contract as the item rows).
   const expandKey = rowExpandKey("weapon", a.id);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
   const expanded = isRowExpanded(ctx, expandKey);
   expand.hidden = !expanded;
   if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
-  const entry = findEntryForAttack(ctx, a);
-  const resolved = findResolvedForAttack(ctx, a);
-  if (entry && resolved) {
-    renderInventoryRowExpand(inner, {
-      entry, resolved, app: ctx.app, editState: ctx.editState,
-      registry: ctx.services?.entities ?? null,
-      mastery: a.mastery,
-    });
+  if (a.unarmed) {
+    // R4-G6b §5.5: the engine's unarmed row has no equipment entry. Gate BEFORE the lookup:
+    // `findEntryForAttack` compares `e.slot === a.slotKey`, and `undefined === undefined` matches
+    // the first equipped entry that carries no `slot` key, which would open another item's expand here.
+    renderUnarmedCard(inner, a);
   } else {
-    inner.createDiv({ cls: "pc-action-row-sub", text: "(no item record for this attack)" });
+    const entry = findEntryForAttack(ctx, a);
+    const resolved = findResolvedForAttack(ctx, a);
+    if (entry && resolved) {
+      renderInventoryRowExpand(inner, {
+        entry, resolved, app: ctx.app, editState: ctx.editState,
+        registry: ctx.services?.entities ?? null,
+        mastery: a.mastery,
+      });
+    } else {
+      inner.createDiv({ cls: "pc-action-row-sub", text: "(no item record for this attack)" });
+    }
   }
 
   // Situational sub-line — full-width sibling div (was a colspan row).
@@ -233,6 +282,30 @@ export function renderWeaponRow(
 
 function formatSigned(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
+}
+
+/** One rider caption in the T6a E-4 (c) idiom: `+ <amount and type>`, then in parentheses the source and, after a
+ *  colon, the rider's notes joined by "; " (R4-G7 T8 RIDER-12 / RIDER-13): the player's-choice note for a `chosen`
+ *  type, then the condition, `+ 2d8 radiant (Divine Smite: for a 1st-level spell slot)`. Any part may be absent;
+ *  with none there are no parentheses. */
+function riderCaption(dice: string, source: string | undefined, notes: (string | undefined)[]): string {
+  const note = [source, notes.filter((s): s is string => !!s).join("; ")].filter((s): s is string => !!s).join(": ");
+  return `+ ${dice}${note ? ` (${note})` : ""}`;
+}
+
+/** The unarmed row's expand: the two term lists, source + signed amount per row (R4-G6b §5.5). */
+function renderUnarmedCard(host: HTMLElement, a: AttackRow): void {
+  const card = host.createDiv({ cls: "pc-unarmed-card" });
+  const list = (title: string, terms: ACTerm[]) => {
+    card.createDiv({ cls: "pc-unarmed-card-head", text: title });
+    for (const t of terms) {
+      const row = card.createDiv({ cls: "pc-unarmed-card-row" });
+      row.createSpan({ cls: "pc-unarmed-card-source", text: t.source });
+      row.createSpan({ cls: "pc-unarmed-card-amount", text: formatSigned(t.amount) });
+    }
+  };
+  list("To hit", a.breakdown.toHit);
+  list("Damage", a.breakdown.damage);
 }
 
 function findEntryForAttack(ctx: ComponentRenderContext, a: AttackRow): EquipmentEntry | null {

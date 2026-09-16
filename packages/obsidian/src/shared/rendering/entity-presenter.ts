@@ -14,10 +14,14 @@ export interface EditContext extends RenderContext {
    *  when no content change triggers Obsidian to re-render the block
    *  (e.g. cancel with no edits, save with identical YAML). */
   onExit?: () => void;
-  /** Optional compendium provenance when editing a {{type:slug}} ref from
-   *  compendium-ref-extension. Present for compendium-sourced blocks, absent
-   *  when editing an inline code-fence. */
+  /** Compendium provenance of a {{type:slug}} REF: this block IS the registered entity `slug`
+   *  (present on the REF path from compendium-ref-extension, absent for an inline code fence;
+   *  `hostReadonly` is the orthogonal fact about the NOTE). */
   compendium?: { slug: string; compendium: string; readonly: boolean };
+  /** R4-G6b §3.3: the NOTE this block lives in belongs to a readonly compendium. Distinct from
+   *  `compendium`, which means "this block IS the registered entity `slug`" (the REF path). The editors
+   *  render Save-as-new + Cancel only and never write the host note. */
+  hostReadonly?: boolean;
   /** Replace the {{type:slug}} text in the host document. Provided by the
    *  compendium-ref caller; unused by the standard code-block processor. */
   onReplaceRef?: (newRefText: string) => void;
@@ -33,7 +37,7 @@ export type ModalConstructor = new (app: App, editor: Editor) => { open(): void 
  * (view render, edit-mode UI, insert modal). Parsing is the kernel's job —
  * a presenter never parses. `type` is simultaneously the code-block language,
  * the compendium entityType, and the insert-command suffix (verified identical
- * for all 11 authored types).
+ * for all 12 authored types).
  */
 export interface EntityPresenter {
   type: string;

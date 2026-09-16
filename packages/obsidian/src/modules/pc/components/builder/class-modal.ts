@@ -1,4 +1,5 @@
-import { Modal, type App } from "obsidian";
+import { type App } from "obsidian";
+import { PaneCenteredModal } from "../../../../shared/modals/pane-centered-modal";
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist-gg/core";
 import type { ColSpec } from "./selection-table";
@@ -27,7 +28,7 @@ export interface AddClassModalOptions {
 /** Parchment Add-Class modal (rest-modal chrome). Reading and adding are
  *  separated: row click = accordion Chronicle read + highlight; only the
  *  sticky footer button or the in-block claim bar commits. */
-export class AddClassModal extends Modal {
+export class AddClassModal extends PaneCenteredModal {
   constructor(
     app: App,
     private readonly ctx: ComponentRenderContext,

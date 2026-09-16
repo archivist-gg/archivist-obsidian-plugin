@@ -20,8 +20,25 @@ describe("compactCastingTime", () => {
     expect(compactCastingTime("1hour")).toBe("1 hr");
     expect(compactCastingTime("hour")).toBe("1 hr");
     expect(compactCastingTime("8hours")).toBe("8 hr");
-    expect(compactCastingTime(undefined)).toBe("—");
+    expect(compactCastingTime(undefined)).toBe("\u2014");
     expect(compactCastingTime("weird")).toBe("weird"); // unknown passes through
+  });
+
+  // R4 {G5, G6} live rider N-1-17: on the 13-book install the Paladin's Spells tab mixed `1A` with
+  // `bonus action` and `1 minute` in ONE column. The bundle spells all carry the tokens above, so the
+  // odd spellings are a converted book's: the same token written with a space or a capital, which fell
+  // through the switch to the raw string. The token is normalised before it is matched, so one
+  // vocabulary reaches the column whatever the document spells.
+  it("matches a token whatever its spacing, hyphenation or case", () => {
+    expect(compactCastingTime("bonus action")).toBe("1BA");
+    expect(compactCastingTime("Bonus Action")).toBe("1BA");
+    expect(compactCastingTime("1 minute")).toBe("1 min");
+    expect(compactCastingTime("10 minutes")).toBe("10 min");
+    expect(compactCastingTime("Action")).toBe("1A");
+    expect(compactCastingTime(" reaction ")).toBe("1R");
+    // Still verbatim when nothing matches, and the placeholder is unchanged.
+    expect(compactCastingTime("1 week")).toBe("1 week");
+    expect(compactCastingTime(undefined)).toBe("\u2014");
   });
 });
 
@@ -32,7 +49,7 @@ describe("formatRange", () => {
     expect(formatRange("Self")).toBe("Self");
     expect(formatRange("Touch")).toBe("Touch");
     expect(formatRange("Special")).toBe("Special");
-    expect(formatRange(undefined)).toBe("—");
+    expect(formatRange(undefined)).toBe("\u2014");
   });
 });
 
@@ -68,5 +85,31 @@ describe("editionTag", () => {
     expect(editionTag(sp({ edition: "2014" } as never))).toEqual({ label: "5e", mod: "e2014" });
     expect(editionTag(sp({ edition: "2024" } as never))).toEqual({ label: "2024", mod: "e2024" });
     expect(editionTag(sp({}))).toBeNull(); // no edition → no tag
+  });
+});
+
+describe("R4-G7 T7 live rider RIDER-4 · a PROSE reaction casting time", () => {
+  // WITNESSED LIVE at S00 on `conv-diviner2024-20`'s Spells tab: Feather Fall's time cell read
+  // `reaction (which you take when you or a creature you can see within 60 feet of you falls)` and
+  // wrapped onto SEVEN lines in a column sized for `1A`, making that one row about five times the
+  // height of its neighbours. MEASURED in the converter corpus: `casting_time` has 24 distinct values,
+  // of which THIRTEEN are this `reaction (...)` prose shape (Feather Fall, Absorb Elements, Shield,
+  // Counterspell, Silvery Barbs and their edition twins); the bare `reaction` token already compacts,
+  // so only the ones carrying their trigger fell through verbatim.
+  it("compacts a reaction that carries its trigger, and keeps every other token exactly as it was", () => {
+    expect(compactCastingTime("reaction (which you take when you or a creature you can see within 60 feet of you falls)")).toBe("1R");
+    expect(compactCastingTime("Reaction (which you take when you are hit by an attack)")).toBe("1R");
+    // the controls: nothing else moves
+    expect(compactCastingTime("reaction")).toBe("1R");
+    expect(compactCastingTime("action")).toBe("1A");
+    expect(compactCastingTime("bonus action")).toBe("1BA");
+    expect(compactCastingTime("1 minute")).toBe("1 min");
+    expect(compactCastingTime("1 week")).toBe("1 week");
+    expect(compactCastingTime("weird")).toBe("weird");
+    expect(compactCastingTime(undefined)).toBe("\u2014");
+  });
+
+  it("does not swallow a token that merely CONTAINS the word reaction", () => {
+    expect(compactCastingTime("1 minute (reaction optional)")).toBe("1 minute (reaction optional)");
   });
 });

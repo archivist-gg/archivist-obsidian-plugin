@@ -134,6 +134,91 @@ describe("renderCastView", () => {
   });
 });
 
+// R4-G7 T8 RIDER-15 (F-NODICE (a)): a cantrip row prints its damage at the character's TOTAL level, in the same
+// `.pc-spell-eff` chip an upcast row prints. The Fire Bolt is the PHB 2024 shape (5 / 11 / 17 only).
+describe("renderCastView · a cantrip's damage at the character's level (R4-G7 T8 RIDER-15)", () => {
+  const fireBolt = () => sp("Fire Bolt", 0, {
+    damage: { types: ["fire"] } as never,
+    casting_options: [
+      { type: "player_level_5", damage_roll: "2d10" },
+      { type: "player_level_11", damage_roll: "3d10" },
+      { type: "player_level_17", damage_roll: "4d10" },
+    ] as never,
+  });
+  const atLevel = (totalLevel: number): HTMLElement => {
+    const root = mountContainer();
+    const ctx = ctxFor([fireBolt()]);
+    (ctx.derived as unknown as { totalLevel: number }).totalLevel = totalLevel;
+    renderCastView(root, ctx);
+    return sectionTableAfter(root, "Cantrips").querySelector(".pc-spell-cast-row") as HTMLElement;
+  };
+  it("a level-20 caster's Fire Bolt row carries the 4d10 chip with the damage icon, the type word under it", () => {
+    const row = atLevel(20);
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("4d10");
+    expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).not.toBeNull();
+    expect(row.querySelector(".pc-spell-dtype")?.textContent).toBe("fire");
+  });
+  it("a level-4 caster's Fire Bolt row has no chip (the base roll is not in the data), the type word keeps its icon", () => {
+    const row = atLevel(4);
+    expect(row.querySelector(".pc-spell-eff")).toBeNull();
+    expect(row.querySelector(".pc-spell-dtype .pc-spell-dtype-icon")).not.toBeNull();
+  });
+});
+
+// R4-G7 T8 RIDER-16 (F-CHIP (a)): where a scaled value prints is decided by the FIELD it came from, never by a spell
+// list: `damage_roll` -> the chip with the damage icon; `target_count` -> a plain chip; `duration` -> no chip, it
+// REPLACES the row's duration text at that slot; `desc` -> a muted caption line in the effect cell, never the chip.
+describe("renderCastView · the scaled value prints where its FIELD says (R4-G7 T8 RIDER-16)", () => {
+  const upcastRow = (spell: ResolvedSpell, slots: Record<number, number>, name: string): HTMLElement => {
+    const root = mountContainer();
+    const ctx = ctxFor([spell]);
+    (ctx.derived as unknown as { derivedSpellSlots: Record<number, number> }).derivedSpellSlots = slots;
+    renderCastView(root, ctx);
+    return Array.from(root.querySelectorAll<HTMLElement>(".pc-spell-cast-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === name && r.querySelector(".pc-spell-up"))!;
+  };
+  it("a DURATION value (PHB 2014 Bestow Curse at 4th) replaces the duration text and is never a chip", () => {
+    const bestow = sp("Bestow Curse", 3, {
+      duration: "1 minute", concentration: true, damage: { types: ["necrotic"] } as never,
+      casting_options: [{ type: "slot_level_4", duration: "10 minutes" }] as never,
+    });
+    const row = upcastRow(bestow, { 3: 3, 4: 2 }, "Bestow Curse");
+    expect(row.querySelector(".pc-spell-dur")?.textContent).toBe("Conc · 10 minutes");
+    expect(row.querySelector(".pc-spell-eff")).toBeNull();
+    // with no damage chip carrying it, the type word keeps its icon
+    expect(row.querySelector(".pc-spell-dtype .pc-spell-dtype-icon")).not.toBeNull();
+  });
+  it("a DESC value (PHB 2024 False Life at 2nd) prints as a caption line in the effect cell, never the chip", () => {
+    const falseLife = sp("False Life", 1, {
+      duration: "1 hour", casting_options: [{ type: "slot_level_2", desc: "You gain 2d4 + 9 temporary hit points." }] as never,
+    });
+    const row = upcastRow(falseLife, { 1: 4, 2: 3 }, "False Life");
+    expect(row.querySelector(".pc-spell-effcell .pc-spell-eff-note")?.textContent).toBe("You gain 2d4 + 9 temporary hit points.");
+    expect(row.querySelector(".pc-spell-eff")).toBeNull();
+    expect(row.querySelector(".pc-spell-dur")?.textContent).toBe("1 hour");
+  });
+  it("a TARGET_COUNT value (Magic Missile at 2nd) is a plain chip: no damage icon inside it, the type word keeps its icon", () => {
+    const mm = sp("Magic Missile", 1, {
+      damage: { types: ["force"] } as never, casting_options: [{ type: "slot_level_2", target_count: 4 }] as never,
+    });
+    const row = upcastRow(mm, { 1: 4, 2: 3 }, "Magic Missile");
+    expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).toBeNull();
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("4 targets");
+    expect(row.querySelector(".pc-spell-dtype .pc-spell-dtype-icon")).not.toBeNull();
+  });
+  it("a DAMAGE_ROLL value keeps today's chip with the damage icon and a bare type word (characterisation)", () => {
+    const fireball = sp("Fireball", 3, {
+      duration: "instantaneous", damage: { types: ["fire"] } as never, casting_options: [{ type: "slot_level_4", damage_roll: "9d6" }] as never,
+    });
+    const row = upcastRow(fireball, { 3: 3, 4: 2 }, "Fireball");
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("9d6");
+    expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).not.toBeNull();
+    expect(row.querySelector(".pc-spell-dtype .pc-spell-dtype-icon")).toBeNull();
+    expect(row.querySelector(".pc-spell-eff-note")).toBeNull();
+    expect(row.querySelector(".pc-spell-dur")?.textContent).toBe("instantaneous");
+  });
+});
+
 // ---- pact casters ----
 function pactSp(name: string, level: number): ResolvedSpell {
   return { entity: { name, level } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),
@@ -263,7 +348,7 @@ function flush(): Promise<void> {
 describe("renderCastView · scrolls & consumables", () => {
   beforeEach(() => confirmMock.mockReset());
 
-  it("scroll row reuses the real CAST button (not the retired lozenge) and shows no 'always' marker", () => {
+  it("scroll row reuses the real CAST button (not the retired lozenge) and shows no Always prepared marker", () => {
     const root = mountContainer();
     // A Wizard who KNOWS Fireball at L3 and also carries a Fireball scroll (entry 0).
     renderCastView(root, ctxForScroll([
@@ -285,7 +370,7 @@ describe("renderCastView · scrolls & consumables", () => {
     // The retired bespoke lozenge and its label are gone everywhere.
     expect(root.querySelector(".pc-spell-scroll")).toBeNull();
     expect(root.textContent).not.toContain("Cast (consume)");
-    // A consumable scroll must NOT show the "always" marker (alwaysPrepared is a
+    // A consumable scroll must NOT show the "Always prepared" marker (alwaysPrepared is a
     // resolver castability flag, not an "always ready" claim here).
     expect(scrollRow.querySelector(".pc-spell-always")).toBeNull();
 
@@ -295,7 +380,7 @@ describe("renderCastView · scrolls & consumables", () => {
     expect(l3Fireballs.length).toBe(1);
   });
 
-  it("still renders the 'always' marker for a non-scroll always-prepared spell (guard: only scrolls are suppressed)", () => {
+  it("still renders the Always prepared marker for a non-scroll always-prepared spell (guard: only scrolls are suppressed)", () => {
     const root = mountContainer();
     const domain: ResolvedSpell = {
       entity: { name: "Bless", level: 1 } as never, slug: "bless",
@@ -446,5 +531,89 @@ describe("renderCastView — D1 spell-block persistence", () => {
     expect(base2.classList.contains("pc-row-open")).toBe(true);
     expect(upcast2.classList.contains("pc-row-open")).toBe(false);
     expect(root2.querySelectorAll(".pc-spell-expand-row").length).toBe(1);
+  });
+});
+
+// Fix round 1 (F-6): the three legs below are about the CANTRIPS SECTION, not D1's expand-block persistence; they
+// were nested in that describe only because they were appended to the file. Their bodies are byte-identical to what
+// the D1 block carried, so m14's kill row is still the second leg's first `expect`.
+describe("renderCastView · cantrips section (R4-G6b §9)", () => {
+  it("a caster who can know cantrips but has none renders an empty Cantrips section (R4-G6b §9)", () => {
+    const root = mountContainer();
+    const ctx = ctxFor([sp("Cure Wounds", 1)]);
+    (ctx.derived as { spellLimits: unknown[] }).spellLimits = [{ classSlug: "bard", kind: "known", cantripsKnown: 3, preparedOrKnown: 8 }];
+    renderCastView(root, ctx);
+    // The DOM is root > [.pc-spell-sec, .pc-spell-cast-table, .pc-spell-sec, ...]: the table is a SIBLING of the head
+    // (`tableFor(root)`), and the empty row lives inside the table (Gate 2 B-6). Only the slots are children of the head.
+    const heads = Array.from(root.querySelectorAll(".pc-spell-sec-label")).map((e) => e.textContent);
+    expect(heads[0]).toBe("Cantrips");
+    expect(root.querySelector(".pc-spell-cast-table")).not.toBeNull();
+    expect(root.querySelector(".pc-spell-empty-row")?.textContent).toBe("None prepared.");
+    expect(root.querySelector(".pc-spell-sec")!.querySelector(".pc-spell-slots")).toBeNull();
+  });
+  // Fix round 1 (F-6 c): the title said "a non-caster and a derived without spellLimits", but the fixture is
+  // `ctxFor([])` — a full Wizard (`spellcastingClasses: [wizard]`, `derivedSpellSlots: { 1: 4, 2: 3 }`) with
+  // `spellLimits` deleted. Only the second half was ever asserted; the title now claims only that.
+  it("a derived without spellLimits renders without throwing and no Cantrips section", () => {
+    const root = mountContainer(); const ctx = ctxFor([]); delete (ctx.derived as { spellLimits?: unknown }).spellLimits;
+    expect(() => renderCastView(root, ctx)).not.toThrow();
+    expect(root.querySelector(".pc-spell-sec-label")?.textContent).not.toBe("Cantrips");
+  });
+  it("a cantripsKnown 0 limit with no cantrips renders no Cantrips section, and cantrips present render rows with no empty row (R4-G6b §14 row 24)", () => {
+    const bare = mountContainer();
+    const bareCtx = ctxFor([sp("Cure Wounds", 1)]);
+    // Fix round 1 (F-6 b): `ctxFor`'s default `spellLimits: []` misses the boundary entirely (nothing to iterate).
+    // A shipped-data shape that DOES iterate is a class that knows no cantrips (Paladin, and the 2014 Ranger):
+    // `cantripsKnown: 0` must not open the section, which is what `(l.cantripsKnown ?? 0) > 0` says.
+    (bareCtx.derived as { spellLimits: unknown[] }).spellLimits = [{ classSlug: "paladin", kind: "prepared", cantripsKnown: 0, preparedOrKnown: 4 }];
+    renderCastView(bare, bareCtx);
+    expect(Array.from(bare.querySelectorAll(".pc-spell-sec-label")).map((e) => e.textContent)).not.toContain("Cantrips");
+
+    const root = mountContainer();
+    const ctx = ctxFor([sp("Fire Bolt", 0)]);
+    // A cantrip-only caster owns no leveled slots, so the Cantrips table is the only table rendered.
+    (ctx.derived as never as { derivedSpellSlots: Record<number, number> }).derivedSpellSlots = {};
+    (ctx.derived as { spellLimits: unknown[] }).spellLimits = [{ classSlug: "wizard", kind: "known", cantripsKnown: 3, preparedOrKnown: null }];
+    renderCastView(root, ctx);
+    expect(root.querySelectorAll(".pc-spell-cast-row").length).toBe(1);
+    expect(root.querySelector(".pc-spell-empty-row")).toBeNull();
+  });
+});
+
+// R4-G7 T8 RIDER-17 (F-ALWAYS (a)): the always-prepared marker reads as words, from ONE label both spell views share.
+describe("renderCastView · the always-prepared marker (R4-G7 T8 RIDER-17)", () => {
+  it("an always-prepared row's marker reads `Always prepared`, never the bare lowercase `always`", () => {
+    const root = mountContainer();
+    const domain: ResolvedSpell = {
+      entity: { name: "Bless", level: 1 } as never, slug: "bless",
+      classSlug: "wizard", source: "class", prepared: true, alwaysPrepared: true,
+    };
+    renderCastView(root, ctxForScroll([domain]));
+    expect(sectionTableAfter(root, "1st Level").querySelector(".pc-spell-always")?.textContent).toMatch(/^Always prepared$/);
+  });
+});
+
+// R4-G7 T8 RIDER-19 (F-PACT), the plugin half: a CHARACTERISATION pin, green by construction. The Cast view already routes
+// a pact class's levelled spells to the Pact Magic block and keeps them out of the owned-slot blocks (base AND upcast);
+// the live "No spells." under PACT MAGIC was the engine attributing every un-classed spell to the first caster (dnd5e
+// `pc.resolver.ts`, fixed there). This pins the routing a correctly attributed Paladin / Warlock sheet relies on.
+describe("renderCastView · a Paladin / Warlock multiclass routes the Warlock's spells to Pact Magic (R4-G7 T8 RIDER-19)", () => {
+  it("the Warlock's spell lists under PACT MAGIC once, the Paladin's under 1st Level, and the pact block claims no emptiness", () => {
+    const root = mountContainer();
+    const pal = (name: string): ResolvedSpell => ({ ...sp(name, 1), classSlug: "players-handbook-2014_class_paladin" });
+    const war = (name: string, extra: Partial<ResolvedSpell["entity"]> = {}): ResolvedSpell => ({ ...sp(name, 1, extra), classSlug: "players-handbook-2014_class_warlock" });
+    const ctx = ctxFor([pal("Bless"), war("Armor of Agathys", { casting_options: [{ type: "slot_level_2", desc: "You gain 10 temporary hit points." }] as never })]);
+    (ctx.derived as unknown as Record<string, unknown>).spellcastingClasses = [
+      { classSlug: "players-handbook-2014_class_paladin", className: "Paladin", ability: "cha", saveDC: 14, attackBonus: 6, casterType: "half", preparation: "prepared" },
+      { classSlug: "players-handbook-2014_class_warlock", className: "Warlock", ability: "cha", saveDC: 14, attackBonus: 6, casterType: "pact", preparation: "known" },
+    ];
+    (ctx.derived as unknown as Record<string, unknown>).derivedSpellSlots = { 1: 4, 2: 2 };
+    (ctx.derived as unknown as Record<string, unknown>).pactMagic = { level: 3, total: 2 };
+    renderCastView(root, ctx);
+    const names = (label: string) => Array.from(sectionTableAfter(root, label).querySelectorAll(".pc-spell-name")).map((n) => n.textContent);
+    expect(names("Pact Magic (L3)")).toEqual(["Armor of Agathys"]);
+    expect(names("1st Level")).toEqual(["Bless"]);
+    expect(names("2nd Level")).not.toContain("Armor of Agathys");
+    expect(sectionTableAfter(root, "Pact Magic (L3)").querySelector(".pc-spell-empty-row")).toBeNull();
   });
 });

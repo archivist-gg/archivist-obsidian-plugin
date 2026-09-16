@@ -8,10 +8,12 @@ import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";
 import { buildDecisionLedger, wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { resolveOriginFeat, stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
-import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, fixedGrantLines, fixedNamesFrom } from "../../../../shared/rendering/renderer-utils";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
+import { renderBackgroundTables, renderSuggestedCharacteristics, tablesNotInDescription, type BgTable } from "../../../../shared/rendering/background-tables";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 const skillsOf = (e: RegisteredEntity): string[] =>
   (e.data as { skill_proficiencies?: string[] }).skill_proficiencies ?? [];
@@ -40,6 +42,8 @@ interface BackgroundData {
   ability_score_increases?: { pool?: string[] } | null;
   origin_feat?: string | null;
   choices?: Array<{ kind: string; id?: string; domain?: string; count?: number; points?: number; max_per?: number; pool?: string[] }>;
+  tables?: BgTable[];
+  suggested_characteristics?: Parameters<typeof renderSuggestedCharacteristics>[1];
 }
 
 const stripSummary = (items: DecisionItem[]): string => {
@@ -68,6 +72,10 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
   // The pinned ✦ Custom Background entry sits ABOVE the picker table: it opens a
   // parts builder that writes a real homebrew BackgroundEntity and selects it.
   renderCustomBackgroundRow(body, ctx);
+  // The engine seeds its bare-slug index from a total order; handing it the
+  // visibility predicate makes VISIBLE entities seed first, so a hidden
+  // compendium can never shadow a visible entity that shares a bare slug.
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
   renderEntityPicker(body, ctx, {
     entityType: "background",
     stateKey: "builder.background-picker",
@@ -84,10 +92,15 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
       // composes them on the restore pass (by then it IS the chosen background).
       const chosen = e.slug === stripSlug(ctx.resolved.definition.background);
       const d = e.data as BackgroundData;
-      const ledger = chosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities }) : null;
+      const ledger = chosen
+        ? buildDecisionLedger(ctx.resolved, {
+            registry: ctx.services.entities,
+            isEntityVisible: (en) => entityCompendiumVisible(en, hidden),
+          })
+        : null;
       const items = ledger?.origin.filter(isBackgroundStripItem) ?? [];
       // Shared lifted resolver (R2-m7): the SAME helper the resolver pipeline uses.
-      const ofeat = chosen ? resolveOriginFeat(ctx.services.entities, d.origin_feat ?? null) : null;
+      const ofeat = chosen ? resolveOriginFeat(ctx.services.entities, d.origin_feat ?? null, e.slug) : null;
       renderChronicleBlock(wrap, {
         name: e.name,
         sub: backgroundSub(d),
@@ -110,6 +123,25 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
             renderOriginFeatStripRow(strip, ctx, e);
           }
           renderGearProps(host, ctx, d);
+          // R4-G3b §10: the converter's roll tables and suggested characteristics.
+          // Each table gets its own section rule (name on the left, die on the
+          // right) and its own `.pc-cb-trait-d` host, which is the class the
+          // chronicle cast-table dress is scoped to.
+          // R4-G3b Task 15c: 4 of the corpus's 88 tables are ALSO embedded as a
+          // pipe table inside the 2014 feature's description, which renderGearProps
+          // above renders through the markdown path · a real table on this step ·
+          // so those four rendered twice here. Only the feature's description is
+          // scanned: the background description reaches renderChronicleBlock as
+          // `flavor` and is shown as plain `text:`, never as a table (the other 84
+          // are embedded there and MUST keep their structured render on the step).
+          for (const t of tablesNotInDescription(d.tables, d.feature?.description)) {
+            renderSectionRule(host, t.name, t.dice);
+            renderBackgroundTables(host.createDiv({ cls: "pc-cb-trait-d" }), [t], ctx.app);
+          }
+          if (d.suggested_characteristics) {
+            renderSectionRule(host, "Suggested Characteristics", "");
+            renderSuggestedCharacteristics(host.createDiv({ cls: "pc-cb-trait-d" }), d.suggested_characteristics, ctx.app);
+          }
         },
       });
     },
@@ -120,7 +152,9 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
  *  present (the tool segment is the fixed tool name, omitted when none). */
 function backgroundSub(d: BackgroundData): string {
   const skills = (d.skill_proficiencies ?? []).map(humanizeSlug).join(" & ");
-  return ["Background", skills, fixedToolNames(d)].filter(Boolean).join(" · ");
+  return ["Background", skills, fixedNamesFrom(d.tool_proficiencies, "items").join(", ")]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 /** Edition-specific glance tiles. 2024: Skills / Tool / Ability Points / Origin
@@ -133,7 +167,7 @@ function backgroundTiles(
   suppressOriginFeat = false,
 ): Array<{ label: string; value: string; small?: string }> {
   const skills = (d.skill_proficiencies ?? []).map(humanizeSlug).join(", ");
-  const tool = fixedToolNames(d);
+  const tool = fixedNamesFrom(d.tool_proficiencies, "items").join(", ");
   const is2024 = !!d.ability_score_increases || (d.choices ?? []).some((c) => c.kind === "ability-points");
   if (is2024) {
     const lang = languagesTile(d);
@@ -175,7 +209,7 @@ function originFeatTile(d: BackgroundData): Array<{ label: string; value: string
  *  `d.choices` (id "languages" / domain "language") — where BOTH editions carry
  *  it — NOT a `kind:"choice"` entry in language_proficiencies. */
 function languagesTile(d: BackgroundData): string {
-  const fixed = fixedLanguageNames(d);
+  const fixed = fixedNamesFrom(d.language_proficiencies, "languages").join(", ");
   const count = languageChoiceCount(d);
   const choice = count ? `choose ${count}` : "";
   return [fixed, choice].filter(Boolean).join(", ");
@@ -189,23 +223,6 @@ function languageChoiceCount(d: BackgroundData): number {
     (c) => c.kind === "select-proficiency" && (c.domain === "language" || c.id === "languages"),
   );
   return choice?.count ?? 0;
-}
-
-/** Fixed tool name(s) humanized — only `kind:"fixed"` entries carrying items. */
-function fixedToolNames(d: BackgroundData): string {
-  const names = (d.tool_proficiencies ?? [])
-    .filter((t) => t.kind === "fixed")
-    .flatMap((t) => (t.items ?? []).map(humanizeSlug));
-  return names.join(", ");
-}
-
-/** Fixed language names humanized — only `kind:"fixed"` entries' `languages`
- *  arrays (flattened); choice entries are skipped. */
-function fixedLanguageNames(d: BackgroundData): string {
-  const names = (d.language_proficiencies ?? [])
-    .filter((l): l is Extract<BackgroundLanguageProficiency, { kind: "fixed" }> => l.kind === "fixed")
-    .flatMap((l) => l.languages.map(humanizeSlug));
-  return names.join(", ");
 }
 
 /** §6: the one mechanical edition-mix conflict — a species that grants ability
@@ -236,7 +253,13 @@ function renderEditionMixBanner(wrap: HTMLElement, ctx: ComponentRenderContext, 
 }
 
 /** Display name for the Origin Feat glance tile — the resolved feat name (or the
- *  parenthesized variant name), falling back to the bare slug. */
+ *  parenthesized variant name), falling back to the bare slug.
+ *
+ *  R4-G4 §8 FENCE: display-only and deliberately REGISTRY-FREE, so the seven-tier
+ *  cascade does not reach it and this helper is unchanged. Its surviving twin is
+ *  `originFeatName` in `components/passive/background-block.ts`. What R4-G4 retired
+ *  is the tail-MATCHING helper that lived beside that twin, `originFeatRendersAsRow`:
+ *  the block now reads the resolver's `originFeatSlug` stamp instead. */
 function originFeatDisplayName(ref: string): string {
   // Cheap display-only resolution that mirrors `resolveOriginFeat`'s naming but
   // never needs the registry: the tile shows the human-facing label only.
@@ -253,7 +276,7 @@ function originFeatDisplayName(ref: string): string {
  *  the sheet (R2-m7), extracting the ref from `e.data.origin_feat`. */
 function renderOriginFeatStripRow(host: HTMLElement, ctx: ComponentRenderContext, e: RegisteredEntity): void {
   const ref = (e.data as { origin_feat?: string | null }).origin_feat ?? null;
-  const r = resolveOriginFeat(ctx.services.entities, ref);
+  const r = resolveOriginFeat(ctx.services.entities, ref, e.slug);
   if (!r) return;
   renderStripInfoRow(host, { pill: "Feat", name: "Origin Feat", value: r.display });
 }
@@ -264,14 +287,14 @@ function renderOriginFeatStripRow(host: HTMLElement, ctx: ComponentRenderContext
 function renderGearProps(host: HTMLElement, ctx: ComponentRenderContext, d: BackgroundData): void {
   renderSectionRule(host, "Proficiencies & starting gear");
   prop(host, "Skills", (d.skill_proficiencies ?? []).map(humanizeSlug).join(", "));
-  const tool = fixedToolNames(d);
+  const tool = fixedNamesFrom(d.tool_proficiencies, "items").join(", ");
   if (tool) prop(host, "Tool", tool);
-  const langs = fixedLanguageNames(d);
+  const langs = fixedNamesFrom(d.language_proficiencies, "languages").join(", ");
   if (langs) prop(host, "Languages", langs);
   const eqLines: string[] = [];
   for (const e of d.equipment ?? []) {
     if (e.kind === "choice") eqLines.push(e.options.map((o) => o.label).join("  or  "));
-    else if (e.kind === "fixed") eqLines.push(e.label ?? e.grants.map(grantLabel).join(", "));
+    else if (e.kind === "fixed") eqLines.push(fixedGrantLines(e));
     else eqLines.push(`${e.amount} GP`);
   }
   const eqText = eqLines.filter(Boolean).join("; ");

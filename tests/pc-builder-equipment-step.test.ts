@@ -5,6 +5,7 @@ import { renderEquipmentStep, seedRegistry } from "../packages/obsidian/src/modu
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "@core/entity-registry";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import { mountStep, entity } from "./fixtures/pc/builder-equipment-harness";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -21,17 +22,21 @@ function makeRegistry(pool: RegisteredEntity[]) {
   };
 }
 
-function entity(slug: string, name: string, entityType: string, data: Record<string, unknown> = {}): RegisteredEntity {
-  return { slug, name, entityType, filePath: "", data, compendium: "SRD", readonly: true, homebrew: false };
-}
-
 interface CtxOverrides {
+  gp?: number;
+  /** Origin choices as the FILE holds them · already `background:`-prefixed,
+   *  which is the key `readOriginChoice` builds. */
+  originChoices?: Record<string, unknown>;
   startingEquipment?: unknown[];
   mode?: "starting" | "gold" | "empty";
   choices?: Record<number, Record<string, unknown>>;
   classes?: unknown[];
   pool?: RegisteredEntity[];
   background?: unknown;
+  /** What the FILE already holds. Default `[]` (the fresh-draft shape). The
+   *  finished-character shape is untagged entries · `finishBuild` strips every
+   *  `granted_by`. */
+  equipment?: unknown[];
 }
 
 function ctx(over: CtxOverrides = {}): ComponentRenderContext {
@@ -40,6 +45,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
   const syncStartingEquipment = vi.fn();
   const setBuilderEquipmentMode = vi.fn();
   const setCurrency = vi.fn();
+  const adjustCurrency = vi.fn();
   const startingEquipment = over.startingEquipment ?? [
     { kind: "choice", options: [
       { label: "Chain Mail, Greatsword", grants: [{ item: "chain-mail" }] },
@@ -60,9 +66,9 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
   ];
   const definition = {
     name: "Test", class: over.classes !== undefined ? [] : [classDef],
-    background: over.background ?? null, equipment: [],
-    currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
-    builder_equipment_mode: mode, origin_choices: {},
+    background: over.background ?? null, equipment: over.equipment ?? [],
+    currency: { cp: 0, sp: 0, ep: 0, gp: over.gp ?? 0, pp: 0 },
+    builder_equipment_mode: mode, origin_choices: over.originChoices ?? {},
   };
   // Keep definition.class in sync when classes is explicitly empty (empty-mode test).
   if (over.classes !== undefined) definition.class = over.classes.length ? [classDef] : [];
@@ -78,7 +84,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
     app: {} as never,
     services: { entities: makeRegistry(pool) } as never,
     editState: { setChoice, setOriginChoice, syncStartingEquipment, setBuilderEquipmentMode, setCurrency,
-      addItem: vi.fn(), removeItem: vi.fn() } as never,
+      adjustCurrency, addItem: vi.fn(), removeItem: vi.fn() } as never,
     builderUiState: new Map(),
   } as unknown as ComponentRenderContext;
 }
@@ -130,6 +136,7 @@ describe("renderEquipmentStep", () => {
     expect(sync).toHaveBeenCalled();
     const [entries] = sync.mock.calls[0];
     expect(entries.map((e: { slug: string }) => e.slug)).toContain("srd-2024_chain-mail");
+    expect(sync.mock.calls[0]).toHaveLength(1);
   });
 
   it("Start Empty mode shows the quiet note", () => {
@@ -200,6 +207,13 @@ describe("renderEquipmentStep", () => {
     // The starting-gold budget meter renders (real .pc-bctx idiom) and shows 155.
     expect(c.querySelector(".pc-bctx")).not.toBeNull();
     expect(c.textContent).toContain("155");
+    // A first render in gold mode ADOPTS the budget · it writes nothing to the
+    // wallet. Without these two the repaired stub would swallow Task 4's G10
+    // mutant (adopt landing G), which only reddened here as a stub TypeError.
+    expect((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
+      .not.toHaveBeenCalled();
+    expect((x.editState as unknown as { setCurrency: ReturnType<typeof vi.fn> }).setCurrency)
+      .not.toHaveBeenCalled();
   });
 
   it("Buy with Gold does NOT crash on old-shape starting equipment (string options)", () => {
@@ -237,5 +251,442 @@ describe("renderEquipmentStep", () => {
     // bareEntitySlug strips the 3-part namespaced slug down to "chain-mail".
     expect(seed.lookup("chain-mail")).not.toBeNull();
     expect(seed.lookup("chain-mail")!.fullSlug).toBe("srd-5e_armor_chain-mail");
+  });
+});
+
+// The SRD-5e Rogue's unconditional kit, exactly as the shipped data declares it.
+const ROGUE_FIXED = [{ kind: "fixed", grants: [{ item: "leather" }, { item: "dagger", qty: 2 }] }];
+
+/** Record a class-level equipment choice. ⚠️ `readClassChoice` reads
+ *  `ctx.resolved.definition.class[0].choices[1][key]` · the CHARACTER side, never
+ *  `ctx.resolved.classes`. The level key is load-bearing. The harness aliases one
+ *  object into both places so either write lands, but the character-side alias is
+ *  the one that must not be dropped. */
+function pick(h: ReturnType<typeof mountStep>, key: string, value: string) {
+  (h.character.class[0].choices as Record<number, Record<string, unknown>>)[1][key] = value;
+}
+
+describe("R4-P5b · the Equipment step no longer mutates on navigation", () => {
+  // G2 · the reported bug at render level. Pre-fix this wrote gp = 0.
+  it("G2: a reopened finished character with G=0 is left completely alone", () => {
+    const h = mountStep({ gp: 10, mode: undefined, startingEquipment: [] });
+    h.render();
+    expect(h.character.currency!.gp).toBe(10);
+    expect(h.counts.onChange).toBe(0);
+    expect(h.adjustSpy).not.toHaveBeenCalled();
+    expect(h.setCurrencySpy).not.toHaveBeenCalled();
+  });
+
+  // G3 · the same, with a genuinely NON-ZERO justified contribution and the kit
+  // already untagged. ⚠️ ROGUE_FIXED alone grants no gold, so a fixture built
+  // from it would silently duplicate G2 on the gold axis; the surviving
+  // `equipment-1` choice is what makes G = 5 here.
+  it("G3: a reopened finished character with G>0 is left completely alone", () => {
+    const h = mountStep({
+      gp: 900, mode: undefined,
+      startingEquipment: [
+        ...ROGUE_FIXED,
+        { kind: "choice", options: [{ label: "5 GP", grants: [{ gold: 5 }] }] },
+      ],
+      choices: { 1: { "equipment-1": "option-0" } },   // survives finishBuild
+      equipment: [
+        { item: "[[srd-5e_armor_leather]]", equipped: true, slot: "armor" },
+        { item: "[[srd-5e_weapon_dagger]]", qty: 2 },
+      ] as never,
+    });
+    const before = h.character.equipment.length;
+    h.render();
+    expect(h.character.currency!.gp).toBe(900);   // pre-fix this became 5
+    expect(h.character.equipment).toHaveLength(before);
+    expect(h.counts.onChange).toBe(0);
+  });
+
+  // G11 · a hand-edited wallet is never reverted.
+  it("G11: a hand-edited gp survives two further renders with no user action", () => {
+    const h = mountStep({ gp: 0, mode: "starting", startingEquipment: [] });
+    h.render();                       // adopt
+    h.es.setCurrency("gp", 42);       // the inline strip's absolute set
+    h.render();
+    h.render();
+    expect(h.character.currency!.gp).toBe(42);
+  });
+
+  // G14 · the genuine first build still seeds its unconditional kit.
+  it("G14: a fresh 2014 Rogue draft seeds leather + 2 daggers on its first render", () => {
+    const h = mountStep({ mode: "starting", startingEquipment: ROGUE_FIXED });
+    h.render();
+    const items = h.character.equipment.map((e) => e.item);
+    expect(items).toContain("[[srd-5e_armor_leather]]");
+    expect(items).toContain("[[srd-5e_weapon_dagger]]");
+    expect(h.character.equipment.every((e) => e.granted_by === "builder:starting")).toBe(true);
+  });
+
+  // G15 · a mode round trip restores the kit rather than losing it.
+  it("G15: starting -> gold -> starting restores the seeded kit", () => {
+    const h = mountStep({ mode: "starting", startingEquipment: ROGUE_FIXED });
+    h.render();
+    expect(h.character.equipment.length).toBeGreaterThan(0);
+    h.es.setBuilderEquipmentMode("gold");
+    expect(h.character.equipment).toHaveLength(0);   // the switch drops all builder:* gear
+    h.render();
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();
+    expect(h.character.equipment.map((e) => e.item)).toContain("[[srd-5e_armor_leather]]");
+  });
+
+  // G1 · re-entrancy. A real onChange that re-renders must converge.
+  it("G1: a granting reconcile under a re-rendering onChange calls adjustCurrency exactly once", () => {
+    const h = mountStep({
+      gp: 0, mode: "starting", reRenderOnChange: true,
+      startingEquipment: [{ kind: "choice", options: [
+        { label: "155 GP", grants: [{ gold: 155 }] },
+      ] }],
+    });
+    h.render();                                            // adopt, G = 0
+    pick(h, "equipment-0", "option-0");
+    h.render();                                            // G = 155, applies once
+    expect(h.adjustSpy).toHaveBeenCalledTimes(1);
+    expect(h.adjustSpy).toHaveBeenCalledWith({ gp: 155 });
+    expect(h.character.currency!.gp).toBe(155);
+  });
+});
+
+const FIGHTER_155 = [{ kind: "choice", options: [
+  { label: "Chain Mail", grants: [{ item: "chain-mail" }] },
+  { label: "155 GP", grants: [{ gold: 155 }] },
+] }];
+
+// `pick()` is defined in Task 3's block above · do NOT redeclare it here. A
+// duplicate top-level `function pick` is a hard esbuild error ("The symbol
+// "pick" has already been declared") and the whole file fails to transform.
+
+describe("R4-P5b · mode, clamp and residual behaviour", () => {
+  // G7 · the genuine first-build grant still works, on a draft with no currency key.
+  it("G7: picking the 155 GP option on a fresh draft deposits 155", () => {
+    const h = mountStep({ mode: "starting", startingEquipment: FIGHTER_155 });
+    h.render();                                   // adopt at G = 0
+    expect(h.character.currency).toBeUndefined(); // adopt-only leaves no currency line
+    pick(h, "equipment-0", "option-1");
+    h.render();
+    expect(h.character.currency!.gp).toBe(155);
+  });
+
+  // G5 · the arithmetic, asserted on the CALL, not only the end state.
+  it("G5: applies the clamped difference against `applied` and never uses setCurrency", () => {
+    const h = mountStep({ gp: 7, mode: "starting", startingEquipment: FIGHTER_155 });
+    h.bag!.set("builder.eqrec.gold", { applied: 100, lastG: 90 });
+    pick(h, "equipment-0", "option-1");
+    h.render();
+    expect(h.adjustSpy).toHaveBeenCalledTimes(1);
+    expect(h.adjustSpy).toHaveBeenCalledWith({ gp: 55 });
+    expect(h.setCurrencySpy).not.toHaveBeenCalled();
+    expect(h.character.currency!.gp).toBe(62);
+  });
+
+  // G10 · a draft saved under the OLD semantics adopts and writes nothing, twice over.
+  it("G10: mid-build back-compat · gp already equal to the budget produces zero writes", () => {
+    const h = mountStep({ gp: 155, mode: "gold", startingGold: { fixed: 155 } });
+    h.render();
+    h.render();
+    expect(h.counts.onChange).toBe(0);
+    expect(h.character.currency!.gp).toBe(155);
+  });
+
+  // G12 · E1 pinned: an absolute set does not discharge the builder's claim.
+  it("G12: 100 -> types 200 -> gold (+50) -> empty (-55) -> 195", () => {
+    const h = mountStep({ gp: 100, mode: "starting", startingGold: { fixed: 55 },
+      startingEquipment: [{ kind: "choice", options: [{ label: "5 GP", grants: [{ gold: 5 }] }] }] });
+    pick(h, "equipment-0", "option-0");
+    h.render();                                   // adopt at G = 5
+    h.es.setCurrency("gp", 200);
+    h.es.setBuilderEquipmentMode("gold");
+    h.render();                                   // G = 55, intended 55 - 5 = +50
+    expect(h.character.currency!.gp).toBe(250);
+    h.es.setBuilderEquipmentMode("empty");
+    h.render();                                   // G = 0, intended 0 - 55 = -55
+    expect(h.character.currency!.gp).toBe(195);
+  });
+
+  // G9 · a bag reset re-adopts; the reclaim is bounded by the wallet.
+  it("G9: after a bag reset the next render adopts, and the empty switch reclaims G, floored at 0", () => {
+    const h = mountStep({ gp: 162, mode: "gold", startingGold: { fixed: 155 } });
+    h.render();
+    h.bag!.clear();                               // simulate a non-echo setViewData
+    h.render();                                   // re-adopt at G = 155
+    expect(h.counts.onChange).toBe(0);
+    h.es.setBuilderEquipmentMode("empty");
+    h.render();
+    expect(h.character.currency!.gp).toBe(7);     // 162 - 155, NOT "reclaims nothing"
+  });
+
+  it("G9b: the same reclaim floors at 0 rather than going negative", () => {
+    const h = mountStep({ gp: 7, mode: "gold", startingGold: { fixed: 155 } });
+    h.render();                                   // adopt at G = 155
+    h.es.setBuilderEquipmentMode("empty");
+    h.render();
+    expect(h.character.currency!.gp).toBe(0);
+  });
+
+  // G18 · a clamped reclaim must not create gold on the way back.
+  it("G18: 7 -> +155 -> spend 160 -> Start Empty -> Starting Equipment ends at 2, not 155", () => {
+    const h = mountStep({ gp: 7, mode: "starting", startingEquipment: FIGHTER_155 });
+    h.render();                                   // adopt at G = 0
+    pick(h, "equipment-0", "option-1");
+    h.render();                                   // +155 -> 162
+    expect(h.character.currency!.gp).toBe(162);
+    h.es.setCurrency("gp", 2);                    // the user spends 160
+    h.es.setBuilderEquipmentMode("empty");
+    h.render();                                   // reclaim clamped to -2 -> 0
+    expect(h.character.currency!.gp).toBe(0);
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();                                   // re-grant lands +2
+    expect(h.character.currency!.gp).toBe(2);
+  });
+
+  // G19 · the two DECIDED residuals of the latent remainder. These are accepted
+  // behaviour; the guard exists so a future change cannot alter them silently.
+  it("G19 arm A: a grant can be withheld after a clamped reclaim (accepted residual)", () => {
+    const h = mountStep({ gp: 0, mode: "starting", startingGold: { fixed: 155 },
+      startingEquipment: FIGHTER_155 });
+    h.render();                                   // adopt at G = 0
+    h.es.setBuilderEquipmentMode("gold");
+    h.render();                                   // +155 -> 155
+    h.es.setCurrency("gp", 0);                    // the user types 0
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();                                   // reclaim clamps to 0; applied stays 155
+    expect(h.character.currency!.gp).toBe(0);
+    pick(h, "equipment-0", "option-1");
+    h.render();                                   // G = 155, intended 155 - 155 = 0
+    expect(h.character.currency!.gp).toBe(0);     // the grant is withheld
+  });
+
+  it("G19 arm B: a later balance is over-reclaimed (accepted residual)", () => {
+    const h = mountStep({ gp: 0, mode: "starting", startingGold: { fixed: 155 },
+      startingEquipment: FIGHTER_155 });
+    h.render();
+    h.es.setBuilderEquipmentMode("gold");
+    h.render();
+    h.es.setCurrency("gp", 0);
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();                                   // desynced: applied 155, lastG 0
+    h.es.setCurrency("gp", 500);                  // NOT the coin modal - it is closed in the builder
+    h.es.setBuilderEquipmentMode("gold");
+    h.render();                                   // intended 0, no call, lastG -> 155
+    expect(h.character.currency!.gp).toBe(500);
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();                                   // intended -155
+    expect(h.character.currency!.gp).toBe(345);
+  });
+
+  // G16 · the qty arm of the gear gate, and (since the R4-G3b final wave) the
+  // DISCHARGE of the R4-P5b E5 residual this case used to pin.
+  // ⚠️ The untagged original must NOT cover the whole resolved multiset, or the
+  // gate returns early and the test measures G3's behaviour instead. Here the
+  // file holds leather but not the two daggers, so containment fails and the
+  // step reconciles. Until the final wave it re-seeded the WHOLE list and
+  // leather ended up duplicated (E5); it now seeds only the uncovered daggers,
+  // so leather stays single and the seed is still visible as the tagged pair.
+  it("G16: a re-pick on a reopened finished character seeds only the gear it does not already hold", () => {
+    const h = mountStep({
+      mode: undefined,
+      startingEquipment: [{ kind: "choice", options: [
+        { label: "Leather + 2 daggers", grants: [{ item: "leather" }, { item: "dagger", qty: 2 }] },
+      ] }],
+      equipment: [{ item: "[[srd-5e_armor_leather]]", equipped: true, slot: "armor" }] as never,
+    });
+    h.render();
+    pick(h, "equipment-0", "option-0");
+    h.render();
+    const items = h.character.equipment.map((e) => e.item);
+    // RED FIRST before the final wave (e1ef541): this read 2 · the untagged
+    // leather plus a `builder:starting` copy of the same item.
+    expect(items.filter((i) => i === "[[srd-5e_armor_leather]]")).toHaveLength(1);
+    expect(h.character.equipment.filter((e) => e.granted_by === "builder:starting"))
+      .toEqual([{ item: "[[srd-5e_weapon_dagger]]", equipped: false, granted_by: "builder:starting", qty: 2 }]);
+  });
+
+  // ⚠️ The seed is the REMAINING qty (2 needed, 1 held untagged, so 1 seeded),
+  // which is why the assertion reads the written entry rather than its presence.
+  it("G16b: a hand-added single dagger does NOT suppress the rest of a dagger x2 seed", () => {
+    const h = mountStep({
+      mode: undefined,
+      startingEquipment: [{ kind: "fixed", grants: [{ item: "dagger", qty: 2 }] }],
+      equipment: [{ item: "[[srd-5e_weapon_dagger]]" }] as never,
+    });
+    h.render();
+    // RED FIRST before the final wave (e1ef541): the whole list was re-seeded, so
+    // the written entry carried `qty: 2` and the file held three daggers in all.
+    expect(h.character.equipment.filter((e) => e.granted_by === "builder:starting"))
+      .toEqual([{ item: "[[srd-5e_weapon_dagger]]", equipped: false, granted_by: "builder:starting" }]);
+  });
+});
+
+describe("R4-G3b §9 · the background limb is LIVE", () => {
+  // Provenance: until R4-G3b Task 10 the Equipment step read
+  // `background.starting_equipment` while BackgroundEntity's key is `equipment`,
+  // so the whole background limb was dead · no rows rendered and no gold was
+  // granted · and this fixture pinned that with two `expect.soft` negatives. Task
+  // 10 deleted the three casts and reads `.equipment` typed; both assertions are
+  // now positive, which is exactly the flip the pinned fixture was armed for.
+  //
+  // ⚠️ Three things ARM it · without any one of them the repair would have changed
+  // nothing here and the guard would be decoration:
+  //   · the entry is `kind: "choice"`. The background section rule (and the name
+  //     "Acolyte" with it) is gated on `hasChoice`, which is `kind === "choice"`,
+  //     so a `fixed` entry stays invisible even with the key repaired.
+  //   · the pick is recorded under `background:equipment-0` · the key
+  //     `readOriginChoice` builds · so `resolveSelections` actually consumes the
+  //     option and its 15 gp instead of returning at the unselected branch.
+  //   · the baseline is pre-seeded. On a FRESH bag `goldStep` takes rule 1
+  //     (adopt), which lands 0 whatever the contribution is, and would mask the
+  //     write entirely; seeded at lastG 0 a repaired limb takes rule 3 instead.
+  it("a background's starting equipment IS rendered and granted", () => {
+    const c = mountContainer();
+    const background = { name: "Acolyte", equipment: [
+      { kind: "choice", options: [{ label: "15 GP", grants: [{ gold: 15 }] }] },
+    ] };
+    const x = ctx({ background, startingEquipment: [],
+      originChoices: { "background:equipment-0": "option-0" } });
+    x.builderUiState!.set("builder.eqrec.gold", { applied: 0, lastG: 0 });
+    renderEquipmentStep(c, x);
+    expect(c.textContent).toContain("Acolyte");
+    expect((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
+      .toHaveBeenCalledWith({ gp: 15 });
+  });
+
+  // The `fixed` twin of the case above · the shape the converter actually emits
+  // for the coin (PHB 2014 Charlatan: a fixed pouch carrying `contains_value:
+  // 1500`, in COPPER). It needs BOTH halves of Task 10: the limb must read
+  // `.equipment` to see the entry at all, and the seeder must turn the copper into
+  // gold. No section rule renders here · `hasChoice` is false for a `fixed` entry ·
+  // so the wallet write is the whole observable.
+  it("a background's `fixed` pouch seeds its contains_value as gold", () => {
+    const c = mountContainer();
+    const background = { name: "Charlatan", equipment: [
+      { kind: "fixed", grants: [{ item: "pouch", contains_value: 1500 }] },
+    ] };
+    const x = ctx({ background, startingEquipment: [], pool: [
+      entity("srd-2024_chain-mail", "Chain Mail", "armor", { category: "heavy" }),
+      entity("srd-2024_greatsword", "Greatsword", "weapon", { category: "martial-melee" }),
+      entity("srd-2024_pouch", "Pouch", "item"),
+    ] });
+    x.builderUiState!.set("builder.eqrec.gold", { applied: 0, lastG: 0 });
+    renderEquipmentStep(c, x);
+    expect((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
+      .toHaveBeenCalledWith({ gp: 15 });
+  });
+
+  // G8 · no bag means the gold half is disabled outright, never "always adopt".
+  // ⚠️ The kit must GRANT GOLD, so this fixture is inline rather than ROGUE_FIXED:
+  // with G = 0 every write-shaped degradation of `reconcileGold` still lands 0 and
+  // the two spy assertions can never fire · only the gear assertion would carry a
+  // kill. At +10 gp the spec's named degradation ("no store ⇒ deposit anyway")
+  // deposits a real, wrong 10 gp and `adjustSpy` catches it.
+  it("G8: with no builderUiState the gold reconcile writes nothing, and gear still seeds", () => {
+    const h = mountStep({ bag: false, mode: "starting", startingEquipment: [
+      { kind: "fixed", grants: [{ item: "leather" }, { item: "dagger", qty: 2 }, { gold: 10 }] },
+    ] });
+    h.render();
+    expect(h.adjustSpy).not.toHaveBeenCalled();
+    expect(h.setCurrencySpy).not.toHaveBeenCalled();
+    expect(h.character.equipment.length).toBeGreaterThan(0);   // the gear half is unaffected
+  });
+});
+
+// R4-G1a D5 / G9: the `fixed` branch of the live reconcile.
+describe("renderEquipmentStep · a fixed entry with no grants (R4-G1a D5, G9)", () => {
+  it("Starting mode: the reconcile runs with no throw and seeds nothing", () => {
+    const h = mountStep({ mode: "starting", startingEquipment: [{ kind: "fixed" }] });
+    expect(() => h.render()).not.toThrow();
+    expect(h.character.equipment).toHaveLength(0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// R4-G3b FINAL WAVE · the finished-character kit is no longer re-kitted.
+//
+// The shape: `finishBuild` strips every `granted_by`, so the kit the builder
+// seeded reads as hand-managed gear. A background `fixed` grant (LIVE since Task
+// 10) is a resolved entry the finished file has NEVER held, so the multiset
+// containment of `alreadySeeded` fails and the whole list used to be pushed
+// beside the untagged copies · one duplication of the entire class kit per
+// visit. The step now hands `syncStartingEquipment` only what the file does not
+// already hold untagged.
+//
+// The population, MEASURED 2026-09-04 over the converter output (175/175 docs
+// parsed from the ```background block), counting `item:` grants only: 894
+// background item grants, of which 379 are slug-shaped and 515 are written as
+// human names with spaces and can therefore never resolve (spec §9.1). Of the
+// 491 that sit on a `kind: fixed` entry, 170 are slug-shaped, and 109 of the 175
+// documents carry at least one such grant · 99 of those 109 include `pouch`,
+// which is also the commonest slug-shaped item in the corpus. Slug-shaped is the
+// UPPER BOUND for resolving: whether an entity with that bare slug exists in the
+// installed compendium is not measured here.
+// ─────────────────────────────────────────────────────────────────────────────
+describe("R4-G3b final wave · a finished character re-entering the Equipment step is not re-kitted", () => {
+  const POOL = [
+    entity("srd-2024_chain-mail", "Chain Mail", "armor", { category: "heavy" }),
+    entity("srd-2024_greatsword", "Greatsword", "weapon", { category: "martial-melee" }),
+    entity("srd-2024_pouch", "Pouch", "item"),
+  ];
+  /** An unconditional class kit (no pick needed) plus a background `fixed` pouch:
+   *  the two halves of the real defect. */
+  const KIT = [{ kind: "fixed", grants: [{ item: "chain-mail" }, { item: "greatsword" }] }];
+  const BACKGROUND = { name: "Acolyte", equipment: [{ kind: "fixed", grants: [{ item: "pouch" }] }] };
+  /** The finished-character shape: the class kit, untagged, exactly as
+   *  `finishBuild` leaves it. */
+  const FINISHED = [
+    { item: "[[srd-2024_chain-mail]]", equipped: true, slot: "armor" },
+    { item: "[[srd-2024_greatsword]]", equipped: false },
+  ];
+  const syncOf = (x: ComponentRenderContext) =>
+    (x.editState as unknown as { syncStartingEquipment: ReturnType<typeof vi.fn> }).syncStartingEquipment;
+
+  it("seeds ONLY the background pouch the file does not already hold, not the whole kit again", () => {
+    const c = mountContainer();
+    const x = ctx({ startingEquipment: KIT, background: BACKGROUND, pool: POOL, equipment: FINISHED });
+    renderEquipmentStep(c, x);
+    // RED FIRST before the final wave (e1ef541): `reconcileGear` passed the WHOLE
+    // resolved list, so this read all three entries (chain-mail, greatsword,
+    // pouch) and the two the file already held were pushed a second time.
+    expect(syncOf(x).mock.calls[0][0]).toEqual([
+      { slug: "srd-2024_pouch", qty: 1, equipped: false, slot: null },
+    ]);
+    expect(syncOf(x)).toHaveBeenCalledTimes(1);
+  });
+
+  it("the SECOND render, with that pouch now tagged, asks for the same single entry (the serialize guard then makes it a no-op)", () => {
+    const c = mountContainer();
+    // The entry `syncStartingEquipment` writes for the pouch, verbatim: `item`,
+    // `equipped: false`, `granted_by`; no `slot` (null) and no `qty` (1). The
+    // no-op guard serializes item/equipped/slot/qty, so an identical request
+    // returns before `onChange`.
+    const x = ctx({ startingEquipment: KIT, background: BACKGROUND, pool: POOL, equipment: [
+      ...FINISHED,
+      { item: "[[srd-2024_pouch]]", equipped: false, granted_by: "builder:starting" },
+    ] });
+    renderEquipmentStep(c, x);
+    // RED FIRST before the final wave (e1ef541): the tagged entry failed conjunct
+    // 1, the whole list was passed, and the replace-in-place wrote the class kit
+    // back as `builder:starting` beside the untagged copies · the duplication
+    // returning on the very next render.
+    expect(syncOf(x).mock.calls[0][0]).toEqual([
+      { slug: "srd-2024_pouch", qty: 1, equipped: false, slot: null },
+    ]);
+    expect(syncOf(x)).toHaveBeenCalledTimes(1);
+  });
+
+  it("CONTROL · a fresh draft (nothing in the file) still receives the FULL kit", () => {
+    const c = mountContainer();
+    const x = ctx({ startingEquipment: KIT, background: BACKGROUND, pool: POOL });
+    renderEquipmentStep(c, x);
+    // Unchanged by the final wave: with no untagged copies nothing is covered, so
+    // the subtraction returns the resolved list itself, in order.
+    expect(syncOf(x).mock.calls[0][0]).toEqual([
+      { slug: "srd-2024_chain-mail", qty: 1, equipped: true, slot: "armor" },
+      { slug: "srd-2024_greatsword", qty: 1, equipped: false, slot: null },
+      { slug: "srd-2024_pouch", qty: 1, equipped: false, slot: null },
+    ]);
+    expect(syncOf(x)).toHaveBeenCalledTimes(1);
   });
 });

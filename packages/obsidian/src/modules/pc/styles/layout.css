@@ -7,7 +7,14 @@
   margin: 0 auto;
   border-radius: var(--pc-radius-lg);
   box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
-  overflow: hidden;
+  /* R4-G6b §7: `hidden` made the sheet the nearest scroll container for position: sticky;
+   * `clip` keeps the corner clip and creates none. The T0 live probe (2026-09-09,
+   * `evidence/g6b-t0-probe.txt` blocks A and B) measured the sheet's parent as `.view-content`
+   * computing `overflow: auto` with `transform`, `filter` and `contain` all `none`: the PANE is
+   * the scroller a sticky descendant needs, so no re-host is required. */
+  overflow: clip;
+  /* belt-and-braces: container-type already supplies the formatting context */
+  display: flow-root;
 }
 
 .archivist-pc-sheet .pc-header { padding: 0; }
@@ -43,13 +50,21 @@
 }
 
 /* Below narrow tier: body sidebar collapses under content.
- * Swap the vertical divider for a horizontal one so the two
+ * THE ONLY RULE THAT STACKS THE BODY (R4-G7 RIDER-7): it reads the
+ * pane's width and never which tab is open, so at every sheet width
+ * of 500 px and up the tab body sits right of the rail on every tab
+ * (the user reversed Q-6 on 2026-09-15; the per-tab collapse is
+ * retired). Swap the vertical divider for a horizontal one so the two
  * sections stay clearly demarcated. Query pc-sheet (the
  * outer sheet container) rather than pc-body — a @container
  * query can only restyle descendants of its container, and
  * .pc-body IS the pc-body container, so it can't restyle
- * itself. Sheet width tracks body width 1:1 (sheet has no
- * horizontal padding), so the 499px threshold is preserved. */
+ * itself. The pc-sheet container's inline size is the sheet's
+ * CONTENT box, and the body fills that box, so the 499px
+ * threshold reads the body's own outer width. (R4-G7 fix round 1:
+ * the sheet DOES carry horizontal padding, 24px a side measured
+ * live at W-A (sheet 699.5, body 651.5); it lies outside the
+ * content box the query reads.) */
 @container pc-sheet (max-width: 499px) {
   .archivist-pc-sheet .pc-body {
     grid-template-columns: 1fr;

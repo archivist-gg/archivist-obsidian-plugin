@@ -43,9 +43,14 @@ vi.mock("obsidian", async () => {
           if (i >= 0) this.keys.splice(i, 1);
         },
       };
+      containerEl: HTMLElement;
       constructor(app: unknown) {
         this.app = app;
+        // Mirror the native portal nesting (.modal-container > .modal >
+        // content): PaneCenteredModal measures and pads containerEl.
+        this.containerEl = document.createElement("div");
         this.contentEl = document.createElement("div");
+        this.containerEl.appendChild(this.contentEl);
         // Mirror the native Modal constructor: it registers a built-in Escape
         // handler that closes the modal. This is the FIFO-first entry the
         // live bug's handler could never beat until it unregisters it.

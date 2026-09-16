@@ -3,7 +3,6 @@
  */
 export interface ArchivistSettings {
   compendiumRoot: string;
-  srdImported: boolean;
   defaultMultiColumn: boolean;
   multiColumnThreshold: number;
   playerCharactersFolder: string;
@@ -19,7 +18,6 @@ export interface ArchivistSettings {
 
 export const DEFAULT_SETTINGS: ArchivistSettings = {
   compendiumRoot: "Compendium",
-  srdImported: false,
   defaultMultiColumn: false,
   multiColumnThreshold: 20,
   playerCharactersFolder: "PlayerCharacters",

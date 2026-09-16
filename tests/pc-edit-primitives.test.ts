@@ -313,7 +313,7 @@ describe("cancelInlineEdit", () => {
     expect(cancelInlineEdit(root)).toBe(false);
   });
 
-  it("returns false after an Enter-commit even while the input is still in the DOM", () => {
+  it("returns false after an Enter-commit, which restored the tile of a consumer that wrote nothing", () => {
     const root = mountContainer();
     const valueEl = root.createDiv({ text: "10" });
     const onCancel = vi.fn();
@@ -321,9 +321,12 @@ describe("cancelInlineEdit", () => {
     const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
     input.value = "12";
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-    // commit() does not remove the input from the DOM; the registry cleanup on
-    // `done` is what makes the edit no longer "active".
-    expect(root.querySelector("input.pc-edit-inline")).not.toBeNull();
+    // R4-G6b live rider F-A: this `onCommit` writes nothing and re-renders nothing, so the input is
+    // still connected when it returns and commit() restores valueEl in its place. There is therefore
+    // no committed-but-mounted input left to find, and the registry cleanup on `done` is the
+    // independent reason the edit is no longer "active" (cancelInlineEdit is false, onCancel unfired).
+    expect(root.querySelector("input.pc-edit-inline")).toBeNull();
+    expect(root.querySelector("div")?.textContent).toBe("10");
     expect(cancelInlineEdit(root)).toBe(false);
     expect(onCancel).not.toHaveBeenCalled();
   });

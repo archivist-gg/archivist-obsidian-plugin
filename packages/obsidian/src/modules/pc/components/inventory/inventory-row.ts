@@ -127,15 +127,22 @@ function fillSubtitle(sub: HTMLElement, ctx: InventoryRowCtx): void {
   const e = ctx.resolved.entity as { type?: string; rarity?: string } | null;
   const parts: { text: string; bold?: boolean }[] = [];
 
-  if (ctx.entry.equipped) parts.push({ text: `Equipped${ctx.entry.slot ? ` · ${ctx.entry.slot}` : ""}`, bold: true });
+  // The type VALUE the sub-line prints for a weapon or an armor row (the arm's own word when the document authors none).
+  const typeValue = !e ? undefined
+    : ctx.resolved.entityType === "weapon" ? (e.type ?? "weapon")
+    : ctx.resolved.entityType === "armor" ? (e.type ?? "armor")
+    : e.type;
+  // R4-G7 T8 RIDER-29 (F-INVSUB): the slot part is dropped when it names the same word as that type, compared
+  // case-insensitively over the two DATA values (never a word list): Plate Armor in the `armor` slot read
+  // "Equipped · armor · Armor".
+  const slot = ctx.entry.slot && ctx.entry.slot.toLowerCase() !== typeValue?.toLowerCase() ? ctx.entry.slot : undefined;
+  if (ctx.entry.equipped) parts.push({ text: `Equipped${slot ? ` · ${slot}` : ""}`, bold: true });
   if (ctx.entry.attuned)  parts.push({ text: "Attuned", bold: true });
 
   if (!e) {
     parts.push({ text: "Custom · inline · no compendium entry" });
-  } else if (ctx.resolved.entityType === "weapon") {
-    parts.push({ text: humanizeToken(e.type ?? "weapon") });
-  } else if (ctx.resolved.entityType === "armor") {
-    parts.push({ text: humanizeToken(e.type ?? "armor") });
+  } else if (ctx.resolved.entityType === "weapon" || ctx.resolved.entityType === "armor") {
+    parts.push({ text: humanizeToken(typeValue ?? "") });
   } else {
     if (e.type)    parts.push({ text: humanizeToken(e.type) });
     if (e.rarity)  parts.push({ text: e.rarity.toLowerCase() });

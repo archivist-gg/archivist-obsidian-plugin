@@ -4,6 +4,7 @@ import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
+import { renderSeparated } from "../separated-caption";
 
 const RARITY_CLASS: Record<string, string> = {
   "common": "rarity-common", "uncommon": "rarity-uncommon", "rare": "rarity-rare",
@@ -38,7 +39,8 @@ export function renderItemRow(
   // Cost · the Passive tab renders no FREE badge (all passive costs are
   // unmarked); the cell div stays for the shared 4-col grid, and "special"
   // keeps its badge there.
-  const badgeCell = row.createDiv();
+  // R4-G7 T8 RIDER-26: the cell carries a name so the narrow tier (`actions.css`) places it by name, never by source order.
+  const badgeCell = row.createDiv({ cls: "pc-item-cost" });
   if (!(passive && action.cost === "free")) renderCostBadge(badgeCell, action.cost);
 
   const ce = ctx.derived.conditionEffects;
@@ -53,7 +55,8 @@ export function renderItemRow(
   const subParts: string[] = [];
   if (entity?.rarity) subParts.push(entity.rarity);
   if (entry.attuned) subParts.push("attuned");
-  if (subParts.length) nameCell.createDiv({ cls: "pc-action-row-sub", text: subParts.join(" · ") });
+  // R4-G6b §10 (Q-8): one `pc-cap-unit` per part, the ` · ` out of flow, the composed text unchanged.
+  if (subParts.length) renderSeparated(nameCell.createDiv({ cls: "pc-action-row-sub" }), subParts, { sep: "·" });
 
   // Range
   row.createDiv({ cls: "pc-action-range", text: action.range ?? "" });

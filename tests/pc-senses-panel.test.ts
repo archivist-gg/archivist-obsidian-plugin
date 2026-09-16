@@ -126,6 +126,22 @@ describe("SensesPanel — senses", () => {
     expect(names).toContain("Darkvision");
   });
 
+  // R4 {G5, G6} live rider N-2-8: in the PASSIVE SENSES block the three passive scores render inside
+  // the bordered `.pc-sense-val` box and the `30 ft. DARKVISION` row rendered as bare text beside them,
+  // with no box and no divider, so it read as a stray line rather than a fourth sense. The distance
+  // now goes through the same box template; the stylesheet lets that box grow for the wider value.
+  it("renders a sense distance through the same boxed template as a passive score", () => {
+    const container = mountContainer();
+    new SensesPanel().render(container, mkCtx({ darkvision: 60 }));
+    const rows = [...container.querySelectorAll(".pc-sense-row")];
+    const dist = rows[3].querySelector(".pc-sense-dist")!;
+    expect(dist).not.toBeNull();
+    expect(dist.classList.contains("pc-sense-val")).toBe(true);
+    expect(dist.textContent).toBe("60 ft.");
+    // The passive rows are untouched: their value box carries only its own class.
+    expect(rows[0].querySelector(".pc-sense-val")!.classList.contains("pc-sense-dist")).toBe(false);
+  });
+
   it("renders no darkvision row when darkvision is 0", () => {
     const container = mountContainer();
     new SensesPanel().render(container, mkCtx({ darkvision: 0 }));

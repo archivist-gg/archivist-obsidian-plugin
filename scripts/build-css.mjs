@@ -6,9 +6,9 @@
  * styles.css for the Obsidian plugin.
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, realpathSync } from 'fs';
 import { join, dirname, resolve, relative } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -65,7 +65,7 @@ function buildEditCss() {
   return readFileSync(EDIT_CSS_FILE, 'utf-8');
 }
 
-function build() {
+export function buildCss() {
   let dndCss = buildDndCss();
   const editCss = buildEditCss();
   const pcCss = buildPcCss();
@@ -102,8 +102,16 @@ function build() {
     pcCss,
   ].join('\n');
 
+  return output;
+}
+
+/** Thin writer. Kept separate so check-css.mjs can import buildCss() without side effects. */
+function build() {
+  const output = buildCss();
   writeFileSync(OUTPUT, output);
   console.log(`Built styles.css (${(output.length / 1024).toFixed(1)} KB)`);
 }
 
-build();
+// Node realpaths ESM specifiers but only path.resolves argv[1], so a symlinked path
+// component would make these two disagree and silently skip the build.
+if (import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) build();

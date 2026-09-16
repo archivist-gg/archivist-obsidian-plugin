@@ -31,6 +31,7 @@ function mkCtx(over: {
   method?: string; abilities?: Record<string, number>; editState?: unknown;
   race?: unknown; origin_choices?: Record<string, unknown>;
   classes?: unknown[]; feats?: unknown[]; builder_rolls?: number[];
+  features?: unknown[];
 } = {}): ComponentRenderContext {
   const abilities = over.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
   return {
@@ -44,7 +45,7 @@ function mkCtx(over: {
         equipment: [], overrides: {},
         state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [] },
       },
-      race: over.race ?? null, background: null, classes: over.classes ?? [], feats: over.feats ?? [], features: [], spells: [],
+      race: over.race ?? null, background: null, classes: over.classes ?? [], feats: over.feats ?? [], features: over.features ?? [], spells: [],
     },
     // Real DerivedStats fields are `scores` (final totals) + `mods`.
     derived: { scores: abilities, mods: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 } },
@@ -139,6 +140,31 @@ describe("renderAbilitiesStep — tiles", () => {
     }));
     const caps = [...container.querySelectorAll(".pc-babcap .pc-bsp")];
     expect(caps.some((c) => c.textContent === "+2 class")).toBe(true);
+  });
+
+  it("a level-20 capstone's fixed-list +4 captions as '+4 class' in the same crimson row", () => {
+    const container = mountContainer();
+    // PHB 2014 Barbarian 20 Primal Champion: `[str, con] +4`, a FIXED LIST, so the effect fold pays
+    // it (the `chosen` ASI arms never fold). The step has to thread the effect totals into
+    // abilityBonusBreakdown, whose four legacy buckets read only the choice ledger.
+    const capstone = {
+      id: "primal-champion", name: "Primal Champion",
+      effects: [{ kind: "ability-score-increase", abilities: ["str", "con"], amount: 4, choose: null, max: 24 }],
+    };
+    renderAbilitiesStep(container, mkCtx({
+      classes: [{
+        entity: { slug: "srd-2024_barbarian", name: "Barbarian", features_by_level: { 20: [capstone] } },
+        level: 20, subclass: null, choices: {},
+      }],
+      features: [{ feature: capstone, source: { kind: "class", slug: "srd-2024_barbarian", level: 20 } }],
+    }));
+    // `Array.from`, not the `[...nodeList]` spread the three sibling caption cases use: under the phase's one-off
+    // tests tsconfig every spread of a NodeList raises TS2488 (26 of them in this file already), and the
+    // per-file tsc floor for this file is "must not grow". Same value, same assertion.
+    const caps = Array.from(container.querySelectorAll(".pc-babcap .pc-bsp"));
+    // RED FIRST before Task 2 (plugin 42025981): no ".pc-bsp" read "+4 class" (the step called
+    // abilityBonusBreakdown with one argument, so the effect fold was invisible to the caption).
+    expect(caps.some((c) => c.textContent === "+4 class")).toBe(true);
   });
 
   it("every tile column emits the identical structure regardless of the bonus caption", () => {

@@ -6,6 +6,7 @@ import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: r
 import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
 import { raceCodec } from "@archivist-gg/dnd5e/race/race.codec";
 import { parseRace } from "@archivist-gg/dnd5e/race/race.parser"; // moved parser (post-move path)
+import { dnd5ePack } from "@archivist-gg/dnd5e"; // barrel: dnd5ePack has no ./pack subpath export (S2)
 import { raceModule } from "../../packages/obsidian/src/modules/race/race.module"; // (a2) uses the module's real render (B1)
 
 const SRD_DIRS = ["SRD 5e", "SRD 2024"].map((d) => join(".compendium-bundle", d, "Races"));
@@ -94,8 +95,7 @@ describe("race port equivalence", () => {
   });
 
   // de-list guard: kernel pack declares race with the PACK codec (not the legacy bridge)
-  it("dnd5ePack declares race with its pack codec", async () => {
-    const { dnd5ePack } = await import("@archivist-gg/dnd5e"); // S2: barrel, no ./pack subpath
+  it("dnd5ePack declares race with its pack codec", () => {
     expect(dnd5ePack.entityTypes.some((et) => et.type === "race" && et.doc === raceCodec)).toBe(true);
   });
 });

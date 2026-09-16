@@ -1,12 +1,8 @@
 import type { ComponentRenderContext } from "../component.types";
-import type {
-  BackgroundEntity,
-  BackgroundToolProficiency,
-  BackgroundLanguageProficiency,
-} from "@archivist-gg/dnd5e/background/background.types";
+import type { BackgroundEntity } from "@archivist-gg/dnd5e/background/background.types";
 import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment-grant";
 import { wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
-import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, fixedGrantLines, fixedNamesFrom } from "../../../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
@@ -25,33 +21,13 @@ function prop(host: HTMLElement, label: string, value: string, cls?: string): vo
   p.createSpan({ text: value });
 }
 
-/** Fixed tool name(s) humanized — only `kind:"fixed"` entries carrying items. */
-function fixedToolNames(tools: BackgroundToolProficiency[] | undefined): string {
-  return (tools ?? [])
-    .filter((t): t is Extract<BackgroundToolProficiency, { kind: "fixed" }> => t.kind === "fixed")
-    .flatMap((t) => (t.items ?? []).map(humanizeSlug))
-    .join(", ");
-}
-
-/** Language reference: fixed names when present, else the choice entry → "choose N". */
-function languageSummary(langs: BackgroundLanguageProficiency[] | undefined): string {
-  const fixed = (langs ?? [])
-    .filter((l): l is Extract<BackgroundLanguageProficiency, { kind: "fixed" }> => l.kind === "fixed")
-    .flatMap((l) => l.languages.map(humanizeSlug));
-  if (fixed.length) return fixed.join(", ");
-  const choice = (langs ?? []).find(
-    (l): l is Extract<BackgroundLanguageProficiency, { kind: "choice" }> => l.kind === "choice",
-  );
-  return choice ? `choose ${choice.count ?? 1}` : "";
-}
-
 /** Starting-equipment reference — the same display strings the builder shows,
  *  joined into one line (this block references, it does not grant). */
 function equipmentSummary(equipment: StartingEquipmentEntry[] | undefined): string {
   const lines: string[] = [];
   for (const e of equipment ?? []) {
     if (e.kind === "choice") lines.push(e.options.map((o) => o.label).join("  or  "));
-    else if (e.kind === "fixed") lines.push(e.label ?? e.grants.map(grantLabel).join(", "));
+    else if (e.kind === "fixed") lines.push(fixedGrantLines(e));
     else lines.push(`${e.amount} GP`);
   }
   return lines.filter(Boolean).join("; ");
@@ -63,37 +39,6 @@ function equipmentSummary(equipment: StartingEquipmentEntry[] | undefined): stri
 function originFeatName(ref: string): string {
   const rawTail = ref.replace(/^\[\[/, "").replace(/\]\]$/, "").split("/").pop()?.trim() ?? "";
   return rawTail || wikilinkTailSlug(ref);
-}
-
-/**
- * Build-order-aware "see Feats" gate (spec §4.1, R3-M8). The origin feat only
- * renders as a Feats row once Task 3b wires it into the feat pipeline, so we do a
- * self-adjusting RUNTIME check rather than a hardcoded flag: is there a
- * feat-sourced resolved feature that matches this origin-feat ref? Match by the
- * bare tail slug (`srd-2024_savage-attacker` endsWith `_savage-attacker`), the
- * parenthetical-variant base slug (Magic Initiate (Cleric) → magic-initiate), or
- * the display name. Absent (today) → value renders as "<name>" in a labeled
- * Origin Feat row (a small-caps `.pc-cb-prop-l` "Origin Feat" label span + a
- * separate value span; the literal ": " is gone, supplied visually by layout);
- * present (post-3b) → value renders as "<name> · see Feats", with NO cross-task
- * edit.
- */
-function originFeatRendersAsRow(ctx: ComponentRenderContext, ref: string): boolean {
-  const slug = wikilinkTailSlug(ref);
-  const rawTail = ref.replace(/^\[\[/, "").replace(/\]\]$/, "").split("/").pop()?.trim() ?? "";
-  const base = rawTail.replace(/\s*\([^()]*\)\s*$/, "").trim();
-  const baseSlug = base && base !== rawTail ? wikilinkTailSlug(`[[${base}]]`) : "";
-  const name = (rawTail || slug).toLowerCase();
-  const matchesSlug = (s: string): boolean =>
-    !!s &&
-    (s === slug ||
-      s.endsWith(`_${slug}`) ||
-      (!!baseSlug && (s === baseSlug || s.endsWith(`_${baseSlug}`))));
-  return ctx.resolved.features.some(
-    (f) =>
-      f.source.kind === "feat" &&
-      (matchesSlug(f.source.slug) || f.feature.name.toLowerCase() === name),
-  );
 }
 
 /**
@@ -157,8 +102,8 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
   nameCell.createDiv({ cls: "pc-action-row-name", text: bg.name });
   if (bg.edition) nameCell.createDiv({ cls: "pc-action-row-sub", text: String(bg.edition) });
 
-  // Detail column kept present-but-empty so the 3-col feature-row grid
-  // (name | detail | caret) stays aligned with its siblings.
+  // Detail column kept present-but-empty, the feature rows' (name | detail | caret) cell order. Being EMPTY, it leaves the
+  // grid and its track goes to the name (R4-G7 T8 wave D fix round 1, W-D-D6, `styles/actions.css` `.pc-feature-detail:empty`).
   row.createDiv({ cls: "pc-feature-detail" });
   row.createDiv({ cls: "pc-action-caret", text: "›" });
 
@@ -208,16 +153,34 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
       if (pool.length) prop(host, "Ability Scores", pool.map((a) => a.toUpperCase()).join(" · "));
 
       // ── Proficiency references: skills / tools / languages. ──
+      //    Languages reads the FIXED entries only, by POLICY: this block
+      //    REFERENCES applied grants, and an unresolved pick belongs to the
+      //    builder. A `kind:"choice"` language entry is NOT impossible · none of
+      //    the four 2024 SRD backgrounds has one (each carries
+      //    `{kind:"fixed",languages:["common"]}` plus the pick in `choices[]`),
+      //    but the one 2014 SRD background does: `srd-5e_background_acolyte` is
+      //    `[{kind:"choice",count:2,from:"any"}]` with no fixed entry. It is
+      //    dropped here deliberately, and nothing is lost · that background also
+      //    carries the pick in `choices[]` as a `select-proficiency`, so the
+      //    builder still surfaces it. When a background grants no fixed language
+      //    the row is omitted entirely by `prop()`.
       prop(host, "Skills", (bg.skill_proficiencies ?? []).map(humanizeSlug).join(", "));
-      prop(host, "Tools", fixedToolNames(bg.tool_proficiencies));
-      prop(host, "Languages", languageSummary(bg.language_proficiencies));
+      prop(host, "Tools", fixedNamesFrom(bg.tool_proficiencies, "items").join(", "));
+      prop(host, "Languages", fixedNamesFrom(bg.language_proficiencies, "languages").join(", "));
 
       // ── Origin Feat line (2024 only), a labeled prop() row like its siblings.
       //    "· see Feats" auto-appends once the feat renders as a Feats row
       //    (Task 3b); before that it degrades to the name. ──
       if (bg.origin_feat) {
         const name = originFeatName(bg.origin_feat);
-        const seeFeats = originFeatRendersAsRow(ctx, bg.origin_feat);
+        // R4-G4 §8: the resolver stamps `originFeatSlug` on the resolved character OUTSIDE the
+        // feats de-dup guard in `PCResolver.resolve`, so the block asks whether THAT feat is in
+        // `resolved.features` instead of re-deriving the tail. The retired `originFeatRendersAsRow`
+        // matched on `endsWith("_" + baseSlug)` (and on the display name), which a DIFFERENT
+        // same-tailed feat also satisfied, so it could light the row for a feat this background
+        // never granted.
+        const stamped = ctx.resolved.originFeatSlug;
+        const seeFeats = !!stamped && ctx.resolved.features.some((f) => f.source.kind === "feat" && f.source.slug === stamped);
         prop(host, "Origin Feat", `${name}${seeFeats ? " · see Feats" : ""}`, "pc-bg-origin");
       }
 

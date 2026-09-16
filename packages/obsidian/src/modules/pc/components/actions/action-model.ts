@@ -96,6 +96,9 @@ const SOURCE_LABEL: Record<SourceKey, string> = {
   feats: "Feats",
   race: "Race",
   background: "Background",
+  // The FALLBACK for the boons head only: since R4-G4 §10 (UR3) that head is labelled
+  // from the pool labels the sub-group holds, and reaches this literal only when no
+  // entry carries one. The table itself stays closed and un-restructured (G12).
   boons: "Boons",
 };
 
@@ -112,8 +115,12 @@ const SOURCE_LABEL: Record<SourceKey, string> = {
  *   `bonus-action`               → bonus
  *   `reaction`                   → reactions
  *   `free` / `special` / absent  → passive (Passive & Free Actions)
+ *
+ * Exported since R4-G3b §11 so the Passive tab's race block gates its trait
+ * tracker through this SAME map rather than a local copy of the vocabulary
+ * (invariant 5: one economy map).
  */
-function featureEconomy(action: ActionCost | null | undefined): EconomyKey {
+export function featureEconomy(action: ActionCost | null | undefined): EconomyKey {
   switch (action) {
     case "action":
       return "actions";
@@ -337,7 +344,7 @@ export function buildActionModel(
 
   // Materialize in fixed ECONOMY × SOURCE order, omitting empties.
   const attacksPerAction = derived.attacksPerAction ?? 1;
-  const equippedCount = (derived.attacks ?? []).length;
+  const equippedCount = (derived.attacks ?? []).filter((a) => !!a.slotKey).length; // R4-G6b §5.5: the unarmed row never counts
 
   const sections: Section[] = [];
   for (const economy of ECONOMY_ORDER) {
@@ -349,10 +356,20 @@ export function buildActionModel(
       const entries = sources.get(source);
       if (!entries || entries.length === 0) continue;
 
-      const subGroup: SubGroup = { key: source, label: SOURCE_LABEL[source], entries };
+      // R4-G4 §10 (UR3): the boons head is LABELLED from the data it holds, the distinct pool
+      // labels in pool order, instead of the SOURCE_LABEL literal. The entries were pushed in
+      // `resolved.pools` order above and `mergeFeatureEntries` reorders only `feature` entries,
+      // so entry order IS pool order. The closed unions (SourceKey / SOURCE_ORDER /
+      // SOURCE_LABEL) are untouched: G12.
+      const label = source === "boons"
+        ? [...new Set(entries.map((e) => (e.kind === "boon" ? e.poolLabel : undefined)).filter((l): l is string => !!l))].join(" · ") || SOURCE_LABEL.boons
+        : SOURCE_LABEL[source];
+      const subGroup: SubGroup = { key: source, label, entries };
       if (economy === "actions" && source === "weapons") {
-        const prefix = attacksPerAction > 1 ? `×${attacksPerAction} attacks · ` : "";
-        subGroup.count = `${prefix}${equippedCount} equipped`;
+        const prefixPart = attacksPerAction > 1 ? `×${attacksPerAction} attacks` : "";
+        const equippedPart = equippedCount > 0 ? `${equippedCount} equipped` : "";
+        const count = [prefixPart, equippedPart].filter(Boolean).join(" · ");
+        if (count) subGroup.count = count;
       }
       subGroups.push(subGroup);
     }

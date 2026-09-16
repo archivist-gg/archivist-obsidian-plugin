@@ -246,6 +246,18 @@
   -webkit-column-break-inside: avoid;
 }
 
+/* R4-G6: the markdown-filled sections (lair / regional / variants) flow like the native ones; every arm scoped */
+.archivist-monster-two-col-flow table,
+.archivist-monster-two-col-flow blockquote,
+.archivist-monster-two-col-flow ul {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+}
+.archivist-monster-block .archivist-monster-token { float: right; max-width: 6em; margin: 0 0 0.4em 0.6em; }
+.archivist-monster-block .archivist-monster-token img { max-width: 100%; height: auto; }
+.archivist-monster-block .archivist-monster-portrait { margin-top: 0.6em; }
+.archivist-monster-block .archivist-monster-portrait img { max-width: 100%; height: auto; }
+
 /* SVG bars need special handling in column flow */
 .archivist-monster-two-col-flow .stat-block-bar {
   break-inside: avoid;
@@ -295,6 +307,35 @@
   color: inherit;
   line-height: inherit;
   letter-spacing: normal;
+}
+
+/* R4-G7 T8 wave E, B026-D17 · consecutive paragraphs need their gap back. The reset above zeroes `margin` on every `p`
+   in a block, which was written for the property lines; since R4-G6 the lair / regional / variant panes and the insets
+   are MARKDOWN, and since Q-11 a feature's prose is too, so paragraphs now butt against each other with nothing between
+   them. MEASURED live in W-Er on the deployed pair: Burney's Regional Effects and Variants panes, Baphomet's Regional
+   Effects and the Ancient Dragon Turtle's Variants each read `zeroGaps` (the next paragraph's top MINUS the previous
+   one's bottom, 0 px) on 1, 5, 2 and 5 paragraph pairs. Obsidian's own `--p-spacing` (1rem) is what the reset displaced;
+   half an em of the block's own type reads as a paragraph break inside a stat block without spacing it like body copy.
+   The second arm is the feature entry, whose LEAD paragraph the renderer unwraps (B026-D1): what follows it is a `p`
+   with no `p` sibling before it, so it would otherwise sit straight under the prose it continues. */
+.archivist-monster-block p + p,
+.archivist-monster-block .archivist-feature-entry > p {
+  margin-top: 0.5em;
+}
+
+/* R4-G7 T8 wave E, B026-D21 · the markdown fills read at the feature prose's type. The pane container
+   (`monster.sections.ts` `fillMarkdown`) carries no type rule of its own, so it inherited the block's 14 px / 1.2em
+   while every trait and action reads 13 px / 1.4em: MEASURED live in W-Er, the Turtle's Lair Actions and Regional
+   Effects paragraphs computed `font-size: 14px` and `line-height: 16.8px` against the feature prose's 13 px / 19.6 px.
+   19.6 px is that value written out: `.archivist-feature`'s `line-height: 1.4em` resolves at the block's own 14 px and
+   is INHERITED into the 13 px entry, so an em here (which would resolve at 13 px) is not the same number. The header of
+   a two-column section lives inside the same container and keeps its own rhythm, and so do the tables (B026-D8 owns
+   those); no corpus fill puts a `p` inside a table cell. */
+.archivist-monster-block .archivist-monster-section[data-fill="markdown"] > :not(.actions-header, table) {
+  line-height: 19.6px;
+}
+.archivist-monster-block .archivist-monster-section[data-fill="markdown"] :is(p, li) {
+  font-size: 13px;
 }
 
 /* Header Section */
@@ -443,8 +484,18 @@
 }
 
 /* Stat Block Interactive Tags (parchment theme) */
+/* R4-G7 T8 wave E, B026-D4: `nowrap` holds the icon to its value and the value together. The icon is an inline `<svg>`,
+   an ATOMIC INLINE, and Chromium allows a break before and after one whatever the neighbouring characters are: MEASURED
+   live in W-Er, Andir's Variants table broke ten of its ten tags across lines ("16 (" / icon / "3d8 + 3)") and the
+   Aboleth, Baphomet and the Turtle each broke one. The "(" that opens a tag is held by the shared wrapper below, which
+   the renderer puts around the two (`bindInlineTagPunctuation`, `shared/rendering/renderer-utils.ts`). */
 .archivist-stat-tag {
   display: inline;
+  white-space: nowrap;
+}
+/* The wrapper that binds a widget to the opening punctuation the PROSE owns (both tag families use it). */
+.archivist-tag-nobreak {
+  white-space: nowrap;
 }
 .archivist-stat-tag-icon {
   display: inline;
@@ -502,8 +553,13 @@
   font-style: italic;
 }
 
-/* Legendary Actions Intro */
+/* Legendary Actions Intro. R4-G7 T8 wave E, B026-D17: the third arm is the SAME element with its tag, because this
+   element IS a `p` and the block's `p` reset above is (0,1,1) while the bare `.archivist-legendary-intro` arm is only
+   (0,1,0): the reset won and every intro, note and reactions preamble rendered at the block's 14 px / 16.8 px with NO
+   margin. MEASURED live in W-Er on five intros (Tiamat, Tyreus, Burney, Baphomet, the Turtle, the SRD Aboleth):
+   `margin-bottom: 0px`, `font-size: 14px`, `line-height: 16.8px`, where this rule asks for 0.5em, 13 px and 1.4em. */
 .archivist-monster-block .legendary-intro,
+.archivist-monster-block p.archivist-legendary-intro,
 .archivist-legendary-intro {
   font-style: italic;
   margin: 0.25em 0 0.5em;
@@ -750,6 +806,36 @@
   color: #5a1808;
   text-decoration-style: solid;
 }
+/* R4 {G5, G6} live rider V-12: a link the vault cannot resolve, INSIDE a block. The rule above sets a
+   flat colour on every `a.internal-link` in these four blocks and would otherwise hide Obsidian's own
+   unresolved treatment, so the block states it in its own palette: the same brick, faded through
+   Obsidian's `--link-unresolved-opacity` where the theme defines one, with a dashed underline against
+   the resolved link's dotted one. The class itself is Obsidian's and is written by the shared
+   renderer's wikilink arm when the injected resolver finds no note.
+   R4-G7 T8 wave E, B026-D5: that sentence was FALSE on the shipped cascade until the two colour
+   declarations below were added. Obsidian 1.13.7 ships `.markdown-rendered .internal-link.is-unresolved`
+   with `color: var(--link-unresolved-color)` and its own decoration colour at (0,3,0), which beats the
+   brick rule above at (0,2,1), so only this rule can state the colour: it is (0,3,1). MEASURED live in
+   W-Er on Andir Valmakos's Armor Class link (the dangling `Magic Items/Leather Armor`, DATA-9):
+   `color: rgb(166, 138, 249)`, decoration `oklch(0.60342 0.217199 292.488 / 0.3)`, `opacity: 0.7` (the
+   theme's lavender accent) where the block's own links read `#7a200d`. The hover arm is (0,4,1) because
+   Obsidian's hover rule is (0,4,0) and repaints `--link-color-hover`. */
+.archivist-spell-block a.internal-link.is-unresolved,
+.archivist-item-block a.internal-link.is-unresolved,
+.archivist-class-block a.internal-link.is-unresolved,
+.archivist-monster-block a.internal-link.is-unresolved {
+  color: #7a200d;
+  opacity: var(--link-unresolved-opacity, 0.55);
+  text-decoration-style: dashed;
+  text-decoration-color: currentColor;
+}
+.archivist-spell-block a.internal-link.is-unresolved:hover,
+.archivist-item-block a.internal-link.is-unresolved:hover,
+.archivist-class-block a.internal-link.is-unresolved:hover,
+.archivist-monster-block a.internal-link.is-unresolved:hover {
+  color: #5a1808;
+  text-decoration-color: currentColor;
+}
 
 /* Mechanical summary — appears under the item card in inventory expand */
 .archivist-item-summary {
@@ -876,6 +962,12 @@
   border: none;
   font-size: 12px;
 }
+/* R4-G3b §10: the background note's roll-table cells render through the markdown
+   path, which wraps each cell text in a `<p>`; zero its margin so the cell keeps
+   the table's own row rhythm. EXPECTED-NOT-MEASURED (§10.2.2: no call site
+   rendered markdown into a `<td>` before Task 11); verified at the G3b live
+   verify; dropped if it changes nothing. */
+.archivist-background-block table.archivist-table td > p { margin: 0; }
 .archivist-spell-block table.archivist-table td:first-child,
 .archivist-item-block table.archivist-table td:first-child,
 .archivist-class-block table.archivist-table td:first-child,
@@ -888,6 +980,39 @@
 .archivist-class-block table.archivist-table tbody tr:nth-child(even) td,
 .archivist-monster-block table.archivist-table tbody tr:nth-child(even) td {
   background: rgba(217, 196, 132, 0.35);
+}
+
+/* R4-G7 T8 wave E, B026-D7. An inset (`inset` / `variant*` nodes) renders as a `> ` blockquote, and Obsidian 1.13.7's
+   `.markdown-rendered blockquote` paints its left rule with `var(--blockquote-border-color)`, which is the theme's
+   interactive accent: MEASURED live in W-Er on Burney's, Andir's and the Turtle's Variants panes,
+   `border-inline-start-color: rgb(138, 92, 245)` at 2 px. The block's only reset is `.archivist-monster-block *
+   { border-color: transparent }` (0,1,0), which loses to Obsidian's (0,1,1); this arm is (0,3,1) and states the block's
+   own red instead, the same token the section headers and the card rules use. */
+.archivist-monster-block .archivist-monster-section blockquote {
+  border-inline-start-color: var(--stat-block-header);
+}
+
+/* R4-G7 T8 wave E, B026-D8 (the reader half; the engine half is `entriesToMarkdown`'s alignment row). The shared brick
+   rules above centre every cell, which was written for the short spell and item tables; a MARKDOWN section's table is
+   authored prose, and Andir Valmakos's New Features column (nine-line paragraphs) rendered centred line by line. These
+   arms are scoped to the markdown sections, so the programmatic tables keep their look: a cell takes its column's own
+   alignment, which Obsidian writes as an `align` ATTRIBUTE (MEASURED in the W-Er table lab: `:---:` emits
+   `align="center"`, `---:` emits `align="right"`, a plain column emits none), and an unaligned column reads start.
+   The first column also stops breaking: with `table-layout: auto` and a long second column it shrank to its min-content
+   and Baphomet's `01–20` broke after its en dash (MEASURED live: 2 lines per cell in that column). The corpus says that
+   is safe: over all 31 entry-tree tables the longest first-column cell is 5 characters (`01–20`, `01–05`). */
+.archivist-monster-block .archivist-monster-section table.archivist-table td,
+.archivist-monster-block .archivist-monster-section table.archivist-table th {
+  text-align: start;
+}
+.archivist-monster-block .archivist-monster-section table.archivist-table :is(td, th)[align="center"] {
+  text-align: center;
+}
+.archivist-monster-block .archivist-monster-section table.archivist-table :is(td, th)[align="right"] {
+  text-align: right;
+}
+.archivist-monster-block .archivist-monster-section table.archivist-table td:first-child {
+  white-space: nowrap;
 }
 
 /* 5. Magic Item Block (reuses spell block pattern)
@@ -1175,6 +1300,48 @@
   color: var(--stat-block-text);
 }
 
+/* R4 {G5, G6} live rider 3, Z-9-4: on the SPELLCASTING card each entry is its own LINE. Every other
+   feature emits ONE entry element, so `display: inline` above is what puts a trait's prose after its
+   bold name, which is the stat block's shape; the spellcasting card is the one caller that emits MANY
+   (`renderSpellcastingEntry`, `modules/monster/monster.sections.ts`, one element per
+   `spellcastingLines` line, and the only caller to emit a div rather than a span). Inline, and with no
+   whitespace between the elements, those lines ran together at every group boundary: the live pass read
+   `wizard spells prepared:At Will: light, ray of frost1st Level (2 Slots): thunderwave` on Andir
+   Valmakos and the same glue on the Archmage, Feonor, Auspicia Dran and Sir Talavar
+   (`g5-t12d-shots/g6/sample-*.png`). As blocks, the card reads: the bold `Spellcasting.` on its own
+   line, then the header prose, then `At Will:`, then one line per spell level. `text-indent` is reset
+   because `.archivist-feature` sets a -1em hanging indent for the name, and every block line would
+   otherwise hang the same 1em; the name keeps the hang, its lines do not. */
+.archivist-monster-spellcasting .archivist-feature-entry {
+  display: block;
+  text-indent: 0;
+}
+
+/* R4-G7 T7 live rider RIDER-2. A converter trait may author a markdown list (Burney the Barber's
+   `Bahamut's Blessings` carries four `- ` items and its `Acid Breath` two), and Obsidian's
+   MarkdownRenderer emits a real `ul`/`li` inside the feature entry. `.archivist-feature` above sets
+   `text-indent: -1em` so a trait's BOLD NAME hangs into the left margin, which is the stat block's
+   shape; an `li` INHERITS that hang, and MEASURED LIVE at S00 it pulled each item's first line 14 px
+   (1em at the block's 13 px type) left of its own box, straight through the gutter the
+   `list-style-position: outside` disc occupies: the li box sat at x 507 with its 22.308 px margin off
+   the ul at 484.6 while the first glyphs started at 493, so the bullet overprinted the first character
+   of "Unless", "Burney" and "Once". The name's hang is deliberate; a list item's is not, so the item
+   resets it and keeps the ul's own gutter. */
+.archivist-monster-block .archivist-feature-entry li {
+  text-indent: 0;
+}
+
+/* R4-G7 T8 wave E, B026-D1. Since Q-11 a feature's prose is MARKDOWN, so besides the `li` above the entry can hold a
+   `p` (a second paragraph), a `blockquote` or a `table`, and each of them inherits the -1em hang the NAME needs. The
+   lead paragraph is unwrapped in the renderer (`inlineLeadParagraph`, `monster.renderer.ts`), so what is left here are
+   the blocks that legitimately start their own line: they start it at the card's own text edge, which is where the
+   spellcasting card's body lines start (`:1221-1224`) and where every wrapped prose line sits. MEASURED live in W-Er on
+   the deployed pair: a dropped paragraph's first line sat at x 470.6 and its continuation lines at 484.6, the 14 px
+   (1em at 14 px) the hang pulls. */
+.archivist-monster-block .archivist-feature-entry :is(p, blockquote, table) {
+  text-indent: 0;
+}
+
 /* 8. Tab Navigation (from monster stat block)
    ========================================================================== */
 
@@ -1186,9 +1353,19 @@
   border-bottom: 1px solid #7a200d;
 }
 
+/* R4 {G5, G6} live rider 2, X-9-6: the strip WRAPS, as the PC sheet's own tab strip does at its
+   narrow tiers. It was a scroller with its scrollbar hidden and no scroll affordance rendered (the
+   `.original-tab-fade` rules below are styling for elements this renderer does not create), so a
+   strip wider than the note's column simply cut its last label: the live run read `MYTHIC ACTI` at
+   the right edge at every window size. With the row wrapping, a strip too wide for its column takes
+   a second line and every label stays whole; the buttons keep their own `flex-shrink: 0` and
+   `white-space: nowrap`, so none of them is squeezed either. The overflow pair stays as the last
+   resort for a single label wider than the whole column. */
 .archivist-monster-block .original-tab-navigation {
   display: flex;
   gap: 2px;
+  row-gap: 2px;
+  flex-wrap: wrap;
   flex: 1;
   overflow-x: auto;
   overflow-y: hidden;
@@ -1395,8 +1572,15 @@
    ========================================================================== */
 
 /* Editor/Chat Inline Tags -- Warm Gold / Cool Teal / Soft Red */
+/* R4-G7 T8 wave E, B026-D4: the same `nowrap` as the stat-block widget above, for the same reason and on the same
+   evidence. This is the family the PC sheet's Weapons DAMAGE cell renders (`renderTextWithInlineTags(..., false)`):
+   MEASURED live in W-Er on the user's Illrigger, the Greatsword of Wounding row read "2d6 necrotic + [icon]" then "1d8"
+   then "necrotic" over three lines (two of its three tags in two fragments, one with its icon on another line than its
+   value); with this rule every tag of both rows is ONE fragment, icon and value together, and the widest of them still
+   ends 15.6 px inside the damage cell. */
 .archivist-tag {
   display: inline;
+  white-space: nowrap;
 }
 .archivist-tag-icon {
   display: inline;
@@ -1948,6 +2132,25 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* Compendium badge inside stat block wrapper */
+/* R4 {G5, G6} live rider V-8: the block that CARRIES a badge reserves a strip for it. The badge is
+   absolutely positioned at the top-right of the rendered block, so on a `{{monster:...}}` REF whose
+   compendium name is long it painted over the monster's own name: the live run read
+   `FIZBAN'S TREASURY OF DRAGONS` across the last letters of `ASPECT OF TIAMAT`. Reserving width beside
+   the title cannot work, because the badge's width is DATA (the compendium name), so the reservation
+   is vertical: a strip the badge occupies alone, above the title. `:has(> .archivist-compendium-badge)`
+   keeps this to the badged blocks only, so a direct note, which carries no badge, renders exactly the
+   HTML it renders today. 28 px is the badge's own box (9 px type, 2 px padding and a 1 px border each
+   side) under its `top: 6px` offset, plus the gap. The `.archivist-compendium-ref > *` arm carries the
+   entity types whose presenter root is not one of the three block wrappers. */
+:is(
+  .archivist-monster-block-wrapper,
+  .archivist-spell-block-wrapper,
+  .archivist-item-block-wrapper,
+  .archivist-compendium-ref > *
+):has(> .archivist-compendium-badge) {
+  padding-top: 28px;
+}
+
 .archivist-compendium-badge {
   position: absolute;
   top: 6px;

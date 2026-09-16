@@ -3,7 +3,8 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { ALL_SKILLS } from "@archivist-gg/dnd5e/dnd/constants";
 import { formatModifier } from "@archivist-gg/dnd5e/dnd/math";
 import type { SkillSlug } from "@archivist-gg/dnd5e";
-import { renderConditionTag } from "./condition-tag";
+import { renderConditionTags, rollModifierTagSpec, type ConditionTagSpec } from "./condition-tag";
+import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { numberOverride } from "./edit-primitives";
 
 const SKILL_DISPLAY_NAMES: Record<SkillSlug, string> = {
@@ -52,13 +53,15 @@ export class SkillsPanel implements SheetComponent {
       row.createSpan({ cls: toggleClasses.join(" ") });
       const bonusEl = row.createSpan({ cls: "pc-skill-bonus", text: formatModifier(entry.bonus) });
       row.createSpan({ cls: "pc-skill-name", text: SKILL_DISPLAY_NAMES[skillSlug] ?? display });
+      // R4-G7 T8 RIDER-20: the row's tags are collected, then rendered once so same-text tags merge.
+      const specs: ConditionTagSpec[] = [];
       const ce = ctx.derived.conditionEffects;
       if (ce) {
         if (ce.ability_check_disadvantage) {
           const sources = ce.sources
             .filter((s) => skillDisSources.has(s.condition))
             .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
-          renderConditionTag(row, "DIS", `Disadvantage on ability checks from ${sources.join(", ")}`);
+          specs.push({ kindClass: "dis", text: ROLL_MODE_TAG.disadvantage, tooltip: `Disadvantage on ability checks from ${sources.join(", ")}` });
         }
         if (ce.d20_test_penalty !== 0) {
           const baseBonus = entry.bonus - ce.d20_test_penalty;
@@ -70,15 +73,19 @@ export class SkillsPanel implements SheetComponent {
       }
 
       // Structured roll-modifier effects scoped to ability checks. An entry
-      // applies to this row when it is unscoped (all checks) or its scope
-      // matches the skill slug. Order-preserving; one chip per matching entry.
+      // applies to this row when it is unscoped (all checks), when its scope
+      // matches the skill slug, or (R4-G3a §6.2.3) when its scope is the
+      // ABILITY KEY this row rolls with ("Strength checks" normalises to "str",
+      // not to a skill). `entry.ability` is the row's own already-resolved key:
+      // SKILL_ABILITY is keyed by space-separated display names and returns
+      // undefined for `animal-handling` / `sleight-of-hand`, so it is the wrong
+      // map here. Order-preserving; one spec per matching entry (a conditional one is marked, RIDER-20).
       for (const rm of ctx.derived.rollModifiers ?? []) {
         if (rm.roll !== "ability-check") continue;
-        if (rm.scope && rm.scope !== skillSlug) continue;
-        const tag = rm.mode === "advantage" ? "ADV" : "DIS";
-        const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-        renderConditionTag(row, tag, tip);
+        if (rm.scope && rm.scope !== skillSlug && rm.scope !== entry.ability) continue;
+        specs.push(rollModifierTagSpec(rm));
       }
+      renderConditionTags(() => row, specs);
       if (ctx.editState) {
         row.addEventListener("click", () => ctx.editState!.cycleSkill(skillSlug));
         bonusEl.addEventListener("click", (e) => e.stopPropagation());

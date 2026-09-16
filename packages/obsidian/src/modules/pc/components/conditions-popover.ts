@@ -1,9 +1,9 @@
 import type { ComponentRenderContext } from "./component.types";
-import {
-  CONDITION_SLUGS,
-  CONDITION_DISPLAY_NAMES,
-} from "@archivist-gg/dnd5e/pc/conditions.constants";
+import type { PCServices } from "../pc.services";
+import { CONDITION_SLUGS } from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { setConditionIcon, setExhaustionIcon } from "../assets/condition-icons";
+import { buildConditionLabelMap, conditionDisplayName } from "../condition-labels";
+import { hiddenCompendiumSet } from "../../../shared/entities/compendium-visibility";
 import { clampPopoverToViewport } from "./popover-utils";
 
 let current: { root: HTMLElement; cleanup: () => void } | null = null;
@@ -26,6 +26,16 @@ export function openConditionsPopover(anchor: HTMLElement, ctx: ComponentRenderC
 
   const list = popover.createDiv({ cls: "pc-cond-popover-list" });
   const active = new Set(ctx.resolved.state.conditions);
+  // One registry scan for this popover's whole row list. The cast is not
+  // cosmetic: several sheet render paths hand components a ctx whose `services`
+  // is absent or partial, and `buildConditionLabelMap` is fail-open on exactly
+  // that (see condition-labels.ts) — an empty map reproduces the retired
+  // `CONDITION_DISPLAY_NAMES` spellings byte for byte.
+  const services = ctx.services as Partial<PCServices> | undefined;
+  const conditionLabels = buildConditionLabelMap(
+    services?.entities,
+    hiddenCompendiumSet(services?.plugin?.settings),
+  );
 
   for (const slug of CONDITION_SLUGS) {
     const row = list.createDiv({
@@ -34,7 +44,7 @@ export function openConditionsPopover(anchor: HTMLElement, ctx: ComponentRenderC
     });
     const iconEl = row.createDiv({ cls: "pc-cond-icon-wrap" });
     setConditionIcon(iconEl, slug);
-    row.createDiv({ cls: "pc-cond-name", text: CONDITION_DISPLAY_NAMES[slug] });
+    row.createDiv({ cls: "pc-cond-name", text: conditionDisplayName(slug, conditionLabels) });
     const toggle = row.createDiv({
       cls: `pc-cond-toggle${active.has(slug) ? " on" : ""}`,
     });

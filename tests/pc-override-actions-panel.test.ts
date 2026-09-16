@@ -41,6 +41,26 @@ describe("OverrideActionsPanel", () => {
     expect(writes).toContainEqual([0, { resist: ["fire"] }]);
   });
 
+  it("selects the matching option when the stored resist keeps its authored Title-Case spelling", () => {
+    // The FOURTH instance of the case-sensitive-matcher bug this phase closes:
+    // the option values are canonical slugs, so assigning a raw stored value to
+    // `select.value` matches nothing and the control renders blank while the item
+    // genuinely carries the resistance.
+    //
+    // "Psychic" is chosen because its authored spelling DIFFERS from its canonical
+    // slug. The test that FOLLOWS this one is the only other stored-read case in
+    // the file and it seeds `resist: ["fire"]`, where label and value spell the
+    // same and a canonical read is indistinguishable from a raw one · which is
+    // precisely how this instance shipped green. (The test ABOVE seeds no stored
+    // resist at all; it exercises the write path, so it never reads one back.)
+    const root = mountContainer();
+    const entry = { item: "[[armor-of-resistance]]", overrides: { resist: ["Psychic"] } } as EquipmentEntry;
+    renderOverrideActionsPanel(root, { entry, entryIndex: 0, editState: {} as never });
+    const sel = root.querySelector("select[data-field='resist']") as HTMLSelectElement;
+    expect(sel.value).toBe("psychic");
+    expect(sel.selectedOptions[0]?.text).toBe("Psychic");
+  });
+
   it("clears overrides.resist when set back to —", () => {
     const root = mountContainer();
     const writes: unknown[] = [];

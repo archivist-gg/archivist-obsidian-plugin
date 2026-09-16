@@ -4,7 +4,6 @@ import { SKILL_ABILITY, STANDARD_SENSES, ABILITY_KEYS } from "@archivist-gg/dnd5
 import {
   abilityModifier,
   proficiencyBonusFromCR,
-  crToXP,
   savingThrow,
   skillBonus,
   passivePerception,
@@ -12,13 +11,39 @@ import {
   parseHitDiceFormula,
   hitDiceSizeFromCreatureSize,
 } from "@archivist-gg/dnd5e/dnd/math";
+import { crString, formatCR, sizeWord } from "@archivist-gg/dnd5e/monster/monster.format";
 import { editableToYaml } from "./monster.yaml-serializer";
+// The VALUE, so the deep copy below can never drift from the add-section dropdown's own vocabulary. `edit/types`
+// only back-references this module with an `import type`, so there is no runtime cycle.
+import { SECTION_KEY_MAP } from "./edit/types";
 
 // -----------------------------------------------------------------------------
 // EditableMonster type and conversion helpers (formerly src/dnd/editable-monster.ts)
 // -----------------------------------------------------------------------------
 
 export type SkillProficiency = "none" | "proficient" | "expertise";
+
+/**
+ * R4-G6 §9 · the keys the editors OWN: `editableToMonster` writes each of these from the edit state, over the
+ * unmanaged keys it copies first. Every other authored key (`spellcasting`, `raw`, `gear`, the taxonomy tags,
+ * `lair_actions`, `mythic`, `section_headers`, ...) is unmanaged: its VALUE reaches the save unchanged (invariant
+ * 7). One structural qualifier since R4-G6b §4.4: the seven section arrays `SECTION_KEY_MAP` names (`traits`,
+ * `actions`, `reactions`, `bonus_actions`, `legendary_actions`, `lair_actions`, `mythic_actions`) are rebuilt
+ * element by element in `monsterToEditable`, where a plain-object entry becomes a shallow copy and every other
+ * entry (a scalar, `null`, a nested array, and since R4-G7 §7.4 a `Date` or any other non-plain object) rides by
+ * reference; every key outside those seven still rides the `...monster` spread by reference, untouched. Since
+ * R4-G7 §7.4 (a) a section key whose WHOLE VALUE is not an array is the one key that rides neither: it is deleted
+ * from the editable so no reader can mistake it for a feature array, and `editableToMonster` re-emits it from
+ * `extras`, so invariant 7 still holds for it byte for byte.
+ */
+const MANAGED = new Set(["name","size","type","subtype","alignment","cr","ac","hp","speed","abilities","saves","skills","senses","passive_perception","languages","damage_vulnerabilities","damage_resistances","damage_immunities","condition_immunities","traits","actions","bonus_actions","reactions","legendary_actions","legendary_action_uses","legendary_resistance","columns"]);
+
+/**
+ * R4-G6 §9 · `EditableMonster`'s OWN fields, which are edit-state bookkeeping and NEVER reach the saved note.
+ * `xp` and `proficiencyBonus` are derived from `cr` for display; an AI-path authored top-level `xp` lives in
+ * `raw` after the codec and survives as an unmanaged key.
+ */
+const EDIT_STATE_KEYS = new Set(["overrides","saveProficiencies","skillProficiencies","activeSenses","customSenses","activeSections","xp","proficiencyBonus","extras"]);
 
 export interface EditableMonster extends Monster {
   overrides: Set<string>;
@@ -29,14 +54,30 @@ export interface EditableMonster extends Monster {
   activeSections: string[];
   xp: number;
   proficiencyBonus: number;
+  /**
+   * The unmanaged keys, recorded for the editors' bookkeeping; the runtime carrier is the `...monster` spread.
+   * R4-G7 §7.4 (a) · with ONE exception, which is a real carrier and not bookkeeping: a non-array value under a
+   * `SECTION_KEY_MAP` key is deleted from the editable and recorded here (the five MANAGED section keys included,
+   * which the `!MANAGED.has(k)` loop would otherwise skip), and `editableToMonster` re-emits it from here.
+   */
+  extras: Record<string, unknown>;
 }
 
 /**
  * Convert a Monster to an EditableMonster by inferring proficiencies,
- * parsing senses, and detecting active sections.
+ * parsing senses, and detecting active sections. Every key outside MANAGED travels through the `...monster`
+ * spread and is also recorded in `extras`.
+ *
+ * R4-G6b §4.4 · `abilities`, `hp`, `ac`, `speed`, `saves`, `skills`, `senses` and `languages` are deep-copied
+ * field by field below, and EVERY feature array `SECTION_KEY_MAP` names is deep-copied after them (element by
+ * element, a shallow copy of each PLAIN-object entry). Without that loop those seven arrays ride the `...monster`
+ * spread BY REFERENCE, so `addFeature` / `removeFeature` write into an array `original` still points at and
+ * `cancel()`, which rebuilds from `original`, cannot revert a feature edit.
  */
 export function monsterToEditable(monster: Monster): EditableMonster {
-  const cr = monster.cr ?? "0";
+  // The LOOKUP key only: the editable's `cr` FIELD keeps the authored value through the `...monster` spread, so
+  // an object `cr` (its `xp_lair` / `lair` / `coven` / `xp` leaves) round-trips unchanged on save.
+  const cr = crString(monster.cr) ?? "0";
   const profBonus = proficiencyBonusFromCR(cr);
   const abilities = monster.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
 
@@ -111,6 +152,8 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   if (monster.traits && monster.traits.length > 0) activeSections.push("traits");
   if (monster.actions && monster.actions.length > 0) activeSections.push("actions");
   if (monster.reactions && monster.reactions.length > 0) activeSections.push("reactions");
+  // The section key vocabulary is SECTION_KEY_MAP's snake_case (`bonus_actions`), in ALL_SECTIONS order.
+  if (monster.bonus_actions && monster.bonus_actions.length > 0) activeSections.push("bonus_actions");
   if (monster.legendary_actions && monster.legendary_actions.length > 0) activeSections.push("legendary_actions");
 
   // Detect overrides: compare parsed values against auto-calculated values
@@ -150,7 +193,10 @@ export function monsterToEditable(monster: Monster): EditableMonster {
     }
   }
 
-  return {
+  const extras: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(monster)) if (!MANAGED.has(k)) extras[k] = v;
+
+  const editable: EditableMonster = {
     ...monster,
     abilities: monster.abilities ? { ...monster.abilities } : undefined,
     hp: monster.hp ? { ...monster.hp } : undefined,
@@ -166,14 +212,60 @@ export function monsterToEditable(monster: Monster): EditableMonster {
     activeSenses,
     customSenses,
     activeSections,
-    xp: crToXP(cr),
+    // `formatCR`, not a table read on `cr`: the lookup key is normalised there (a decimal `0.25` finds `1/4`) and an
+    // authored `xp` override wins, so edit mode shows the SAME XP as the rendered Challenge line. `cr` above stays
+    // the authored string, which is what the PB lookup and the CR select want.
+    xp: formatCR(monster.cr)?.xp ?? 0,
     proficiencyBonus: profBonus,
+    extras,
   };
+
+  // R4-G6b §4.4: every feature array the add-section dropdown can open, deep-copied so `addFeature` / `removeFeature`
+  // never write into an array `original` still points at. Read through the same `Record<string, unknown>` cast
+  // `addFeature` uses: `SectionKey` carries `mythic_actions`, which is not a `Monster` key, and `lair_actions` is
+  // `unknown[]`, so neither a typed index nor a typed element is available here.
+  //
+  // Only PLAIN OBJECT entries are copied (R4-G6b §4.4, T5 review). `lair_actions` is `unknown[]`, and in the shipped
+  // corpus all 222 converter notes carrying the key start with a scalar string or a `{ type: list, items: [...] }`
+  // node, never a `{ name, entries }` feature: spreading a string yields a per-character object, which
+  // `editableToMonster`'s unmanaged pass would then write to the note. Scalars, `null` and nested arrays pass
+  // through by reference (nothing writes into them), and `Array.isArray` replaces a truthiness test so an authored
+  // scalar `lair_actions: some text` cannot throw at open.
+  //
+  // R4-G7 §7.4 · PLAIN means the prototype IS `Object.prototype`, not merely `typeof f === "object"`. js-yaml loads
+  // an unquoted ISO scalar as a `Date`, whose own enumerable keys are none, so the old test spread it to `{}` and
+  // destroyed the authored value on the next save. A `Date`, a class instance and an array now all ride by
+  // reference, exactly like a scalar; only an entry the editors actually write into is copied.
+  const src = monster as unknown as Record<string, unknown>;
+  const out = editable as unknown as Record<string, unknown>;
+  for (const k of Object.values(SECTION_KEY_MAP)) {
+    const raw = src[k];
+    if (!Array.isArray(raw)) {
+      // R4-G7 §7.4 (a) · a non-array value under a section key is not feature data, and leaving it on the editable
+      // is what let `getFeatures` hand a string back cast as `Feature[]` and `MonsterEditState.addFeature` call
+      // `.push` on it (a TypeError). It is DELETED here, and `editableToMonster` re-emits it from `extras` so the
+      // save stays lossless under R4-G6 §9 invariant 7. `extras` already holds the value for the two UNMANAGED
+      // section keys (`lair_actions`, `mythic_actions`) from the loop above, which skips MANAGED keys, so the five
+      // managed ones are carried in here; `null` is carried like any other value, so an authored `lair_actions:`
+      // with no items keeps the behaviour it has always had. MEASURED over the 13,835-file converter corpus: zero
+      // documents carry either shape (`evidence/g7-t3-section-scalar-population.txt`), so this is a hardening for
+      // hand-authored and homebrew notes, not a repair of shipped data.
+      if (raw !== undefined) extras[k] = raw;
+      delete out[k];
+      continue;
+    }
+    const arr = raw as unknown[];
+    out[k] = arr.map((f) => (f !== null && typeof f === "object" && Object.getPrototypeOf(f) === Object.prototype ? { ...f } : f));
+  }
+
+  return editable;
 }
 
 /**
- * Convert an EditableMonster back to a plain Monster by recalculating
- * saves, skills, senses, and passive perception from the editable state.
+ * Convert an EditableMonster back to a plain Monster: the UNMANAGED keys are copied first (the `...monster` spread
+ * in `monsterToEditable` carries them at runtime) and the managed keys are written OVER them, recalculating saves,
+ * skills, senses and passive perception from the editable state. The edit state's own fields (EDIT_STATE_KEYS) are
+ * never emitted, so the save is lossless for everything the editors do not own (R4-G6 §9, invariant 7).
  */
 export function editableToMonster(editable: EditableMonster): Monster {
   const abilities = editable.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
@@ -239,6 +331,25 @@ export function editableToMonster(editable: EditableMonster): Monster {
     name: editable.name,
   };
 
+  // The unmanaged keys FIRST; the managed copies below overwrite them.
+  for (const [k, v] of Object.entries(editable)) if (!MANAGED.has(k) && !EDIT_STATE_KEYS.has(k) && v !== undefined) (monster as unknown as Record<string, unknown>)[k] = v;
+
+  // R4-G7 §7.4 (a) under R4-G6 §9 invariant 7 · `monsterToEditable` DELETES a non-array value from the editable
+  // under a section key, so nothing on the editable can carry it to the save. Its authored VALUE still has to
+  // reach the note unchanged, so it is re-emitted from `extras`, which is where the copy site recorded it. The
+  // guard is ABSENCE on the editable, never falsiness, so a falsy value the editors themselves wrote is the user's
+  // and wins. A deliberate clear is never resurrected either, but that takes `removeSection` doing TWO things
+  // (R4-G7 T3 fix round 1): it writes `[]` when the key is defined, which is the array-authored section, and it
+  // deletes the carrier from `extras` when it is not, which is the scalar-authored one the copy site emptied.
+  // The managed writes below cannot clobber these keys either, since every one of their guards reads the same
+  // absent field.
+  const sectionExtras = editable.extras ?? {};
+  for (const k of Object.values(SECTION_KEY_MAP)) {
+    if ((editable as unknown as Record<string, unknown>)[k] === undefined && sectionExtras[k] !== undefined) {
+      (monster as unknown as Record<string, unknown>)[k] = sectionExtras[k];
+    }
+  }
+
   if (editable.size) monster.size = editable.size;
   if (editable.type) monster.type = editable.type;
   if (editable.subtype) monster.subtype = editable.subtype;
@@ -269,6 +380,7 @@ export function editableToMonster(editable: EditableMonster): Monster {
   if (sections.includes("traits") && editable.traits && editable.traits.length > 0) monster.traits = editable.traits;
   if (sections.includes("actions") && editable.actions && editable.actions.length > 0) monster.actions = editable.actions;
   if (sections.includes("reactions") && editable.reactions && editable.reactions.length > 0) monster.reactions = editable.reactions;
+  if (sections.includes("bonus_actions") && editable.bonus_actions && editable.bonus_actions.length > 0) monster.bonus_actions = editable.bonus_actions;
   if (sections.includes("legendary_actions") && editable.legendary_actions && editable.legendary_actions.length > 0) monster.legendary_actions = editable.legendary_actions;
   if (editable.legendary_action_uses !== undefined) monster.legendary_action_uses = editable.legendary_action_uses;
   if (editable.legendary_resistance !== undefined) monster.legendary_resistance = editable.legendary_resistance;
@@ -281,15 +393,32 @@ export function editableToMonster(editable: EditableMonster): Monster {
 // recalculate (formerly src/dnd/recalculate.ts)
 // -----------------------------------------------------------------------------
 
+/**
+ * R4-G7 §7.4 · the ONLY `changedField` names whose edit re-derives `hp.average` from the hit dice. The MEASURED
+ * writers of those names, and the whole reason the set has four members:
+ * - `edit/combat-editor.ts:70-71` fires `updateField("hp.formula", …)` immediately followed by
+ *   `updateField("hp", hp)` carrying the PRE-edit average, so both names have to recompute or the second call
+ *   would put the stale average straight back;
+ * - `edit/combat-editor.ts:54-59` wires the override: `setOverride("hp", val)` + `updateField("hp", hp)` (the
+ *   `!overrides.has("hp")` guard below is what keeps that value), and the "(Auto)" restore routes through
+ *   `clearOverride("hp")` -> `recalculate(_, "hp")`, which is the ONE call that has to re-derive it;
+ * - the `size` branch above rewrites the formula's die size first, so `"size"` must recompute after it;
+ * - `edit/abilities-editor.ts:41` sends the whole `abilities` object under the single name `"abilities"` (no
+ *   `abilities.<key>` name reaches here from the app), so CON edits arrive as `"abilities"`.
+ * Every OTHER field (an AC, CR, speed, name, senses, saves or skills edit) leaves the authored average alone, so a
+ * formula's flat bonus survives the edit and an edit-then-revert compares unchanged under Q-2's save guard.
+ */
+const HP_FIELDS = new Set(["hp.formula", "hp", "size", "abilities"]);
+
 export function recalculate(monster: EditableMonster, changedField: string): EditableMonster {
   const result = { ...monster };
   const abilities = result.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
 
   // CR change -> update proficiency bonus and XP
   if (changedField === "cr") {
-    result.proficiencyBonus = proficiencyBonusFromCR(result.cr ?? "0");
+    result.proficiencyBonus = proficiencyBonusFromCR(crString(result.cr) ?? "0");
     if (!result.overrides.has("xp")) {
-      result.xp = crToXP(result.cr ?? "0");
+      result.xp = formatCR(result.cr)?.xp ?? 0;      // the same normalised lookup as `monsterToEditable`
     }
   }
   const profBonus = result.proficiencyBonus;
@@ -298,13 +427,13 @@ export function recalculate(monster: EditableMonster, changedField: string): Edi
   if (changedField === "size" && result.hp?.formula) {
     const parsed = parseHitDiceFormula(result.hp.formula);
     if (parsed) {
-      const newSize = hitDiceSizeFromCreatureSize(result.size ?? "medium");
+      const newSize = hitDiceSizeFromCreatureSize(sizeWord(result.size));
       result.hp = { ...result.hp, formula: `${parsed.count}d${newSize}` };
     }
   }
 
-  // Recalculate HP from hit dice + CON mod
-  if (!result.overrides.has("hp") && result.hp?.formula) {
+  // Recalculate HP from hit dice + CON mod, for an HP_FIELDS edit only (R4-G7 §7.4)
+  if (HP_FIELDS.has(changedField) && !result.overrides.has("hp") && result.hp?.formula) {
     const parsed = parseHitDiceFormula(result.hp.formula);
     if (parsed) {
       const conMod = abilityModifier(abilities.con);
@@ -427,6 +556,13 @@ export class MonsterEditState {
     if ((this._current as unknown as Record<string, unknown>)[section] !== undefined) {
       (this._current as unknown as Record<string, unknown>)[section] = [];
     }
+    // R4-G7 T3 fix round 1 · and clear the CARRIER, which is the other half of "the section is not serialized on
+    // save" since §7.4 (a). A scalar-authored section has no key on the editable (the copy site deleted it), so the
+    // branch above is a no-op for it and `editableToMonster`'s re-emit would put the authored value straight back.
+    // Deleting the carrier is chosen over writing `[]` unconditionally because it leaves the ARRAY path byte
+    // identical (the key is defined there, so the branch above already wrote `[]`, and the re-emit was already
+    // skipped by presence) while leaving NO stale carrier behind for a later absence to resurrect.
+    delete this._current.extras[section];
     this._hasPendingChanges = true;
     this.onChange(this);
   }

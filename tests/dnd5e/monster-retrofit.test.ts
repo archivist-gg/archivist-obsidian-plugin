@@ -43,6 +43,10 @@ describe("monster retrofit (normalizing codec + resolve)", () => {
     const first = monsterCodec.parse({ type: "monster", frontmatter: {}, body, raw: "" });
     expect(first.success).toBe(true);
     if (!first.success) return;
+    // R4-G6 §4.1 step 2: the scalar `ac` / `hp` reach the entity as the migrated structured shapes.
+    expect(first.data.ac).toEqual([{ ac: 15 }]);
+    expect(first.data.hp).toEqual({ average: 7 });
+    expect(first.data.cr).toBe("5"); // step 3: the numeric cr stringifies
     const round = monsterCodec.parse({ type: "monster", frontmatter: {}, body: monsterCodec.serialize(first.data), raw: "" });
     expect(round.success).toBe(true);
     if (round.success) expect(round.data).toEqual(first.data);

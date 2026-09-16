@@ -1,6 +1,8 @@
 // tests/pc-rest.test.ts
 import { describe, it, expect } from "vitest";
 import { computeRestPlan } from "@archivist-gg/dnd5e/pc/pc.rest";
+import type { RestPlan } from "@archivist-gg/dnd5e/pc/pc.rest";
+import type { Character, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 import { applyRestResets } from "../packages/obsidian/src/modules/pc/pc.rest";
 import {
   FIGHTER_5_CLERIC_3, WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED,
@@ -348,7 +350,12 @@ describe("applyRestResets — short rest + edge cases", () => {
     expect(c.state.feature_uses.rage.used).toBe(3);
   });
 
-  it("is idempotent — applying twice equals applying once", () => {
+  // R4-G4 review I-2: the name used to claim idempotency of `applyRestResets` without qualification.
+  // A category carrying `restore: N` is non-idempotent BY CONSTRUCTION (a second apply subtracts
+  // again), unlike `hd-regain`, which captures `targetUsed` at plan time for exactly this reason.
+  // Nothing on the sheet double-applies: `CharacterEditState.shortRest` / `longRest` compute the plan
+  // and apply it once. The sibling `it()` below pins the non-idempotency instead of implying it.
+  it("is idempotent for the OWN-RESET categories: applying twice equals applying once", () => {
     const a = clone(WIZARD_5_WOUNDED);
     const b = clone(WIZARD_5_WOUNDED);
     const plan = computeRestPlan(a, fakeResolved(a), fakeDerived(a), null, "long");
@@ -356,6 +363,21 @@ describe("applyRestResets — short rest + edge cases", () => {
     applyRestResets(b, fakeResolved(b), fakeDerived(b), plan, new Set());
     applyRestResets(b, fakeResolved(b), fakeDerived(b), plan, new Set()); // twice
     expect(a.state).toEqual(b.state);
+  });
+
+  it("a `restore: N` partial category is NOT idempotent: a second apply subtracts again, clamped at 0", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.feature_uses = { "b:rage": { used: 3, max: 3 } };
+    const plan: RestPlan = {
+      type: "short",
+      categories: [{ id: "feature:b:rage", label: "Rage", preview: "1 of 3 used restored", restore: 1 }],
+      hdAvailable: [],
+    };
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses["b:rage"].used).toBe(1);   // 3 - 2, not the 2 a single apply leaves
+    for (let i = 0; i < 5; i++) applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses["b:rage"].used).toBe(0);   // clamped, never negative
   });
 
   it("optouts referencing a missing category id are ignored", () => {
@@ -388,5 +410,103 @@ describe("applyRestResets — short rest + edge cases", () => {
     c.state.hit_dice = {};
     const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "short");
     expect(plan.hdAvailable).toEqual([]);
+  });
+});
+
+describe("applyRestResets · the PARTIAL restore (R4-G4 §7.2.2)", () => {
+  it("R4-G4 §7.2.2: a category carrying `restore: 1` regains ONE use, not all (RED first)", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.feature_uses = { "b:rage": { used: 2, max: 3 } };
+    const plan: RestPlan = {
+      type: "short",
+      categories: [{ id: "feature:b:rage", label: "Rage", preview: "1 of 2 used restored", restore: 1 }],
+      hdAvailable: [],
+    };
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses["b:rage"].used).toBe(1);
+    const all: RestPlan = { ...plan, categories: [{ ...plan.categories[0], restore: "all" }] };
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), all, new Set());
+    expect(c.state.feature_uses["b:rage"].used).toBe(0);
+  });
+});
+
+describe("computeRestPlan · a pool pick's own uses (R4-G4 §12)", () => {
+  // A real measured carrier: TCE's Cloud Rune is a Rune Knight pick with `uses {max: 1, recharge:
+  // short-rest}` (one of the 6 runes among the 35 corpus-wide `uses` carriers). It never enters
+  // `resolved.features`, so only the §12 pool walk can give it a rest category.
+  const CLOUD_RUNE = { slug: "tce_cloud-rune", name: "Cloud Rune", uses: { max: 1, recharge: "short-rest" } };
+
+  /** `fakeResolved` carries no `pools` and casts `entity: null` on every class, and the §12 walk skips a
+   *  pool whose class has no slug, so this fixture supplies both. The index is DERIVED inside
+   *  `computeRestPlan`, so nothing here sets `resources`. */
+  const withRunePool = (c: Character) => ({
+    ...(fakeResolved(c) as object),
+    classes: [
+      { entity: { slug: "fighter" }, level: 5, subclass: { slug: "rune-knight" } },
+      { entity: { slug: "cleric" }, level: 3, subclass: null },
+    ],
+    pools: [{
+      id: "runes", label: "Runes", classIndex: 0, count: 2, anchorLevel: 3,
+      selected: [{ slug: CLOUD_RUNE.slug, entity: CLOUD_RUNE }], available: [], grants: [],
+    }],
+  }) as unknown as ResolvedCharacter;
+
+  const spentRune = () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    c.state.feature_uses = { [CLOUD_RUNE.slug]: { used: 1, max: 1 } };
+    return c;
+  };
+
+  it("RED FIRST: a spent pick whose `uses.recharge` is short-rest is listed by the SHORT rest plan", () => {
+    const c = spentRune();
+    const plan = computeRestPlan(c, withRunePool(c), fakeDerived(c), null, "short");
+    expect(plan.categories.find((cat) => cat.id === "feature:tce_cloud-rune"))
+      .toMatchObject({ label: "Cloud Rune", preview: "1/1 restored" });
+  });
+
+  it("applyRestResets restores it to unspent", () => {
+    const c = spentRune();
+    const resolved = withRunePool(c);
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses![CLOUD_RUNE.slug]).toEqual({ used: 0, max: 1 });
+  });
+});
+
+describe("applyRestResets · the buff clear (R4-G5 §4.4.2)", () => {
+  const RAGE = { feature: { id: "rage", name: "Rage", activatable: true, duration: { amount: 1, unit: "minute" } },
+    source: { kind: "class", slug: "barbarian", level: 1 } };
+  const BLADESONG = { feature: { id: "bladesong", name: "Bladesong", activatable: true },
+    source: { kind: "class", slug: "wizard", level: 1 } };
+  const withFeatures = (c: Character, features: object[]) =>
+    ({ ...(fakeResolved(c) as object), features }) as unknown as ResolvedCharacter;
+
+  it("RED FIRST: a short rest applies `buff:rage`, clearing the stored buff and deleting the emptied array", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.active_buffs = ["rage"];
+    const resolved = withFeatures(c, [RAGE]);
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set());
+    expect(c.state.active_buffs ?? []).not.toContain("rage");
+    expect(c.state.active_buffs).toBeUndefined();
+    expect(plan.categories.map((cat) => cat.id)).toContain("buff:rage");
+  });
+
+  it("a duration-less buff survives the same rest, and the array is kept when it is not empty", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.active_buffs = ["rage", "bladesong"];
+    const resolved = withFeatures(c, [RAGE, BLADESONG]);
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set());
+    expect(c.state.active_buffs).toEqual(["bladesong"]);
+  });
+
+  it("an opted-out buff category leaves the buff alone", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    c.state.active_buffs = ["rage"];
+    const resolved = withFeatures(c, [RAGE]);
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "long");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set(["buff:rage"]));
+    expect(c.state.active_buffs).toEqual(["rage"]);
   });
 });

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll, vi } from "vitest";
 import { ArchivistSettingTab } from "../packages/obsidian/src/core/settings-tab";
 import type ArchivistPlugin from "../packages/obsidian/src/main";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -16,7 +17,9 @@ interface StubComp {
   folderPath: string;
 }
 
-function makeEnv(opts: { comps?: StubComp[]; hiddenCompendiums?: string[] } = {}) {
+function makeEnv(
+  opts: { comps?: StubComp[]; hiddenCompendiums?: string[]; registry?: unknown } = {},
+) {
   const comps: StubComp[] = opts.comps ?? [
     {
       name: "SRD 5e",
@@ -49,7 +52,14 @@ function makeEnv(opts: { comps?: StubComp[]; hiddenCompendiums?: string[] } = {}
       setReadonly: vi.fn().mockResolvedValue(undefined),
       setHidden: vi.fn().mockResolvedValue(undefined),
     },
-    entityRegistry: { search: () => [] },
+    // The one-pass count helper (spec §8 item 2) walks getAllSlugs()/getBySlug(),
+    // never search(); `search` stays on the stub because the typed suggester
+    // path and older call sites still describe a registry that has it.
+    entityRegistry: opts.registry ?? {
+      search: () => [],
+      getAllSlugs: () => [],
+      getBySlug: () => undefined,
+    },
   };
   const tab = new ArchivistSettingTab(
     {} as never,
@@ -207,5 +217,43 @@ describe("ArchivistSettingTab toggle captions (R3-P7 F5)", () => {
     await flush();
     expect(plugin.settings.hiddenCompendiums).toEqual([]);
     expect(plugin.compendiumManager.setHidden).toHaveBeenCalledWith("SRD 5e", false);
+  });
+});
+
+/** F-4 · the ROW-LEVEL witness of `counts.get(comp.name) ?? 0`.
+ *  `compendiumEntityCounts` can only key compendiums that HAVE entities (a
+ *  registry knows nothing else), so a zero-entity compendium is OMITTED from the
+ *  map — the helper-seam assertion for that omission lives in
+ *  tests/settings-compendium-counts.test.ts. Here the rows are rendered from the
+ *  compendium MANAGER, independently of the registry, so a compendium the map
+ *  does not key must still print "0 entities". Drop the `?? 0` and this reads
+ *  "undefined entities". */
+describe("ArchivistSettingTab entity counts (spec §8 item 2)", () => {
+  function descOf(tab: ArchivistSettingTab, name: string): string {
+    return rowByName(tab, name).querySelector(".setting-item-description")?.textContent ?? "";
+  }
+
+  it("counts come from ONE registry pass and a zero-entity compendium still says 0 entities", () => {
+    const registry = buildMockRegistry([
+      { slug: "srd_spell_fireball", name: "Fireball", entityType: "spell", data: {}, compendium: "SRD 5e" },
+      { slug: "srd_spell_light", name: "Light", entityType: "spell", data: {}, compendium: "SRD 5e" },
+      { slug: "srd_item_rope", name: "Rope", entityType: "item", data: {}, compendium: "SRD 5e" },
+    ]);
+    const searchSpy = vi.spyOn(registry, "search");
+    const { tab } = makeEnv({ registry });
+
+    expect(descOf(tab, "SRD 5e")).toContain("3 entities");
+    // "Me" holds nothing, so the counts map never keys it -> the `?? 0` fallback.
+    expect(descOf(tab, "Me")).toContain("0 entities");
+    expect(descOf(tab, "Me")).not.toContain("undefined");
+    // ONE pass, and it is NOT a search sweep (the retired loop called search
+    // once per compendium).
+    expect(searchSpy).toHaveBeenCalledTimes(0);
+  });
+
+  it("the homebrew marker still rides alongside the count", () => {
+    const { tab } = makeEnv();
+    expect(descOf(tab, "Me")).toBe("My homebrew · 0 entities · homebrew");
+    expect(descOf(tab, "SRD 5e")).toBe("System Reference Document · 0 entities");
   });
 });

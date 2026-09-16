@@ -44,6 +44,20 @@ describe("renderChronicleBlock", () => {
     expect(kids.indexOf("pc-cb-bh")).toBeLessThan(kids.indexOf("pc-cb-flavor"));
   });
 
+  // R4 {G5, G6} live rider 2, X-9-1: the flavour line is PROSE from a book, so it renders through the
+  // sheet's inline-markdown path. The 2024 class descriptions open with a bold lead-in, which the card
+  // printed as literal asterisks: `**Fighter.** Fighters are ...`.
+  it("renders the flavour paragraph as inline markdown, not as literal markers", () => {
+    const c = mountContainer();
+    renderChronicleBlock(c, {
+      name: "Fighter", sub: "Class", flavor: "**Fighter.** A master of martial combat.",
+      tiles: [], body: () => {},
+    });
+    const flavor = c.querySelector(".pc-cb-flavor")!;
+    expect(flavor.querySelector("strong")?.textContent).toBe("Fighter.");
+    expect(flavor.textContent).toBe("Fighter. A master of martial combat.");
+  });
+
   it("with bandRight (owned mode) the corner badge is dropped and the source rides the sub-line (smoke r8)", () => {
     const c = mountContainer();
     renderChronicleBlock(c, {
@@ -60,9 +74,26 @@ describe("renderChronicleBlock", () => {
     // The source is present INLINE in the sub-line instead.
     const src = block.querySelector(".pc-cb-sub .pc-cb-src")!;
     expect(src).not.toBeNull();
-    expect(src.textContent).toBe("SRD 5.2 · 2024");
+    expect(src.textContent).toBe(" · SRD 5.2 · 2024");
     // The band-right controls are still rendered.
     expect(block.querySelector(".pc-cb-bh-rgt .lv-ctl")).not.toBeNull();
+  });
+
+  // R4 {G5, G6} live rider 2, X-9-2: the sub-line's separator rides INSIDE the source segment, so a
+  // wrap moves the two together. On the live card the line broke between them and left the `·`
+  // dangling at the end of one line with the source alone on the next.
+  it("keeps the sub-line separator inside the source segment", () => {
+    const c = mountContainer();
+    renderChronicleBlock(c, {
+      name: "Fighter", sub: "Class · Hit Die d10", badge: "SRD 5.2 · 2024",
+      tiles: [], bandRight: (rgt) => rgt.createSpan({ cls: "lv-ctl", text: "LV" }), body: () => {},
+    });
+    const block = c.querySelector(".pc-cblock")!;
+    const src = block.querySelector(".pc-cb-sub > .pc-cb-src")!;
+    expect(src.querySelector(".pc-cb-sub-sep")?.textContent).toBe(" · ");
+    expect(src.textContent).toBe(" · SRD 5.2 · 2024");
+    // The separator is no longer a loose sibling of the source in the sub-line.
+    expect(block.querySelector(".pc-cb-sub > .pc-cb-sub-sep")).toBeNull();
   });
 
   it("without bandRight (race/background/browse) the corner badge stays intact (smoke r8)", () => {

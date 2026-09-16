@@ -7,6 +7,7 @@ import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../../main";
 import type { Spell } from "@archivist-gg/dnd5e/spell/spell.types";
 import { renderSideButtons } from "../../shared/edit/side-buttons";
+import { isUnchanged } from "../../shared/edit/unchanged";
 import { createSvgBar } from "../../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../../shared/entities/compendium-modal";
 import { showCompendiumPicker } from "../../shared/edit/compendium-picker";
@@ -25,6 +26,72 @@ const SPELL_SCHOOLS = [
 ];
 
 // ---------------------------------------------------------------------------
+// Serialization
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the clean YAML data object for a spell draft: the ONE serialization
+ * builder every save path in this file shares (in-place save, save into a
+ * compendium, save-as-new). Before R4-G2 Task 7 this object was built twice —
+ * a `buildClean()` closure and an inline duplicate inside `saveAndExit()` —
+ * and both copies dropped five declared `Spell` fields (`damage`,
+ * `saving_throw`, `casting_options`, `source`, `edition`) on every user save.
+ *
+ * Emission semantics are ruled by spec §2.1 and are deliberately NOT uniform:
+ *
+ * - The twelve historic fields keep their EXISTING per-field guards verbatim
+ *   (truthiness / length guards, `level`'s `=== 0` literal write, the literal
+ *   `true` for `concentration` / `ritual`). So `concentration: false`,
+ *   `ritual: false`, `description: ""` and `classes: []` stay ABSENT from the
+ *   saved YAML, exactly as before: saves stay byte-stable. Widening these to
+ *   `!= null` would start serializing `concentration: false` on every save —
+ *   an unbooked user-visible delta. Downstream every one of these flags is
+ *   read by truthiness, so `false` and absent are indistinguishable anyway.
+ * - The five restored fields and the fourteen §2 keys use `!= null`, appended
+ *   after the historic field order. Truthiness would be wrong for them: all
+ *   1,048 converter `rendering_hint` values are `''`, and a truthiness guard
+ *   would silently strip every one.
+ */
+export function buildSpellYamlObject(draft: Spell): Record<string, unknown> {
+  const clean: Record<string, unknown> = { name: draft.name };
+  if (draft.level !== undefined && draft.level !== 0) clean.level = draft.level;
+  if (draft.level === 0) clean.level = 0;
+  if (draft.school) clean.school = draft.school;
+  if (draft.casting_time) clean.casting_time = draft.casting_time;
+  if (draft.range) clean.range = draft.range;
+  if (draft.components) clean.components = draft.components;
+  if (draft.duration) clean.duration = draft.duration;
+  if (draft.concentration) clean.concentration = true;
+  if (draft.ritual) clean.ritual = true;
+  if (draft.description && draft.description.length > 0) clean.description = draft.description;
+  if (draft.at_higher_levels && draft.at_higher_levels.length > 0) clean.at_higher_levels = draft.at_higher_levels;
+  if (draft.classes && draft.classes.length > 0) clean.classes = draft.classes;
+  // Restored by R4-G2 Task 7 (spec §2.1): declared `Spell` fields both former
+  // builders dropped on every save.
+  if (draft.damage != null) clean.damage = draft.damage;
+  if (draft.saving_throw != null) clean.saving_throw = draft.saving_throw;
+  if (draft.casting_options != null) clean.casting_options = draft.casting_options;
+  if (draft.source != null) clean.source = draft.source;
+  if (draft.edition != null) clean.edition = draft.edition;
+  // The fourteen §2 keys, in spec-table order.
+  if (draft.rendering_hint != null) clean.rendering_hint = draft.rendering_hint;
+  if (draft.misc_tags != null) clean.misc_tags = draft.misc_tags;
+  if (draft.area_tags != null) clean.area_tags = draft.area_tags;
+  if (draft.condition_inflict != null) clean.condition_inflict = draft.condition_inflict;
+  if (draft.affects_creature_type != null) clean.affects_creature_type = draft.affects_creature_type;
+  if (draft.spell_attack != null) clean.spell_attack = draft.spell_attack;
+  if (draft.ability_check != null) clean.ability_check = draft.ability_check;
+  if (draft.damage_resist != null) clean.damage_resist = draft.damage_resist;
+  if (draft.damage_immune != null) clean.damage_immune = draft.damage_immune;
+  if (draft.condition_immune != null) clean.condition_immune = draft.condition_immune;
+  if (draft.damage_vulnerable != null) clean.damage_vulnerable = draft.damage_vulnerable;
+  if (draft.has_fluff != null) clean.has_fluff = draft.has_fluff;
+  if (draft.image != null) clean.image = draft.image;
+  if (draft.has_fluff_images != null) clean.has_fluff_images = draft.has_fluff_images;
+  return clean;
+}
+
+// ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
 
@@ -36,9 +103,18 @@ export function renderSpellEditMode(
   onCancelExit?: () => void,
   compendiumContext?: { slug: string; compendium: string; readonly: boolean },
   onReplaceRef?: (newRefText: string) => void,
+  hostReadonly?: boolean,
 ): void {
   // Mutable working copy
   const draft = JSON.parse(JSON.stringify(spell)) as Spell;
+
+  // R4-G6b §4.2: the snapshot at OPEN, through the ONE projection this editor writes with. The clone is
+  // load-bearing, not defensive: `buildSpellYamlObject` assigns `clean.at_higher_levels = draft.at_higher_levels`,
+  // the SAME array the At-higher-levels textarea writes into IN PLACE, so an un-cloned snapshot would carry the new
+  // text, compare EQUAL and destroy the edit. `structuredClone` (the first use in the repo) is available in the
+  // sheet's runtime and under vitest's jsdom, and this projection is plain YAML-shaped data, so it cannot throw.
+  const before = structuredClone(buildSpellYamlObject(draft));
+  const unchanged = () => isUnchanged(before, buildSpellYamlObject(draft));
 
   // --- Side buttons ---
   let sideBtns = el.querySelector<HTMLElement>(".archivist-side-btns");
@@ -52,24 +128,6 @@ export function renderSpellEditMode(
     updateSideBtns();
   }
 
-  /** Build a clean data object from the draft for serialization. */
-  function buildClean(): Record<string, unknown> {
-    const clean: Record<string, unknown> = { name: draft.name };
-    if (draft.level !== undefined && draft.level !== 0) clean.level = draft.level;
-    if (draft.level === 0) clean.level = 0;
-    if (draft.school) clean.school = draft.school;
-    if (draft.casting_time) clean.casting_time = draft.casting_time;
-    if (draft.range) clean.range = draft.range;
-    if (draft.components) clean.components = draft.components;
-    if (draft.duration) clean.duration = draft.duration;
-    if (draft.concentration) clean.concentration = true;
-    if (draft.ritual) clean.ritual = true;
-    if (draft.description && draft.description.length > 0) clean.description = draft.description;
-    if (draft.at_higher_levels && draft.at_higher_levels.length > 0) clean.at_higher_levels = draft.at_higher_levels;
-    if (draft.classes && draft.classes.length > 0) clean.classes = draft.classes;
-    return clean;
-  }
-
   function updateSideBtns() {
     if (!sideBtns) return;
     const sideState = compendiumContext ? "compendium-pending" as const : "pending" as const;
@@ -77,10 +135,12 @@ export function renderSpellEditMode(
       state: sideState,
       isColumnActive: false,
       isReadonly: compendiumContext?.readonly,
+      isHostReadonly: hostReadonly,
       onEdit: () => cancelAndExit(),
       onSave: () => {
         if (compendiumContext) {
-          const yamlData = buildClean();
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
+          const yamlData = buildSpellYamlObject(draft);
           plugin.compendiumManager?.updateEntity(compendiumContext.slug, yamlData)
             .then(() => {
               new Notice(`Updated ${compendiumContext.slug} in compendium`);
@@ -88,18 +148,22 @@ export function renderSpellEditMode(
             })
             .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
         } else {
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
           saveAndExit();
         }
       },
       onSaveAsNew: () => {
         const writable = plugin.compendiumManager?.getWritable() ?? [];
-        const yamlData = buildClean();
+        const yamlData = buildSpellYamlObject(draft);
 
         const saveTo = (comp: { name: string }) => {
           plugin.compendiumManager!.saveEntity(comp.name, "spell", yamlData)
             .then((registered) => {
               if (onReplaceRef) {
                 onReplaceRef(`{{spell:${registered.slug}}}`);
+              } else if (hostReadonly) {
+                // R4-G6b §3.4: the host is a readonly compendium note; the new note is the only write, so the
+                // fence is left byte-untouched (invariant 10) and the view re-renders it.
               } else {
                 const info = ctx?.getSectionInfo(el);
                 if (info) {
@@ -292,20 +356,7 @@ export function renderSpellEditMode(
   // =========================================================================
 
   function saveAndExit() {
-    // Clean up empty optional fields
-    const clean: Record<string, unknown> = { name: draft.name };
-    if (draft.level !== undefined && draft.level !== 0) clean.level = draft.level;
-    if (draft.level === 0) clean.level = 0;
-    if (draft.school) clean.school = draft.school;
-    if (draft.casting_time) clean.casting_time = draft.casting_time;
-    if (draft.range) clean.range = draft.range;
-    if (draft.components) clean.components = draft.components;
-    if (draft.duration) clean.duration = draft.duration;
-    if (draft.concentration) clean.concentration = true;
-    if (draft.ritual) clean.ritual = true;
-    if (draft.description && draft.description.length > 0) clean.description = draft.description;
-    if (draft.at_higher_levels && draft.at_higher_levels.length > 0) clean.at_higher_levels = draft.at_higher_levels;
-    if (draft.classes && draft.classes.length > 0) clean.classes = draft.classes;
+    const clean = buildSpellYamlObject(draft);
 
     const yamlStr = yaml.dump(clean, {
       lineWidth: -1,

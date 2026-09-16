@@ -19,12 +19,64 @@ export const humanizeSlug = (s: string): string =>
 export const humanizeToken = (s: string): string =>
   s.replace(/[-_]/g, " ").replace(/(^|[\s(])\w/g, (c) => c.toUpperCase());
 
-/** Display string for one starting-equipment grant (renderer-side preview only). */
-export function grantLabel(g: { item?: string; category?: string; qty?: number; gold?: number }): string {
+/** Display string for one starting-equipment grant. `display_name` (the converter's display override) wins after
+ *  the gold test and before the category/item spellings (a gold grant cannot carry one). */
+export function grantLabel(g: { item?: string; category?: string; qty?: number; gold?: number; display_name?: string }): string {
   if (g.gold != null) return `${g.gold} GP`;
+  if (g.display_name) return g.qty && g.qty > 1 ? `${g.display_name} ×${g.qty}` : g.display_name;
   if (g.category) return `a ${humanizeSlug(g.category)}`;
   const name = humanizeSlug(g.item ?? "");
   return g.qty && g.qty > 1 ? `${name} ×${g.qty}` : name;
+}
+
+/** ONE spelling of a `kind:"fixed"` entry's text for the four surfaces that render it (background note, passive
+ *  block, builder background step, builder class chronicle): the label wins; else the grants joined by ", ";
+ *  a raw-cast entry with no grants array degrades to "" instead of throwing. */
+export function fixedGrantLines(entry: { label?: string; grants?: unknown }): string {
+  return entry.label ?? (Array.isArray(entry.grants)
+    ? (entry.grants as Parameters<typeof grantLabel>[0][]).map(grantLabel).join(", ")
+    : "");
+}
+
+/**
+ * The humanized names carried by the `kind:"fixed"` entries of a background
+ * proficiency array, flattened in source order. ONE implementation for the two
+ * surfaces that need it: the passive Background block and the builder background
+ * step (this replaces their twin `fixedToolNames` / `fixedLanguageNames` /
+ * `languageSummary` helpers). Homed here because it is neutral between the two
+ * components and already sits beside `humanizeSlug`, which it calls.
+ *
+ * `kind:"choice"` entries are skipped and deliberately NOT summarized. That is a
+ * POLICY, not a claim about the data: such entries DO occur. None of the four
+ * 2024 SRD backgrounds carries one (each pairs `{kind:"fixed",languages:
+ * ["common"]}` with the pick in `choices[]`), but the single 2014 SRD background
+ * does · `srd-5e_background_acolyte` carries exactly `language_proficiencies:
+ * [{kind:"choice",count:2,from:"any"}]` and no fixed entry at all.
+ *
+ * Skipping them is still right: callers summarize APPLIED grants, and an
+ * unresolved pick belongs to the builder. No information is lost, because a
+ * background that offers a pick also carries it in `choices[]` as a
+ * `select-proficiency` (the 2014 Acolyte does), which is where the builder
+ * reads it.
+ *
+ * The parameter is deliberately STRUCTURAL, not the engine's
+ * `BackgroundToolProficiency` / `BackgroundLanguageProficiency` unions, so this
+ * shared module stays free of engine types and neither caller has to widen its
+ * local shape to use it.
+ *
+ * Twin reconciliation: the two tool twins guarded `items` with `?? []` while the
+ * two language twins read `l.languages` bare, which throws on a `kind:"fixed"`
+ * entry whose array is missing (possible, since entity data is parsed YAML cast
+ * to the type). The GUARDED form wins for both fields: a malformed entry
+ * contributes no names instead of taking down the render.
+ */
+export function fixedNamesFrom(
+  entries: ReadonlyArray<{ kind?: string; items?: string[]; languages?: string[] }> | undefined,
+  field: "items" | "languages",
+): string[] {
+  return (entries ?? [])
+    .filter((e) => e.kind === "fixed")
+    .flatMap((e) => (e[field] ?? []).map(humanizeSlug));
 }
 
 interface ElOptions {
@@ -278,12 +330,32 @@ export function renderStatBlockTag(
 
 /**
  * Append text to a parent element, parsing inline markdown into proper DOM elements.
- * Supports: ***bold italic***, **bold**, *italic*, _italic_, ~~strikethrough~~, [text](url)
+ * Supports: [[target|alias]] and [[target]] wikilinks (R4-G6 §7), ***bold italic***, **bold**,
+ * *italic*, _italic_, ~~strikethrough~~, [text](url)
  * Plain text without markdown is appended as regular text nodes.
  */
+/** Injected vault-link resolver (R4 {G5, G6} live rider V-12): true when a wikilink TARGET resolves to
+ *  a real note. The shared tree may not import the plugin, so the plugin sets this at load exactly as
+ *  it sets the presenter map and the kernel in `entity-presenter-dispatch.ts`; `null` (the default, and
+ *  what every test must restore) means "no vault to ask", and every link then keeps the classes it has
+ *  always had. The RAW target travels, subpath and all: stripping `#`/`^` is Obsidian's `parseLinktext`
+ *  job and belongs on the plugin side of the seam. */
+let wikilinkResolver: ((target: string) => boolean) | null = null;
+
+export function setWikilinkResolver(fn: ((target: string) => boolean) | null): void {
+  wikilinkResolver = fn;
+}
+
 export function appendMarkdownText(text: string, parent: HTMLElement): void {
   const doc = parent.ownerDocument ?? activeDocument;
-  const regex = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
+  // The three ASTERISK runs (`***`, `**`, `*`) may NOT span a wikilink opener. The alternation is leftmost-wins, so
+  // a `*` that opens before the next `[[` used to win the position and swallow the whole link into an `<em>` as
+  // literal text: a 5etools footnote marker on a spell entry ("[[...|invisibility]]*, [[...|mirror image]]*")
+  // printed the raw `[[...]]` to the reader on 30 of the 4,996 converter monsters. The lookahead makes such a run
+  // no match at all, so the wikilink arm reaches the link and the markers stay literal text. The `_..._` and
+  // `~~...~~` arms carry NO such lookahead: a knowingly untouched residual, measured at 0 carriers of a run spanning
+  // a `[[` over both the 4,996 converter monster notes and the 656 SRD monster notes.
+  const regex = /!?\[\[([^\]|]+)(?:\|([^\]]*))?\]\]|\*\*\*((?:(?!\[\[).)+?)\*\*\*|\*\*((?:(?!\[\[).)+?)\*\*|\*((?:(?!\[\[).)+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -293,36 +365,69 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
     }
 
     if (match[1] !== undefined) {
-      const strong = doc.createElement("strong");
-      const em = doc.createElement("em");
-      em.textContent = match[1];
-      strong.appendChild(em);
-      parent.appendChild(strong);
-    } else if (match[2] !== undefined) {
-      const strong = doc.createElement("strong");
-      strong.textContent = match[2];
-      parent.appendChild(strong);
+      // R4-G6 §7: a wikilink. The target is a vault path, so this is a scheme DENYLIST over it and NOT the
+      // markdown-link arm's guard below: that arm is an ALLOWLIST and fail-CLOSED (only http(s), mailto and #
+      // keep an anchor), this one is fail-OPEN by design, because any note name is a legal target. The probe
+      // drops what a URL parser ignores before the test: whitespace and control characters, which it strips
+      // leading and, for tab / newline, anywhere ("<space>javascript:alert(1)" resolves as "javascript:alert(1)").
+      // It is WIDER than a URL parser: it joins INTERNAL whitespace too, so a root-segment colon such as
+      // `[[Chapter 1: Start]]` probes as `Chapter1:Start` and degrades to TEXT, while `[[x/Chapter 1: Start]]` and
+      // `[[Note#Heading: x]]` still link, `/` and `#` being outside the scheme character class.
+      // A protocol-relative target carries no scheme, so the guard names it by SHAPE: any two-character prefix made
+      // of slashes or backslashes, which covers "//", "\\", "/\" and "\/" together (WHATWG treats "\" as "/"
+      // under a special-scheme base). No legitimate vault path starts with two of those, so this is a narrowing.
+      const target = match[1];
+      const last = target.split("/").pop() ?? "";
+      const alias = match[2] !== undefined && match[2].length > 0 ? match[2] : (last.length > 0 ? last : target);
+      const probe = target.replace(/[\s\p{Cc}]/gu, "");
+      if (/^[a-z][a-z0-9+.-]*:/i.test(probe) || /[/\\]{2}/.test(probe.slice(0, 2))) {
+        parent.appendChild(doc.createTextNode(alias));
+      } else {
+        const a = doc.createElement("a");
+        a.classList.add("internal-link");
+        // R4 {G5, G6} live rider V-12: a link whose target no note answers wears Obsidian's own
+        // `is-unresolved` beside `internal-link`, so a dangling cross-book reference reads as dangling
+        // instead of promising a note that opens nothing. With no resolver injected the class is never
+        // added and the anchor is byte-identical to the one this arm has always emitted.
+        if (wikilinkResolver && !wikilinkResolver(target)) a.classList.add("is-unresolved");
+        a.setAttribute("data-href", target);
+        a.setAttribute("href", target);
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener nofollow");
+        a.textContent = alias;
+        parent.appendChild(a);
+      }
     } else if (match[3] !== undefined) {
+      const strong = doc.createElement("strong");
       const em = doc.createElement("em");
       em.textContent = match[3];
-      parent.appendChild(em);
+      strong.appendChild(em);
+      parent.appendChild(strong);
     } else if (match[4] !== undefined) {
-      const em = doc.createElement("em");
-      em.textContent = match[4];
-      parent.appendChild(em);
+      const strong = doc.createElement("strong");
+      strong.textContent = match[4];
+      parent.appendChild(strong);
     } else if (match[5] !== undefined) {
-      const del = doc.createElement("del");
-      del.textContent = match[5];
-      parent.appendChild(del);
+      const em = doc.createElement("em");
+      em.textContent = match[5];
+      parent.appendChild(em);
     } else if (match[6] !== undefined) {
-      const rawUrl = match[7];
+      const em = doc.createElement("em");
+      em.textContent = match[6];
+      parent.appendChild(em);
+    } else if (match[7] !== undefined) {
+      const del = doc.createElement("del");
+      del.textContent = match[7];
+      parent.appendChild(del);
+    } else if (match[8] !== undefined) {
+      const rawUrl = match[9];
       const safe = /^(https?:|mailto:|#)/i.test(rawUrl);
       if (!safe) {
         // Degrade to plain text, no anchor for dangerous schemes
-        parent.appendChild(doc.createTextNode(match[6]));
+        parent.appendChild(doc.createTextNode(match[8]));
       } else {
         const a = doc.createElement("a");
-        a.textContent = match[6];
+        a.textContent = match[8];
         a.href = rawUrl;
         a.setAttribute("target", "_blank");
         a.setAttribute("rel", "noopener");
@@ -336,6 +441,40 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
   if (lastIndex < text.length) {
     parent.appendChild(doc.createTextNode(text.slice(lastIndex)));
   }
+}
+
+/**
+ * B026-D4 (R4-G7 T8 wave E). A tag widget is `span > span.<icon> > svg` plus a text span, and an inline `<svg>` is an
+ * ATOMIC INLINE: Chromium allows a line break before and after one whatever the surrounding characters are, so a line
+ * could break between a prose "(" and the icon that follows it. MEASURED live in W-Er on the deployed pair: the Aspect
+ * of Tiamat's Mythic Actions, Burney's Legendary Actions and Andir's Actions each had a tag whose leading "(" sat on the
+ * previous line ("take 44 (" / the icon and "8d10)"), and the eye pass found the same on 13 of the 23 battery notes.
+ * `white-space: nowrap` on the widget itself (archivist-dnd.css) holds the icon to its value and the value together; it
+ * cannot hold the "(", because that character belongs to the PROSE, and the nearest common ancestor of the two is the
+ * paragraph. So the "(" joins the widget inside a nowrap wrapper.
+ *
+ * Only an OPENING punctuation run is moved. A closing ")" or a "." after the value needs no wrapper: UAX #14 forbids a
+ * break before closing punctuation (LB13), and no RED frame of the wave showed one orphaned; leaving it in the prose
+ * also leaves every rendered tag that ends a sentence byte-identical, which keeps the pins that measure them honest.
+ * Runs over an element that already holds wrapped widgets are no-ops (a widget inside a wrapper is skipped), so a caller
+ * that fills one parent in several passes (the PC sheet's damage cell, the monster HP line) can call it after each.
+ */
+export function bindInlineTagPunctuation(root: HTMLElement): void {
+  const doc = root.ownerDocument ?? activeDocument;
+  root.querySelectorAll(".archivist-stat-tag, .archivist-tag").forEach((tag) => {
+    const parent = tag.parentElement;
+    if (!parent || parent.classList.contains("archivist-tag-nobreak")) return;
+    const prev = tag.previousSibling;
+    if (!prev || prev.nodeType !== 3) return;
+    const text = prev.nodeValue ?? "";
+    const match = /[([{]+$/.exec(text);
+    if (!match) return;
+    const wrapper = doc.createElement("span");
+    wrapper.classList.add("archivist-tag-nobreak");
+    parent.insertBefore(wrapper, tag);
+    wrapper.appendChild((prev as Text).splitText(text.length - match[0].length));
+    wrapper.appendChild(tag);
+  });
 }
 
 /**
@@ -389,6 +528,9 @@ export function renderTextWithInlineTags(
   if (lastIndex < converted.length) {
     appendMarkdownText(converted.slice(lastIndex), parent);
   }
+
+  // B026-D4: a widget and the "(" that opens it are one unbreakable unit.
+  bindInlineTagPunctuation(parent);
 }
 
 /**

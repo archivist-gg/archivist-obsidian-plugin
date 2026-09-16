@@ -1,4 +1,5 @@
-import { App, Editor, Modal } from "obsidian";
+import { App, Editor } from "obsidian";
+import { PaneCenteredModal } from "../../shared/modals/pane-centered-modal";
 import {
   addTextField,
   addDropdown,
@@ -48,7 +49,7 @@ const SCHOOL_OPTIONS: Record<string, string> = {
   Transmutation: "Transmutation",
 };
 
-export class SpellModal extends Modal {
+export class SpellModal extends PaneCenteredModal {
   private editor: Editor;
   private form: SpellFormData;
 

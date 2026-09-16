@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { CharacterEditState, type EditStateContext } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
+import { computeEffectiveProficiencies } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { toProfSlug } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
+import { characterToYaml } from "../packages/obsidian/src/modules/pc/pc.yaml-serializer";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
 import type { Character, DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -31,7 +34,25 @@ const MINIMAL_YAML = [
   "  inspiration: 0",
 ].join("\n");
 
-function makeState(over?: (c: Character) => void): { es: CharacterEditState; char: Character; onChange: ReturnType<typeof vi.fn> } {
+/**
+ * `derivedDefenses` seeds `getContext().derived.defenses`, which the R4-P5 defense
+ * mutators read to decide whether a removal needs a SUPPRESSION. Without it the first
+ * `removeDefense` call dies on `Cannot read properties of undefined (reading 'resistances')`.
+ * All four buckets default to empty, so every pre-existing caller is unaffected.
+ *
+ * The seed is STATIC: it does not recompute between mutator calls, which is exactly what
+ * the production closure does too: the `getContext` closure `PCSheetView.renderResolvedData`
+ * passes to the `CharacterEditState` constructor closes over the view's `this.derived`, and
+ * the only recompute on the edit path is the `recalc` call inside `PCSheetView.handleChange`,
+ * i.e. AFTER the mutator's `onChange()`.
+ *
+ * Cited by SYMBOL, not line: the line form of this cite was true when written and was
+ * falsified by a later commit on this same branch that inserted lines above the target.
+ */
+function makeState(
+  over?: (c: Character) => void,
+  derivedDefenses?: Partial<DerivedStats["defenses"]>,
+): { es: CharacterEditState; char: Character; onChange: ReturnType<typeof vi.fn> } {
   const parsed = parsePC(MINIMAL_YAML);
   if (!parsed.success) throw new Error(parsed.error);
   const char = parsed.data;
@@ -41,7 +62,13 @@ function makeState(over?: (c: Character) => void): { es: CharacterEditState; cha
     char,
     () => ({
       resolved: { classes: [{ entity: { saving_throws: ["str", "con"] } }] } as unknown as ResolvedCharacter,
-      derived: { hp: { max: 24, current: char.state.hp.current, temp: char.state.hp.temp } } as unknown as DerivedStats,
+      derived: {
+        hp: { max: 24, current: char.state.hp.current, temp: char.state.hp.temp },
+        defenses: {
+          resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [],
+          ...derivedDefenses,
+        },
+      } as unknown as DerivedStats,
     }),
     onChange,
   );
@@ -591,8 +618,8 @@ describe("CharacterEditState — defenses (SP4b)", () => {
     es.addDefense("resistances", "fire");
     es.addDefense("resistances", "fire");
     expect(char.defenses?.resistances).toEqual(["fire"]);
-    // Both calls notify (mutator doesn't know outcome in advance)
-    expect(onChange).toHaveBeenCalledTimes(2);
+    // R4-P5 Task 6: the duplicate is a no-op, and a no-op must not dirty the file.
+    expect(onChange).toHaveBeenCalledTimes(1);
   });
 
   it("addDefense keeps kinds independent", () => {
@@ -613,11 +640,12 @@ describe("CharacterEditState — defenses (SP4b)", () => {
     expect(char.defenses?.resistances).toEqual(["cold"]);
   });
 
-  it("removeDefense on missing entry is a no-op but still notifies", () => {
+  it("removeDefense on missing entry is a no-op and does NOT notify", () => {
     const { es, char, onChange } = makeState();
     es.removeDefense("resistances", "acid");
     expect(char.defenses?.resistances ?? []).toEqual([]);
-    expect(onChange).toHaveBeenCalled();
+    // R4-P5 Task 6: nothing in the manual list and nothing in `derived` · no dirty.
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it("addConditionImmunity stores slug in defenses.condition_immunities", () => {
@@ -639,6 +667,197 @@ describe("CharacterEditState — defenses (SP4b)", () => {
     es.addConditionImmunity("frightened");
     es.removeConditionImmunity("charmed");
     expect(char.defenses?.condition_immunities).toEqual(["frightened"]);
+  });
+});
+
+/**
+ * R4-P5 Task 6 · the defense mutators are POSTCONDITION pairs, not token swaps.
+ *
+ * Every fixture below authors a spelling that DIFFERS from the canonical slug
+ * ("Psychic"/"psychic", "Fire"/"fire", "Charmed"/"charmed"). That is deliberate: the
+ * buckets previously seeded `label === value` everywhere, which made it impossible for
+ * any assertion to prove WHICH field a caller read or WHICH spelling a mutator stored.
+ */
+const GRANT_PSYCHIC = { value: "psychic", label: "Psychic", origin: "grant" as const };
+const MANUAL_FIRE = { value: "fire", label: "Fire", origin: "manual" as const };
+const MANUAL_COLD = { value: "cold", label: "Cold", origin: "manual" as const };
+
+describe("CharacterEditState: defenses · postcondition pair (R4-P5 Task 6)", () => {
+  it("suppresses a granted defense instead of no-oping, storing the RAW spelling", () => {
+    const { es, char, onChange } = makeState(undefined, { resistances: [GRANT_PSYCHIC] });
+    es.removeDefense("resistances", "Psychic");
+    expect(char.overrides.defenses?.resistances?.remove).toEqual(["Psychic"]);
+    // A key-less note stays key-less: nothing was in the manual list to splice.
+    expect(char.defenses).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("suppresses per bucket · a resistance suppression leaves the other three absent", () => {
+    const { es, char } = makeState(undefined, { immunities: [GRANT_PSYCHIC] });
+    es.removeDefense("immunities", "psychic");
+    expect(char.overrides.defenses?.immunities?.remove).toEqual(["psychic"]);
+    expect(Object.keys(char.overrides.defenses ?? {})).toEqual(["immunities"]);
+  });
+
+  it("matches the manual list CANONICALLY, not by identity", () => {
+    // The panel hands the mutator `entry.value` (canonical) while the note authored "Fire".
+    // An `indexOf` compare misses this and the chip never leaves the sheet.
+    const { es, char } = makeState(
+      (c) => { c.defenses = { resistances: ["Fire"], immunities: [], vulnerabilities: [], condition_immunities: [] }; },
+      { resistances: [MANUAL_FIRE] },
+    );
+    es.removeDefense("resistances", "fire");
+    // Purely manual · NO suppression, and every bucket is now empty so the key goes away.
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+  });
+
+  it("does not write a suppression when removing a purely manual defense", () => {
+    const { es, char } = makeState(
+      (c) => { c.defenses = { resistances: ["Fire", "Cold"], immunities: [], vulnerabilities: [], condition_immunities: [] }; },
+      { resistances: [MANUAL_FIRE, MANUAL_COLD] },
+    );
+    es.removeDefense("resistances", "Fire");
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses?.resistances).toEqual(["Cold"]);
+  });
+
+  it("writes the suppression once, whatever spelling the second tap uses", () => {
+    const { es, char } = makeState(undefined, { resistances: [GRANT_PSYCHIC] });
+    es.removeDefense("resistances", "Psychic");
+    es.removeDefense("resistances", "psychic");
+    expect(char.overrides.defenses?.resistances?.remove).toEqual(["Psychic"]);
+  });
+
+  it("a grant-only suppress → restore round trip returns the note to its original bytes", () => {
+    const { es, char, onChange } = makeState(undefined, { resistances: [GRANT_PSYCHIC] });
+    es.removeDefense("resistances", "Psychic");
+    es.addDefense("resistances", "Psychic");
+    // Membership in remove[] was itself the proof that a non-manual source existed, so
+    // stripping the suppression is sufficient · nothing is pushed to the manual list.
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("strips the suppression on a canonical match, not an exact one", () => {
+    const { es, char } = makeState(undefined, { resistances: [GRANT_PSYCHIC] });
+    es.removeDefense("resistances", "Psychic");   // stores "Psychic"
+    es.addDefense("resistances", "psychic");      // the panel's canonical spelling
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+  });
+
+  it("a value supplied by BOTH the manual list and a grant loses the manual entry on a round trip", () => {
+    // Spec §3.5 edge case 1. `origin` is strongest-wins, so the entry reports "grant";
+    // removeDefense splices the manual entry AND suppresses, and addDefense adds nothing
+    // back. LOSSY and NOT self-healing · the rendered sheet is unchanged, so severity is
+    // LOW, but this is pinned so nobody "restores" the bytes claim to this case.
+    const { es, char } = makeState(
+      (c) => { c.defenses = { resistances: ["Psychic"], immunities: [], vulnerabilities: [], condition_immunities: [] }; },
+      { resistances: [GRANT_PSYCHIC] },
+    );
+    es.removeDefense("resistances", "Psychic");
+    expect(char.defenses).toBeUndefined();
+    expect(char.overrides.defenses?.resistances?.remove).toEqual(["Psychic"]);
+    es.addDefense("resistances", "Psychic");
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();   // the manual entry is gone for good
+  });
+
+  it("does not fire onChange when a removal is a no-op", () => {
+    const { es, char, onChange } = makeState();
+    es.removeDefense("resistances", "not-present-anywhere");
+    expect(onChange).not.toHaveBeenCalled();
+    // D-2's second half: a key-less note must not be re-persisted with four empty arrays.
+    expect(char.defenses).toBeUndefined();
+    expect(char.overrides.defenses).toBeUndefined();
+  });
+
+  it("an add on a key-less note SERIALIZES one bucket, not three empty siblings", () => {
+    // §3.5 addDefense step 4 ("prune both sides") on the PUSH path. Object state alone cannot
+    // see this defect: `immunities: []` and a deleted `immunities` key read identically through
+    // the `?? []` that every consumer uses, which is why it went unguarded. Only the emitted
+    // yaml, i.e. what actually lands in the user's note, tells them apart.
+    const { es, char } = makeState();
+    expect(char.defenses).toBeUndefined();
+    es.addDefense("resistances", "fire");
+    const emitted = characterToYaml(char);
+    expect(emitted).toContain("defenses:\n  resistances:\n    - fire\n");
+    expect(emitted).not.toMatch(/^ {2}(immunities|vulnerabilities|condition_immunities): \[\]$/m);
+  });
+
+  it("does not fire onChange or materialize buckets when an add is a duplicate", () => {
+    const { es, char, onChange } = makeState((c) => { c.defenses = { resistances: ["Fire"] }; });
+    es.addDefense("resistances", "fire");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(char.defenses?.resistances).toEqual(["Fire"]);
+    expect(Object.keys(char.defenses ?? {})).toEqual(["resistances"]);
+  });
+});
+
+describe("CharacterEditState: condition immunities · postcondition pair (R4-P5 Task 6)", () => {
+  const GRANT_CHARMED = { value: "charmed", label: "Charmed", origin: "grant" as const };
+
+  it("suppresses a granted condition immunity instead of no-oping", () => {
+    const { es, char, onChange } = makeState(undefined, { condition_immunities: [GRANT_CHARMED] });
+    es.removeConditionImmunity("Charmed");
+    expect(char.overrides.defenses?.condition_immunities?.remove).toEqual(["Charmed"]);
+    expect(char.defenses).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not write a suppression when removing a purely manual condition immunity", () => {
+    const { es, char } = makeState(
+      (c) => { c.defenses = { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: ["Charmed"] }; },
+      { condition_immunities: [{ value: "charmed", label: "Charmed", origin: "manual" as const }] },
+    );
+    es.removeConditionImmunity("charmed");
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+  });
+
+  it("a grant-only suppress → restore round trip returns the note to its original bytes", () => {
+    const { es, char, onChange } = makeState(undefined, { condition_immunities: [GRANT_CHARMED] });
+    es.removeConditionImmunity("Charmed");
+    es.addConditionImmunity("charmed");
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not fire onChange when a condition-immunity removal is a no-op", () => {
+    const { es, char, onChange } = makeState();
+    es.removeConditionImmunity("petrified");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(char.defenses).toBeUndefined();
+    expect(char.overrides.defenses).toBeUndefined();
+  });
+
+  it("an add on a key-less note SERIALIZES one bucket, not three empty siblings", () => {
+    const { es, char } = makeState();
+    es.addConditionImmunity("charmed");
+    const emitted = characterToYaml(char);
+    expect(emitted).toContain("defenses:\n  condition_immunities:\n    - charmed\n");
+    expect(emitted).not.toMatch(/^ {2}(resistances|immunities|vulnerabilities): \[\]$/m);
+  });
+
+  it("does not fire onChange or materialize buckets when a condition immunity is added twice", () => {
+    const { es, char, onChange } = makeState((c) => { c.defenses = { condition_immunities: ["Charmed"] }; });
+    es.addConditionImmunity("charmed");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(char.defenses?.condition_immunities).toEqual(["Charmed"]);
+    expect(Object.keys(char.defenses ?? {})).toEqual(["condition_immunities"]);
+  });
+
+  it("accepts an off-vocabulary value · C-1 widened the signature from ConditionSlug to string", () => {
+    // The picker unions in whatever `derived.condition_immunities` holds, which a homebrew
+    // overlay can populate with a condition outside CONDITION_SLUGS.
+    const { es, char } = makeState(undefined, {
+      condition_immunities: [{ value: "dazed", label: "Dazed", origin: "grant" as const }],
+    });
+    es.removeConditionImmunity("Dazed");
+    expect(char.overrides.defenses?.condition_immunities?.remove).toEqual(["Dazed"]);
   });
 });
 
@@ -1026,5 +1245,134 @@ describe("CharacterEditState — attuneItem auto-equip (Task 4, #10)", () => {
     expect(c.equipment[0].attuned).toBe(false);
     expect(c.equipment[0].equipped).toBe(true); // still equipped
     expect(c.equipment[0].slot).toBe("mainhand");
+  });
+});
+
+// ─── Proficiency overrides (R4-P3b, spec §3.6 / §8) ──────────────────────────
+//
+// The mutators decide what to write by asking the ENGINE what is effective, via
+// `getContext().resolved`. So the fixture has to reproduce the PRODUCTION ALIASING:
+// `PCSheetView.renderResolvedData` hands `parsed.data` to the `CharacterEditState`
+// constructor as `character` AND builds the context from the resolver's output, whose
+// `definition` is that very object (`PCResolver.resolve` sets `definition: character`,
+// in the dnd5e package's `src/pc/pc.resolver.ts` · that file does not exist in this repo).
+// One object, two paths.
+//
+// A fixture that CLONED would let the mutator write one object while the effective-set
+// read hits another, and every assertion below would pass vacuously. The fixture-integrity
+// test at the top of the describe block pins that identity so a future edit cannot quietly
+// break it.
+//
+// The two local `makeES` helpers above cannot be reused here: both stub getContext as
+// `({}) as unknown as EditStateContext`, so `resolved` is undefined and the mutators'
+// effectiveness read throws on the outer dereference.
+function makeDwarfEditState(onChange: () => void = () => {}): CharacterEditState {
+  const parsed = parsePC(MINIMAL_YAML);
+  if (!parsed.success) throw new Error(parsed.error);
+  const character = parsed.data;
+  const resolved = {
+    definition: character,   // ALIAS, never a copy. See the note above.
+    // The grant walk reads `resolved.race`, never `definition.race`, so the race lives on
+    // the resolved side only · the same shape as the engine's own effective-set fixture.
+    race: { name: "Dwarf", languages: { fixed: ["common", "dwarvish"] }, traits: [], choices: [] },
+    classes: [],
+    background: null,
+    feats: [],
+    features: [],
+  } as unknown as ResolvedCharacter;
+  const derived = { hp: { max: 24, current: 24, temp: 0 } } as unknown as DerivedStats;
+  return new CharacterEditState(character, () => ({ resolved, derived }), onChange);
+}
+
+/** Re-point the race's fixed languages IN PLACE, on the object the context closure
+ *  already holds, so the next effective-set read sees the new grants. Replacing
+ *  `resolved` or `definition` would sever the aliasing the mutators depend on. */
+function setRaceGrants(es: CharacterEditState, name: string, fixed: string[]): void {
+  const race = es.getContext().resolved.race as unknown as { name: string; languages: { fixed: string[] } };
+  race.name = name;
+  race.languages.fixed = fixed;
+}
+const swapRaceToElf = (es: CharacterEditState): void => setRaceGrants(es, "Elf", ["common", "elvish"]);
+const swapRaceToHuman = (es: CharacterEditState): void => setRaceGrants(es, "Human", ["common"]);
+
+describe("proficiency overrides", () => {
+  const isEffective = (es: CharacterEditState, v: string) =>
+    computeEffectiveProficiencies(es.getContext().resolved).languages.some(
+      (e) => toProfSlug(e.value) === toProfSlug(v),
+    );
+
+  // FIXTURE INTEGRITY, not a behaviour test. Everything below is vacuous if the edit
+  // state's character and the resolved definition are two objects: the mutator would
+  // write one and the effectiveness read would consult the other, so `toYaml()` could
+  // never disagree with a no-op. Both halves are asserted: reference identity, and that
+  // a write through the edit state is observable through the context path.
+  it("FIXTURE: character and resolved.definition are the SAME object (production aliasing)", () => {
+    const es = makeDwarfEditState();
+    expect(es.character).toBe(es.getContext().resolved.definition);
+    es.character.overrides.languages = { remove: ["probe"] };
+    expect(es.getContext().resolved.definition.overrides.languages).toEqual({ remove: ["probe"] });
+    // ...and the swap helpers must not sever it.
+    swapRaceToElf(es);
+    expect(es.character).toBe(es.getContext().resolved.definition);
+  });
+
+  it("suppress-then-restore returns the note to its ORIGINAL bytes", () => {
+    const es = makeDwarfEditState();          // grants common + dwarvish
+    const before = es.toYaml();
+    es.removeProficiency("languages", "dwarvish");
+    expect(isEffective(es, "dwarvish")).toBe(false);
+    es.addProficiency("languages", "dwarvish");
+    expect(isEffective(es, "dwarvish")).toBe(true);
+    // Only passes if `+` re-evaluates AFTER dropping from remove[] (so it pushes nothing to add[]),
+    // and if the mutator prunes the emptied container back to `delete`.
+    expect(es.toYaml()).toBe(before);
+  });
+
+  it("add-then-remove of a manual entry also returns to the original bytes", () => {
+    const es = makeDwarfEditState();
+    const before = es.toYaml();
+    es.addProficiency("languages", "elvish");
+    expect(isEffective(es, "elvish")).toBe(true);
+    es.removeProficiency("languages", "elvish");
+    expect(isEffective(es, "elvish")).toBe(false);
+    expect(es.toYaml()).toBe(before);
+  });
+
+  it("canonicalize-compares on push so one value cannot be stored twice", () => {
+    const es = makeDwarfEditState();
+    es.addProficiency("tools", "Thieves' Tools");
+    es.addProficiency("tools", "Thieves’ Tools");   // U+2019 · same value
+    expect(es.character.overrides.tools?.add).toHaveLength(1);
+  });
+
+  it("calls onChange exactly once per mutation", () => {
+    const onChange = vi.fn();
+    const es = makeDwarfEditState(onChange);
+    es.addProficiency("languages", "elvish");
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  // ---- Spec §16.3 test 6: THE TWO REACHABLE FAILURE STATES. ----
+  // These are the whole reason §8 was rewritten from a token swap into postconditions. Both need a
+  // GRANT CHANGE between the two mutator calls; the four tests above all pass under a naive token
+  // swap, so without these the states §8 exists to fix ship unpinned.
+
+  it("add-then-granted: × removes the chip even though the value became a grant", () => {
+    const es = makeDwarfEditState();
+    es.addProficiency("languages", "elvish");          // manual add
+    swapRaceToElf(es);                                 // elvish is NOW ALSO granted
+    es.removeProficiency("languages", "elvish");
+    // A token swap deletes only the add[] entry, the grant keeps it effective, and the chip stays.
+    expect(isEffective(es, "elvish")).toBe(false);
+    expect(es.character.overrides.languages?.remove).toContain("elvish");
+  });
+
+  it("orphaned suppression: + restores the value after its grant disappears", () => {
+    const es = makeDwarfEditState();
+    es.removeProficiency("languages", "dwarvish");     // suppress a grant
+    swapRaceToHuman(es);                               // dwarvish is no longer granted at all
+    es.addProficiency("languages", "dwarvish");
+    // A token swap drops it from remove[] and pushes nothing => NO chip appears. Silent no-op.
+    expect(isEffective(es, "dwarvish")).toBe(true);
   });
 });

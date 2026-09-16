@@ -5,6 +5,8 @@
  * (`.pc-cblock` / `.pc-cb-*`) ships in chronicle.css.
  */
 
+import { appendMarkdownText } from "../../../../shared/rendering/renderer-utils";
+
 export interface GlanceTile { label: string; value: string; small?: string; }
 
 export interface ChronicleBlockOptions {
@@ -58,9 +60,14 @@ export function renderChronicleBlock(parent: HTMLElement, opts: ChronicleBlockOp
   const nameEl = ident.createEl("h3", { cls: "pc-cb-name", text: opts.name });
   opts.nameSuffix?.(nameEl);
   const subEl = ident.createDiv({ cls: "pc-cb-sub", text: opts.sub });
+  // R4 {G5, G6} live rider 2, X-9-2: the separator rides INSIDE the source segment, which the
+  // stylesheet keeps unbroken, so the two move to a second line together. As siblings they were two
+  // inline boxes with a space between them, and the live card wrapped exactly there: the sub-line
+  // ended on a dangling `·` with the source alone underneath.
   if (opts.badge && inlineSource) {
-    subEl.createSpan({ cls: "pc-cb-sub-sep", text: " · " });
-    subEl.createSpan({ cls: "pc-cb-src", text: opts.badge });
+    const src = subEl.createSpan({ cls: "pc-cb-src" });
+    src.createSpan({ cls: "pc-cb-sub-sep", text: " · " });
+    src.appendText(opts.badge);
   }
   if (opts.bandRight) {
     const rgt = bh.createDiv({ cls: "pc-cb-bh-rgt" });
@@ -71,7 +78,11 @@ export function renderChronicleBlock(parent: HTMLElement, opts: ChronicleBlockOp
     bh.addEventListener("click", () => opts.onToggleCollapse?.());
   }
   if (opts.collapsed) return block;
-  if (opts.flavor) block.createDiv({ cls: "pc-cb-flavor", text: opts.flavor });
+  // R4 {G5, G6} live rider 2, X-9-1: the flavour line is book PROSE, so it goes through the sheet's
+  // inline-markdown path rather than being written as a literal text node. The 2024 class
+  // descriptions open with a bold lead-in and the card printed `**Fighter.** Fighters are ...`
+  // asterisks and all. A line with no markers renders the same single text node it always did.
+  if (opts.flavor) appendMarkdownText(opts.flavor, block.createDiv({ cls: "pc-cb-flavor" }));
   if (opts.tiles.length) {
     const glance = block.createDiv({ cls: "pc-cb-glance" });
     for (const t of opts.tiles) {

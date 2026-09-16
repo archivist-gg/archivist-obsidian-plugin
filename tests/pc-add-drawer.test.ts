@@ -100,6 +100,23 @@ describe("renderAddDrawer: known-set excludes scroll (source:item) spells (AC-S4
     expect(editState.addKnownSpell).toHaveBeenCalledWith("fireball", { class: "wizard" });
     expect(editState.removeKnownSpell).not.toHaveBeenCalled();
   });
+
+  it("clicking a GRANTED (non-persisted) spell's ✓ is inert: neither removeKnownSpell nor addKnownSpell", () => {
+    // R4-G3b §6.2.3: the drawer's ✓ calls removeKnownSpell, a silent no-op for a row
+    // that does not live in character.spells.known. The handler holds only the known
+    // Set, so it re-reads the matching resolved spell's `persisted` flag; a grant has
+    // none, so the toggle does nothing at all (the "Always prepared" marker is the explanation).
+    // RED FIRST before Task 7 (plugin 7bb5d39b): the handler called removeKnownSpell
+    // unconditionally whenever known.has(slug).
+    const root = mountContainer();
+    const editState = { addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() };
+    renderAddDrawer(root, ctxKnown([{ slug: "fireball", source: "feat" }], editState));
+    const fb = toggleFor(root, "Fireball");
+    fb.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(editState.removeKnownSpell).not.toHaveBeenCalled();
+    expect(editState.addKnownSpell).not.toHaveBeenCalled();
+    expect(fb.classList.contains("on")).toBe(true); // the grant still reads as known (✓)
+  });
 });
 
 // Hidden-compendium filtering (R3-P6, F3). SpellCandidate carries no compendium,
@@ -130,5 +147,68 @@ describe("renderAddDrawer: hidden compendiums filtered, known-exempt (F3)", () =
     expect(names).not.toContain("Hidden New Spell");   // hidden compendium, unknown: removed
     expect(names).toContain("Visible Spell");           // visible compendium: present
     expect(names).toContain("Known Hidden Spell");      // hidden compendium but known: exempt
+  });
+});
+
+// R4-G7 T8 RIDER-19 fix round 1 (review I-1): the drawer saves the `class:` the engine's ONE attribution rule
+// (`attributeUnclassedSpell`, the resolver's rule for an un-classed entry) picks, never the first caster blindly. An explicit
+// `class:` wins at resolve time, so a wrong pick here would be persisted for good.
+describe("renderAddDrawer: the class an added spell is saved under follows the engine's attribution rule (R4-G7 T8 RIDER-19 fix round 1, I-1)", () => {
+  // Fix round 2: guard (ii) reads the first class document's own compendium, so the class documents are registered too (all
+  // in the fixture's default "Mock" compendium, alongside the spells).
+  const classDoc = (slug: string, name: string) => ({ slug, name, entityType: "class", data: { slug, name } });
+  const MC_REG = buildMockRegistry([
+    classDoc("players-handbook-2024_class_paladin", "Paladin"), classDoc("players-handbook-2024_class_warlock", "Warlock"),
+    classDoc("x_class_fighter", "Fighter"), classDoc("x_class_sorcerer", "Sorcerer"),
+    { slug: "players-handbook-2024_spell_armor-of-agathys", name: "Armor of Agathys", entityType: "spell", data: { name: "Armor of Agathys", level: 1, classes: ["warlock"] } },
+    { slug: "players-handbook-2024_spell_bless", name: "Bless", entityType: "spell", data: { name: "Bless", level: 1, classes: ["cleric", "paladin"] } },
+    { slug: "x_spell_shield", name: "Shield", entityType: "spell", data: { name: "Shield", level: 1, classes: ["sorcerer", "wizard"] } },
+    // Names `fighter`, so only the Fighter's null spellList (guard (i)) keeps Shield on the Eldritch Knight below.
+    { slug: "x_spell_homebrew-ward", name: "Homebrew Ward", entityType: "spell", data: { name: "Homebrew Ward", level: 1, classes: ["fighter"] } },
+  ]);
+  const ctxMC = (spellcastingClasses: { classSlug: string; spellList: string | null }[], addKnownSpell = vi.fn()): ComponentRenderContext => ({
+    resolved: { spells: [] } as never,
+    derived: { spellcastingClasses, derivedSpellSlots: { 1: 4 }, pactMagic: { level: 1 } } as never,
+    services: { entities: MC_REG } as never, app: {} as never, editState: { addKnownSpell, removeKnownSpell: vi.fn() } as never,
+  });
+
+  it("a Paladin 2024-first Paladin / Warlock adding Armor of Agathys saves it as the Warlock's (and Bless as the Paladin's)", () => {
+    const root = mountContainer();
+    const addKnownSpell = vi.fn();
+    renderAddDrawer(root, ctxMC([
+      { classSlug: "players-handbook-2024_class_paladin", spellList: "paladin" },
+      { classSlug: "players-handbook-2024_class_warlock", spellList: "warlock" },
+    ], addKnownSpell));
+    toggleFor(root, "Armor of Agathys").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(addKnownSpell).toHaveBeenLastCalledWith("players-handbook-2024_spell_armor-of-agathys", { class: "players-handbook-2024_class_warlock" });
+    toggleFor(root, "Bless").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(addKnownSpell).toHaveBeenLastCalledWith("players-handbook-2024_spell_bless", { class: "players-handbook-2024_class_paladin" });
+  });
+
+  it("the real vault shape: an SRD 5e Paladin-first / Warlock adding Command saves it as the Paladin's although SRD 2024 spells list paladin", () => {
+    // R4-G7 T8 RIDER-19 fix round 2: only the SRD 5e Paladin's own compendium can make its list observable, and no SRD 5e spell lists
+    // paladin (DATA-SRD); the SRD 2024 Bless beside it does not count.
+    const VAULT_REG = buildMockRegistry([
+      { ...classDoc("srd-5e_class_paladin", "Paladin"), compendium: "SRD 5e" }, { ...classDoc("srd-5e_class_warlock", "Warlock"), compendium: "SRD 5e" },
+      { slug: "srd-5e_spell_command", name: "Command", entityType: "spell", compendium: "SRD 5e", data: { name: "Command", level: 1, classes: ["cleric", "warlock"] } },
+      { slug: "srd-2024_spell_bless", name: "Bless", entityType: "spell", compendium: "SRD 2024", data: { name: "Bless", level: 1, classes: ["cleric", "paladin"] } },
+    ]);
+    const root = mountContainer();
+    const addKnownSpell = vi.fn();
+    const c = ctxMC([{ classSlug: "srd-5e_class_paladin", spellList: "paladin" }, { classSlug: "srd-5e_class_warlock", spellList: "warlock" }], addKnownSpell);
+    renderAddDrawer(root, { ...c, services: { entities: VAULT_REG } as never });
+    toggleFor(root, "Command").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(addKnownSpell).toHaveBeenCalledWith("srd-5e_spell_command", { class: "srd-5e_class_paladin" });
+  });
+
+  it("control: an Eldritch Knight-first Fighter / Sorcerer adding Shield saves it as the Fighter's (the EK names no list)", () => {
+    const root = mountContainer();
+    const addKnownSpell = vi.fn();
+    renderAddDrawer(root, ctxMC([
+      { classSlug: "x_class_fighter", spellList: null },
+      { classSlug: "x_class_sorcerer", spellList: "sorcerer" },
+    ], addKnownSpell));
+    toggleFor(root, "Shield").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(addKnownSpell).toHaveBeenCalledWith("x_spell_shield", { class: "x_class_fighter" });
   });
 });

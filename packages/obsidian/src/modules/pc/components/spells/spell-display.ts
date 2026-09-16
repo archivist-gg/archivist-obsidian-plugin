@@ -7,6 +7,17 @@ const ABBR: Record<string, string> = { strength: "STR", dexterity: "DEX", consti
 
 export interface CastBadge { label: string; kind: "action" | "bonus" | "reaction" | "time"; }
 
+/** The Cast table's placeholder for a cell whose value the spell does not carry. Named (R4 {G5, G6}
+ *  live rider N-1-19) because three cells print it and the rider made a fourth do so: a cell that used
+ *  to render empty left its row a line short beside its neighbours. The GLYPH is not this rider's to
+ *  choose · P8 owns the null-glyph ruling, and this constant is where that ruling will land. */
+export const EMPTY_CELL = "—";
+
+/** R4-G7 T8 RIDER-17 (F-ALWAYS (a)): the ONE label of the always-prepared marker (`.pc-spell-always`), printed by
+ *  BOTH spell views (the Cast table's name line and the Prepare list's name), so the two can never drift. It
+ *  replaced a bare lowercase `always` that read as a stray word beside the spell name. */
+export const ALWAYS_PREPARED_LABEL = "Always prepared";
+
 export function castingTimeBadge(token: string | undefined): CastBadge {
   switch (token) {
     case "action": return { label: "Action", kind: "action" };
@@ -72,11 +83,29 @@ export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo
 }
 
 /** Compact casting-time label for the Cast table. Real tokens: action,
- *  bonus-action, reaction, 1minute|minute, 10minutes, 1hour|hour, 8/12/24hours. */
+ *  bonus-action, reaction, 1minute|minute, 10minutes, 1hour|hour, 8/12/24hours.
+ *
+ *  The token is MATCHED after normalisation (R4 {G5, G6} live rider N-1-17): case folded and every
+ *  space and hyphen dropped, so `bonus-action`, `bonus action` and `Bonus Action` are one token and
+ *  `1 minute` is `1minute`. The live Paladin's Spells tab mixed `1A` with `bonus action` and
+ *  `1 minute` in one column because a converted book spells the same token differently from the
+ *  bundle's (measured: all 601 bundle spells carry the hyphenated / unspaced forms), and every other
+ *  spelling fell through to the raw string. A token that matches nothing still passes through
+ *  verbatim, and an absent one still reads as the placeholder. */
 export function compactCastingTime(token: string | undefined): string {
-  switch (token) {
+  const norm = token?.toLowerCase().replace(/[\s-]+/g, "");
+  // R4-G7 T7 live rider RIDER-4. A reaction may carry its TRIGGER in the same field
+  // (`reaction (which you take when you or a creature you can see within 60 feet of you falls)`), which
+  // the switch below cannot match, so it fell through verbatim into a column sized for `1A` and wrapped
+  // onto seven lines: WITNESSED at S00 on `conv-diviner2024-20`'s Spells tab (Feather Fall). MEASURED in
+  // the converter corpus: 24 distinct `casting_time` values, THIRTEEN of them this shape. The prefix is
+  // matched, never a bare `includes`, so `1 minute (reaction optional)` still passes through; the
+  // trigger is not lost, because both callers put the FULL token in the cell's `title`.
+  if (norm && norm.startsWith("reaction(")) return "1R";
+  switch (norm) {
+    // The case labels are the NORMALISED forms (no hyphen, no space, lower case).
     case "action": return "1A";
-    case "bonus-action": return "1BA";
+    case "bonusaction": return "1BA";
     case "reaction": return "1R";
     case "minute":
     case "1minute": return "1 min";
@@ -86,13 +115,13 @@ export function compactCastingTime(token: string | undefined): string {
     case "8hours": return "8 hr";
     case "12hours": return "12 hr";
     case "24hours": return "24 hr";
-    default: return token ? token : "—";
+    default: return token ? token : EMPTY_CELL;
   }
 }
 
 /** Compact range. `range` is already a human string ("120 feet", "Touch", "Self"…). */
 export function formatRange(range: string | undefined): string {
-  if (!range) return "—";
+  if (!range) return EMPTY_CELL;
   const feet = range.match(/^(\d+)\s*feet$/i);
   if (feet) return `${feet[1]} ft`;
   return range; // Touch / Self / Special / Sight / Unlimited / "1 mile" pass through
@@ -124,8 +153,9 @@ export function hitDcDescriptor(spell: ResolvedSpell, saveDC: number, atk?: numb
 }
 
 /** Structured-only effect descriptor. Base damage dice are NOT in the model,
- *  so this returns the damage TYPE word only (or null). Upcast dice come from
- *  spellEffectAtSlot, not here. */
+ *  so this returns the damage TYPE word only (or null). Scaled dice come from
+ *  dnd5e `spell.scaling`, not here: spellEffectAtSlot for a slot row,
+ *  spellEffectAtCharacterLevel for a cantrip (R4-G7 T8 RIDER-15). */
 export function effectDescriptor(spell: ResolvedSpell): { damageType: string | null } {
   return { damageType: spell.entity.damage?.types?.[0] ?? null };
 }

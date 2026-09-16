@@ -8,6 +8,7 @@ import type ArchivistPlugin from "../../../main";
 import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import { MonsterEditState } from "../monster.edit-state";
 import { renderSideButtons } from "../../../shared/edit/side-buttons";
+import { isUnchanged } from "../../../shared/edit/unchanged";
 import { createSvgBar } from "../../../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../../../shared/entities/compendium-modal";
 import { showCompendiumPicker } from "../../../shared/edit/compendium-picker";
@@ -34,6 +35,7 @@ export function renderMonsterEditMode(
   onCancelExit?: () => void,
   compendiumContext?: { slug: string; compendium: string; readonly: boolean },
   onReplaceRef?: (newRefText: string) => void,
+  hostReadonly?: boolean,
 ): void {
   const refs: DomRefs = {} as DomRefs;
   refs.saveValues = {};
@@ -47,6 +49,13 @@ export function renderMonsterEditMode(
     updateDom(state, refs);
     updateSideBtns();
   });
+
+  // R4-G6b §4.2: the snapshot at OPEN, through the ONE projection this editor writes with (`editableToYaml`); a
+  // fresh parse is already a deep copy. Never derived lazily from `original` at save time: the feature arrays alias
+  // it, so a real feature edit would compare EQUAL and the user's work would be discarded (§4.3).
+  // (`yaml.load` already answers `unknown`, so no assertion belongs on either call.)
+  const before = yaml.load(state.toYaml());
+  const unchanged = () => isUnchanged(before, yaml.load(state.toYaml()));
 
   // --- Side buttons (save / save-as-new / cancel) ---
   let sideBtns = el.querySelector<HTMLElement>(".archivist-side-btns");
@@ -63,9 +72,11 @@ export function renderMonsterEditMode(
       state: sideState,
       isColumnActive: false,
       isReadonly: compendiumContext?.readonly,
+      isHostReadonly: hostReadonly,
       onEdit: () => cancelAndExit(),
       onSave: () => {
         if (compendiumContext) {
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
           const yamlStr = state.toYaml();
           const yamlData = yaml.load(yamlStr) as Record<string, unknown>;
           plugin.compendiumManager?.updateEntity(compendiumContext.slug, yamlData)
@@ -75,6 +86,7 @@ export function renderMonsterEditMode(
             })
             .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
         } else {
+          if (unchanged()) { new Notice("No changes"); if (onCancelExit) onCancelExit(); return; }
           saveAndExit();
         }
       },
@@ -96,6 +108,9 @@ export function renderMonsterEditMode(
         .then((registered) => {
           if (onReplaceRef) {
             onReplaceRef(`{{monster:${registered.slug}}}`);
+          } else if (hostReadonly) {
+            // R4-G6b §3.4: the host is a readonly compendium note; the new note is the only write, so the
+            // fence is left byte-untouched (invariant 10) and the view re-renders it.
           } else {
             const info = ctx?.getSectionInfo(el);
             if (info) {

@@ -1,8 +1,9 @@
 // src/modules/pc/components/coin-modal.ts
-import { Modal, type App } from "obsidian";
+import { type App } from "obsidian";
+import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { ComponentRenderContext } from "./component.types";
 import type { CharacterEditState } from "../pc.edit-state";
-import { makeInlineInput } from "./edit-primitives";
+import { makeInlineInput, cancelInlineEdit } from "./edit-primitives";
 import {
   COIN_KEYS, COIN_META, MAX_COIN, totalCp, formatGpTotal, validateAdjust, assembleDeltas,
   type Coin, type CurrencyLike,
@@ -63,7 +64,7 @@ function coinShapeSvg(doc: Document, coin: Coin, sizePx: number): SVGSVGElement 
   return svg;
 }
 
-class CoinModal extends Modal {
+class CoinModal extends PaneCenteredModal {
   private totalNumEl!: HTMLElement;
   private ledgerEl!: HTMLElement;
   private adjustInputs = new Map<Coin, HTMLInputElement>();
@@ -76,6 +77,11 @@ class CoinModal extends Modal {
 
   onOpen(): void {
     this.contentEl.addClass("archivist-modal", "pc-coin-modal");
+    // Two-stage Escape: Escape #1 cancels an active ledger inline edit,
+    // Escape #2 (or Escape with no edit) closes.
+    this.takeOverEscape(() => {
+      if (!cancelInlineEdit(this.contentEl)) this.close();
+    });
     this.buildSkeleton();
     this.updateDynamic();
   }
@@ -109,9 +115,12 @@ class CoinModal extends Modal {
   }
 
   /** The ledger is REBUILT on every call — load-bearing: makeInlineInput
-   *  detaches the value element and does NOT restore it on commit (it relies
-   *  on a rerender, like Max-HP's full render()); the rebuild discards the
-   *  leftover input. The adjust section is NEVER touched here. */
+   *  detaches the value element on open and repaints the committed value from
+   *  the store, like Max-HP's full render(); the rebuild discards the
+   *  input. (Since R4-G6b live rider F-A the primitive also restores the value
+   *  element itself when a commit leaves the input connected, so a commit that
+   *  never reaches this rebuild no longer strands a spinner in the ledger.)
+   *  The adjust section is NEVER touched here. */
   private updateDynamic(): void {
     this.totalNumEl.setText(formatGpTotal(totalCp(this.currency())));
     this.ledgerEl.empty();
@@ -158,11 +167,14 @@ class CoinModal extends Modal {
 
       const stopProp = (e: Event) => e.stopPropagation();
       input.addEventListener("keydown", (e) => {
-        // stopPropagation keeps Obsidian's hotkey manager from swallowing
-        // digits (hp-widget model) — but it ALSO blocks Obsidian's own
-        // Escape-to-close from ever seeing the event, so BOTH keys are
-        // handled locally here (makeInlineInput model); never rely on a
-        // stopped event bubbling to Obsidian.
+        // stopPropagation keeps Obsidian's hotkey manager from swallowing digits
+        // (hp-widget model). In the MAIN window the Escape branch below can never
+        // fire: `onOpen`'s `takeOverEscape` handler returns a strict `false`, the
+        // only return that makes `Keymap` call `preventDefault()` +
+        // `stopPropagation()`, and `Keymap` binds `window` at the CAPTURE phase,
+        // so the event never reaches this bubble listener at all. It is
+        // load-bearing in POP-OUT windows, where `Keymap` (bound to the main
+        // window only) never fires. Not dead code · do not delete it.
         stopProp(e);
         if (e.key === "Enter") { e.preventDefault(); this.applyAdjust(1); return; }
         if (e.key === "Escape") { e.preventDefault(); this.close(); return; }

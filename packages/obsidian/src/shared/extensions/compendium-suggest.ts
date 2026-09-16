@@ -2,10 +2,16 @@ import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, Edito
 import { setIcon } from "obsidian";
 import { EntityRegistry, RegisteredEntity } from "@archivist-gg/core";
 import { entityCompendiumVisible } from "../entities/compendium-visibility";
+import { rankEntities } from "../entity-rank";
 
-/** Display cap. Enumerate the FULL match pool, filter, then slice: the registry
- *  sorts the whole pool before slicing anyway, so this is free and hidden-heavy
- *  prefixes can never starve visible suggestions below the cap. */
+/** Display cap. Both paths filter for visibility BEFORE the cap, so hidden-heavy
+ *  prefixes can never starve visible suggestions below it.
+ *
+ *  The UNTYPED path ranks with a bounded top-K walk over the registry's slug map
+ *  (`rankEntities`), which is the whole pool without ever sorting it: an untyped
+ *  keystroke used to sort every registered entity in the vault just to keep 20.
+ *  The TYPED path still enumerates its type bucket through `registry.search`,
+ *  which is bounded by the bucket rather than by the vault. */
 const SUGGEST_LIMIT = 20;
 
 const TYPE_PREFIXES: Record<string, string> = {
@@ -90,10 +96,30 @@ export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
     }
 
     const hidden = this.getHidden();
+    const visible = (e: RegisteredEntity) => entityCompendiumVisible(e, hidden);
+
+    // No resolved type (no prefix, or a prefix that names no entity type) means
+    // the pool is EVERY registered entity: take the bounded walk, never a search
+    // sweep. With a type, the pool is one bucket and today's path stands.
+    if (entityType === undefined) {
+      return rankEntities(this.allEntities(), searchQuery, SUGGEST_LIMIT, visible);
+    }
+
     return this.registry
       .search(searchQuery, entityType, Number.POSITIVE_INFINITY)
-      .filter((e) => entityCompendiumVisible(e, hidden))
+      .filter(visible)
       .slice(0, SUGGEST_LIMIT);
+  }
+
+  /** The untyped pool, lazily: `getAllSlugs()` order resolved through the O(1)
+   *  `getBySlug()`. Identical to what core's untyped `search` enumerates, and it
+   *  never materialises the entities or sorts them (the slug set itself is one
+   *  O(n) allocation from `getAllSlugs()`). */
+  private *allEntities(): Generator<RegisteredEntity> {
+    for (const slug of this.registry.getAllSlugs()) {
+      const entity = this.registry.getBySlug(slug);
+      if (entity) yield entity;
+    }
   }
 
   renderSuggestion(entity: RegisteredEntity, el: HTMLElement): void {

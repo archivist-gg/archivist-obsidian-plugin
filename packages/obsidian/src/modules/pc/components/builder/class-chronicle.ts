@@ -6,7 +6,8 @@ import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment
 import { recognizeDecision } from "@archivist-gg/dnd5e/pc/decision-recognizer";
 import { renderChronicleBlock, renderSectionRule, firstSentence } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";
-import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, fixedGrantLines } from "../../../../shared/rendering/renderer-utils";
+import { proficiencyLabel } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
 
 /** Structural view of the class runtime entity (class.types.ts). */
 export interface ClassData {
@@ -14,6 +15,10 @@ export interface ClassData {
   primary_abilities?: string[];
   saving_throws?: string[];
   skill_choices?: { count: number; from: string[] } | null;
+  /** Entity-level decisions the class grants at L1 (`ClassEntity.choices`), the
+   *  class-wide sibling of the per-feature `choices`. Typed `unknown[]` like the
+   *  feature ones: this view reads only the optional display label. */
+  choices?: unknown[];
   proficiencies?: { armor?: string[]; weapons?: { fixed?: string[]; categories?: string[] } };
   spellcasting?: { ability: string; preparation: string; spell_list: string } | null;
   subclass_level?: number | null;
@@ -93,6 +98,15 @@ function isAuthoredSubclassChoice(c: unknown): boolean {
   );
 }
 
+/** An entity-level `ClassEntity.choices` entry, narrowed from the local
+ *  `unknown[]` view. Only the optional display label is read; the fallback is
+ *  the "Proficiencies" header the owned ledger groups these items under, so the
+ *  browse preview and the owned strip name the same decision the same way. */
+function entityChoiceLabel(c: unknown): string {
+  const label = typeof c === "object" && c !== null ? (c as { label?: unknown }).label : undefined;
+  return typeof label === "string" && label.length > 0 ? label : "Proficiencies";
+}
+
 /** Browse-side walker: every authored feature choice, plus recognizer-synthesized
  *  homebrew decisions (the recognizer returns Choice[] for those), skipping
  *  informational prose (it returns "informational") and plain features (null).
@@ -104,6 +118,16 @@ function isAuthoredSubclassChoice(c: unknown): boolean {
  *  and need not agree, which would otherwise synthesize a duplicate L3 row. */
 export function collectBrowseDecisions(d: ClassData): BrowseDecision[] {
   const out: BrowseDecision[] = [];
+  // Entity-level class `choices`: a class-wide L1 decision belonging to no single
+  // feature (a Bard's "three musical instruments of your choice" · none of its L1
+  // features can host a tool pick). The owned card's ledger emits ONE item per
+  // entity-level choice at L1, so one row each keeps this preview's count from
+  // under-reporting what the player will actually be asked.
+  //
+  // Scope is entity-level `choices` ONLY. The L1 `skill_choices` row is a
+  // SEPARATE, pre-existing divergence (this walker has never counted it) and is
+  // deliberately left alone here.
+  for (const ch of d.choices ?? []) out.push({ level: 1, name: entityChoiceLabel(ch) });
   let sawAuthoredSubclass = false;
   for (const [lvl, feats] of Object.entries(d.features_by_level ?? {})) {
     for (const f of feats) {
@@ -216,9 +240,19 @@ function renderDecisions(block: HTMLElement, ctx: ComponentRenderContext, d: Cla
   }
   // Owned: the live always-open strip with level pills; equipment picks are
   // the Equipment step's scope (keys synthesized as `equipment-{i}`).
-  const items: DecisionItem[] = (opts.ledger?.classes.find((c) => c.classIndex === (opts.classIndex ?? 0))?.levels ?? [])
+  const all: DecisionItem[] = (opts.ledger?.classes.find((c) => c.classIndex === (opts.classIndex ?? 0))?.levels ?? [])
     .flatMap((l) => l.items)
     .filter((i) => !i.key.startsWith("equipment-"));
+  // R4 {G5, G6} live rider 2, X-9-4: a feature is listed ONCE. The decision engine emits an
+  // informational card for every gained feature and a real decision for the ones that carry a choice,
+  // so a feature that is both (the converted 2024 Fighter's `Fighting Style` and `Fighter Subclass`)
+  // reached this strip twice at the same level, the second row a card with nothing to answer. The
+  // engine keeps both deliberately (R4-G5 §3.2.4: dropping the informational push would make a
+  // SUPPRESSED feature vanish from the ledger entirely), so the card drops the twin it would print
+  // under its own decision, and only there: an informational card whose feature has no decision at
+  // that level still gets its row, which is the complete-view guarantee.
+  const decided = new Set(all.filter((i) => i.status !== "informational").map((i) => `${i.level}\u0000${i.featureName}`));
+  const items = all.filter((i) => i.status !== "informational" || !decided.has(`${i.level}\u0000${i.featureName}`));
   if (!items.length) return;
   // The strip shows every gained feature (informational cards for plain flavor), but
   // the header counts only real DECISIONS — informational items need no player input.
@@ -412,10 +446,13 @@ function renderFeatureTimeline(host: HTMLElement, ctx: ComponentRenderContext, d
 
 export function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
   if (d.saving_throws?.length) prop(host, "Saving Throws", d.saving_throws.map((s) => ABILITY_NAME[s] ?? s.toUpperCase()).join(", "));
+  // R4-G7 T8 RIDER-30: weapon and armor values print through dnd5e's `proficiencyLabel`, the ONE rule the sheet's proficiency
+  // rail uses (RIDER-14): authored prose ("Martial weapons that have the Light property") prints as authored instead of being
+  // title-cased word by word here while the sheet printed it as written.
   const w = d.proficiencies?.weapons;
-  const weapons = [...(w?.categories ?? []), ...(w?.fixed ?? [])].map(humanizeSlug).join(", ");
+  const weapons = [...(w?.categories ?? []), ...(w?.fixed ?? [])].map(proficiencyLabel).join(", ");
   if (weapons) prop(host, "Weapons", weapons);
-  if (d.proficiencies?.armor?.length) prop(host, "Armor", d.proficiencies.armor.map(humanizeSlug).join(", "));
+  if (d.proficiencies?.armor?.length) prop(host, "Armor", d.proficiencies.armor.map(proficiencyLabel).join(", "));
   if (d.skill_choices) {
     const from = d.skill_choices.from.map(humanizeSlug);
     const shown = from.slice(0, 6).join(", ");
@@ -429,7 +466,7 @@ export function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
         row.createSpan({ cls: "pc-cb-eqtext", text: opt.label });
       });
     } else if (eq.kind === "fixed") {
-      const text = eq.label ?? eq.grants.map(grantLabel).join(", ");
+      const text = fixedGrantLines(eq);
       if (text) prop(host, "Equipment", text);
     } else {
       prop(host, "Gold", `${eq.amount} GP`);

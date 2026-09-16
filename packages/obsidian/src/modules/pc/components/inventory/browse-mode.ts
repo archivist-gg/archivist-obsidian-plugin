@@ -15,7 +15,12 @@ const COMPENDIUM_TYPES = ["weapon", "armor", "item"] as const;
 // `search("", type, ENUMERATE_LIMIT)` is used as an enumeration shim because
 // EntityRegistry exposes no `getAllByType`/`getAll` API. The empty query is
 // treated as "match-all" by `RegisteredEntity.name.includes("")`.
-const ENUMERATE_LIMIT = 10_000;
+//
+// The limit is INFINITE, not a number: a cap here silently truncates the browse
+// list once a bucket outgrows it, and the item bucket already measures 7,834.
+// Enumerating a whole bucket is what this call is FOR, so any finite ceiling is
+// a lie waiting to be told. The caller filters and pages the DOM afterwards.
+const ENUMERATE_LIMIT = Number.POSITIVE_INFINITY;
 
 /** How many rows to show initially, and how many each "Load more" reveals. */
 const PAGE = 50;

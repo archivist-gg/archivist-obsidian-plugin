@@ -83,18 +83,22 @@ describe("CharacterEditState equipment delegators", () => {
 });
 
 describe("builder equipment mutators (SP2 Equipment step)", () => {
-  it("syncStartingEquipment replaces only builder:starting entries + sets gp", () => {
+  it("syncStartingEquipment replaces only builder:starting entries and does NOT touch currency", () => {
     const c = baseChar();
     const { es } = mkState(c);
     // A non-starting builder entry that MUST survive re-syncs.
     c.equipment.push({ item: "[[hand-axe]]", granted_by: "builder:gold-buy" });
-    es.syncStartingEquipment([{ slug: "srd_chain-mail", qty: 1, equipped: true, slot: "armor" }], 12);
-    es.syncStartingEquipment([{ slug: "srd_leather", qty: 1, equipped: true, slot: "armor" }], 11); // re-pick
+    es.syncStartingEquipment([{ slug: "srd_chain-mail", qty: 1, equipped: true, slot: "armor" }]);
+    es.syncStartingEquipment([{ slug: "srd_leather", qty: 1, equipped: true, slot: "armor" }]); // re-pick
     const starting = c.equipment.filter((e) => e.granted_by === "builder:starting");
     expect(starting).toHaveLength(1);
     expect(starting[0].item).toBe("[[srd_leather]]");
     expect(c.equipment.some((e) => e.granted_by === "builder:gold-buy")).toBe(true);
-    expect(c.currency!.gp).toBe(11);
+    // baseChar() has NO currency key, so a surviving write in this method would
+    // first have to materialize the object (the deleted inline
+    // `if (!this.character.currency) …` init did exactly that). This assertion
+    // genuinely fails if the write is still there.
+    expect(c.currency).toBeUndefined();
   });
 
   it("setBuilderEquipmentMode clears all builder:* gear and persists the mode", () => {
@@ -119,12 +123,22 @@ describe("builder equipment mutators (SP2 Equipment step)", () => {
     expect(c.builder_equipment_mode).toBeUndefined();
   });
 
-  it("syncStartingEquipment is a NO-OP (no onChange) when entries + gp are unchanged", () => {
+  it("syncStartingEquipment is a NO-OP (no onChange) when entries are unchanged", () => {
     const c = baseChar();
     const { es, onChange } = mkState(c);
-    es.syncStartingEquipment([{ slug: "srd_chain-mail", qty: 1, equipped: true, slot: "armor" }], 12);
+    es.syncStartingEquipment([{ slug: "srd_chain-mail", qty: 1, equipped: true, slot: "armor" }]);
     onChange.mockClear();
-    es.syncStartingEquipment([{ slug: "srd_chain-mail", qty: 1, equipped: true, slot: "armor" }], 12); // identical
+    es.syncStartingEquipment([{ slug: "srd_chain-mail", qty: 1, equipped: true, slot: "armor" }]);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  // G4 · the reported bug, at unit level. Pre-fix this fired onChange and set gp to 0.
+  it("syncStartingEquipment is a NO-OP when entries are unchanged but gp differs (the reported bug)", () => {
+    const c = baseChar();
+    c.currency = { cp: 0, sp: 0, ep: 0, gp: 10, pp: 0 };
+    const { es, onChange } = mkState(c);
+    es.syncStartingEquipment([]);   // Volker's shape: nothing resolves
+    expect(c.currency.gp).toBe(10);
     expect(onChange).not.toHaveBeenCalled();
   });
 });

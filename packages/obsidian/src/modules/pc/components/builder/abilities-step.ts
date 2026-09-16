@@ -8,6 +8,8 @@ import {
 } from "./ability-methods";
 import type { PointBuyRule } from "./ability-methods";
 import { abilityBonusBreakdown } from "@archivist-gg/dnd5e/pc/pc.recalc";
+import { assembleEffectFeatures, computeFeatureEffects } from "@archivist-gg/dnd5e/pc/pc.feature-effects";
+import { resourceLevelFor } from "@archivist-gg/dnd5e/pc/pc.resources";
 import { clampPopover } from "./popover-clamp";
 
 const ABILITY_LABELS: Record<Ability, string> = {
@@ -46,7 +48,14 @@ function redraw(body: HTMLElement, ctx: ComponentRenderContext): void {
 }
 
 function renderTiles(body: HTMLElement, ctx: ComponentRenderContext, method: AbilityMethod): void {
-  const breakdown = abilityBonusBreakdown(ctx.resolved);
+  // R4-G3b §4: thread the effect totals so a level-20 capstone's +4 reads "+4 class" and the tile reconciles.
+  const { features: effectFeatures, activeBuffs } = assembleEffectFeatures(ctx.resolved);
+  // R4-G7 §7.3: the SECOND of the two production `computeFeatureEffects` call expressions passes the same
+  // `levelFor` as dnd5e's `pc.recalc.ts`, so an effect's `scales_at` resolves at its own source level in the
+  // builder exactly as it does on the sheet. Unobservable at THIS surface (the breakdown reads the
+  // ability-bump totals only, and `scales_at` lives on `extra-attack` / `speed-bonus`); it is here so the two
+  // call sites can never disagree.
+  const breakdown = abilityBonusBreakdown(ctx.resolved, computeFeatureEffects(effectFeatures, { activeBuffs, levelFor: (src) => resourceLevelFor(src, ctx.resolved) }));
   // DerivedStats holds the final totals on `scores` + the modifiers on `mods`.
   const derivedScores = ctx.derived.scores;
   const derivedMods = ctx.derived.mods;

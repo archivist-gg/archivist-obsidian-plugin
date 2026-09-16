@@ -4,6 +4,7 @@ import type {
   ModalConstructor,
   RenderContext,
 } from "../../shared/rendering/entity-presenter";
+import type { App } from "obsidian";
 import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import { renderMonsterBlock } from "./monster.renderer";
 import { renderMonsterEditMode } from "./edit/monster-edit-render";
@@ -26,7 +27,14 @@ class MonsterModule implements EntityPresenter {
   render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
     const monster = data as Monster;
     const columns = ctx.columns ?? monster.columns ?? 1;
-    const block = renderMonsterBlock(monster, columns);
+    // The `app` the markdown-filled sections (Lair Actions, Regional Effects, Variants) render through: both
+    // production entries put the plugin on the context (`renderViaModule` passes `plugin: this`,
+    // `renderRegisteredEntity` the module-level `pluginRef`), so the cast reads a defined value on both.
+    // The block is built synchronously; its markdown fills (every feature's prose since Q-11, and the entry-tree
+    // sections) settle afterwards. Nothing here waits for them, so `ready`'s rejection path is handled once, right
+    // here, instead of surfacing as an unhandled rejection (spec §7.6; `fillMarkdown`'s catch is the precedent).
+    const { el: block, ready } = renderMonsterBlock(monster, columns, (ctx.plugin as { app?: App } | undefined)?.app);
+    void ready.catch((err: unknown) => console.error("[Archivist] monster block render failed", err));
     el.appendChild(block);
     return block;
   }
@@ -35,7 +43,7 @@ class MonsterModule implements EntityPresenter {
     const monster = data as Monster;
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderMonsterEditMode>[2];
-    renderMonsterEditMode(monster, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef);
+    renderMonsterEditMode(monster, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef, ctx.hostReadonly);
   }
 
   getInsertModal(): ModalConstructor {

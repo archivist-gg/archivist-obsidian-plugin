@@ -253,6 +253,18 @@
   -webkit-column-break-inside: avoid;
 }
 
+/* R4-G6: the markdown-filled sections (lair / regional / variants) flow like the native ones; every arm scoped */
+.archivist-monster-two-col-flow table,
+.archivist-monster-two-col-flow blockquote,
+.archivist-monster-two-col-flow ul {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+}
+.archivist-monster-block .archivist-monster-token { float: right; max-width: 6em; margin: 0 0 0.4em 0.6em; }
+.archivist-monster-block .archivist-monster-token img { max-width: 100%; height: auto; }
+.archivist-monster-block .archivist-monster-portrait { margin-top: 0.6em; }
+.archivist-monster-block .archivist-monster-portrait img { max-width: 100%; height: auto; }
+
 /* SVG bars need special handling in column flow */
 .archivist-monster-two-col-flow .stat-block-bar {
   break-inside: avoid;
@@ -302,6 +314,35 @@
   color: inherit;
   line-height: inherit;
   letter-spacing: normal;
+}
+
+/* R4-G7 T8 wave E, B026-D17 · consecutive paragraphs need their gap back. The reset above zeroes `margin` on every `p`
+   in a block, which was written for the property lines; since R4-G6 the lair / regional / variant panes and the insets
+   are MARKDOWN, and since Q-11 a feature's prose is too, so paragraphs now butt against each other with nothing between
+   them. MEASURED live in W-Er on the deployed pair: Burney's Regional Effects and Variants panes, Baphomet's Regional
+   Effects and the Ancient Dragon Turtle's Variants each read `zeroGaps` (the next paragraph's top MINUS the previous
+   one's bottom, 0 px) on 1, 5, 2 and 5 paragraph pairs. Obsidian's own `--p-spacing` (1rem) is what the reset displaced;
+   half an em of the block's own type reads as a paragraph break inside a stat block without spacing it like body copy.
+   The second arm is the feature entry, whose LEAD paragraph the renderer unwraps (B026-D1): what follows it is a `p`
+   with no `p` sibling before it, so it would otherwise sit straight under the prose it continues. */
+.archivist-monster-block p + p,
+.archivist-monster-block .archivist-feature-entry > p {
+  margin-top: 0.5em;
+}
+
+/* R4-G7 T8 wave E, B026-D21 · the markdown fills read at the feature prose's type. The pane container
+   (`monster.sections.ts` `fillMarkdown`) carries no type rule of its own, so it inherited the block's 14 px / 1.2em
+   while every trait and action reads 13 px / 1.4em: MEASURED live in W-Er, the Turtle's Lair Actions and Regional
+   Effects paragraphs computed `font-size: 14px` and `line-height: 16.8px` against the feature prose's 13 px / 19.6 px.
+   19.6 px is that value written out: `.archivist-feature`'s `line-height: 1.4em` resolves at the block's own 14 px and
+   is INHERITED into the 13 px entry, so an em here (which would resolve at 13 px) is not the same number. The header of
+   a two-column section lives inside the same container and keeps its own rhythm, and so do the tables (B026-D8 owns
+   those); no corpus fill puts a `p` inside a table cell. */
+.archivist-monster-block .archivist-monster-section[data-fill="markdown"] > :not(.actions-header, table) {
+  line-height: 19.6px;
+}
+.archivist-monster-block .archivist-monster-section[data-fill="markdown"] :is(p, li) {
+  font-size: 13px;
 }
 
 /* Header Section */
@@ -450,8 +491,18 @@
 }
 
 /* Stat Block Interactive Tags (parchment theme) */
+/* R4-G7 T8 wave E, B026-D4: `nowrap` holds the icon to its value and the value together. The icon is an inline `<svg>`,
+   an ATOMIC INLINE, and Chromium allows a break before and after one whatever the neighbouring characters are: MEASURED
+   live in W-Er, Andir's Variants table broke ten of its ten tags across lines ("16 (" / icon / "3d8 + 3)") and the
+   Aboleth, Baphomet and the Turtle each broke one. The "(" that opens a tag is held by the shared wrapper below, which
+   the renderer puts around the two (`bindInlineTagPunctuation`, `shared/rendering/renderer-utils.ts`). */
 .archivist-stat-tag {
   display: inline;
+  white-space: nowrap;
+}
+/* The wrapper that binds a widget to the opening punctuation the PROSE owns (both tag families use it). */
+.archivist-tag-nobreak {
+  white-space: nowrap;
 }
 .archivist-stat-tag-icon {
   display: inline;
@@ -509,8 +560,13 @@
   font-style: italic;
 }
 
-/* Legendary Actions Intro */
+/* Legendary Actions Intro. R4-G7 T8 wave E, B026-D17: the third arm is the SAME element with its tag, because this
+   element IS a `p` and the block's `p` reset above is (0,1,1) while the bare `.archivist-legendary-intro` arm is only
+   (0,1,0): the reset won and every intro, note and reactions preamble rendered at the block's 14 px / 16.8 px with NO
+   margin. MEASURED live in W-Er on five intros (Tiamat, Tyreus, Burney, Baphomet, the Turtle, the SRD Aboleth):
+   `margin-bottom: 0px`, `font-size: 14px`, `line-height: 16.8px`, where this rule asks for 0.5em, 13 px and 1.4em. */
 .archivist-monster-block .legendary-intro,
+.archivist-monster-block p.archivist-legendary-intro,
 .archivist-legendary-intro {
   font-style: italic;
   margin: 0.25em 0 0.5em;
@@ -757,6 +813,36 @@
   color: #5a1808;
   text-decoration-style: solid;
 }
+/* R4 {G5, G6} live rider V-12: a link the vault cannot resolve, INSIDE a block. The rule above sets a
+   flat colour on every `a.internal-link` in these four blocks and would otherwise hide Obsidian's own
+   unresolved treatment, so the block states it in its own palette: the same brick, faded through
+   Obsidian's `--link-unresolved-opacity` where the theme defines one, with a dashed underline against
+   the resolved link's dotted one. The class itself is Obsidian's and is written by the shared
+   renderer's wikilink arm when the injected resolver finds no note.
+   R4-G7 T8 wave E, B026-D5: that sentence was FALSE on the shipped cascade until the two colour
+   declarations below were added. Obsidian 1.13.7 ships `.markdown-rendered .internal-link.is-unresolved`
+   with `color: var(--link-unresolved-color)` and its own decoration colour at (0,3,0), which beats the
+   brick rule above at (0,2,1), so only this rule can state the colour: it is (0,3,1). MEASURED live in
+   W-Er on Andir Valmakos's Armor Class link (the dangling `Magic Items/Leather Armor`, DATA-9):
+   `color: rgb(166, 138, 249)`, decoration `oklch(0.60342 0.217199 292.488 / 0.3)`, `opacity: 0.7` (the
+   theme's lavender accent) where the block's own links read `#7a200d`. The hover arm is (0,4,1) because
+   Obsidian's hover rule is (0,4,0) and repaints `--link-color-hover`. */
+.archivist-spell-block a.internal-link.is-unresolved,
+.archivist-item-block a.internal-link.is-unresolved,
+.archivist-class-block a.internal-link.is-unresolved,
+.archivist-monster-block a.internal-link.is-unresolved {
+  color: #7a200d;
+  opacity: var(--link-unresolved-opacity, 0.55);
+  text-decoration-style: dashed;
+  text-decoration-color: currentColor;
+}
+.archivist-spell-block a.internal-link.is-unresolved:hover,
+.archivist-item-block a.internal-link.is-unresolved:hover,
+.archivist-class-block a.internal-link.is-unresolved:hover,
+.archivist-monster-block a.internal-link.is-unresolved:hover {
+  color: #5a1808;
+  text-decoration-color: currentColor;
+}
 
 /* Mechanical summary — appears under the item card in inventory expand */
 .archivist-item-summary {
@@ -883,6 +969,12 @@
   border: none;
   font-size: 12px;
 }
+/* R4-G3b §10: the background note's roll-table cells render through the markdown
+   path, which wraps each cell text in a `<p>`; zero its margin so the cell keeps
+   the table's own row rhythm. EXPECTED-NOT-MEASURED (§10.2.2: no call site
+   rendered markdown into a `<td>` before Task 11); verified at the G3b live
+   verify; dropped if it changes nothing. */
+.archivist-background-block table.archivist-table td > p { margin: 0; }
 .archivist-spell-block table.archivist-table td:first-child,
 .archivist-item-block table.archivist-table td:first-child,
 .archivist-class-block table.archivist-table td:first-child,
@@ -895,6 +987,39 @@
 .archivist-class-block table.archivist-table tbody tr:nth-child(even) td,
 .archivist-monster-block table.archivist-table tbody tr:nth-child(even) td {
   background: rgba(217, 196, 132, 0.35);
+}
+
+/* R4-G7 T8 wave E, B026-D7. An inset (`inset` / `variant*` nodes) renders as a `> ` blockquote, and Obsidian 1.13.7's
+   `.markdown-rendered blockquote` paints its left rule with `var(--blockquote-border-color)`, which is the theme's
+   interactive accent: MEASURED live in W-Er on Burney's, Andir's and the Turtle's Variants panes,
+   `border-inline-start-color: rgb(138, 92, 245)` at 2 px. The block's only reset is `.archivist-monster-block *
+   { border-color: transparent }` (0,1,0), which loses to Obsidian's (0,1,1); this arm is (0,3,1) and states the block's
+   own red instead, the same token the section headers and the card rules use. */
+.archivist-monster-block .archivist-monster-section blockquote {
+  border-inline-start-color: var(--stat-block-header);
+}
+
+/* R4-G7 T8 wave E, B026-D8 (the reader half; the engine half is `entriesToMarkdown`'s alignment row). The shared brick
+   rules above centre every cell, which was written for the short spell and item tables; a MARKDOWN section's table is
+   authored prose, and Andir Valmakos's New Features column (nine-line paragraphs) rendered centred line by line. These
+   arms are scoped to the markdown sections, so the programmatic tables keep their look: a cell takes its column's own
+   alignment, which Obsidian writes as an `align` ATTRIBUTE (MEASURED in the W-Er table lab: `:---:` emits
+   `align="center"`, `---:` emits `align="right"`, a plain column emits none), and an unaligned column reads start.
+   The first column also stops breaking: with `table-layout: auto` and a long second column it shrank to its min-content
+   and Baphomet's `01–20` broke after its en dash (MEASURED live: 2 lines per cell in that column). The corpus says that
+   is safe: over all 31 entry-tree tables the longest first-column cell is 5 characters (`01–20`, `01–05`). */
+.archivist-monster-block .archivist-monster-section table.archivist-table td,
+.archivist-monster-block .archivist-monster-section table.archivist-table th {
+  text-align: start;
+}
+.archivist-monster-block .archivist-monster-section table.archivist-table :is(td, th)[align="center"] {
+  text-align: center;
+}
+.archivist-monster-block .archivist-monster-section table.archivist-table :is(td, th)[align="right"] {
+  text-align: right;
+}
+.archivist-monster-block .archivist-monster-section table.archivist-table td:first-child {
+  white-space: nowrap;
 }
 
 /* 5. Magic Item Block (reuses spell block pattern)
@@ -1182,6 +1307,48 @@
   color: var(--stat-block-text);
 }
 
+/* R4 {G5, G6} live rider 3, Z-9-4: on the SPELLCASTING card each entry is its own LINE. Every other
+   feature emits ONE entry element, so `display: inline` above is what puts a trait's prose after its
+   bold name, which is the stat block's shape; the spellcasting card is the one caller that emits MANY
+   (`renderSpellcastingEntry`, `modules/monster/monster.sections.ts`, one element per
+   `spellcastingLines` line, and the only caller to emit a div rather than a span). Inline, and with no
+   whitespace between the elements, those lines ran together at every group boundary: the live pass read
+   `wizard spells prepared:At Will: light, ray of frost1st Level (2 Slots): thunderwave` on Andir
+   Valmakos and the same glue on the Archmage, Feonor, Auspicia Dran and Sir Talavar
+   (`g5-t12d-shots/g6/sample-*.png`). As blocks, the card reads: the bold `Spellcasting.` on its own
+   line, then the header prose, then `At Will:`, then one line per spell level. `text-indent` is reset
+   because `.archivist-feature` sets a -1em hanging indent for the name, and every block line would
+   otherwise hang the same 1em; the name keeps the hang, its lines do not. */
+.archivist-monster-spellcasting .archivist-feature-entry {
+  display: block;
+  text-indent: 0;
+}
+
+/* R4-G7 T7 live rider RIDER-2. A converter trait may author a markdown list (Burney the Barber's
+   `Bahamut's Blessings` carries four `- ` items and its `Acid Breath` two), and Obsidian's
+   MarkdownRenderer emits a real `ul`/`li` inside the feature entry. `.archivist-feature` above sets
+   `text-indent: -1em` so a trait's BOLD NAME hangs into the left margin, which is the stat block's
+   shape; an `li` INHERITS that hang, and MEASURED LIVE at S00 it pulled each item's first line 14 px
+   (1em at the block's 13 px type) left of its own box, straight through the gutter the
+   `list-style-position: outside` disc occupies: the li box sat at x 507 with its 22.308 px margin off
+   the ul at 484.6 while the first glyphs started at 493, so the bullet overprinted the first character
+   of "Unless", "Burney" and "Once". The name's hang is deliberate; a list item's is not, so the item
+   resets it and keeps the ul's own gutter. */
+.archivist-monster-block .archivist-feature-entry li {
+  text-indent: 0;
+}
+
+/* R4-G7 T8 wave E, B026-D1. Since Q-11 a feature's prose is MARKDOWN, so besides the `li` above the entry can hold a
+   `p` (a second paragraph), a `blockquote` or a `table`, and each of them inherits the -1em hang the NAME needs. The
+   lead paragraph is unwrapped in the renderer (`inlineLeadParagraph`, `monster.renderer.ts`), so what is left here are
+   the blocks that legitimately start their own line: they start it at the card's own text edge, which is where the
+   spellcasting card's body lines start (`:1221-1224`) and where every wrapped prose line sits. MEASURED live in W-Er on
+   the deployed pair: a dropped paragraph's first line sat at x 470.6 and its continuation lines at 484.6, the 14 px
+   (1em at 14 px) the hang pulls. */
+.archivist-monster-block .archivist-feature-entry :is(p, blockquote, table) {
+  text-indent: 0;
+}
+
 /* 8. Tab Navigation (from monster stat block)
    ========================================================================== */
 
@@ -1193,9 +1360,19 @@
   border-bottom: 1px solid #7a200d;
 }
 
+/* R4 {G5, G6} live rider 2, X-9-6: the strip WRAPS, as the PC sheet's own tab strip does at its
+   narrow tiers. It was a scroller with its scrollbar hidden and no scroll affordance rendered (the
+   `.original-tab-fade` rules below are styling for elements this renderer does not create), so a
+   strip wider than the note's column simply cut its last label: the live run read `MYTHIC ACTI` at
+   the right edge at every window size. With the row wrapping, a strip too wide for its column takes
+   a second line and every label stays whole; the buttons keep their own `flex-shrink: 0` and
+   `white-space: nowrap`, so none of them is squeezed either. The overflow pair stays as the last
+   resort for a single label wider than the whole column. */
 .archivist-monster-block .original-tab-navigation {
   display: flex;
   gap: 2px;
+  row-gap: 2px;
+  flex-wrap: wrap;
   flex: 1;
   overflow-x: auto;
   overflow-y: hidden;
@@ -1402,8 +1579,15 @@
    ========================================================================== */
 
 /* Editor/Chat Inline Tags -- Warm Gold / Cool Teal / Soft Red */
+/* R4-G7 T8 wave E, B026-D4: the same `nowrap` as the stat-block widget above, for the same reason and on the same
+   evidence. This is the family the PC sheet's Weapons DAMAGE cell renders (`renderTextWithInlineTags(..., false)`):
+   MEASURED live in W-Er on the user's Illrigger, the Greatsword of Wounding row read "2d6 necrotic + [icon]" then "1d8"
+   then "necrotic" over three lines (two of its three tags in two fragments, one with its icon on another line than its
+   value); with this rule every tag of both rows is ONE fragment, icon and value together, and the widest of them still
+   ends 15.6 px inside the damage cell. */
 .archivist-tag {
   display: inline;
+  white-space: nowrap;
 }
 .archivist-tag-icon {
   display: inline;
@@ -1955,6 +2139,25 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* Compendium badge inside stat block wrapper */
+/* R4 {G5, G6} live rider V-8: the block that CARRIES a badge reserves a strip for it. The badge is
+   absolutely positioned at the top-right of the rendered block, so on a `{{monster:...}}` REF whose
+   compendium name is long it painted over the monster's own name: the live run read
+   `FIZBAN'S TREASURY OF DRAGONS` across the last letters of `ASPECT OF TIAMAT`. Reserving width beside
+   the title cannot work, because the badge's width is DATA (the compendium name), so the reservation
+   is vertical: a strip the badge occupies alone, above the title. `:has(> .archivist-compendium-badge)`
+   keeps this to the badged blocks only, so a direct note, which carries no badge, renders exactly the
+   HTML it renders today. 28 px is the badge's own box (9 px type, 2 px padding and a 1 px border each
+   side) under its `top: 6px` offset, plus the gap. The `.archivist-compendium-ref > *` arm carries the
+   entity types whose presenter root is not one of the three block wrappers. */
+:is(
+  .archivist-monster-block-wrapper,
+  .archivist-spell-block-wrapper,
+  .archivist-item-block-wrapper,
+  .archivist-compendium-ref > *
+):has(> .archivist-compendium-badge) {
+  padding-top: 28px;
+}
+
 .archivist-compendium-badge {
   position: absolute;
   top: 6px;
@@ -3928,7 +4131,14 @@ body.theme-light .archivist-tag-atk:hover {
   margin: 0 auto;
   border-radius: var(--pc-radius-lg);
   box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
-  overflow: hidden;
+  /* R4-G6b §7: `hidden` made the sheet the nearest scroll container for position: sticky;
+   * `clip` keeps the corner clip and creates none. The T0 live probe (2026-09-09,
+   * `evidence/g6b-t0-probe.txt` blocks A and B) measured the sheet's parent as `.view-content`
+   * computing `overflow: auto` with `transform`, `filter` and `contain` all `none`: the PANE is
+   * the scroller a sticky descendant needs, so no re-host is required. */
+  overflow: clip;
+  /* belt-and-braces: container-type already supplies the formatting context */
+  display: flow-root;
 }
 
 .archivist-pc-sheet .pc-header { padding: 0; }
@@ -3964,13 +4174,21 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* Below narrow tier: body sidebar collapses under content.
- * Swap the vertical divider for a horizontal one so the two
+ * THE ONLY RULE THAT STACKS THE BODY (R4-G7 RIDER-7): it reads the
+ * pane's width and never which tab is open, so at every sheet width
+ * of 500 px and up the tab body sits right of the rail on every tab
+ * (the user reversed Q-6 on 2026-09-15; the per-tab collapse is
+ * retired). Swap the vertical divider for a horizontal one so the two
  * sections stay clearly demarcated. Query pc-sheet (the
  * outer sheet container) rather than pc-body — a @container
  * query can only restyle descendants of its container, and
  * .pc-body IS the pc-body container, so it can't restyle
- * itself. Sheet width tracks body width 1:1 (sheet has no
- * horizontal padding), so the 499px threshold is preserved. */
+ * itself. The pc-sheet container's inline size is the sheet's
+ * CONTENT box, and the body fills that box, so the 499px
+ * threshold reads the body's own outer width. (R4-G7 fix round 1:
+ * the sheet DOES carry horizontal padding, 24px a side measured
+ * live at W-A (sheet 699.5, body 651.5); it lies outside the
+ * content box the query reads.) */
 @container pc-sheet (max-width: 499px) {
   .archivist-pc-sheet .pc-body {
     grid-template-columns: 1fr;
@@ -4115,7 +4333,29 @@ body.theme-light .archivist-tag-atk:hover {
    * so the img itself is a plain rectangle the host clips to a circle. */
   border-radius: 0;
 }
-.archivist-pc-sheet .pc-identity { flex: 1 1 auto; min-width: 0; }
+/* R4-G7 T8 RIDER-27 (F-IDENT) · the identity wraps its TEXT beside the avatar. `.pc-header-root` wraps its flex line, and with
+   `flex: 1 1 auto` the identity's flex base size was its one-line max-content width, so a subtitle wider than the room beside the
+   avatar moved the WHOLE block onto its own line under the avatar. MEASURED LIVE in W-Dr at the default 1024 x 800 window:
+   `conv-battle-smith-2024-efa-20`'s subtitle needs about 512 px, the room is 507.5 px, the block sat at [352.5, 241.9] under the
+   96 px avatar. A zero basis lets the line break read the identity as small, but ALONE it also let the hero cluster share the first
+   line on wider sheets and squeezed the identity to 14 px (760 px sheet) and 154 px (900), the name on 5 to 7 lines, measured with
+   the sheet width emulated. The floor is the fix for that: the identity's hypothetical size is at least min(100%, 320px), so the
+   hero cluster joins the first line only when the identity keeps 320 px. THAT SENTENCE IS THE FIRST WRITING'S HISTORY (R4-G7 T8 wave E,
+   truth maintenance): fix round 1's second `min-width` below narrows it, so a SHORT identity floors at its own max-content and only a
+   long one at 320 px; an engine without `calc-size()` drops that declaration and behaves exactly as this paragraph describes.
+   Measured on three notes: the default window reads beside,
+   the battle-smith's subtitle on two lines; 760 and 900 px sheets read exactly as before; at 1200 px the battle-smith's hero
+   cluster now shares the first line and its long fixture name and subtitle wrap to two lines each in 454 px. Below a 700 px sheet the
+   floor has no job (the hero cluster is `width: 100%` there and never shares the first line) and it did harm: a floor wider than the
+   room beside the avatar moved the whole block under it on every sheet under about 420 px, short names included (fix round 1, review
+   Important 1). The `@container pc-sheet (max-width: 699px)` block that wraps the hero cluster sets `min-width: 0`, later in this file.
+   Fix round 1, review Minor 1: a 320 px floor for EVERY identity made a short one need 320 px on the first line, so its hero cluster sat
+   alone on the second line where the earlier layout shared the first. Measured in a headless-Chrome replica of these rules (pc-sheet
+   container widths, 20 px steps): a 212 px identity at 920..1000 px, the Illrigger's 279 px identity at 1000..1020 px. The second
+   `min-width` is min(max-content, 320px) through calc-size() (Chromium 129 and up; Obsidian's is 132): a short identity floors at its
+   own width and a long one at 320 px, and at 700..1400 px all five measured identities put the hero cluster on the first line exactly
+   when the avatar, that floor and the hero cluster fit. An engine without calc-size() drops the declaration and keeps the plain floor. */
+.archivist-pc-sheet .pc-identity { flex: 1 1 0; min-width: min(100%, 320px); min-width: calc-size(max-content, min(size, 320px)); }
 .archivist-pc-sheet .pc-name {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-display);
@@ -4211,10 +4451,16 @@ body.theme-light .archivist-tag-atk:hover {
 }
 /* Distance reading (e.g. Darkvision "60 ft.") — quiet serif text aligned in
    the value column, NOT the boxed-numeral treatment used for passive scores. */
+/* R4 {G5, G6} live rider N-2-8: a sense DISTANCE now wears `.pc-sense-val`'s box (the span carries both
+   classes), and this rule only widens it: a distance reads "120 ft.", which will not fit the 28 px
+   square a passive score sits in, so the box grows with its text while keeping the square's height,
+   border and centring. */
 .archivist-pc-sheet .pc-sense-dist {
   order: 0;
+  width: auto;
   min-width: 28px;
-  text-align: right;
+  padding: 0 6px;
+  text-align: center;
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-body);
   color: var(--pc-text-primary);
@@ -4234,6 +4480,38 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-prof-line:last-child { border-bottom: none; }
 .archivist-pc-sheet .pc-prof-key { font-weight: 700; color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-prof-vals { color: var(--pc-text-primary); }
+/* Editable proficiency rows (Tools, Languages), which open the override modal.
+   The WHOLE row is the click target, so the pointer sits on the row rather than
+   on the mockup's key span · that matches .pc-currency-row.pc-currency-clickable,
+   the existing row-as-one-target precedent. The mockup's .pc-prof-edit badge is
+   unused and deliberately not shipped. */
+.archivist-pc-sheet .pc-prof-line.editable { cursor: pointer; }
+.archivist-pc-sheet .pc-prof-line.editable:hover .pc-prof-vals { text-decoration: underline dotted var(--pc-tan); }
+
+/* Tool expertise marker (R4-G4 §9.2) · one `.pc-prof-val` span per aggregate
+   entry, marked when the entry carries `expertise`.
+   The declarations are copied from the SKILL rows' emphasis block further down
+   in this file (`.pc-skill-row:has(.archivist-prof-toggle.proficient/.expertise)`):
+   crimson, 700, a dotted underline at the same 2px offset, and the same U+25CE
+   glyph ahead of the text. That block fires for proficient AND expertise on a
+   skill row · the pip's own `outline` in archivist-edit.css is what tells the two
+   apart there. On these lines every entry listed is already proficient, so the
+   emphasis is free to mean expertise and nothing else. */
+.archivist-pc-sheet .pc-prof-val.expertise {
+  color: var(--pc-crimson);
+  font-weight: 700;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.archivist-pc-sheet .pc-prof-val.expertise::before {
+  content: "\25CE";
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 0.85em;
+  color: var(--pc-crimson);
+  text-decoration: none;
+  vertical-align: baseline;
+}
 /* Tab content body — flat on parchment, no card/border. */
 .archivist-pc-sheet .pc-tab-body { padding: 0; background: transparent; border: none; border-radius: 0; }
 .archivist-pc-sheet .pc-tab-heading {
@@ -4296,6 +4574,32 @@ body.theme-light .archivist-tag-atk:hover {
 /* the shared block wrapper centers with wide gutters + 1.5em margin; tighten it
    for an inline list expand so the card sits snug under its row. */
 .archivist-pc-sheet .pc-resource-card.archivist-item-block-wrapper { width: 100%; margin: var(--pc-space-1) 0 var(--pc-space-2); }
+/* R4-G6b T13 live rider R-4 (B9 N-3; a PRE-G6b owner, fixed under the standing directive): the
+   card's source badge never paints over the card's title. The shared block dress
+   (`src/styles/archivist-dnd.css`) positions `.source-badge` ABSOLUTELY at `top: 8px; right: 8px`,
+   so it has no width in flow and the `<h3>` title's line box runs the full card width underneath
+   it; at the 252 px column the live run caught `SRD 2024` printed letter-on-letter over
+   `Holy Nimbus`.
+   The badge becomes a RIGHT FLOAT instead. A float DOES take part in flow, so the title's line
+   boxes shorten by exactly the badge's own width, whatever that text is (`SRD 2024`, `SRD 5e`) and
+   in whatever face the theme renders it: no width is hardcoded here, so the reserve can never be
+   the wrong size. The 8 px margins reproduce the absolute offsets exactly, because
+   `.archivist-item-block` carries no padding and no border and its content box IS its border box,
+   which is why the badge paints where it does today at the wide widths the eye pass judged clean.
+   Only the title's FIRST line is shortened: the float is about 15 px tall from y = 8 while the
+   23 px title's line box is 27.6 px, so the italic subtitle under it keeps the full width.
+   Scoped to the SHEET's feature card, the one surface the live run judged: the note-embedded
+   spell / item / race / feat / background / condition blocks keep the shared dress. */
+.archivist-pc-sheet .pc-resource-card .source-badge { position: static; float: right; margin: 8px 8px 0 0; }
+/* R4-G6b T13 live rider R-5 (B9 N-4; the same PRE-G6b owner): the card's prose reads left-aligned
+   at every width. The shared block dress justifies `.description-paragraph`
+   (`src/styles/archivist-dnd.css`, the one place in the plugin that does), which a magazine-width
+   item block can carry but a card in the sheet's 252 px column cannot: the live run caught word
+   gaps about four times the normal space on the Holy Nimbus card at w400. No tier, because
+   justification is not what the sheet's own prose does at ANY width; every alignment the pc
+   partials state is left, right, centre or inherit. The 1 em first-line indent stays: it is the
+   card's look, and it was not what broke. */
+.archivist-pc-sheet .pc-resource-card .description-paragraph { text-align: left; }
 
 /* ---- recovery special ACTION (shown directly in the block, no extra button) ---- */
 .archivist-pc-sheet .pc-resource-actions { margin-top: var(--pc-space-3); padding-top: var(--pc-space-3); border-top: 1px solid var(--pc-tan-muted); }
@@ -4522,6 +4826,10 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-hp-temp .pc-hp-val { color: var(--pc-text-muted); }
+/* R4-G6b §6: a current HP above the maximum (the character file's value) is shown as written and flagged: a crimson
+   value and a small superscript mark (its own dress; NOT the `.archivist-override-mark` pill, which is a click target). */
+.archivist-pc-sheet .pc-hp-current.pc-hp-over .pc-hp-val { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-hp-over-mark { font-size: 0.7em; vertical-align: super; color: var(--pc-crimson); margin-left: 2px; cursor: help; }
 .archivist-pc-sheet .pc-hp-label {
   text-align: center;
   font-family: var(--pc-font-serif);
@@ -5049,6 +5357,10 @@ body.theme-light .archivist-tag-atk:hover {
   }
   .archivist-pc-sheet .pc-hp-widget { min-width: 0; flex: 1 1 280px; }
   .archivist-pc-sheet .pc-hd-widget { min-width: 0; flex: 1 1 160px; }
+  /* R4-G7 T8 RIDER-27 fix round 1 (review Important 1): the hero cluster above takes its own line, so the identity's 320 px floor
+     (the base rule near the top of this file) has nothing to keep off the first line here; zeroed, the identity stays beside the
+     avatar and wraps its text at every sheet width of this tier. Same specificity as the base rule: it wins by source order. */
+  .archivist-pc-sheet .pc-identity { min-width: 0; }
 
   .archivist-pc-sheet .pc-ability-row {
     row-gap: 18px;
@@ -5523,6 +5835,13 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-def-chip .pc-def-chip-x:hover {
   opacity: 1;
 }
+/* Not manually added (a rules grant or a worn item): dashed border + softer ink,
+   matching the shipped `.pc-prof-modal-chip.granted`. It keeps its ×, because
+   suppressing a granted entry is what the remove list is for. */
+.archivist-pc-sheet .pc-def-chip.granted {
+  border-style: dashed;
+  color: var(--pc-text-soft);
+}
 
 /* SP4b — single + button on the DEFENSES title row (mirrors .pc-cond-add). */
 .archivist-pc-sheet .pc-def-cond-left .pc-def-add-main {
@@ -5800,6 +6119,30 @@ body.theme-light .archivist-tag-atk:hover {
   border: 1px solid var(--pc-crimson);
   color: var(--pc-crimson);
 }
+/* R4-G3a §5.2/§6 · two neutral tag colours beside the three above.
+   `rider` carries the roll-modifier modes that are neither advantage nor disadvantage
+   ("RR", "+D4"): they change HOW you roll, not whether the roll is better or worse, so
+   neither the crimson nor the rare-blue reading is right for them.
+   `outcome` carries the save-outcome rail ("0/½"), which is a damage result, not a roll.
+   Its `letter-spacing` override is the load-bearing one: the shared .pc-cond-tag rule sets
+   0.1em for the micro-caps word tags, which pushes the glyphs of a "0/½" fraction apart until
+   it reads as three symbols rather than one ratio. `text-transform: none` beside it is purely
+   DEFENSIVE and changes nothing today (uppercasing "0", "/" and "½" is a no-op); it is there so
+   a later outcome glyph with a lower-case letter cannot be silently upper-cased. */
+.archivist-pc-sheet .pc-cond-tag-rider {
+  border: 1px solid var(--pc-text-muted);
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-cond-tag-outcome {
+  border: 1px solid var(--pc-text-muted);
+  color: var(--pc-text-muted);
+  text-transform: none;
+  letter-spacing: 0.03em;
+}
+/* R4-G7 T8 RIDER-20 (F-ADV) · a CONDITIONAL tag (the entry carries a condition, or a scope the normaliser could not map).
+   Its TEXT already carries dnd5e's CONDITIONAL_TAG_MARK (`ADV*`); the dashed border repeats the reading for an eye that
+   scans the rail's shapes rather than its letters. Colour stays the mode's own, so ADV* is still advantage-blue. */
+.archivist-pc-sheet .pc-cond-tag-conditional { border-style: dashed; }
 /* Used when the save chip swaps its numeric bonus for an AUTO-FAIL tag. */
 .archivist-pc-sheet .pc-save-bn.is-hidden { display: none; }
 
@@ -5879,6 +6222,136 @@ body.theme-light .archivist-tag-atk:hover {
     overflow-x: visible;
     row-gap: 2px;
   }
+  /* R4 {G5, G6} live rider V-1: wrapping was reached BEFORE the strip was ever
+   * compacted, so the default sheet layout (`.pc-content` 356 px, the file
+   * explorer open) dropped INVENTORY onto a row of its own on all 15 sheet
+   * fixtures. Measured from the run's own tab rectangles
+   * (`.superpowers/sdd/2026-09-06-r4-g5-choice-gated-mechanics/evidence/g5-t12-shot/new-visual/book13/index.json`,
+   * `open.tabRects`): ACTIONS 76 + PASSIVE & FEATURES 144 + SPELLS 64 +
+   * INVENTORY 93 = 377 px, plus three 2 px gaps = 383 px against a 356 px
+   * column. Those widths carry 12 px of padding a side and 0.5 px of
+   * letter-spacing over 40 characters, so the labels themselves measure 261 px;
+   * at 7 px of padding and 0.25 px of letter-spacing the four tabs measure
+   * 261 + 10 + 56 + 6 = 333 px and fit the column with 23 px to spare, at the
+   * same 11 px type. The label is never clipped and `flex-wrap` above stays the
+   * fallback for the sheets that carry pool tabs (a Warlock's strip is six tabs
+   * wide and still wraps). */
+  .archivist-pc-sheet .pc-tab-btn {
+    padding: 6px 7px;
+    letter-spacing: 0.25px;
+  }
+}
+
+/* Below tiny tier: one more compaction step before the wrap, on the same
+ * measurement. At 10 px the 261 px of labels scale to about 237, so the strip
+ * measures 237 + 8 + 48 + 6 = 299 px and still fits the ~300 px column a
+ * 400 px window leaves. */
+@container pc-content (max-width: 399px) {
+  .archivist-pc-sheet .pc-tab-btn {
+    padding: 5px 6px;
+    font-size: 10px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* R4 {G5, G6} live rider 2, V-1 at 252: a third step, where compaction alone has run out.
+ * The tier above was measured against "the ~300 px column a 400 px window leaves"; the live
+ * re-verify measured that column as **252** px, and the 299 px strip wrapped again, INVENTORY onto
+ * a row of its own on every four-tab sheet (`viewports/R4G5_Paladin2024-20_S__400x700__panel-passive__3.png`).
+ * Below 300 px the strip therefore renders each tab's DECLARED short label (`tabs-container.ts`
+ * writes `data-short` on every button; only `Passive & Features` declares a shorter form, and a
+ * data-declared pool tab repeats its own label), and the button's own text is zeroed rather than
+ * clipped. On the same measurement the 399 tier's comment carries: of the 261 px the four labels
+ * take at 11 px, `PASSIVE & FEATURES` is 111 px and `PASSIVE` about 47, so the four labels measure
+ * about 197 px at 11 px and 179 at 10 px; with 5 px of padding a side, 0.2 px of letter-spacing over
+ * 29 characters and three 2 px gaps the strip measures about 231 px and fits the 252 px column with
+ * roughly 20 px to spare, at the same 10 px type. A pool-tab strip (five and six tabs) may still
+ * wrap, as it does at the tier above. No label is clipped: `::before` renders the whole short form.
+ * The pseudo-element carries its own `font-size` and `letter-spacing`; case, weight and family
+ * inherit from the button. */
+@container pc-content (max-width: 299px) {
+  .archivist-pc-sheet .pc-tab-btn {
+    padding: 5px 5px;
+    font-size: 0;
+    letter-spacing: 0;
+  }
+  .archivist-pc-sheet .pc-tab-btn::before {
+    content: attr(data-short);
+    font-size: 10px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* R4-G7 RIDER-8: the SAME short-label mechanism, reached earlier by a strip that carries a pool tab.
+ * RIDER-7 (Q-6 reversed) keeps the tab body right of the rail on every tab, so the strip always lives in
+ * the right column, and a fifth tab wrapped there on every S01 row that had one. MEASURED at W-A, not
+ * guessed: the right column is 355.5 px at the default 1024 x 800 window and 856 px at 2560 x 1440 (the
+ * sheet's 1200 px cap); the labels were measured in the live window by laying the sheet's own
+ * `.pc-body > .pc-content > .pc-tabs-bar` out off screen at every content width from 204 to 1000
+ * (`evidence/g7-live/wa-strip-lab.js`; its control reproduced the live button rects to 0.5 px). With full
+ * labels under the tiers above, the widest strip of each length in the converter corpus, the user's
+ * vault and the sweep's multiclass rows first holds one line at:
+ *   five tabs   Elemental Disciplines                          489 px
+ *   six tabs    Fighting Style + Champion Fighting Style       618 px
+ *   seven tabs  Fighting Style + Eldritch Invocations + Pact Boon (2014 Paladin / Warlock)   678 px (rows only; 769 px
+ *               gated on scrollWidth, see the fix-round note below)
+ * so each length switches to the declared short labels one pixel below its own measurement. The short
+ * dress drops the letter-spacing and one pixel of padding a side against the 299 px tier, because at
+ * 355.5 px that tier's dress still wrapped Elemental Disciplines (357.7 px of buttons): in this dress the
+ * widest five-tab strip is 346.7 px and every five-tab strip in the corpus holds one line from 347 px
+ * up. Six and seven tabs FIT one line from 455 px and 505 px up (measured); below the width at which a strip
+ * of any length fits, the EVEN GRID blocks after these take over (fix round 1). A strip of four tabs never
+ * matches these short-label rules and keeps its full labels.
+ * FIX ROUND 1 (review Minor 3): the first scan counted rows only, and above 699 px the base strip does not
+ * wrap, it scrolls sideways under a hidden scrollbar. Gated on `scrollWidth <= clientWidth`, the widest
+ * seven-tab strip FITS with full labels only at 678..699 and from 769 px up: at 700..768 the base dress is
+ * 769 px of buttons in the bar. The seven-tab threshold is therefore 768, not 677. */
+@container pc-content (max-width: 488px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+@container pc-content (max-width: 617px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+@container pc-content (max-width: 768px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) .pc-tab-btn { padding: 5px 4px; font-size: 0; letter-spacing: 0; }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) .pc-tab-btn::before { content: attr(data-short); font-size: 10px; letter-spacing: 0; }
+}
+
+/* R4-G7 RIDER-8 FIX ROUND 1 (controller ruling 2026-09-15): the strip never leaves a tab alone on a line. Where a
+ * strip would wrap, it lays out as an EVEN GRID of ceil(n / 2) equal columns instead: 4 tabs 2 x 2, 5 tabs 3 + 2,
+ * 6 tabs 3 x 2, 7 tabs (and more) 4 + 3. A label wraps inside its own centred cell; the cell stretches, so the
+ * active highlight fills it; the type stays the short-label dress above (10 px). Each block starts ONE pixel below
+ * the content width at which the widest measured strip of that length first FITS one line (one row AND
+ * `scrollWidth <= clientWidth`), read by `evidence/g7-live/wa-strip-lab.js` over every corpus strip from 204 to
+ * 1000 px on build pair I:
+ *   four   229 px   (Actions / Passive & Features / Spells / Inventory; the 299 px tier's short dress)
+ *   five   347 px   (+ Elemental Disciplines)
+ *   six    455 px   (+ Fighting Style + Champion Fighting Style)
+ *   seven  505 px   (+ Fighting Style + Eldritch Invocations + Pact Boon, the 2014 Paladin / Warlock)
+ * The same scan found orphans, a row holding ONE tab, at 204..228 (four), 215..346 (five), 306..454 (six) and
+ * 437..504 (seven). With these blocks the scan reads 0 orphan widths and every strip fits contiguously from its
+ * threshold to 1000 px. The selectors count EXACTLY (`:nth-child(n):last-child`), because `:has(> :nth-child(5))`
+ * alone also matches every longer strip; seven is "seven or more". `overflow-wrap: anywhere` lets a word wider than
+ * its cell break inside it rather than paint over the neighbour: MEASURED, `break-word` did not (the `::before`
+ * flex item keeps its min-content width), and seven tabs at 204..283 px overflowed their cells with it; with
+ * `anywhere` 0 cells overflow at any width and no word breaks at the default window's 355.5 px column. */
+@container pc-content (max-width: 228px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(4):last-child) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(4):last-child) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
+}
+@container pc-content (max-width: 346px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5):last-child) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(5):last-child) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
+}
+@container pc-content (max-width: 454px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6):last-child) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(6):last-child) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
+}
+@container pc-content (max-width: 504px) {
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .archivist-pc-sheet .pc-tabs-bar:has(> .pc-tab-btn:nth-child(7)) > .pc-tab-btn { min-width: 0; height: auto; white-space: normal; text-align: center; justify-content: center; overflow-wrap: anywhere; }
 }
 
 /* Portrait picker modal (two-stage: grid + crop) */
@@ -6113,6 +6586,65 @@ body.theme-light .archivist-tag-atk:hover {
 .pc-portrait-picker .pc-portrait-crop-handle-sw { top: 100%; left: 0; cursor: nesw-resize; }
 .pc-portrait-picker .pc-portrait-crop-handle-se { top: 100%; left: 100%; cursor: nwse-resize; }
 
+/* ---------- R4-G6b §10 · separated captions (Q-8) ----------
+   The ruling: a caption's separator must never START a wrapped line. The primitive
+   (`components/separated-caption.ts`) writes each part as a UNIT holding an out-of-flow separator
+   and the bare segment, so the mark hangs to the LEFT of its part, inside the inter-part gap. What
+   makes it disappear at a line start is what that gap is made of: a collapsible space (the inline
+   hosts) or the flex `gap` (`.pc-charge-boxes`, `.pc-point-pool`), and NEITHER exists at a line
+   start. A leading space is removed at a line break and `gap` is never applied at a flex line
+   start, so a mid-line separator sits in the gap and shows, while a separator whose segment starts
+   a line sits at negative x and is clipped away by the host.
+
+   Out of flow: `.pc-cap-sep` is absolutely positioned, so it has NO horizontal advance and line
+   breaking is identical whether the mark is visible or not. It is anchored by its RIGHT edge at
+   `100% + var(--pc-cap-clip)` from the unit, so it sits at least the clip margin outside the
+   unit's box and is hidden BY CONSTRUCTION when the unit starts a line, never by the width of the
+   trailing space it carries. That space is not decoration: it is what keeps the composed
+   `textContent` byte-identical to the joined strings these captions printed before (invariant 9),
+   so the separator BOX is the mark PLUS the space, held together by `white-space: pre`.
+
+   `overflow-x: clip`, not `hidden`: in Chromium 132 `clip` on one axis leaves the other `visible`,
+   so nothing a host paints above or below its box is cut, and `overflow-clip-margin` is the slack
+   a focus or hover outline on a control at a line edge needs (`.pc-action-buff`'s Obsidian-painted
+   checkbox, the inline `<input>` `makeInlineInput` swaps into `.pc-point-pool`'s value). The T0
+   live probe measured the flex baseline under `clip` on `.pc-feature-track .pc-charge-boxes`: the
+   box's and its first pip's `getBoundingClientRect().top` were IDENTICAL before and after (delta
+   0 / 0, height 36 / 36), so the flex container itself is the clipping host and the captions need
+   no inner wrapper.
+
+   `word-spacing` rides on `.pc-cap-spaced` ALONE, the class only a host that emits the inter-unit
+   space node carries: the two flex hosts supply their own `gap`, emit no space and never carry it,
+   so their other children (`.pc-point-pool-value` "20 / 25", `.pc-point-pool-name`) keep today's
+   spacing by construction. The unit and the segment reset it to `normal`, or the host's widened
+   spacing would loosen every multi-word part ("10 minutes", "Long Rest", "Bonus Action") and only
+   the host's own inter-unit space is meant to widen.
+
+   THE GAP, MEASURED (2026-09-09, live in the vault on the deployed build, evidence
+   `g6b-t8-sep-width.txt`: ONE hidden `white-space: pre` span inside the sheet, dressed in the
+   computed font of a real `.pc-charge-recovery`, italic 11px "Libre Baskerville", removed and its
+   absence asserted). The separator BOX measures `· ` 6.063 px and `/ ` 7.328 px at 11 px, and
+   6.609 px / 7.984 px at 12 px; a plain space measures 3.031 px at 11 px. The required inter-part
+   distance is the box plus `--pc-cap-clip`, so 6.063 + 2 = 8.063 px on an inline host at 11 px.
+   The distance an inline host supplies is the space's own advance plus `--pc-cap-gap`.
+
+   T13 live rider R-2: clearing the requirement is not what the eye reads. At `0.6em` the distance
+   was 3.031 + 6.6 = 9.631 px, only 1.568 px more than the 8.063 px the box and its clip margin
+   occupy, so the mark sat about 1.6 px from the word on its left where the OLD build's plain ` · `
+   text had a whole space (3.031 px) there, and every inline carrier read as glued
+   (`Lay On Hands Healing Pool· Long Rest`, `Active· 1 minute`: B1 N-1, B9 N-1). At `0.75em` the
+   distance is 3.031 + 8.25 = 11.281 px, which leaves the mark 3.218 px of left air, the space the
+   OLD text had. The margin still only grows with the type size (box and space are both
+   em-proportional while the 2 px clip is not). Every host on the live sheet measured
+   `padding-left: 0px`, which is where `overflow` clips. The two flex hosts state their own distance
+   beside their own rules in `actions.css`. */
+.archivist-pc-sheet { --pc-cap-clip: 2px; --pc-cap-gap: 0.75em; }
+.archivist-pc-sheet .pc-cap-host { overflow-x: clip; overflow-y: visible; overflow-clip-margin: var(--pc-cap-clip); }
+.archivist-pc-sheet .pc-cap-spaced { word-spacing: var(--pc-cap-gap); }
+.archivist-pc-sheet .pc-cap-unit { position: relative; white-space: nowrap; word-spacing: normal; }
+.archivist-pc-sheet .pc-cap-seg { word-spacing: normal; }
+.archivist-pc-sheet .pc-cap-sep { position: absolute; right: calc(100% + var(--pc-cap-clip)); top: 0; white-space: pre; }
+
 
 /* ============================================
    pc/blocks.css
@@ -6223,7 +6755,11 @@ body.theme-light .archivist-tag-atk:hover {
   /* Form C — fixed cells for icons, fluid name, intrinsic trailing meta.
    * Areas let the trailing cells reflow below the name at narrow widths
    * without dropping content. */
-  grid-template-columns: 18px 18px minmax(0, 1fr) 96px 42px 56px;
+  /* R4-G7 RIDER-9 fix round 1 (review Minor 2): the weight track is a FLOOR at the widest corpus weight, the same
+   * measurement as the narrow tier below (`0.0625 lb` renders 52.2 px). The fixed 42 px track let it spill 10 px past
+   * the track into the quantity cell at 500 and 856 px (the inventory lab with the widest values written into a row:
+   * `pc-inv-weight 52 > 42`); with the floor, 0 spills from 288 to 856 px. */
+  grid-template-columns: 18px 18px minmax(0, 1fr) 96px minmax(53px, auto) 56px;
   grid-template-areas: "toggle icon name stat weight qty";
   gap: var(--pc-space-2);
   align-items: center;
@@ -6421,11 +6957,24 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* ---------- Toolbar (search + add/done) ---------- */
+/* R4 {G5, G6} live rider 2, X-7-1: the search field yields to the button instead of pushing it out
+   of the column. Measured on the `9fb865df` build at the 400 px viewport (`.pc-content` 252): the
+   toolbar's own items spanned about 323 px, the search box holding 205 of them and `+ ADD ITEM`
+   starting past the column's right edge, so the button read `+ ADD IT` on every sheet
+   (`viewports/R4G5_SrdFighter4_S__400x900__panel-inventory__2.png`). The search box grows from a
+   zero basis but carried the flex default `min-width: auto`, and its `<input>` child brings an
+   intrinsic field width with it, so the box could not be shrunk below that width and the row
+   overflowed rather than dividing. `min-width: 0` makes the field the part that gives; `flex-wrap`
+   is the fallback below any width where even that is not enough, and the button never breaks its
+   own label. */
 .archivist-pc-sheet .pc-inv-toolbar {
   display: flex;
   gap: var(--pc-space-2);
   margin-bottom: var(--pc-space-2);
   align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-inv-search {
   display: flex;
@@ -6436,12 +6985,23 @@ body.theme-light .archivist-tag-atk:hover {
   padding: 4px 8px;
   background: rgba(255, 248, 220, 0.45);
   flex: 1;
+  min-width: 0;
 }
 .archivist-pc-sheet .pc-inv-search-icon svg {
   width: 13px; height: 13px;
   color: var(--pc-text-muted);
   stroke-width: 1.5;
 }
+/* R4 {G5, G6} live rider 3, Z-6-2: what does not fit ends in an ellipsis instead of being cut inside a
+   word. X-7-1 above made the search box the part that gives, which is right for the button, and at
+   `.pc-content` 252 what it gives is most of the field: the placeholder
+   "search items, types, tags…" (`inventory-toolbar.ts`, `InventoryToolbar.render`) read
+   `search items, t`, cut mid-word with no mark that anything
+   followed (`viewports/R4G5_Warlock5Stranded_S__400x700__panel-inventory__3.png`, and the same on every
+   other sheet at that width). The declaration goes on the INPUT and not on `::placeholder`: Chromium
+   applies the input's own `text-overflow` to the placeholder text and ignores the property when it is
+   set on the pseudo-element. An unfocused long VALUE now ellipsizes the same way, which is the shipped
+   behaviour of every other single-line field the reader meets. */
 .archivist-pc-sheet .pc-inv-search input {
   border: none;
   background: transparent;
@@ -6451,6 +7011,8 @@ body.theme-light .archivist-tag-atk:hover {
   outline: none;
   color: var(--pc-text-primary);
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .archivist-pc-sheet .pc-inv-search input::placeholder {
   color: var(--pc-text-muted);
@@ -6458,6 +7020,8 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-inv-add,
 .archivist-pc-sheet .pc-inv-done {
+  flex: 0 0 auto;
+  white-space: nowrap;
   padding: 5px 12px;
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
@@ -6603,11 +7167,23 @@ body.theme-light .archivist-tag-atk:hover {
   padding: var(--pc-space-2) 0;
   flex-wrap: wrap;
 }
+/* R4 {G5, G6} live rider 2, W-2: the attunement box gives way instead of pushing the column open.
+   Measured on the `9fb865df` build: `.pc-header-attune` and the `.pc-attune-strip` inside it both
+   read 371 px on all 15 sheet fixtures, which is `.pc-attune-head` (about 71 px) + a 12 px gap +
+   three 88 px medallion wrappers with two 12 px gaps; `.pc-content` then read clientWidth/scrollWidth
+   356/371 and 252/371, the ONLY root overflow in the run's 15 x 6 x 3 sweep, with the third medallion
+   and the right half of the `+ ADD ITEM` control outside the visible column. A flex item's default
+   `min-width: auto` floors it at that intrinsic width, so the box could not shrink and the strip had
+   no wrap point to fall back on. With both flex rows wrapping and the floor released, the medallion
+   row falls under the ATTUNED head, and below it the medallions themselves wrap: nothing is cut at
+   any column width and the medallion keeps its size. */
 .archivist-pc-sheet .pc-header-attune {
   display: flex;
   align-items: stretch;
   gap: var(--pc-space-4);
   flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-header-divider {
   width: 1px;
@@ -6625,6 +7201,10 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   align-items: center;
   gap: var(--pc-space-3);
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-2);
+  min-width: 0;
+  max-width: 100%;
 }
 .archivist-pc-sheet .pc-attune-head {
   display: flex;
@@ -6656,6 +7236,10 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   gap: var(--pc-space-3);
   align-items: flex-start;
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-2);
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* ---------- Attune popover ---------- */
@@ -6983,15 +7567,46 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* ---------- Responsive ---------- */
 
-/* Below narrow tier: header divider hides; qty/cost lifts under name. */
+/* Below narrow tier: header divider hides; the row keeps one line on narrowed meta tracks (RIDER-9). */
 @container pc-content (max-width: 499px) {
   .archivist-pc-sheet .pc-header-divider { display: none; }
   .archivist-pc-sheet .pc-header-attune,
   .archivist-pc-sheet .pc-header-currency { flex: 1 1 100%; }
 
-  /* Row reflow: keep all data, restack trailing meta under name.
-   * Row 1: toggle + icon + name + stat (the headline meta).
-   * Row 2: weight + qty-cost (the secondary meta), under the name. */
+  /* R4-G7 RIDER-9: the row stays ONE row, every cell in its own track. RIDER-7 keeps the tab body right
+   * of the rail, so the Inventory tab now always lives in the 355.5 px right column at the default window,
+   * where the old reflow put stat, weight and quantity each on a line of its own under the name (S01
+   * B001-D9, B010-D3). The base template's meta tracks (96 / 42 / 56) leave the name 76 px there, so this
+   * tier narrows them to the widest value each cell renders in the corpus, MEASURED in the live sheet's
+   * own `.pc-inv-stat` / `.pc-inv-weight` / `.pc-inv-qty-cost` dress (11 px serif, tabular nums):
+   *   stat    `AC 14 + Dex`  66.6 px  (the longest of the 34 distinct weapon damage and armor AC strings)
+   *   weight  `0.0625 lb`    52.2 px  (the longest of the 65 distinct weights)
+   *   qty     `×1000`        34.2 px  (no corpus item carries a numeric `value`, so `gp` never renders)
+   * Each is a FLOOR, not a cap (`minmax(<floor>, auto)`): a value wider than the corpus's widest grows its
+   * own row's track instead of spilling into its neighbour, and the browse drawer's `+ Add` cell (48.6 px)
+   * takes its width the same way. The gap drops to `--pc-space-1` so the name gets 20 px back. Witnessed
+   * with the sheet's own rows laid out off screen (`evidence/g7-live/wa-inv-lab.js`): at 356 px the
+   * Illrigger's nine rows read 0 meta cells below the name cell and 0 overlaps, the name track 135 px. */
+  .archivist-pc-sheet .pc-inv-row {
+    grid-template-columns: 18px 18px minmax(0, 1fr) minmax(67px, auto) minmax(53px, auto) minmax(35px, auto);
+    grid-template-areas: "toggle icon name stat weight qty";
+    column-gap: var(--pc-space-1);
+  }
+  /* R4-G7 RIDER-9 fix round 1 (controller ruling 2026-09-15): in this narrower name track the name WRAPS, whole,
+   * instead of the base dress's one-line ellipsis. MEASURED on the Illrigger's rows (inventory lab, the RIDER-1
+   * method: line counts from height over line height): at 355.5 px `Greatsword of Wounding` read
+   * `Greatsword of Woundi...` (1 line, cut); now 2 lines x 14.4 px beside a 4-line sub-line, row 91 px, the meta
+   * cells still one line each in their tracks. From 288 to 499 px 0 names are cut. `overflow-wrap: anywhere` only
+   * breaks a word wider than the whole track (the 67 px track at 288 px). */
+  .archivist-pc-sheet .pc-inv-name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+}
+
+/* R4-G7 RIDER-9: the reflow the tier above used to start at 499 px, now reached only where one row would
+ * leave the name track narrower than the stat track's 67 px floor: 18 + 18 + 67 + 53 + 35 + 4 x 5 gaps +
+ * 10 px of row padding + 67 = 288 px, MEASURED as the first one-row width by the same off-screen scan.
+ * Row 1: toggle + icon + name + stat (the headline meta).
+ * Row 2: weight + qty-cost (the secondary meta), under the name. */
+@container pc-content (max-width: 287px) {
   .archivist-pc-sheet .pc-inv-row {
     grid-template-columns: 18px 18px minmax(0, 1fr) auto;
     grid-template-areas:
@@ -7001,9 +7616,24 @@ body.theme-light .archivist-tag-atk:hover {
   }
 }
 
-/* Below tiny tier: stat lifts under the name too, freeing the
- * top-right cell entirely. All data still visible. */
+/* Below tiny tier: the filter rows tighten. (R4-G7 RIDER-9 moved this tier's four-line row stack to its
+ * own block below: at 399 px it was the stack S01 saw in the right column.) */
 @container pc-content (max-width: 399px) {
+  .archivist-pc-sheet .pc-inv-filter-row { gap: var(--pc-space-2); }
+  /* R4 {G5, G6} live rider V-4: the chip groups WRAP at this tier, they do not scroll. The
+     `nowrap` + `overflow-x: auto` pair put every group on one line inside a scroller the reader has
+     no reason to suspect, so at the default 356 px column the TYPE row simply ended mid-word
+     ("Weapons Armor Wondrous Rin") and the RARITY row ended flush at the edge with `Very Rare` cut.
+     The base rule already wraps and already supplies the row gap through its `gap`, so the group
+     inherits it and every chip stays on screen and clickable. */
+  .archivist-pc-sheet .pc-inv-filter-group { max-width: 100%; }
+}
+
+/* R4-G7 RIDER-9: stat lifts under the name too, freeing the top-right cell entirely; all data still
+ * visible. Reached only where the two-row reflow above would leave the name track narrower than the stat
+ * track's 67 px: 18 + 18 + 67 + 3 x 4 gaps + 10 px of padding + 67 = 192 px, so from 191 px down (a
+ * stacked body in a very narrow pane; the right column never gets there, its floor is 204 px). */
+@container pc-content (max-width: 191px) {
   .archivist-pc-sheet .pc-inv-row {
     grid-template-columns: 18px 18px minmax(0, 1fr);
     grid-template-areas:
@@ -7013,8 +7643,6 @@ body.theme-light .archivist-tag-atk:hover {
       ".      .    qty";
     row-gap: 2px;
   }
-  .archivist-pc-sheet .pc-inv-filter-row { gap: var(--pc-space-2); }
-  .archivist-pc-sheet .pc-inv-filter-group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
 }
 
 /* ── P4 · Scroll & unidentified-item inventory treatments (Task 5) ──────────
@@ -7128,16 +7756,133 @@ body.theme-light .archivist-tag-atk:hover {
  * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
  * Here we only own the outer flex wrapper that places the pip row next to the
  * italic recovery suffix ("/ Dawn 1d6+1"), and the suffix's typography. */
+/* R4 {G5, G6} live rider N-3-8: the wrapper wraps and the caption does not. At 400 px the pip row and
+   the recovery caption competed for one line, and the pip row loses that competition: its own
+   `flex-wrap` (`.archivist-toggle-box-row`, shared with the monster blocks) makes its content minimum
+   ONE box, so four pips shattered 3 + 1 while "/ Short Rest" split across two lines beside them. With
+   the wrapper wrapping, the caption falls UNDER the pips and the pips keep their line; with the
+   caption unbreakable, the recovery clause is never split mid-phrase. The pip row keeps its own wrap
+   as the last resort for a 12-pip tracker at an extreme width. */
 .archivist-pc-sheet .pc-charge-boxes {
   display: inline-flex;
   align-items: center;
-  gap: var(--pc-space-2);
+  /* R4-G6b §10.2: the pip row and the recovery caption are two PARTS, and since the caption is a
+     `pc-cap-unit` its `/ ` separator hangs out of flow into this gap. The gap must therefore be at
+     least the separator BOX plus `--pc-cap-clip`, or the mark overlaps the last pip. Measured
+     2026-09-09 live (`g6b-t8-sep-width.txt`): the separator renders inside `.pc-charge-recovery`,
+     italic 11px "Libre Baskerville", where `/ ` is 7.328 px, so the requirement is 9.328 px and the
+     shipped `var(--pc-space-2)` (8 px) was 1.328 px SHORT. Raised by the clip margin to 10 px, which
+     cleared it by 0.672 px: a deliberate 2 px change to this widget's spacing, witnessed live against
+     the OLD shot (§15 row 8).
+     T13 live rider R-2: 0.672 px is not AIR. The eye read the mark flush against the last pip on
+     every Passive shot (`[][][][][]/ Short Rest`: B5-1, B1 N-2, B2, B9 N-2) where the OLD build's
+     plain ` / ` text had a whole space (3.031 px at 11 px) on each side. The gap now carries the
+     9.328 px requirement plus 3 px of air: 13 px, which leaves the mark 3.672 px of left air. */
+  gap: calc(var(--pc-space-2) + var(--pc-cap-clip) + 3px);
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-1);
 }
 .archivist-pc-sheet .pc-charge-recovery {
   font-family: var(--pc-font-serif);
   font-style: italic;
   font-size: var(--pc-fs-small);
   color: var(--pc-text-soft);
+  white-space: nowrap;
+}
+
+/* R4 {G5, G6} live rider 2, N-1-8: the buff toggle is painted by the SHEET, not by the app theme.
+   The first rider set `accent-color` alone, and the live re-verify measured what that is worth here:
+   the computed `accent-color` IS crimson and the control still paints `rgb(138, 92, 245)`, because
+   Obsidian's own stylesheet sets `appearance: none` on `input[type=checkbox]` and fills the replaced
+   box with `--interactive-accent`. `accent-color` only tints a control the platform still draws, so
+   it changed nothing. The box and its border are therefore stated directly, in the `!important`
+   idiom `.archivist-toggle-box` (the sheet's own pip, archivist-dnd.css) already uses against the
+   same theme rules: crimson when checked, the sheet's tan line token when not. `accent-color` stays
+   for a theme that leaves the control native, where it is the whole fix. The tick glyph is Obsidian's
+   own `:checked` marker, which the run measured as drawn (white on the violet box); pinning
+   `--checkbox-marker-color` to the sheet's parchment keeps it legible on crimson under any theme,
+   and is inert where a theme does not read that variable. */
+.archivist-pc-sheet .pc-action-buff-toggle {
+  accent-color: var(--pc-crimson);
+  --checkbox-marker-color: var(--pc-parchment-light);
+  background-color: transparent !important;
+  border-color: var(--pc-tan) !important;
+}
+.archivist-pc-sheet .pc-action-buff-toggle:checked {
+  background-color: var(--pc-crimson) !important;
+  border-color: var(--pc-crimson) !important;
+}
+/* R4 {G5, G6} live rider 2, X-4-2: the duration is one part and breaks as one. Measured on the
+   `9fb865df` build at `.pc-content` 356 (`Barbarian5-2014 S`, Passive): the Rage toggle read
+   `Active · 1` / `minute`, because the amount and the unit are one text run in an ordinary inline
+   span and the line broke at the space inside it. The same protection V-11 gave the point-pool
+   value: the line may still break at the SPACE before the duration unit, which is a break between
+   parts, never inside one. R4-G6b §10 (Q-8): that unit holds the ` · ` mark out of flow, so when the
+   duration is what starts the wrapped line the mark is clipped and no line begins with a separator. */
+.archivist-pc-sheet .pc-action-buff-duration {
+  white-space: nowrap;
+}
+
+/* ---------- Point pool + the at-will sentinel (R4-G4 §5.2) ----------
+ * Above CHARGE_BOX_LIMIT points the feature sites render "remaining / max <name>"
+ * with steppers instead of a box row; `max === AT_WILL_MAX` renders "at will".
+ * The steppers carry the Obsidian forced-height override every sheet <button>
+ * needs (display:inline-block + height:auto). */
+/* R4 {G5, G6} live rider V-11: the head wraps BETWEEN its parts, never inside one. At 356 px the
+   Paladin's Lay on Hands head broke `100 /` from `100` and `Long` from `Rest`, because the widget's
+   spans were ordinary shrinkable flex items. The three text parts are now unbreakable and the widget
+   wraps, so a head too wide for its column falls onto a second line as whole parts. */
+.archivist-pc-sheet .pc-point-pool {
+  display: inline-flex;
+  align-items: center;
+  /* R4-G6b §10.2: the reset caption is a `pc-cap-unit` and its `· ` separator hangs out of flow into
+     this gap, so the gap must be at least the separator BOX plus `--pc-cap-clip`. The reset unit
+     declares no font of its own, so the mark renders in the sheet face at the widget size: measured
+     2026-09-09 live (`g6b-t8-sep-width.txt`) `· ` is 6.344 px at 12 px and 7.406 px at 14 px, so the
+     requirement is 8.344 px (9.406 px at 14 px) while the shipped `0.35em` is 4.2 px at 12 px, SHORT
+     by 4.14 px. Raised to 10 px, which cleared both. A deliberate change to this widget's internal
+     spacing (the surface V-11 and RIDER-4 tuned) that §15 row 8 witnesses against the OLD build's shot
+     at 1200 and 252.
+     T13 live rider R-2: 10 px left the mark 1.656 px of left air and the eye read the pool head as
+     `2 / 2 Sorcery Point·  Long Rest`, the dot hugging the word on its left (B9 N-1). The gap now
+     carries the requirement plus 3 px of air: 12 px, which leaves the mark 3.656 px at this widget's
+     12 px type (2.594 px at the 14 px variant). One pixel under the charge boxes' 13 px because the
+     `· ` box is one pixel narrower than `/ `. */
+  gap: calc(var(--pc-space-2) + var(--pc-cap-clip) + 2px);
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-point-pool-value,
+.archivist-pc-sheet .pc-point-pool-name,
+.archivist-pc-sheet .pc-point-pool-reset {
+  white-space: nowrap;
+}
+/* R4 {G5, G6} live rider 2, X-8-5: one stepper dress on the sheet. These two carried layout
+   properties only, so Obsidian's default `button` painted them as dark filled pills beside the
+   INSPIRATION stepper's light outlined squares on the same sheet. The values below are
+   `.pc-insp-counter button`'s (components.css) verbatim, the sheet's other stepper: a transparent
+   ground, a tan hairline, a 3 px radius and the sheet's primary text colour, in the serif face the
+   counter beside them uses. The display / height pair and the horizontal padding stay: they are the
+   Obsidian forced-button-height workaround and this stepper's own width. */
+.archivist-pc-sheet .pc-point-pool-minus,
+.archivist-pc-sheet .pc-point-pool-plus {
+  display: inline-block;
+  height: auto;
+  padding: 0 0.45em;
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-small);
+  line-height: var(--pc-lh-tight);
+  border: 1px solid var(--pc-tan);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--pc-text-primary);
+  box-shadow: none;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-charge-at-will {
+  font-variant: small-caps;
+  opacity: 0.8;
 }
 
 /* ---------- Row-expand (Weapons/Items/Features) ----------
@@ -7149,6 +7894,30 @@ body.theme-light .archivist-tag-atk:hover {
   padding: var(--pc-space-2) calc(var(--pc-space-6) * 1.5) var(--pc-space-3);
   border-left: none;
   margin: 0;
+}
+
+/* R4-G6b §5.5 (Q-3): the Unarmed Strike expand's two term lists, renderACTooltip's row shape (source left, signed amount right); the card's own rules, never the floating tooltip's class names */
+.archivist-pc-sheet .pc-unarmed-card {
+  display: flex;
+  flex-direction: column;
+  max-width: 22em;
+  min-width: 0;
+}
+.archivist-pc-sheet .pc-unarmed-card-head {
+  font-weight: 600;
+  margin: 0.3em 0 0.15em;
+}
+.archivist-pc-sheet .pc-unarmed-card-head:first-child {
+  margin-top: 0;
+}
+.archivist-pc-sheet .pc-unarmed-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--pc-space-3);
+  padding: 0.1em 0;
+}
+.archivist-pc-sheet .pc-unarmed-card-amount {
+  font-variant-numeric: tabular-nums;
 }
 /* strip the inventory-expand chrome (tint, dotted rule, padding) when the
    inventory row-expand is reused inside the actions table */
@@ -7206,16 +7975,29 @@ body.theme-light .archivist-tag-atk:hover {
    name's 1fr) so the pip tracker has room to stay on one line instead of the
    name column hogging the slack and cramping the pips. */
 .archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px minmax(0, 3fr); }
-.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
+/* The Hit track is 72px, not 64px: MEASURED LIVE at R4-G7 S00 (the default 1024 x 800 window, the
+   sheet pane 700, `.pc-content` 620), `+6 to hit` needs 62px on one line and fits a 64px track while
+   `+11 to hit` needs 65px and misses by ONE pixel, so every character with a two-digit attack bonus
+   wrapped its Hit cell onto two lines and grew the weapon row. 72px is the Range track's own width,
+   so the two narrow tracks now read as one rhythm and the number keeps 7px of slack. An ADV / DIS
+   chip still takes its own line when present; that is deliberate, the number is what must not break. */
+.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px 72px minmax(120px, 1.2fr); }
 .archivist-pc-sheet .pc-action-range { color: var(--pc-text-soft); white-space: nowrap; }
 .archivist-pc-sheet .pc-action-charges { display: flex; justify-content: flex-start; }
 
 /* ---------- Unified feature/passive rows (grouped Actions tab) ----------
  * Shares the .pc-action-row base (grid/border/hover) but owns a 4-column grid:
- * [badge] [name] [right detail] [caret]. The detail column takes the leftover
- * slack so the charge-pip tracker keeps to one line. */
+ * [badge] [name] [right detail] [caret].
+ * R4 {G5, G6} live rider N-3-12: the NAME column takes the leftover slack now, not the detail one.
+ * Two thirds of the free width went to the detail column, which on a feature row holds a pip tracker
+ * about 90 px wide, so at ~1200 px on `SrdFighter4 S` `Second Wind` and `Weapon Mastery` broke across
+ * two lines beside an empty gap. The ratio flips and the detail column keeps a `min-content` floor, so
+ * its cluster is never squeezed below itself at narrow widths (which is what the 3fr on the items
+ * table was protecting) while a two-word name only wraps when the row is genuinely narrow.
+ * The items and weapons tables keep their own templates: their third column is a charge tracker with
+ * no name cell competing for the same slack. */
 .archivist-pc-sheet .pc-feature-list .pc-feature-row {
-  grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
+  grid-template-columns: 66px minmax(0, 2fr) minmax(min-content, 1fr) 18px;
 }
 /* D2 (item #5): zero the flex gap the base `.pc-feature-list` (blocks.css) leaks
  * onto the economy lists. The compound selector (specificity 0,3,0) beats the
@@ -7233,15 +8015,76 @@ body.theme-light .archivist-tag-atk:hover {
  * to the passive tab (`.pc-passive-features-tab`) ONLY: the base 4-col rule above
  * is SHARED with the Actions tab (class-features/feats render there too and must
  * keep the 66px badge column to align with the weapon/item rows). */
+/* R4 {G5, G6} live rider 2, X-1-1: the NAME column takes the leftover slack on THIS tab too. N-3-12
+   flipped the ratio on the shared rule above, which the passive tab overrides, so the passive rows
+   kept the old split: one third to the name, two thirds to a detail slot that on most passive rows
+   holds a checkbox and a "/ Short Rest" caption or nothing at all. The live run measured the result
+   at the default 356 px column, where the name column is about 105 px wide: `Martial / Archetype`,
+   `Arcane Shot / Options` and `Unarmored / Defense` broke in two beside an empty half-row, on 16
+   shots (`sheet-natural/R4G5_ArcaneArcher5e3_S__panel-passive__1.png`). The tracks are now the
+   Actions tab's, minus the badge column this tab drops: the detail keeps a `min-content` floor so
+   its cluster is never squeezed below itself, and a two-word name wraps only when the row is
+   genuinely full. */
 .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 18px;
+  grid-template-columns: minmax(0, 2fr) minmax(min-content, 1fr) 18px;
 }
+/* R4-G7 T8 wave D fix round 1 (W-D-D6, the W-D eye re-read): a row whose detail slot is EMPTY gives that slot's track to the name.
+   The two templates above keep a `minmax(min-content, 1fr)` detail track on every row, and a slot with nothing in it (a class
+   feature with no tracker, control or note; the Race and Background rows, whose slot is created empty) still took that third.
+   MEASURED LIVE in W-D2a at the default 355.5 px column: `conv-light-domain-5e-20`'s "Divine Intervention Improvement" (217.4 px
+   on one line) sat in `209px 104.5px 18px` and wrapped, while the longer "Channel Divinity: Radiance of the Dawn" (254.9 px), whose
+   spend control sends its detail to its own grid row in the 787 px tier below, read one line in 321.5 px. Over 300..1000 px the same
+   shape wrapped the Illrigger's "Forked Tongue Improvement" and "Infernal Conduit Improvement" and the battle-smith's race row; with
+   these rules injected, no name that fits its row wrapped on any of the three. `:empty` matches only a slot with no child node, which
+   is how `renderFeatureRow`, `renderBoonRow` and the two passive blocks create it; the `:has()` argument lifts both templates over
+   the ones above, so the Passive tab restates its own. */
+.archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail:empty) { grid-template-columns: 66px minmax(0, 1fr) 18px; }
+.archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail:empty) { grid-template-columns: minmax(0, 1fr) 18px; }
+.archivist-pc-sheet .pc-feature-list .pc-feature-row > .pc-feature-detail:empty { display: none; }
+/* R4 {G5, G6} live rider N-2-7: the detail slot WRAPS too, with the same left-aligned lines. On
+   `Warlock5Stranded S`'s Actions tab the Ghostly Gaze cluster ran out of room and the wrapped pill sat
+   over the uses row aligned with nothing. With the slot wrapping and both axes stated, the group and
+   the spend control fall onto their own line, each line starting at the slot's left edge.
+   The first writing of this comment added "(the shorter ACTIVE fits)", which rider 3 measured FALSE:
+   `R4G5_Warlock7Ghostly_S__400x700__panel-actions__4.png` and `__768x600__panel-actions__1.png` show
+   the same row wrapping the same way with the pill reading ACTIVE. The slot's width, not the pill's
+   text, is what decides it, which is why the Z-7-2 rule below reads the cluster and not its state. */
+/* R4-G7 live rider R-5: the slot is no longer gapless. It has always been able to hold TWO controls on
+   one line · a feature that OWNS a resource keeps its tracker here and, when it SPENDS a foreign one,
+   `renderSpendControl` lands beside it (`feature-rows.ts`, `controlInSlot`), and a boon row puts its
+   provenance marker, its tracker and that same control here (`boon-rows.ts`). With `row-gap` alone the
+   pair abutted: witnessed at S00 on the Monk's `Hand of Ultimate Mercy`, whose `Spend 5 Focus Point`
+   pill sat with its left border against the `t` of the tracker's `/ Long Rest`.
+   `column-gap`, not a margin on a child: the slot WRAPS, and a margin would also indent a control that
+   fell onto its own line, which the note above says is the wanted reading. It therefore replaces the
+   R4-G5 `> .pc-resource-die { margin-right: var(--pc-space-2) }` patch VERBATIM in value (8px), so the
+   granted-die row keeps the spacing it had and every other pair gains the same. */
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;
   align-items: center;
+  align-content: center;
   justify-content: flex-start;
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-1);
+  column-gap: var(--pc-space-2);
 }
 .archivist-pc-sheet .pc-feature-attack-note {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
+/* R4-G3a §4: the row-local effect caption, a block child of the NAME cell (the
+ * right detail slot is single-occupancy and the resource tracker holds it on the
+ * rows that carry these effects). Same serif/italic/soft treatment as the attack
+ * note above so the two read as one register of row-local aside; several
+ * captions on one feature wrap as chips rather than stacking. */
+.archivist-pc-sheet .pc-action-namecell .pc-feature-effect-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-feature-effect {
   font-family: var(--pc-font-serif);
   font-style: italic;
   font-size: var(--pc-fs-small);
@@ -7294,6 +8137,16 @@ body.theme-light .archivist-tag-atk:hover {
   font-size: var(--pc-fs-small);
   color: var(--pc-text-muted);
 }
+/* R4-G6b live rider F-B (Q-8, carrier 5). This is the ONE caption carrier whose parts wrapped before
+   §10.3 made it a `pc-cap-host`: the other four already declared `nowrap`. Inside a clipping host a
+   `nowrap` unit wider than its box is CUT, and the live run measured exactly that at the 252 px
+   content column on `R4G6b Paladin2024-20 S`, where `Oath of Devotion (2024 XPHB) 15` (scrollWidth
+   176 in a clientWidth 140 box) stopped at `(2024 XP` while a wider-boxed row on the same screen
+   read whole. So carrier 5's UNIT wraps internally again and the label reads whole on two lines.
+   The HOST keeps `overflow-x: clip`, which is what hides a separator that would start a line, and
+   the unit keeps `position: relative` from the primitive: the separator is anchored to the unit's
+   FIRST fragment, so a continuation line carries no mark. Carriers 1 to 4 are untouched. */
+.archivist-pc-sheet .pc-action-row-sub .pc-cap-unit { white-space: normal; }
 
 /* Muted captions for weapon attack metadata: crit range (pc-weapon-crit)
  * and reroll/attack-rule notes (pc-weapon-note). */
@@ -7302,6 +8155,14 @@ body.theme-light .archivist-tag-atk:hover {
   font-style: italic;
   font-size: var(--pc-fs-small);
   color: var(--pc-text-muted);
+}
+/* R4-G7 T8 RIDER-25 (F-CRIT): the crit caption is its own line under the damage text (a DIV in `weapons-table.ts`; the
+   display is stated for a theme that restyles divs). MEASURED LIVE in W-Dr on `conv-champion-5e-20`'s Unarmed Strike at the
+   default window: inline it sat on the damage tag's line 0 px from its last letter ("bludgeoningcrit"); as a block with no
+   margin its box began 0.4 px inside the tag's; `margin-top: 2px` leaves 1.6 px of air, the `.pc-spell-eff-note` value. */
+.archivist-pc-sheet .pc-weapon-crit {
+  display: block;
+  margin-top: 2px;
 }
 
 /* Range cell: the main line always renders; a throwable melee weapon stacks its
@@ -7348,7 +8209,7 @@ body.theme-light .archivist-tag-atk:hover {
  * blank. */
 .archivist-pc-sheet .pc-weapons-table .pc-weapon-header {
   display: grid;
-  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr);
+  grid-template-columns: 66px minmax(0, 1fr) 72px 72px minmax(120px, 1.2fr);
   align-items: baseline;
   gap: var(--pc-space-2);
   padding: var(--pc-space-1);
@@ -7370,7 +8231,7 @@ body.theme-light .archivist-tag-atk:hover {
  * above stays for no-mastery groups. */
 .archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
 .archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
-  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(110px, 1.1fr) minmax(96px, 1.15fr);
+  grid-template-columns: 66px minmax(0, 1fr) 72px 72px minmax(110px, 1.1fr) minmax(96px, 1.15fr);
 }
 
 /* Inline italic dice tag override inside actions tab */
@@ -7421,22 +8282,170 @@ body.theme-light .archivist-tag-atk:hover {
     max-width: 100%;
   }
 
-  /* Weapons grid at a narrow container: relax the fixed range/hit/damage
-     min-widths (they overflowed a ~296px pane pre-existing) to flexible tracks
-     that shrink/wrap, so nothing overflows or overlaps. The Mastery cell drops
-     to a full-width line below the row (its column header is hidden, the chip
-     self-labels), so its longer gist has room without cramping the row. This
-     covers BOTH the base 5-col and the 6-col has-mastery layouts. */
+  /* Weapons grid at a narrow container. R4-G6b live rider F-C: the five flexible tracks this block
+     used to declare do not fit, and the live run measured the result at the 252 px content column
+     (`R4G6b BattleMaster3 S`, and identically on the OLD build's `R4G6b MonkArmed2024-1 S`, so the
+     breakage is PRE-EXISTING: G6b's always-present Unarmed Strike row is only what puts a Weapons
+     table in front of every character). The header read `RANGEHIT` as one word and the body cells
+     broke mid-word: `1+2 bludgeo` / `ning`, `Shortswo` / `rd`, `+4` / `to` / `hit` over three lines.
+
+     THE ARITHMETIC. At a 252 px column the row's content box is 244 px (`--pc-space-1` padding each
+     side). The five tracks took 56 px plus four 4 px gaps, leaving 172 px shared 1.4 : 0.8 : 0.6 : 1
+     between name, range, hit and damage: 63 / 36 / 27 / 45 px. A header label is one word and the
+     tracks floor at 0, so `RANGE` (about 38 px at `--pc-fs-label` with `--pc-ls-caps-md`) overflowed
+     its 36 px track into `HIT`. Keeping every cell WHOLE needs about 305 px of tracks (56 badge, 72
+     name, 26 range, 64 hit, 72 damage, plus the gaps and padding), which is more than the column
+     has, so the five columns cannot fit at all and the row stacks instead: the `.pc-weapon-mastery`
+     full-width precedent below, and the same answer RIDER-2 gave the feature rows.
+
+     TWO LINES over three tracks (56 / 90 / 90 at a 252 px column): the badge and the name on the
+     first, range, hit and damage on the second. Every cell is placed EXPLICITLY, the header's twin
+     named beside its body cell, so the header grid and the row grid keep identical tracks and the
+     labels stay over their columns. Reading at 252 px, by arithmetic (UNVERIFIED until the live
+     re-verify): `ACTION` in 56, `Unarmed Strike` in 184 on one line, `RANGE` and `5 ft` in 56,
+     `HIT` and `+4 to hit` in 90 on one line, `DAMAGE` in 90 and `1+2 bludgeoning` on two whole-word
+     lines. The Mastery cell keeps its own full-width line (its column header is hidden, the chip
+     self-labels). This covers BOTH the base 5-col and the 6-col has-mastery layouts. */
   .archivist-pc-sheet .pc-weapons-table .pc-action-row,
   .archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header,
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
-    grid-template-columns: 56px minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.6fr) minmax(0, 1fr);
+    grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--pc-space-1);
   }
-  .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: anywhere; }
-  .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-cost,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-cost { grid-column: 1; grid-row: 1; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-name,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-name { grid-column: 2 / -1; grid-row: 1; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-range,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-range { grid-column: 1; grid-row: 2; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-hit,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-hit { grid-column: 2; grid-row: 2; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-damage,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-damage { grid-column: 3; grid-row: 2; }
+  /* The base rule's `nowrap` would push a long `80/320 ft` out of the 56 px range track and back
+     into the HIT cell, which is the collision this rider removes. Wrapping breaks at the space
+     only: `80/320` carries no break opportunity, so the number stays whole. */
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-range { white-space: normal; }
+  /* `break-word`, not `anywhere` (the `.pc-spend-control` reading, rider 2 W-1): a word breaks only
+     when it alone cannot fit its line, so `bludgeoning` is never cut in half. */
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: break-word; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; grid-row: 3; }
   .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-mastery { display: none; }
+}
+
+/* R4-G7 T8 RIDER-26 (F-ITEMROW) · the Items table stacks the way the Weapons table above does, while its NAME track is narrower
+   than the floor that holds a short item name on one line. The base template (`66px minmax(0, 1fr) 72px minmax(0, 3fr)`) gives
+   the name a quarter of what the badge and range tracks leave: MEASURED LIVE at the default 1024 x 800 window (W-Dr, `.pc-content`
+   355.5 px, the user's Illrigger, REACTIONS > ITEMS) it resolved to `66px 46.375px 72px 139.125px` and set "Ring of Evasion" one
+   word per line, a 75 px row beside a half-empty tracker column. TWO LINES over two tracks, every cell placed by its class: the
+   badge and the name on the first, the range under the badge and the tracker (charge boxes, their recovery caption) under the name,
+   the feature rows' stacked shape. The candidate injected live resolved to `66px 273.5px`: the name on ONE line, row 85.9 px, 0
+   overlapping cells. Both tabs that list items (Actions, Passive) share it.
+   THE TIER IS DERIVED (fix round 1, review Minor 4): W-D2a measured "Ring of Evasion" on one line at 99.4 px, and with the row's
+   4 px side paddings and three 8 px gaps the base name track is (C - 170) / 4 for a content column C: 82.5 px at 500 and 97.5 px
+   at 560 (two lines each, which the first writing of this rule, at 499 px, left), 100 px at 570 (one line). The floor rounds up to
+   100 px so a fractional column just above the tier still holds the name, so the row stacks while (C - 170) / 4 < 100, up to
+   569 px. Injected live over C = 300..1000 px in 10 px steps: the name on one line at every width. */
+@container pc-content (max-width: 569px) {
+  .archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr); row-gap: var(--pc-space-1); }
+  .archivist-pc-sheet .pc-items-table .pc-item-cost { grid-column: 1; grid-row: 1; }
+  .archivist-pc-sheet .pc-items-table .pc-action-namecell { grid-column: 2; grid-row: 1; }
+  .archivist-pc-sheet .pc-items-table .pc-action-range { grid-column: 1; grid-row: 2; }
+  .archivist-pc-sheet .pc-items-table .pc-action-charges { grid-column: 2; grid-row: 2; }
+}
+
+/* R4-G6b live rider F-D · the feature-row tier vs Q-6's one-column flip. The stacked tier below used
+   to ride the 499 boundary the rest of that block uses. Q-6 (§8) flips the sheet body to ONE column
+   whenever the active tab is shorter than the left rail, which widened the 768 window's content
+   column from 356 px to 620 px and so lifted every feature row OVER that boundary: the row took the
+   four-column layout and the detail cell got 168 px, LESS room than the 348 px it had when it
+   spanned the row below the name. The live run measured `Commander's Strike` and `Parry` on
+   `R4G6b BattleMaster3 S` at 768x900 and 768x600 with `detailBelowName: false`, the cluster over two
+   lines and `Spend 1 Superiority Dice (d8)` wrapped inside its own pill. The flip is right by §8;
+   the tier boundary is what had to account for it, so the feature rows get their own.
+
+   THE ARITHMETIC (the witness `g6b-t13-row9-report.json`, matched to the pixel at three columns).
+   For a content column C the Actions-tab row is `66px minmax(0, 2fr) minmax(min-content, 1fr) 18px`
+   with 8 px gaps inside 4 px padding, so the detail cell reads (C - 116) / 3: 312 px at C = 1052,
+   224 px at C = 788, 168 px at C = 620. The Passive tab drops the badge column and reads
+   (C - 42) / 3: 336.66 / 248.67 / 192.67 px at the same three, which is what the run recorded.
+   The four-column layout is kept only where the detail cell gets at least the 224 px it has at the
+   NARROWEST column that ships it today, C = 788 (the 1200 window's two-column tab panel, which the
+   ruling pins unchanged): (C - 116) / 3 >= 224 iff C >= 788, so this block stops at 787 px.
+   What that gives, by arithmetic (UNVERIFIED until the live re-verify): at 768 flipped (C = 620)
+   the row stacks and the detail spans 612 px on one line; at 1200 flipped (C = 1052) and at 1200
+   unflipped (C = 788) the four columns stay exactly as they are. The band is also wide enough that
+   the FLIP itself can no longer change the tier: the content column measured window - 412 unflipped
+   and window - 148 flipped, so every window that was narrow-tier unflipped (below 912) flips to at
+   most 763 px, which is inside this block. */
+@container pc-content (max-width: 787px) {
+  /* R4 {G5, G6} live rider 2, W-1 · rider 3, Z-7-2 · rider 4, Y2-2: below this tier a feature row
+     whose detail slot carries a CONTROL CLUSTER of ANY shape gives that slot the whole row, on the
+     `.pc-weapon-mastery` precedent above and on the shape the pool tabs already read (the live run
+     measured the same spend control 196 x 24 there at every viewport, because a pool row's controls
+     wrap onto their own line). At the default 356 px column the four column tracks above leave the
+     detail 80 px, and every cluster child has an unbreakable minimum: a button does not wrap its
+     label, `.pc-pool-active` is `nowrap` with `flex-shrink: 0` (pool.css), and a tracker's floor is
+     its "/ Long Rest" caption (`.pc-charge-recovery`, `white-space: nowrap`). So the cluster wrapped
+     inside those 80 px line by line, and the row's `align-items: center` lifted the first of those
+     lines above the badge. With the detail on its own full-width grid row the cluster is one line
+     again, and the name keeps the row's slack on the first line.
+     The detail's grid row is stated: an auto-placed spanning item would depend on source order. The
+     caret is left to auto-placement, which puts it in the row's last track beside the name.
+     `:has()` is supported in every Chromium >= 105 (all current Obsidian builds), the same premise
+     `components.css` and `chronicle.css` already build on. Its argument makes these selectors more
+     specific than the passive tab's own template, so that tab restates its own tracks here.
+
+     THREE terms, covering the FIVE cluster shapes `renderFeatureRow` (`components/actions/
+     feature-rows.ts`) and `renderBoonRow` (`components/actions/boon-rows.ts`) can put in the slot:
+
+     1. `> .pc-feature-detail > .pc-spend` · the SPEND control (W-1), on either row, with or without
+        a tracker beside it. Measured on `R4G5_BattleMaster3_S__400x700__panel-actions__4.png` and
+        `__768x600__panel-actions__2.png`, where an ACTIVATE pill and a "Spend 1 Superiority Dice
+        (d8)" button shared 80 px.
+     2. `> .pc-feature-detail > .pc-buff-group` · `renderControlGroup`'s cluster
+        (`components/actions/entry-affordance.ts`) on a SELECTED boon row. TOGGLE + TRACKER is Z-7-2,
+        measured on `R4G5_Warlock5Stranded_S` (the pill reading ACTIVATE) and `R4G5_Warlock7Ghostly_S`
+        (ACTIVE) at 356 and 252, which is why the term reads the cluster and not the pill's text.
+        TOGGLE ALONE is what rider 4 adds by dropping rider 3's `> .pc-feature-track`: the pill's
+        scrollWidth was measured at 75 px (V-3) and it neither shrinks nor wraps, so in a
+        `min-content`-floored track it takes that much off the name column with no tracker beside it
+        either. No shot in the corpus holds that shape; it is in for ONE rule over the whole family.
+     3. `> .pc-feature-detail > .pc-feature-track` · a tracker as a DIRECT child of the slot. That is
+        the class-feature row (`renderFirstResourceTracker`), which is Y2-2: measured on
+        `R4G5_Bard5-2024_S__768x800__panel-passive__1.png` and `__400x900__panel-passive__2.png`,
+        where Bardic Inspiration stacked `1d8`, its three pips and `/ Long Rest` on three lines, and
+        on `R4G5_SrdFighter4_S__768x600__panel-actions__1.png`, where Second Wind's pips and
+        `/ Short Rest` took two. It is ALSO the GRANTED boon arm, whose "granted" marker and
+        `renderPickTracker` tracker are direct children of the slot as well. The track span wraps all
+        THREE widgets `renderChargeBoxes` can pick (`./charge-boxes.ts`): the pips, the numeric
+        `renderPointPool` fallback above `CHARGE_BOX_LIMIT` (Lay on Hands, V-11) and the "at will"
+        sentinel, so an at-will row pays one line for two words to keep one rule over the family.
+
+     DELIBERATELY OUT, both measured rather than assumed: `.pc-feature-attack-note`, a text aside and
+     not a control, which `renderFeatureRow` renders in-row only when NEITHER a tracker nor a control
+     did; and a granted boon row whose tracker did not render, leaving the italic "granted" marker
+     alone in the slot. The Race and Background rows are out by construction · their
+     `.pc-feature-detail` is created empty (`components/passive/race-block.ts`,
+     `components/passive/background-block.ts`) and a race trait's tracker hosts in the expand card's
+     `.pc-cb-trait-track`, never in the row. */
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend),
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group),
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-feature-track) {
+    grid-template-columns: 66px minmax(0, 1fr) 18px;
+  }
+  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend),
+  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group),
+  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-feature-track) {
+    grid-template-columns: minmax(0, 1fr) 18px;
+  }
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-spend) > .pc-feature-detail,
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-buff-group) > .pc-feature-detail,
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row:has(> .pc-feature-detail > .pc-feature-track) > .pc-feature-detail {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
 }
 
 /* Below narrow tier: tighten condition-chip gap so more chips
@@ -7466,6 +8475,141 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-muted);
   font-style: italic;
   letter-spacing: 0.02em;
+}
+
+/* The shared spend control (R4-G4 §3.2.2): a button plus its `free_uses` /
+   `expend_condition` captions, rendered on pool rows, boon rows and feature rows.
+   Scoped to the sheet like every other rule in this partial. The explicit
+   display/height pair is the Obsidian forced-button-height workaround the
+   passive-tab pass measured: a bare <button> inherits a fixed height.
+
+   NARROW WIDTHS (R4-G4 Task 15 rider, the Task 14 live finding F-1). `renderSpendControl` writes a
+   label as long as "Spend 1 Superiority Dice (d8)" and a button does not wrap its label, so under
+   the flex default `min-width: auto` BOTH the wrapper and the button floor at that intrinsic width
+   and the control pushes itself, and on a pool row the Activate button beside it, out of the sheet.
+   Measured on `R4G4 BattleMaster3 S` with cdp-verify at window widths 1200 / 768 / 400
+   (`.pc-content` 832 / 400 / 296 px): the Actions tab overflowed by 56 px then 125 px with
+   `div.pc-spend` named as the culprit, Passive & Features by 6 px then, at 400, by 5 px on
+   `div.pc-spend` while `button.pc-spend-control` stuck out by 76 px, and the Maneuvers pool tab by
+   82 px with `button.pc-pool-active` pushed out. 1200 was clean on all three.
+
+   That Passive pair at 400 is the reading this fix follows: the BUTTON is the floor everywhere,
+   because it never wraps, and the WRAPPER is an additional floor only where its own cell cannot
+   shrink either, which is the Actions row. So the button gets `min-width: 0` with a wrapping
+   `white-space` (and `overflow-wrap`, since the resource NAME inside the label is data and may be
+   one long token), and the wrapper gets `min-width: 0`, `max-width: 100%` and `flex-wrap: wrap` so
+   the `free_uses` / `expend_condition` captions fall under the button instead of beside it.
+
+   The chain WAS the same at every width when this was written, and no longer is: the feature rows
+   own a stacked tier of their own (`@container pc-content (max-width: 787px)`, R4 {G5, G6} RIDER-2
+   moved there by R4-G6b live rider F-D), which hands `.pc-feature-detail` the whole row on a second
+   grid line below 788 px, and the 499 tier restyles the weapons `.pc-action-row`. What is unchanged
+   is THIS control chain: no narrow block in this file, in blocks.css or under `@container pc-sheet`
+   restyles `.pc-spend`, `.pc-spend-control` or `.pc-spell-prep-row`, so the flex rules below are
+   what every width lays out.
+   jsdom computes no layout and applies no stylesheet, so no unit test can hold this: the witness is
+   the live cdp-verify sweep with `--check-overflow --check-overlap`, recorded in the Task 15
+   report. */
+.archivist-pc-sheet .pc-spend {
+  display: inline-flex;
+  gap: 0.4em;
+  align-items: baseline;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+}
+/* R4 {G5, G6} live rider N-1-4: the control wears the sheet's own button dress. It carried layout
+   properties only, so Obsidian's default `button` background painted every `Spend 1 ...` as a dark
+   charcoal pill on the cream sheet. The values are `.pc-pool-active`'s, its neighbour in the same
+   control cluster (transparent ground, a crimson hairline, crimson text, a pill radius) with that
+   button's hover tint; the LABEL's case is untouched, because it is a sentence built from the
+   resource name, not a micro-cap.
+   R4 {G5, G6} live rider 2, W-1: the label breaks between words, and inside one only when the word
+   alone cannot fit. `overflow-wrap: anywhere` (the T15 rider's value) also drops the button's
+   min-content to a single character, so a column that squeezed the button broke the resource name
+   itself: the live run measured a 78 x 78 button reading `Spend 1` / `Superiori` / `ty Dice` / `(d8)`
+   on the Battle Master's Actions rows at `.pc-content` 356 and 252. `break-word` keeps the T15
+   rider's protection (a word too long for its line still breaks rather than overflowing the sheet)
+   while leaving min-content at the longest WORD, which is what a label reads by. `word-break` and
+   `hyphens` are stated because a theme may set either on `button`. */
+.archivist-pc-sheet .pc-spend-control {
+  display: inline-block;
+  height: auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+  text-align: left;
+  padding: 2px 10px;
+  border: 1px solid var(--pc-crimson);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--pc-crimson);
+  box-shadow: none;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-spend-control:hover {
+  background: rgba(146, 38, 16, 0.10);
+}
+.archivist-pc-sheet .pc-spend-caption {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+/* The granted-die recipient caption (R4-G5 §4.2.2 a). It takes `.pc-spend-caption`'s values verbatim:
+   it is the same kind of quiet line beside the same kind of control, and the `.pc-regain-reset`
+   verbatim-values precedent below is the same decision. */
+.archivist-pc-sheet .pc-affordance-caption {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+/* The manual "Regain N" recovery arm (R4-G4 §7.2.3): the button, its cost badge and
+   the entry's reset caption on one row, with the manual-override / prose note under it.
+   Scoped to the sheet like every other rule in this partial; the explicit display/height
+   pair is the Obsidian forced-button-height workaround the passive-tab pass measured. */
+/* The same overflow shape the T15 rider fixed on the sheet's other button, on this twin. `.pc-regain`'s
+   pre-rider declarations are byte-identical to that button's, and its label is data too
+   (`blocks/feature-card.ts` writes "Regain {amount} {resource.name}"), so a button that does not wrap
+   floors itself and its row at the label's intrinsic width under the flex default `min-width: auto`.
+   The button takes the rider's five properties and its row the rider's three. No jsdom witness exists:
+   the sweep at 768 / 400 px is the witness (R4-G5 §14 row 10). */
+.archivist-pc-sheet .pc-regain-row {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+}
+.archivist-pc-sheet .pc-regain {
+  display: inline-block;
+  height: auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.archivist-pc-sheet .pc-regain-note {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+/* The reset caption takes `.pc-spend-caption`'s values verbatim: it is the same kind of thing beside
+   the same kind of button, and without a rule it rendered at body size next to the pill (review M-4).
+   `.pc-regain-cost` is only the badge's HOST, so it positions and does not restyle: `.pc-cost-badge`
+   carries its own size, weight and colour, and every other badge host in the plugin
+   (`.pc-feature-badge` on feature and boon rows, the item and weapon table cells) leaves the pill
+   alone, so the caption's `opacity` is deliberately NOT copied onto it. */
+.archivist-pc-sheet .pc-regain-reset {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+.archivist-pc-sheet .pc-regain-cost {
+  display: inline-flex;
+  align-items: center;
 }
 
 
@@ -7852,6 +8996,19 @@ body.theme-light .archivist-tag-atk:hover {
 /* position: relative anchors the absolutely-positioned situational stat tooltip. */
 .archivist-pc-sheet .pc-spell-dc-row { font-size: var(--pc-fs-body); color: var(--pc-text-soft); position: relative; }
 .archivist-pc-sheet .pc-spell-dc-row b { color: var(--pc-text-primary); }
+/* R4-G7 T8 RIDER-18 (F-CASTSUM): the summaries are the units of a separated caption (`renderSeparated`, sep `/`)
+   inside `.pc-spell-dc-list`, the clipping host (a DIV: `overflow` does not apply to an inline box). A unit is an
+   INLINE-BLOCK: a summary that does not fit at the end of a line moves to the next line WHOLE, and only a summary
+   wider than the whole row wraps inside itself (`max-width: 100%`, `white-space: normal`), where the no-break space
+   keeps its class name on its attack value, never alone on a line and never cut by the host's clip (a `nowrap`
+   unit wider than its host is CUT: live rider F-B, `actions.css`). The separator stays anchored to the unit's box,
+   so a unit that starts a line hides its `/` exactly as every other carrier does. `--pc-cap-gap` is 1em here, not
+   the 0.75em default: the `/ ` box is wider than `· ` (7.594 px against 6.344 px in the sheet face at 12 px, space
+   3.125 px, G6b `g6b-t8-sep-width.txt`), so at 0.75em the mark keeps 3.125 + 9 - (7.594 + 2) = 2.5 px of air on its
+   left, and at 1em 5.5 px, about the 5.1 px its own trailing space and the clip margin give it on its right. Not live
+   measured in this wave: S03 is the geometry witness. */
+.archivist-pc-sheet .pc-spell-dc-list { --pc-cap-gap: 1em; }
+.archivist-pc-sheet .pc-spell-dc-list .pc-cap-unit { display: inline-block; max-width: 100%; white-space: normal; }
 .archivist-pc-sheet .pc-spell-viewtoggle {
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); color: var(--pc-crimson);
   border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 2px 9px; cursor: pointer;
@@ -7897,10 +9054,25 @@ body.theme-light .archivist-tag-atk:hover {
    flex row) so it stacks BELOW the row. The dashed separator lives on the host
    so the row + its expanded block read as one unit above the line. */
 .archivist-pc-sheet .pc-spell-prep-row-host { display: block; border-bottom: 1px dashed var(--pc-tan-muted); }
-.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; }
+/* R4 {G5, G6} live rider N-3-7: the row WRAPS. Its trailing controls (the `.pc-buff-group` cluster
+   and the `.pc-spend` wrapper) used to be squeezed against a name cell that kept shrinking, which at
+   768 and 400 px left the Battle Master's cost sub-line ragged over three lines. A flex line breaks on
+   the items' hypothetical sizes, and the name cell's is its longest WORD (it is `flex: 1`, so its
+   base size is 0 and only the content minimum floors it), so a long name or sub-line does not push the
+   controls down on a wide sheet: they fall to their own line only when the row genuinely cannot hold
+   them. The Spells tab's prepare rows share this class and gain the same behaviour. */
+.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); row-gap: var(--pc-space-1); flex-wrap: wrap; padding: 6px 4px; }
 .archivist-pc-sheet .pc-spell-namewrap { flex: 1; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
 .archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }
+/* R4 {G5, G6} live rider 2, X-8-7: the sub-line breaks BETWEEN its halves, never inside one. A pool
+   row's line is written as one segment per half (`actions/entry-meta.ts` `renderMetaSub`), and at the
+   356 px column the run measured `Passive · 2` ending a line with `Sorcery Point` on the next. Since
+   R4-G6b §10 (Q-8) each part is a `pc-cap-unit` holding an out-of-flow separator and the BARE segment,
+   so the ` · ` is no longer text between the halves and a half that starts a wrapped line is never
+   preceded by a dangling mark; the segments keep `white-space: nowrap`, which is this rule.
+   The same protection V-11 gave the point-pool value and X-4-2 the buff duration. */
+.archivist-pc-sheet .pc-spell-sub-seg { white-space: nowrap; }
 
 /* Prepare counters, locked box, always tag, remove */
 .archivist-pc-sheet .pc-spell-prep-head { display: flex; align-items: center; justify-content: space-between; gap: var(--pc-space-3); flex-wrap: wrap; margin-bottom: var(--pc-space-2); }
@@ -7991,6 +9163,10 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-dtype-icon { display: inline-flex; width: 13px; height: 13px; flex-shrink: 0; }
 .archivist-pc-sheet .pc-spell-dtype-icon svg { width: 100%; height: 100%; fill: currentColor; }
 .archivist-pc-sheet .pc-spell-dtype-icon.dmg { color: var(--pc-crimson); }
+/* R4-G7 T8 RIDER-16: a scaled value authored as a SENTENCE (`casting_options[].desc`, e.g. "You gain 2d4 + 9
+   temporary hit points.") is a muted caption line in the effect cell, never the value chip: the chip is for a roll
+   or a count, and a sentence poured into it stretched it to the cell edge and wrapped it over two or three lines. */
+.archivist-pc-sheet .pc-spell-eff-note { margin-top: 2px; font-size: var(--pc-fs-small); font-style: italic; color: var(--pc-text-muted); line-height: 1.35; }
 .archivist-pc-sheet .pc-spell-comp { font-size: var(--pc-fs-small); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spell-dur { color: var(--pc-text-soft); }
 
@@ -8018,6 +9194,25 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-range { grid-column: 3; grid-row: 3; white-space: normal; }
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-hitdc { grid-column: 4; grid-row: 3; text-align: left; white-space: normal; }
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-comp { grid-column: 2 / -1; grid-row: 4; }
+
+  /* R4 {G5, G6} live rider 2, X-9-10 and X-2-14 (the W-1 family, on this row): below this tier the
+     NAME takes the whole first line and the row's controls fall under it as one block, instead of
+     the name being squeezed to whatever the controls leave. The name box grows from a zero basis and
+     the controls beside it do not shrink, so the live run measured `Frost / Rune` over a four-line
+     sub-line at 252 with the tracker and ACTIVATE beside it
+     (`viewports-supp/R4G5_RuneKnight3_S__400x700__panel-pool-rune-knight-runes__3.png`), and
+     `Quickened / Spell` the same way at 356 beside its ACTIVATE and spend pills
+     (`viewports/R4G5_WildMagic2024-3_S__768x600__panel-pool-metamagic__2.png`).
+     The basis is the row minus a little more than the toggle box and its gap (18 px + 8 px, with
+     slack): the name's hypothetical size fills the first line on its own, and adding any control
+     beside it exceeds the line, since the narrowest control on these rows is the 75 px ACTIVATE pill.
+     So every control is pushed to the next line and they share it among themselves, while the name,
+     which still grows, takes the whole first line. The slack is deliberate: the toggle box states an
+     18 px width with a 2 px border, so its OUTER width is 18 or 22 px depending on whether a global
+     `box-sizing: border-box` reaches it, and an exact 26 px basis would drop the name under the box
+     in the second case. A row with no box (a granted pick) simply has more slack on its name line.
+     Above the tier the basis stays 0 and the row is unchanged. */
+  .archivist-pc-sheet .pc-spell-prep-row > .pc-spell-namewrap { flex-basis: calc(100% - 40px); }
 }
 
 /* ── Source tag (Cast + Prepare + Add) ────────────────── */
@@ -8122,7 +9317,39 @@ body.theme-light .archivist-tag-atk:hover {
    hairline rule moves from the title onto the head so controls sit beside it). */
 .archivist-pc-sheet .pc-boon-block .pc-block-head { display: flex; align-items: baseline; gap: var(--pc-space-2); border-bottom: 1px solid var(--pc-crimson); margin: 0 0 var(--pc-space-2); padding-bottom: 3px; }
 .archivist-pc-sheet .pc-boon-block .pc-block-head .pc-block-title { border-bottom: none; padding-bottom: 0; margin: 0; flex: 1; min-width: 0; }
-.archivist-pc-sheet .pc-boon-block .pc-block-controls { display: flex; align-items: center; gap: var(--pc-space-2); flex-shrink: 0; }
+/* The controls strip on a boon card hosts the "granted" chip, the Activate button and, since R4-G4,
+   the spend control, so its `flex-shrink: 0` pinned an unshrinkable cluster around a 200 px button.
+   The no-squeeze property stays where it belongs, on `.pc-pool-active` itself, which already carries
+   `white-space: nowrap; flex-shrink: 0`. */
+.archivist-pc-sheet .pc-boon-block .pc-block-controls { display: flex; align-items: center; gap: var(--pc-space-2); flex-wrap: wrap; min-width: 0; max-width: 100%; }
+
+/* The tab head on EVERY pool layout (R4-G5 §5.2, not the two hinted ones alone): the pool save-DC
+   line (R4-G4 §11) and the owner widget. The div is created on first use, so a pool with neither is
+   still headless and these rules match nothing. */
+.archivist-pc-sheet .pc-pool-head { display: flex; flex-wrap: wrap; gap: 0.6em 1.2em; align-items: center; margin-bottom: 0.5em; }
+.archivist-pc-sheet .pc-pool-dc { font-weight: 600; }
+/* The resource line supplies its own gap, as the ONE wrapper these three declarations are copied
+   from does (.pc-card-resource in actions.css, which matches all three): createSpan inserts no
+   whitespace, so without this the name, the die and the pips abut. The name matches
+   .pc-card-resource-name. (.pc-spend was named here too and shares none of the three: it reads
+   inline-flex / 0.4em / baseline · review M-11.) */
+/* The line wraps (R4 {G5, G6} live rider N-3-8): at 400 px the name, the die and the tracker have to
+   fall onto a second line as whole parts rather than squeeze the tracker. */
+.archivist-pc-sheet .pc-pool-head-resource { display: flex; align-items: center; gap: var(--pc-space-2); row-gap: var(--pc-space-1); flex-wrap: wrap; }
+.archivist-pc-sheet .pc-pool-head-name { font-weight: 700; }
+
+/* The Active toggle and the pick's own uses tracker as ONE cluster on a pool row and a boon row
+   (R4-G5 §4.2.2 b). Sheet-scoped like every rule in this partial. It wraps its two children onto two
+   lines rather than squeezing them, and it never shrinks below the WIDEST of them: `min-width: 0` let
+   the box shrink to 43 px around a `white-space: nowrap; flex-shrink: 0` ACTIVATE pill that measures
+   75, and the pill then painted outside its own group, which is what the {G5, G6} live run measured on
+   both Battle Master probes (`clientWidth` 43-72 against `scrollWidth` 75 at 768 and 400, reading
+   `ACTIV`). `min-content` on a wrapping flex container IS the widest single child, so the group still
+   wraps the two-child case internally while the pill keeps its text whole.
+   `justify-content` and `align-items` are stated rather than left to the initial value because the
+   wrapped lines are what the reader sees at these widths: both lines start at the cluster's left edge,
+   under each other, and each line centres on its own cross axis. */
+.archivist-pc-sheet .pc-buff-group { display: inline-flex; align-items: center; justify-content: flex-start; gap: 0.35rem; row-gap: var(--pc-space-1); min-width: min-content; flex-wrap: wrap; }
 
 
 /* ============================================
@@ -8175,6 +9402,11 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-builder-rail {
   border-right: 1px solid var(--pc-tan); padding: 8px 6px; background: rgba(232, 213, 176, 0.32);
 }
+/* R4-G6b §7 (Q-5): the steps pin to the pane top while the rail cell keeps spanning the column.
+ * The scroller is the pane, `.view-content` (T0 live probe 2026-09-09, `g6b-t0-probe.txt` blocks
+ * A and B: it is the sheet's parent and computes `overflow: auto`, no transform / filter /
+ * contain), which the root's `overflow: clip` in `layout.css` no longer shadows. */
+.archivist-pc-sheet .pc-builder-rail-steps { position: sticky; top: 0; }
 .archivist-pc-sheet .pc-builder-step {
   display: flex; align-items: center; gap: 6px; padding: 6px;
   border-radius: var(--pc-radius-sm); cursor: pointer;
@@ -8265,6 +9497,32 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2014 { color: var(--pc-text-muted); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2024 { color: #1f3f7a; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.hb { color: #2f6f3a; }
+/* R4 {G5, G6} live rider V-9: the source tag, repeated under the NAME, for the widths where the Source
+   column is off the end of the table's horizontal scroller. `renderSelectionTable` always writes this
+   span (so the DOM can be asserted); the reveal is here, and only here. It takes `.pc-bsrc`'s own
+   typography and edition colours by carrying that class too, and drops its inline margin because on
+   its own line it starts at the name's left edge. Where it shows, the Source COLUMN is blanked, so no
+   table ever prints the compendium twice. The query is `pc-sheet` because a selection table also lives
+   in modals (the class and decision pickers), which are wide and declare no such container, so this
+   pair never fires there. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-sel-src-inline { display: none; margin-left: 0; }
+/* R4 {G5, G6} live rider 3, Y-1: the blanked Source cell is REMOVED from the row, not merely made
+   invisible. `12519086` (X-9-5) gave `.col-source` `white-space: normal` so the compendium name keeps
+   its year, and that reaches these rows too · where the cell is blanked but, at `visibility: hidden`,
+   still laid out: in a 110 px track "Player's Handbook (2024)" now takes THREE lines, so every row was
+   62 px tall against the two lines its visible cells need, and every builder view grew by about
+   1,788 px (8 scroll pages to 10) with no text change. `display: none` takes the cell out of the grid
+   instead. It is the LAST cell of both the head and the row and its track is the last of the inline
+   template `renderSelectionTable` writes (`components/builder/selection-table.ts`), so no other cell
+   shifts a track; the empty 110 px track is what a hidden cell already occupied, and the row's dashed
+   underline is drawn per cell, so it ended there before this change too. The MODAL tables keep the
+   X-9-5 wrap and their Source column: this block is scoped to `.archivist-pc-sheet` and, twice over,
+   only `.archivist-pc-sheet` declares the `pc-sheet` container (`containers.css`). */
+@container pc-sheet (max-width: 699px) {
+  .archivist-pc-sheet .pc-sel-src-inline { display: block; }
+  .archivist-pc-sheet .pc-btable-head > .col-source,
+  .archivist-pc-sheet .pc-btable-row > .col-source { display: none; }
+}
 
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bblock { min-width: 0; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bblock-fallback { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-muted); padding: var(--pc-space-3) 0; }
@@ -8321,6 +9579,63 @@ body.theme-light .archivist-tag-atk:hover {
   padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted);
   font-size: var(--pc-fs-body); color: var(--pc-text-soft);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* R4 {G5, G6} live rider 2, X-9-5: the Source cell WRAPS instead of being cut. Every row cell above
+   is a one-line ellipsis, and the Source track was a fixed 110 px everywhere, so a compendium name
+   ended before its year (`Player's Handbook (20…`) and the two editions of a species were separable
+   by the inline tag's colour alone. The year is the last thing in the name, which is exactly what an
+   end-ellipsis eats; wrapping keeps the whole name in the same track at the cost of a second line on
+   the rows that need one. This is the base rule and it is what the MODAL tables keep. The SHEET's
+   wide tier below overrides it, having widened the track instead. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row > .col-source {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* R4 {G5, G6} live rider 4, Y2-1: where the SHEET is wide enough to show the Source column, the
+   column is wide enough to read a compendium name on ONE line, and every row is one line tall.
+   MEASURED on `builder-steps/R4G5_SrdFighter4_B_sheet1132__step-race__{0,1,2}.png` (window 1200x800,
+   sidebars collapsed, `.archivist-pc-sheet` 1132, so the 699 tier above does NOT fire): the 119
+   Species rows measured 31 / 46 / 62 px, one line for `SRD 2024`, two for `MCDM`, three for
+   `Player's Handbook (2014)`, because X-9-5's wrap meets a 110 px track. Nothing was clipped; the
+   rhythm was.
+   The track widths behind the value, measured off that same shot at 1:1 (a text band's dark-pixel
+   extent per wrapped line, summed with the inter-line space solved from two names and then checked
+   against three more, which came out 179 vs 180, 180 vs 180 and 174 vs 170): the source cell needs
+   text + 5 px (`.pc-bsrc`'s own `margin-left`, which lands on the first line box) + 16 px (the
+   cell's `padding: 7px 8px`). The longest YEAR-BEARING name installed, `Dungeon Master's Guide
+   (2024)`, comes to 201 px, and `Player's Handbook (2024)` to 168 px. So the 160 px the finding
+   offered would still have cut BOTH Player's Handbook years, which is the exact information X-9-5
+   and V-9 bought; 220 px clears the longest year by 19 px and clears every installed name except
+   `Forgotten Realms: Heroes of Faerûn` (231 px), which the ellipsis below takes instead of a second
+   line. No year is ever the part that is eaten.
+   The cell is `nowrap` with an end-ellipsis so a name longer than the track is one line too: that,
+   not the width, is what makes all 119 rows equal. It must sit AFTER the base rule above, which it
+   ties with on specificity (both compute 0,3,0 · a container query adds none), so source order is
+   what decides it.
+   The track itself is an INLINE style (`renderSelectionTable`, `components/builder/selection-table.ts`),
+   which CSS cannot override one track of, so that function names it `var(--pc-btable-src-track, 110px)`
+   and this is the one rule that sets the property.
+   SCOPED twice over to the sheet: `.archivist-pc-sheet` is the only element that declares the
+   `pc-sheet` container (`containers.css`), and a container query matches only its DESCENDANTS. The
+   decision and class modals portal to the document body, so their tables keep the 110 px track and
+   X-9-5's wrap, with the year visible on a second line exactly as LIVE-D measured it.
+   THE COST, measured off the same shot: the table is `width: max-content` with `min-width: 100%`
+   inside a horizontal scroller, so the extra 110 px comes off the fluid Name track first, and only
+   where the tracks exceed the host does it become extra scrolling. The Species step passes
+   `expandSelect: true` (`components/builder/race-step.ts`), so it emits NO 30 px add column and its
+   tracks are `minmax(200px, 1fr) 90px 90px` plus this one. The header underline spans x 246..1147
+   there, so at a 1132 px sheet the host is 902 px: Name held 612 px and now holds 502 px, and the
+   table's own minimum goes from 490 px to 600 px. On that single sheet-to-host reading (the host is
+   230 px under the sheet) the scroller starts at a sheet of about 830 px instead of about 720 px. */
+@container pc-sheet (min-width: 700px) {
+  .archivist-pc-sheet .pc-btable { --pc-btable-src-track: 220px; }
+  .archivist-pc-sheet .pc-btable-row > .col-source {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row { cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row.pc-row-open > * { border-bottom-color: transparent; background: var(--pc-row-open-bg); }
@@ -8831,8 +10146,39 @@ body.theme-light .archivist-tag-atk:hover {
   padding: 15px 18px 14px;
   position: relative;
 }
+/* R4-G7 T7 fix round 1, RIDER-6 (found by this round's own eye pass on its own race frames, then
+   MEASURED live). The badge was `position: absolute; top: 11px; right: 13px` inside the relatively
+   positioned `.pc-cblock`, so it had NO width in flow: the card title `.pc-cb-name` (an h3) ran the
+   full card width UNDERNEATH it and a long title printed letter on letter through the grey source
+   text. The driver's card-head witness on the pre-fix build measured the badge box
+   `l 753 · r 919 · t 1826 · b 1840` intersecting the title box of `Goliath; Frost Giant Ancestry`,
+   and the same on the background card (`Forgotten Realms: Heroes of Faerun · 2024` over `Ice Fisher`).
+   This is the same defect class R4-G6b's rider R-4 fixed for the SHEET's `.pc-resource-card
+   .source-badge`; the builder's chronicle card is a second surface of it, and the comment below
+   already records the third (the band-right controls in owned-card mode, solved there by moving the
+   source inline).
+   A RIGHT FLOAT takes part in flow, so the title's line boxes shorten by exactly the badge's own
+   width, whatever that text is and in whatever face the theme renders it: no width is hardcoded, so
+   the reserve can never be the wrong size. The margins REPRODUCE the old position rather than
+   inventing a new one. `-4px` top: an absolute `top: 11px` is measured from the card's padding box,
+   while a float begins after the card's `padding-top: 15px`, so 11 - 15 = -4. `-5px` right: an
+   absolute `right: 13px` is measured from the padding box, while a float sits at the content edge,
+   which is the 1px border plus `padding-right: 18px` in, so 13 - 18 = -5. `12px` left keeps a gap
+   between the badge and the title text it now makes room for.
+   WHERE THIS RULE REACHES, measured by reading every `renderChronicleBlock` call site rather than
+   assumed. FIVE call sites pass a `badge` with NO `bandRight`, so five surfaces render the corner badge:
+   the builder's `race-step.ts` and `background-step.ts` preview cards (both measured above), the
+   builder's `class-modal.ts` browse card, and the SHEET's own `passive/race-block.ts` and
+   `passive/background-block.ts`, which render inside an EXPANDED race or background row on the Passive
+   tab. No capture in this phase expands those two rows, which is why no sheet frame shows the collision;
+   the surface is on the sheet all the same, and `g7-t8-riders.md` records it.
+   Owned cards (`bandRight`) render no corner badge at all, because the source rides the sub-line instead.
+   `collapsible` and `bandRight` are independent options, so a `collapsible` card without `bandRight`
+   would put a float beside a flex `.pc-cb-bh`, which establishes its own formatting context and would be
+   pushed below the float; MEASURED, no such call site exists: `class-step.ts` is the only caller that
+   passes `collapsible: true` and it passes `bandRight` in the same object. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-badge {
-  position: absolute; top: 11px; right: 13px;
+  position: static; float: right; margin: -4px -5px 0 12px;
   font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
   font-family: var(--pc-font-sans);
 }
@@ -8863,9 +10209,13 @@ body.theme-light .archivist-tag-atk:hover {
    the absolute corner badge — which would collide with the band-right LV/REMOVE
    controls — and rides the sub-line as a quiet trailing run, matching the badge's
    muted sans dress so it reads as metadata, not part of the italic identity sub. */
+/* R4 {G5, G6} live rider 2, X-9-2: the segment carries its own leading ` · ` separator (the span is
+   written inside it) and never breaks, so a sub-line too long for the card moves the separator and
+   the source to the next line together instead of leaving the `·` dangling at the end of a line. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-src {
   font-style: normal; font-family: var(--pc-font-sans);
   font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub-sep { color: rgba(0, 0, 0, 0.4); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-flavor {
@@ -8938,15 +10288,37 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-name {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body);
 }
+/* R4-G7 T7 live rider RIDER-3. The value is `nowrap` and `margin-left: auto` inside the
+   `.pc-dstrip-head` flex row, and a flex child's default `min-width: auto` refuses to shrink below its
+   content width, so a long resolved summary ran past the row and the card CUT it mid-word with no
+   ellipsis: WITNESSED LIVE at S00 on `conv-fighter2024-5-B`'s Class step, where a choose-4 Weapon
+   Mastery row read `Antimatter Rifle, Antimatter Rifle, Automatic Pistol, Automa` and stopped at the
+   card edge. `min-width: 0` lets it shrink, and the clip becomes an honest ellipsis; the name keeps its
+   space first because the value is the flexible end of the row. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-val {
   margin-left: auto; font-size: var(--pc-fs-small); font-weight: 700; white-space: nowrap;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis;
 }
 /* Header wrapper (SP2 Plan 5, smoke r5): a 100%-basis flex child that hosts the
    pill/bang/name/val/chevron on one baseline-aligned line and owns the collapse
    click + pointer. The nest is a SEPARATE row child below it, so nest clicks
    never reach this toggle. Layout matches the legacy direct-child row exactly. */
+/* R4-G7 T7 FIX ROUND 1, RIDER-3 RE-TAKEN AT THE CAUSE. The first rider put `min-width: 0` on the VALUE
+   and did not fix the defect: MEASURED on the captured frames (2048 x 1600), the value's glyphs reached
+   x 1941 before it and x 1940 after it while the row's border sat at x 1905 in every one, so the value
+   still escaped its row by about 35 px and was still cut with no ellipsis. The rider's CSS was live, so
+   it was an ineffective fix, not an undeployed one.
+   THE CAUSE IS THIS BOX. `.pc-dstrip-head` is itself a flex ITEM of the wrapping `.pc-dstrip-row`, and a
+   flex item's default `min-width: auto` refuses to shrink below its content; its content includes the
+   `white-space: nowrap` value, so the HEAD is what overflows and the value is never the box that runs out
+   of room, which is why `text-overflow: ellipsis` on the value could never fire. MEASURED LIVE at S05-fx1
+   part A on `conv-fighter2024-5-B`'s Class step, Weapon Mastery row: row right 953, head right 1017,
+   value right 1017, overflow 64 px, `min-width: auto` on the head and `0px` on the value.
+   `min-width: 0` lets the head shrink to its row, which makes the value the flexible child and lets the
+   value's own (already shipped) shrink-and-ellipsis rules do their job. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-head {
   flex-basis: 100%; display: flex; align-items: baseline; gap: 9px;
+  min-width: 0;
   cursor: pointer; border-radius: var(--pc-radius-sm);
 }
 /* Collapse chevron — fold/card idiom (crimson, ~12px), sits at the far right
@@ -9097,6 +10469,27 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:last-child { border-bottom: none; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-n { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
+/* Resource tracker on a race trait (R4-G3a §11): the pips sit on the name line,
+   the description keeps its own full-width line under them. The whole row turns
+   into a wrapping flex ONLY when a `.pc-cb-trait-track` host is present, so a
+   trait without resources keeps the plain block layout it has always had; since
+   R4-G3b §11 that host serves only COSTLESS traits, so a routed trait (whose
+   tracker lives on its Actions row) keeps the plain layout too
+   (`:has()` is supported in every Chromium >= 105, i.e. all current Obsidian
+   builds; the same floor components.css already relies on). Nothing here dresses
+   the tracker itself: the pips are `.archivist-toggle-box` (archivist-dnd.css)
+   and the wrapper plus the italic recovery caption are `.pc-charge-boxes` /
+   `.pc-charge-recovery` (actions.css). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:has(> .pc-cb-trait-track) {
+  display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait > .pc-cb-trait-track { margin-left: auto; }
+/* The shared pip row carries a `margin: 6px 0 12px` for the stat-block contexts
+   it was written for (archivist-dnd.css); on this one-line trait header that
+   margin only skews the pips against the name, so it is zeroed HERE (scoped to
+   the trait track, leaving every other tracker host untouched). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait > .pc-cb-trait-track .archivist-toggle-box-row { margin: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:has(> .pc-cb-trait-track) > .pc-cb-trait-d { flex: 0 0 100%; }
 /* Markdown-rendered description dress (smoke r7): trait + decision descriptions
    now render through the shared markdown path, so their `p`/`table`/`ul` must
    inherit the quiet dress. Tables follow the progression cast-table idiom (caps
@@ -9142,6 +10535,13 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tr:last-child td { border-bottom: none; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d tbody tr:nth-child(even) td,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tbody tr:nth-child(even) td { background: rgba(232, 213, 176, 0.28); }
+/* R4-G3b §10: a background roll-table cell renders through the markdown path,
+   which wraps the cell text in a `<p>` carrying the app's own paragraph margin
+   (the `.pc-cb-trait-d > p` rule above is a CHILD selector and never reaches it).
+   EXPECTED-NOT-MEASURED (§10.2.2: no call site rendered markdown into a `<td>`
+   before Task 11); verified at the G3b live verify; dropped if it changes
+   nothing. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d td > p { margin: 0; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-more { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-crimson); cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop { display: flex; align-items: flex-start; gap: 0.5em; margin: 0.3em 0; font-size: 12.5px; color: var(--pc-text-primary); line-height: 1.5; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop-l { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); flex: none; min-width: 96px; margin-top: 2px; }
@@ -9501,3 +10901,211 @@ body.theme-light .archivist-tag-atk:hover {
   padding: 4px 10px; cursor: pointer;
 }
 .pc-spellability-launcher:hover { color: var(--pc-text-primary); border-color: var(--pc-crimson); }
+
+
+/* ============================================
+   pc/proficiency-modal.css
+   ============================================ */
+/* Proficiency override modal (R4-P3b). Frame comes from .archivist-modal;
+   everything here is layout + token-mapped typography, scoped under
+   .pc-prof-modal.
+
+   Four traps this partial is written around, all verified:
+
+   1. EVERY selector is scoped. The approved mockup's proposal block is entirely
+      unscoped and each of its `button` rules is (0,1,0), which LOSES to
+      Obsidian's own `button:not(.clickable-icon)` at (0,1,1) · the buttons would
+      silently keep Obsidian's dark default chrome. Button rules therefore use
+      the (0,2,0) form `.pc-prof-modal button.pc-prof-modal-pip`, the same shape
+      spell-ability-modal.css uses for .pc-ability-seg.
+   2. The sheet's blanket button reset (components.css) does NOT reach a
+      portalled modal, so it is redone per-modal here · including
+      `display:inline-block; height:auto`, which undoes Obsidian's forced button
+      height (the passive-tab gotcha), and `box-shadow:none` in every state,
+      which kills var(--input-shadow).
+   3. The active-button text colour MUST be a literal #fff. --pc-white exists in
+      tokens.css but the .archivist-modal token block redeclares only a SUBSET of
+      that list and omits it, exactly as it omits --pc-fs-display (see
+      max-hp-modal.css). var(--pc-white) would resolve to nothing and render
+      dark-on-crimson.
+   4. Input focus. The global input box-shadow null computes to (0,3,1) and fires
+      on :focus too, so the focus cue here is a border, asserted at an equal
+      (0,3,1) that wins by SOURCE ORDER · this partial is the last @import in the
+      barrel. Do not move it earlier in styles/index.css.
+
+   No .vc-* scaffolding (mockup-only) and no bare --pc-parchment (undefined
+   inside .archivist-modal) appear below. */
+
+.pc-prof-modal { min-width: 360px; max-width: 420px; font-family: var(--pc-font-serif); }
+.pc-prof-modal-title {
+  margin: 0 0 4px;
+  font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase; color: var(--pc-text-primary); text-align: center;
+}
+.pc-prof-modal-sub {
+  margin: 0 0 12px; text-align: center;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  color: var(--pc-text-soft); opacity: 0.85;
+}
+
+/* ── known chips ── */
+.pc-prof-modal-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.pc-prof-modal-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  color: var(--pc-text-primary);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 2px 8px; background: transparent;
+}
+/* Rules-granted: dashed border + softer ink. It still carries its ×, because
+   suppressing a granted entry is the whole point of this modal. */
+.pc-prof-modal-chip.granted { border-style: dashed; color: var(--pc-text-soft); }
+.pc-prof-modal-chip-src {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  color: var(--pc-text-soft); letter-spacing: 0.04em;
+}
+.pc-prof-modal-chip-x {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  color: var(--pc-text-soft); cursor: pointer;
+}
+.pc-prof-modal-chip-x:hover { color: var(--pc-crimson); }
+
+/* R4-G4 §9.3 (UR1): the per-tool tri control. A <button> inside this modal, so the
+   selector carries `button` and the `display: inline-block; height: auto` pair for the
+   same reason `.pc-prof-modal-pip` below does · Obsidian forces a height on bare
+   buttons and the chip is an inline-flex row. Scoped under `.pc-prof-modal`, never
+   bare (the R3-P4 segmented-control lesson). */
+.pc-prof-modal button.pc-prof-modal-tri {
+  display: inline-block; height: auto;
+  margin-left: 0.3em; padding: 0 0.35em; line-height: 1;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  background-color: transparent; color: var(--pc-text-soft);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  cursor: pointer; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-tri.expertise { font-weight: 700; color: var(--pc-crimson); border-color: var(--pc-crimson); }
+.pc-prof-modal button.pc-prof-modal-tri:hover,
+.pc-prof-modal button.pc-prof-modal-tri:focus,
+.pc-prof-modal button.pc-prof-modal-tri:focus-visible,
+.pc-prof-modal button.pc-prof-modal-tri:active {
+  color: var(--pc-crimson); border-color: var(--pc-crimson); box-shadow: none;
+}
+/* The chip itself, when the tool carries expertise. Emphasis only · every chip on this
+   row is already proficient, so the treatment is free to mean expertise and nothing else
+   (the same reasoning the sheet panel's `.pc-prof-val.expertise` rule records). */
+.pc-prof-modal .pc-prof-modal-chip.expertise { border-color: var(--pc-crimson); }
+
+/* The two empty states. They share a dress but NOT a class: the next task and
+   the live verification select by class, and one shared class would match both
+   ambiguously. */
+.pc-prof-modal-chips-empty,
+.pc-prof-modal-list-empty {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted); font-style: italic; padding: 4px 2px;
+}
+
+/* ── filter row ── */
+.pc-prof-modal-searchrow { display: flex; gap: 6px; align-items: center; margin: 8px 0 4px; }
+.pc-prof-modal input.pc-prof-modal-filter {
+  flex: 1 1 auto; min-width: 0; box-sizing: border-box; margin: 0;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  padding: 4px 8px; border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-md); background: transparent;
+  color: var(--pc-text-primary); box-shadow: none;
+}
+.pc-prof-modal input.pc-prof-modal-filter:focus {
+  border-color: var(--pc-crimson); box-shadow: none; outline: none;
+}
+.pc-prof-modal button.pc-prof-modal-custombtn {
+  display: inline-block; height: auto; flex: 0 0 auto; white-space: nowrap;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  color: var(--pc-crimson); background-color: transparent;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 4px 10px; cursor: pointer; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-custombtn:hover,
+.pc-prof-modal button.pc-prof-modal-custombtn:focus,
+.pc-prof-modal button.pc-prof-modal-custombtn:focus-visible,
+.pc-prof-modal button.pc-prof-modal-custombtn:active {
+  border-color: var(--pc-crimson); background-color: var(--pc-row-open-bg); box-shadow: none;
+}
+
+/* ── custom-entry form (hidden until "+ Custom") ── */
+.pc-prof-modal-customform { display: none; }
+.pc-prof-modal-customform.is-open {
+  display: flex; gap: 6px; align-items: center; margin-top: 8px;
+  padding: 8px; border: 1px dashed var(--pc-crimson);
+  border-radius: var(--pc-radius-md); background: var(--pc-row-open-bg);
+}
+.pc-prof-modal input.pc-prof-modal-custominput {
+  flex: 1 1 auto; min-width: 0; box-sizing: border-box; margin: 0;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  padding: 4px 8px; border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-md); background: var(--pc-parchment-light);
+  color: var(--pc-text-primary); box-shadow: none;
+}
+.pc-prof-modal input.pc-prof-modal-custominput:focus {
+  border-color: var(--pc-crimson); box-shadow: none; outline: none;
+}
+.pc-prof-modal input.pc-prof-modal-custominput.is-error { border-color: var(--pc-crimson); }
+.pc-prof-modal button.pc-prof-modal-ok {
+  display: inline-block; height: auto;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700;
+  /* Literal #fff · see trap 3 in this file's header. */
+  background-color: var(--pc-crimson); color: #fff;
+  border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-md);
+  padding: 4px 12px; cursor: pointer; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-ok:hover,
+.pc-prof-modal button.pc-prof-modal-ok:focus,
+.pc-prof-modal button.pc-prof-modal-ok:focus-visible,
+.pc-prof-modal button.pc-prof-modal-ok:active {
+  background-color: var(--pc-crimson-light); color: #fff; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-cancel {
+  display: inline-block; height: auto;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  background-color: transparent; color: var(--pc-text-soft); border: none;
+  padding: 4px 6px; cursor: pointer; text-decoration: underline; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-cancel:hover,
+.pc-prof-modal button.pc-prof-modal-cancel:focus,
+.pc-prof-modal button.pc-prof-modal-cancel:focus-visible,
+.pc-prof-modal button.pc-prof-modal-cancel:active {
+  color: var(--pc-crimson); box-shadow: none;
+}
+
+/* ── addable list. Its own scroll container: 35 tools plus 4 group headers
+      overflow the modal otherwise. ── */
+.pc-prof-modal-list { max-height: 300px; overflow-y: auto; }
+.pc-prof-modal-group {
+  margin-top: 10px; padding-top: 6px; border-top: 1px dashed var(--pc-tan);
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase;
+  color: var(--pc-text-soft);
+}
+.pc-prof-modal-group:first-child { border-top: none; margin-top: 0; }
+.pc-prof-modal-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 5px 6px; border-bottom: 1px solid var(--pc-tan-muted);
+}
+.pc-prof-modal-row:last-child { border-bottom: 0; }
+.pc-prof-modal-row:hover { background: var(--pc-row-open-bg); }
+.pc-prof-modal-name {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+}
+.pc-prof-modal button.pc-prof-modal-pip {
+  display: inline-block; height: auto;
+  width: 22px; flex: 0 0 22px; line-height: 1; padding: 4px 0;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700;
+  background-color: transparent; color: var(--pc-text-soft);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  cursor: pointer; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-pip:hover,
+.pc-prof-modal button.pc-prof-modal-pip:focus,
+.pc-prof-modal button.pc-prof-modal-pip:focus-visible,
+.pc-prof-modal button.pc-prof-modal-pip:active {
+  color: var(--pc-crimson); border-color: var(--pc-crimson); box-shadow: none;
+}

@@ -4,6 +4,7 @@ import { renderWeaponRow } from "../packages/obsidian/src/modules/pc/components/
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { AttackRow } from "@archivist-gg/dnd5e/pc/pc.types";
+import { extractDiceNotation } from "../packages/obsidian/src/shared/rendering/renderer-utils";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -232,7 +233,8 @@ describe("renderWeaponRow", () => {
     const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
     const adv = hitCell.querySelector(".pc-cond-tag.pc-cond-tag-adv");
     expect(adv).not.toBeNull();
-    expect(adv?.textContent).toBe("ADV");
+    // R4-G7 T8 RIDER-20: this entry carries a `condition`, so the tag is marked conditional (`ADV` + dnd5e's mark).
+    expect(adv?.textContent).toBe("ADV*");
   });
 
   it("renders a DIS chip for an attack-scope disadvantage roll-modifier", () => {
@@ -243,6 +245,18 @@ describe("renderWeaponRow", () => {
     ]));
     const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
     expect(hitCell.querySelector(".pc-cond-tag.pc-cond-tag-dis")?.textContent).toBe("DIS");
+  });
+
+  // R4-G3a §6.2.1/§6.2.2 · before this phase the hit cell spelled `mode === "advantage" ? "ADV"
+  // : "DIS"`, so a Kensei-shaped `reroll` rendered "DIS". The text is now ROLL_MODE_TAG's.
+  it('renders "RR" in the hit cell for a reroll attack roll-modifier', () => {
+    const root = mountContainer();
+    const attacks = [sword()];
+    renderWeapons(root, attacks, ctxWithRollModifiers(attacks, [
+      { mode: "reroll", roll: "attack", label: "Way of the Kensei" },
+    ]));
+    const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
+    expect(hitCell.querySelector(".pc-cond-tag.pc-cond-tag-rider")?.textContent).toBe("RR");
   });
 
   it("renders a crit caption in the damage cell when critRange < 20", () => {
@@ -258,6 +272,21 @@ describe("renderWeaponRow", () => {
     const crit = root.querySelector(".pc-weapon-crit");
     expect(crit).not.toBeNull();
     expect(crit?.textContent).toBe("crit 19–20");
+  });
+
+  // R4-G7 T8 RIDER-25 (F-CRIT): the caption is its own BLOCK line under the damage, never a span glued to the damage text
+  // (the live frame read "1+2 bludgeoningcrit / 18-20"). The composed text is unchanged; the element is what carries the break.
+  it("renders the crit caption as its own block element after the damage text, not an inline run-on", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "unarmed-strike", name: "Unarmed Strike", range: "5 ft", toHit: 8,
+      damageDice: "1+2", damageType: "bludgeoning", properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] }, informational: [], slotKey: "mainhand", critRange: 18,
+    }] as unknown as AttackRow[];
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
+    const crit = root.querySelector(".pc-weapon-damage .pc-weapon-crit");
+    expect(crit?.tagName).toBe("DIV");
+    expect(crit?.textContent).toBe("crit 18–20");
   });
 
   it("renders no crit caption when critRange is undefined", () => {
@@ -349,5 +378,44 @@ describe("renderWeaponRow — D1 expand persistence", () => {
     const expand2 = (root2.querySelector(".pc-action-row") as HTMLElement)
       .nextElementSibling as HTMLElement & { hidden: boolean };
     expect(expand2.hidden).toBe(false);
+  });
+});
+
+// `damageDice: "4"` is the engine's evaluated flat base (1 + STR 3) since R4-G7 T8 RIDER-10; "1+3" is no longer an
+// output the engine can produce.
+const unarmed = (): AttackRow => ({
+  id: "unarmed-strike", name: "Unarmed Strike", unarmed: true, range: "5 ft", toHit: 5, damageDice: "4",
+  damageType: "bludgeoning", properties: [], proficient: true, subLabel: "Unarmed", actionCost: "action",
+  breakdown: { toHit: [{ source: "STR modifier", amount: 3, kind: "ability" }, { source: "Proficiency bonus", amount: 2, kind: "ability" }],
+               damage: [{ source: "Base damage", amount: 0, kind: "ability" }, { source: "STR modifier", amount: 3, kind: "ability" }] },
+});
+
+describe("the Unarmed Strike row's expand (R4-G6b §5.5)", () => {
+  it("renders the breakdown card, never the item record, even beside a slotless equipped entry", () => {
+    const root = mountContainer();
+    const ctx = { ...ctxWithAttacks([unarmed()]), resolved: { definition: { equipment: [{ item: "[[x]]", equipped: true }] } } as never };
+    renderWeapons(root, [unarmed()], ctx);
+    const card = root.querySelector(".pc-action-expand .pc-unarmed-card");
+    expect(card).not.toBeNull();
+    expect(root.querySelector(".pc-action-expand")?.textContent).not.toContain("no item record");
+    expect(card?.querySelectorAll(".pc-unarmed-card-head").length).toBe(2);
+    expect(card?.textContent).toContain("Proficiency bonus");
+    expect(card?.textContent).toContain("+2");
+  });
+
+  // CHARACTERISATION (spec §14.7), green by construction: the engine now prints a flat Unarmed Strike base EVALUATED
+  // and floored at 0 (dnd5e `buildUnarmedRow`, R4-G7 T8 RIDER-10), so a STR 8 character's row reads `0`. This
+  // proves the one reader of that string turns a bare `0` into a real rollable damage tag, never the `<code>`
+  // fallback `renderTextWithInlineTags` uses for text it cannot parse.
+  it("a flat `0` damage row renders a rollable damage tag whose roll notation is `0`", () => {
+    const root = mountContainer();
+    const zero = { ...unarmed(), toHit: 1, damageDice: "0" };
+    renderWeapons(root, [zero], ctxWithAttacks([zero]));
+    const tag = root.querySelector(".pc-weapon-damage .archivist-tag-damage") as HTMLElement | null;
+    expect(tag).not.toBeNull();
+    expect(tag?.textContent).toBe("0 bludgeoning");
+    expect(root.querySelector(".pc-weapon-damage code")).toBeNull();
+    expect(tag?.getAttribute("data-dice-type")).toBe("damage");
+    expect(extractDiceNotation({ type: "damage", content: tag?.getAttribute("data-dice-notation") ?? "" })).toBe("0");
   });
 });

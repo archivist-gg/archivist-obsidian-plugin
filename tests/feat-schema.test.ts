@@ -38,6 +38,19 @@ describe("featEntitySchema", () => {
     expect(featEntitySchema.safeParse(input).success).toBe(true);
   });
 
+  it("accepts the campaign and exclusive-feat-category converter arms (R4-G1a D4)", () => {
+    const input = {
+      ...minimalFeat,
+      prerequisites: [{ kind: "campaign", slug: "eberron" }, { kind: "exclusive-feat-category", slug: "D" }],
+    };
+    const parsed = featEntitySchema.safeParse(input);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.prerequisites).toEqual([
+      { kind: "campaign", slug: "eberron" },
+      { kind: "exclusive-feat-category", slug: "D" },
+    ]);
+  });
+
   it("rejects unknown category", () => {
     expect(featEntitySchema.safeParse({ ...minimalFeat, category: "boon" }).success).toBe(false);
   });

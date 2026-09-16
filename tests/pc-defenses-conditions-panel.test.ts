@@ -1,20 +1,74 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { DefensesConditionsPanel } from "../packages/obsidian/src/modules/pc/components/defenses-conditions-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import type { EntityRegistry } from "@archivist-gg/core";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
 type Defenses = ComponentRenderContext["derived"]["defenses"];
+type DefenseEntry = Defenses["resistances"][number];
+type DefenseOrigin = DefenseEntry["origin"];
+
+/**
+ * Seed a bucket with `DefenseEntry` objects. `value` is the canonical slug the
+ * mutators key on; `label` is the first-spelling-wins display string. These seeds
+ * use the same string for both, which is what the buckets held before R4-P5
+ * reshaped them from `string[]`.
+ */
+function ents(...vals: string[]): DefenseEntry[] {
+  return vals.map((v) => ({ value: v, label: v, origin: "manual" as const }));
+}
+
+/**
+ * One entry whose AUTHORED spelling differs from the canonical slug, with a settable
+ * origin. `ents` above can express neither: while every fixture in this file used it no
+ * assertion could tell which of the two fields the panel read (the `entry.value` →
+ * `entry.label` mutation on both mutator call sites was measured surviving the whole
+ * suite), and every entry it seeds is `origin: "manual"`.
+ *
+ * `sources` / `condition` are R4-G3a's grant attribution and qualifier. Both are OPTIONAL on
+ * DefenseEntry, and omitting them is what a manual entry (and an equipment entry, whose
+ * attribution half stays deferred) actually looks like · so the tooltip fixtures pass them
+ * and the negative controls leave them off.
+ */
+function ent(
+  value: string, label: string, origin: DefenseOrigin = "grant",
+  sources?: string[], condition?: string,
+): DefenseEntry {
+  return { value, label, origin, ...(sources ? { sources } : {}), ...(condition ? { condition } : {}) };
+}
+
+/** R4-G2 Task 6: chip labels come from the registered `condition` entity, not
+ *  from a table in the engine, so a fixture that asserts a display spelling has
+ *  to install the entity that carries it — exactly as a real vault does. Only
+ *  the three this file names are registered; anything else falls back to
+ *  `titleCase(slug)`, which is the retired table's spelling anyway. */
+function conditionRegistry(): EntityRegistry {
+  return buildMockRegistry(
+    [["charmed", "Charmed"], ["prone", "Prone"], ["poisoned", "Poisoned"]].map(([bare, name]) => ({
+      slug: `srd-2024_condition_${bare}`,
+      entityType: "condition",
+      name,
+      compendium: "SRD 2024",
+      data: { slug: `srd-2024_condition_${bare}`, name, edition: "2024", source: "SRD 5.2", description: "" },
+    })),
+  );
+}
+
 function ctx(p: { defenses?: Defenses; conditions?: string[]; exhaustion?: number; editState?: unknown } = {}): ComponentRenderContext {
   return {
     derived: {
       defenses: p.defenses ?? {
-        resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [],
+        resistances: ents(), immunities: ents(), vulnerabilities: ents(), condition_immunities: ents(),
       },
     },
     resolved: { state: { conditions: p.conditions ?? [], exhaustion: p.exhaustion ?? 0 } },
+    services: { entities: conditionRegistry(), plugin: { settings: { hiddenCompendiums: [] } } },
     editState: p.editState,
   } as unknown as ComponentRenderContext;
 }
@@ -32,10 +86,10 @@ describe("DefensesConditionsPanel", () => {
     const root = mountContainer();
     new DefensesConditionsPanel().render(root, ctx({
       defenses: {
-        resistances: ["fire", "cold"],
-        immunities: ["poison"],
-        vulnerabilities: ["radiant"],
-        condition_immunities: ["charmed"],
+        resistances: ents("fire", "cold"),
+        immunities: ents("poison"),
+        vulnerabilities: ents("radiant"),
+        condition_immunities: ents("charmed"),
       },
     }));
     const left = root.querySelector(".pc-def-cond-left");
@@ -121,10 +175,10 @@ describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
     const root = mountContainer();
     new DefensesConditionsPanel().render(root, ctx({
       defenses: {
-        resistances: ["fire"],
-        immunities: [],
-        vulnerabilities: [],
-        condition_immunities: ["charmed"],
+        resistances: ents("fire"),
+        immunities: ents(),
+        vulnerabilities: ents(),
+        condition_immunities: ents("charmed"),
       },
       editState: {},
     }));
@@ -147,7 +201,7 @@ describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
     const root = mountContainer();
     const editState = { removeDefense: vi.fn() };
     new DefensesConditionsPanel().render(root, ctx({
-      defenses: { resistances: ["fire", "cold"], immunities: [], vulnerabilities: [], condition_immunities: [] },
+      defenses: { resistances: ents("fire", "cold"), immunities: ents(), vulnerabilities: ents(), condition_immunities: ents() },
       editState,
     }));
     const chips = root.querySelectorAll(".pc-def-cond-left .pc-def-chip");
@@ -160,11 +214,200 @@ describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
     const root = mountContainer();
     const editState = { removeConditionImmunity: vi.fn() };
     new DefensesConditionsPanel().render(root, ctx({
-      defenses: { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: ["charmed"] },
+      defenses: { resistances: ents(), immunities: ents(), vulnerabilities: ents(), condition_immunities: ents("charmed") },
       editState,
     }));
     const chip = root.querySelector(".pc-def-cond-left .pc-def-chip")!;
     (chip.querySelector<HTMLElement>(".pc-def-chip-x"))!.click();
     expect(editState.removeConditionImmunity).toHaveBeenCalledWith("charmed");
+  });
+
+  it("× hands the mutators the canonical `value`, never the displayed `label`", () => {
+    const root = mountContainer();
+    const editState = { removeDefense: vi.fn(), removeConditionImmunity: vi.fn() };
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: {
+        resistances: [ent("psychic", "Psychic")],
+        immunities: ents(),
+        vulnerabilities: ents(),
+        condition_immunities: [ent("charmed", "CHARMED")],
+      },
+      editState,
+    }));
+    const chips = [...root.querySelectorAll<HTMLElement>(".pc-def-cond-left .pc-def-chip")];
+    expect(chips.length).toBe(2);
+    // The chip DISPLAYS the authored spelling (and the PascalCase table for conditions)…
+    expect(chips.map((c) => c.querySelector(".pc-def-chip-label")?.textContent)).toEqual([
+      "Psychic",
+      "Charmed",
+    ]);
+    // …but both mutators receive the canonical slug, which is what `overrides.defenses.*
+    // .remove[]` and the manual list are matched on.
+    chips[0].querySelector<HTMLElement>(".pc-def-chip-x")!.click();
+    expect(editState.removeDefense).toHaveBeenCalledWith("resistances", "psychic");
+    chips[1].querySelector<HTMLElement>(".pc-def-chip-x")!.click();
+    expect(editState.removeConditionImmunity).toHaveBeenCalledWith("charmed");
+  });
+});
+
+describe("DefensesConditionsPanel · granted marking + data-type addressing", () => {
+  it("adds .granted to a chip whose origin is 'grant' OR 'equipment', and not to a manual one", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: {
+        // Three origins in one bucket · a `=== "grant"` test would drop the equipment chip,
+        // so the equipment seed is what pins the predicate to `!== "manual"`.
+        resistances: [ent("fire", "Fire", "manual"), ent("psychic", "Psychic", "grant"), ent("cold", "Cold", "equipment")],
+        immunities: ents(),
+        vulnerabilities: ents(),
+        condition_immunities: ents(),
+      },
+    }));
+    const chips = [...root.querySelectorAll<HTMLElement>(".pc-def-cond-left .pc-def-chip")];
+    expect(chips.length).toBe(3);
+    expect(chips.map((c) => c.classList.contains("granted"))).toEqual([false, true, true]);
+  });
+
+  it("chip `data-type` carries the canonical `value`, never the authored or displayed label", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: {
+        resistances: [ent("psychic", "Psychic")],
+        immunities: ents(),
+        vulnerabilities: ents(),
+        // Condition immunities display a THIRD spelling (the PascalCase table), so this chip
+        // separates `value` from `label` and from the rendered text at the same time.
+        condition_immunities: [ent("charmed", "CHARMED")],
+      },
+    }));
+    const chips = [...root.querySelectorAll<HTMLElement>(".pc-def-cond-left .pc-def-chip")];
+    expect(chips.length).toBe(2);
+    expect(chips.map((c) => c.getAttribute("data-type"))).toEqual(["psychic", "charmed"]);
+    expect(chips.map((c) => c.querySelector(".pc-def-chip-label")?.textContent)).toEqual(["Psychic", "Charmed"]);
+    // The two rejected candidates, per chip: the authored `label` the fixture seeded, and
+    // the text actually rendered. Either one substituted for `value` fails the block above.
+    const authored = ["Psychic", "CHARMED"];
+    chips.forEach((c, i) => {
+      expect(c.getAttribute("data-type")).not.toBe(authored[i]);
+      expect(c.getAttribute("data-type")).not.toBe(c.querySelector(".pc-def-chip-label")!.textContent);
+    });
+  });
+
+  it("a [data-type] selector reaches a row's SECOND chip, where a bare .pc-def-chip-x resolves to the first", () => {
+    const root = mountContainer();
+    const editState = { removeDefense: vi.fn() };
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: {
+        resistances: [ent("fire", "Fire", "manual"), ent("psychic", "Psychic", "grant")],
+        immunities: ents(),
+        vulnerabilities: ents(),
+        condition_immunities: ents(),
+      },
+      editState,
+    }));
+    // What a CDP `--click '… .pc-def-chip-x'` resolves to: the FIRST match, whose chip is Fire.
+    // cdp-verify's --click is a `document.querySelector`, so this is the real resolution rule.
+    expect(root.querySelector(".pc-def-chip")!.getAttribute("data-type")).toBe("fire");
+    const firstX = root.querySelector<HTMLElement>(".pc-def-chip-x")!;
+    expect(firstX.closest(".pc-def-chip")!.getAttribute("data-type")).toBe("fire");
+    // `data-type` names the second one outright, without leaning on `.granted` (a
+    // display-policy class) to do the addressing. A positional `:nth-child` could also
+    // reach it · that is order-fragile, not impossible.
+    root.querySelector<HTMLElement>('.pc-def-chip[data-type="psychic"] .pc-def-chip-x')!.click();
+    expect(editState.removeDefense).toHaveBeenCalledWith("resistances", "psychic");
+    expect(editState.removeDefense).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * R4-G3a §3.2.4: a granted chip names the features it came from, and appends the qualifier when
+ * the effect carried one. The `obsidian` mock's `setTooltip` WRITES `aria-label` on the host (it is
+ * not a spy), so every assertion here reads the attribute's TEXT off the chip · which is also what
+ * separates "the tooltip says the right thing" from "a tooltip exists".
+ */
+describe("DefensesConditionsPanel · granted chip source tooltip", () => {
+  const grantCtx = (e: DefenseEntry, editState?: unknown) => ctx({
+    defenses: { resistances: ents(), immunities: [e], vulnerabilities: ents(), condition_immunities: ents() },
+    editState,
+  });
+  const chipOf = (root: HTMLElement, type: string) =>
+    root.querySelector(`.pc-def-cond-left .pc-def-chip.granted[data-type="${type}"]`);
+
+  it("names the granting feature", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, grantCtx(ent("poison", "poison", "grant", ["Purity of Body"])));
+    expect(chipOf(root, "poison")?.getAttribute("aria-label")).toBe("Purity of Body");
+  });
+
+  it("joins two granting features with ' · '", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root,
+      grantCtx(ent("poison", "poison", "grant", ["Purity of Body", "Yuan-ti Heritage"])));
+    expect(chipOf(root, "poison")?.getAttribute("aria-label")).toBe("Purity of Body · Yuan-ti Heritage");
+  });
+
+  it("appends the qualifier after ': ', stripped of markdown emphasis", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root,
+      grantCtx(ent("poison", "poison", "grant", ["Purity of Body"], "While *Bloodied*")));
+    // The asterisks are the point: qualifiers are authored prose and reach the chip verbatim
+    // from the effect, so the host runs them through `plainText` first.
+    expect(chipOf(root, "poison")?.getAttribute("aria-label")).toBe("Purity of Body: While Bloodied");
+  });
+
+  it("a qualifier with no sources stands alone (no leading separator)", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root,
+      grantCtx(ent("poison", "poison", "grant", undefined, "While raging")));
+    expect(chipOf(root, "poison")?.getAttribute("aria-label")).toBe("While raging");
+  });
+
+  it("a MANUAL chip gets no tooltip at all", () => {
+    const root = mountContainer();
+    // Seeded WITH sources so the negative is the origin guard, not an empty list.
+    new DefensesConditionsPanel().render(root, grantCtx(ent("poison", "poison", "manual", ["Purity of Body"])));
+    const chip = root.querySelector('.pc-def-cond-left .pc-def-chip[data-type="poison"]');
+    expect(chip).not.toBeNull();
+    expect(chip?.classList.contains("granted")).toBe(false);
+    expect(chip?.hasAttribute("aria-label")).toBe(false);
+  });
+
+  it("an EQUIPMENT chip with no sources gets no tooltip (equipment attribution is still deferred)", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, grantCtx(ent("poison", "poison", "equipment")));
+    const chip = chipOf(root, "poison");
+    expect(chip).not.toBeNull();
+    expect(chip?.hasAttribute("aria-label")).toBe(false);
+  });
+
+  it("the tooltip host does not disturb the × remover", () => {
+    const root = mountContainer();
+    const editState = { removeDefense: vi.fn() };
+    new DefensesConditionsPanel().render(root,
+      grantCtx(ent("poison", "poison", "grant", ["Purity of Body"]), editState));
+    const chip = chipOf(root, "poison");
+    expect(chip?.getAttribute("aria-label")).toBe("Purity of Body");
+    (chip!.querySelector(".pc-def-chip-x") as HTMLElement).click();
+    expect(editState.removeDefense).toHaveBeenCalledWith("immunities", "poison");
+  });
+});
+
+// CSS-source contract (jsdom does no layout; same pattern as pc-ac-tooltip.test.ts and
+// pc-portrait-picker-modal.test.ts, which read THIS file). This is the only PRESENCE guard on
+// the rule: `check:css` compares styles.css against a fresh build, so it catches a stale
+// artifact, not a deleted one · deleting the rule from the partial AND re-running build:css
+// leaves `check:css` green (measured rc=0, on this tree). THIS test is what goes red.
+describe("defense chip .granted CSS contract", () => {
+  const cssPath = resolve(__dirname, "../packages/obsidian/src/modules/pc/styles/components.css");
+  const ruleOf = (selector: string): string => {
+    const css = readFileSync(cssPath, "utf8");
+    const match = css.match(new RegExp(selector.replace(/[.\\[\]()]/g, "\\$&") + "\\s*\\{([^}]+)\\}"));
+    expect(match, `${selector} rule missing from components.css`).toBeTruthy();
+    return (match as RegExpMatchArray)[1];
+  };
+  it("the rule exists in components.css and declares a dashed border + soft ink", () => {
+    const block = ruleOf(".archivist-pc-sheet .pc-def-chip.granted");
+    expect(block).toMatch(/border-style:\s*dashed/);
+    expect(block).toMatch(/color:\s*var\(--pc-text-soft/);
   });
 });

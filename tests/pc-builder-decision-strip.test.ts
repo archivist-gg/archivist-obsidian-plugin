@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel } from "../packages/obsidian/src/modules/pc/components/builder/decision-strip";
+import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel, STRANDED_TIP } from "../packages/obsidian/src/modules/pc/components/builder/decision-strip";
 import { DecisionPickModal } from "../packages/obsidian/src/modules/pc/components/builder/decision-modal";
 import type { DecisionItem, ResolvedOption } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
@@ -28,6 +28,7 @@ const item = (over: Partial<DecisionItem>): DecisionItem =>
     ],
     selected: undefined,
     status: "unresolved",
+    satisfied: false,
     ...over,
   }) as DecisionItem;
 
@@ -184,6 +185,282 @@ describe("renderDecisionStrip", () => {
     expect(setOriginChoice).toHaveBeenCalledWith("race:elven-lineage", null);
   });
 
+  // A choice whose option pool resolves EMPTY must say so. Reaching the chips
+  // fall-through with zero options renders a header and nothing clickable, which
+  // reads as a broken UI rather than as missing data. `live: true` is load-bearing:
+  // in browse mode renderRow returns before renderControl is ever reached.
+  it("renders an empty-state line, and no chips row, when a choice has zero options", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), {
+      items: [item({
+        key: "tool",
+        choice: { kind: "select-proficiency", id: "tool", count: 1, domain: "tool" },
+        options: [],            // the whole point: an empty pool
+        selected: undefined,
+        status: "unresolved",
+      })],
+      pill: domainPill,
+      live: true,               // load-bearing, see above
+      stateKey: "t",
+    });
+
+    const empty = c.querySelector(".pc-dstrip-empty");
+    expect(empty).not.toBeNull();
+    expect(empty!.textContent).toBe("No options available for this choice.");
+    expect(empty!.textContent).not.toMatch(/compendium/i);
+    expect(c.querySelector(".pc-bchoice-chips")).toBeNull();
+  });
+
+  // ── `.pc-dstrip-val` on an OPEN row (spec §13.1, §16.3 item 1) ──
+  // Previously UNPINNED: all four prior `.pc-dstrip-val` assertions hit the
+  // resolved `✓` branch, so `statusText` had no coverage at all. It reported the
+  // TOTAL, so after picking 1 of 3 the builder said "choose 3" while the sheet
+  // said "choose 2". It now shares `requirementSuffix` with `childLabel`.
+  it("an OPEN row's .pc-dstrip-val reports what is REMAINING, not the total", () => {
+    const skills = (count: number, selected: string[] | undefined, status: DecisionItem["status"]) =>
+      item({
+        key: "skills",
+        choice: { kind: "select-proficiency", id: "skills", count, domain: "skill" },
+        options: [
+          { value: "acrobatics", label: "Acrobatics" },
+          { value: "arcana", label: "Arcana" },
+          { value: "stealth", label: "Stealth" },
+        ],
+        selected,
+        status,
+      });
+    const valOf = (it_: DecisionItem): string => {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx(), { items: [it_], pill: domainPill, live: true, stateKey: "t" });
+      const row = c.querySelector(".pc-dstrip-row")!;
+      expect(row.classList.contains("open")).toBe(true);   // NOT the ✓ branch
+      return row.querySelector(".pc-dstrip-val")!.textContent!;
+    };
+
+    // partial: the "k picked" form, the whole point of the §13.1 fix.
+    expect(valOf(skills(3, ["acrobatics"], "partial"))).toBe("choose 3 · 1 picked");
+    // nothing picked: bare requirement, never "0 picked".
+    expect(valOf(skills(3, undefined, "unresolved"))).toBe("choose 3");
+    // single-pick: `requirementSuffix` returns "" (a child's label wants no
+    // suffix there), and statusText's `||` fallback keeps "choose 1" alive.
+    expect(valOf(skills(1, undefined, "unresolved"))).toBe("choose 1");
+    // ability-points keeps its own remaining idiom, untouched by the extraction.
+    expect(valOf(item({
+      key: "asi",
+      choice: { kind: "ability-points", id: "asi", points: 2, max_per: 2 },
+      options: [{ value: "str", label: "STR" }, { value: "dex", label: "DEX" }],
+      selected: { str: 1 },
+      status: "partial",
+    }))).toBe("1 point(s) left");
+  });
+
+  // ── The satisfied dress (spec §6.3, §13.4) ──
+  // A SATISFIED row is one whose pool was non-empty BEFORE exclusion and empty
+  // after: the character already holds every language/tool it could grant. The
+  // engine resolves it to `resolved`, which creates a shape that did not exist
+  // before this phase (`status: "resolved"` with `selected === undefined`), so
+  // the ✓ branch renders a bare "✓ " with an empty summary. The nest therefore
+  // carries its own honest copy, and it must NOT be P3a's broken-UI string.
+  it("a SATISFIED row wears the done dress and gets its own copy, not P3a's", () => {
+    const langs = (satisfied: boolean): DecisionItem => item({
+      key: "languages",
+      choice: { kind: "select-proficiency", id: "languages", count: 2, domain: "language" },
+      options: [],              // exclusion emptied the pool
+      selected: undefined,
+      status: satisfied ? "resolved" : "unresolved",
+      satisfied,
+    });
+
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), { items: [langs(true)], pill: domainPill, live: true, stateKey: "t" });
+    const row = c.querySelector(".pc-dstrip-row")!;
+    expect(row.classList.contains("done")).toBe(true);
+    expect(row.querySelector(".pc-dstrip-bang")).toBeNull();
+    // §13.4 site 1: `resolved` + no `selected` used to render a bare "✓ " here,
+    // because selectedSummary returns "" for a row nobody picked on. The value
+    // column now says what is true, in its OWN words: the nest's sentence is on
+    // screen at the same time, so the two must not be the same string.
+    const val = row.querySelector(".pc-dstrip-val")!.textContent!;
+    expect(val).toBe("✓ Nothing left to pick");
+    // The `statusText` `||` trap, pinned rather than left latent: if a satisfied
+    // row ever routed through statusText, requirementSuffix's "" would fall
+    // through to `choose ${requiredOf(item)}` and print "choose 2" on exactly the
+    // row the satisfied state exists to silence.
+    expect(val).not.toMatch(/choose/i);
+
+    const empty = c.querySelector(".pc-dstrip-empty")!;
+    expect(empty.textContent).toBe("You already have every option this choice offers.");
+    // Distinct from ALL THREE existing empty strings, and silent about
+    // compendiums (visibility is meaningless for a proficiency domain).
+    expect(empty.textContent).not.toBe("No options available for this choice.");
+    expect(empty.textContent).not.toBe("No options available in your vault yet.");
+    expect(empty.textContent).not.toBe(
+      "No options available. Some exist in a hidden compendium (see Archivist settings).",
+    );
+    expect(empty.textContent).not.toMatch(/compendium/i);
+
+    // §6.3's ACCEPTANCE CRITERION for the split: the else-branch is still
+    // reachable. The same zero-option item with `satisfied: false` (a
+    // `domain:"save"` choice, an empty registry, an authored `from: []`) keeps
+    // P3a's string verbatim, so the pin above at `:208` cannot be dead code.
+    const c2 = mountContainer();
+    renderDecisionStrip(c2, mkCtx(), { items: [langs(false)], pill: domainPill, live: true, stateKey: "t" });
+    expect(c2.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("No options available for this choice.");
+    // The two copy strings are on screen together and must stay distinct.
+    expect(c.querySelector(".pc-dstrip-empty")!.textContent).not.toBe(val);
+  });
+
+  // ── A satisfied row must never HIDE a persisted pick ──
+  // `satisfied` does not imply `selected === undefined`. canonicalizeSelection
+  // (engine :295-301) keeps a pool no-match verbatim, by design, so a homebrew or
+  // legacy value is never erased; the per-choice exemption (engine :375) re-admits
+  // only options that are IN the pool. A value OUTSIDE the pool therefore survives
+  // while the pool empties around it, and the val column would announce
+  // "Nothing left to pick" over the user's own frontmatter.
+  it("a SATISFIED row still shows a persisted pick that is outside the pool", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), {
+      items: [item({
+        key: "tool",
+        choice: { kind: "select-proficiency", id: "tool", count: 1, domain: "tool" },
+        options: [],                    // exclusion emptied the enumerated pool
+        selected: "grandfather's-lute", // a no-match canonicalizeSelection KEPT
+        status: "resolved",
+        satisfied: true,
+      })],
+      pill: domainPill, live: true, stateKey: "t",
+    });
+    const val = c.querySelector(".pc-dstrip-val")!.textContent!;
+    // selectedSummary falls back to the raw slug when no option resolves it.
+    expect(val).toBe("✓ grandfather's-lute");
+    expect(val).not.toBe("✓ Nothing left to pick");
+  });
+
+  // ── A satisfied CHILD row (spec §13.4 site 2, reachable per §5.4) ──
+  // `renderChildRow` has its own `done` binding and `childLabel` appends the
+  // requirement from `requiredOf`, so before `requirementSuffix`'s satisfied
+  // clause a satisfied count:2 child rendered the quiet dress and its ✓ beside
+  // "Languages: choose 2": the same incoherence as the parent, one level down.
+  it("a SATISFIED child drops the requirement suffix, not just the parent", () => {
+    const c = mountContainer();
+    const child = item({
+      key: "languages",
+      choice: { kind: "select-proficiency", id: "languages", count: 2, domain: "language" },
+      options: [],              // exclusion emptied the pool
+      selected: undefined,
+      status: "resolved",
+      satisfied: true,
+    });
+    const parent = item({
+      key: "feat", source: { kind: "class", slug: "srd-2024_class_rogue", level: 4 }, level: 4,
+      featureName: "Ability Score Improvement",
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" },
+      options: [], selected: "srd-2024_skilled", status: "resolved", children: [child],
+    });
+    renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+      items: [parent], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const fc = c.querySelector(".pc-dstrip-fgroup .pc-dstrip-fc")!;
+    expect(fc.classList.contains("quiet")).toBe(true);          // resolved dress
+    expect(fc.querySelector(".pc-dstrip-fc-ok")!.textContent).toBe("✓");
+    // The bare label, with NO requirement beside the ✓.
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Languages");
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).not.toMatch(/choose/i);
+    // And the child's own nest carries the satisfied copy, not P3a's.
+    expect(fc.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("You already have every option this choice offers.");
+    // The satisfied clause is scoped: an UNsatisfied count:2 child on the same
+    // shape keeps its requirement, so the clause cannot swallow live copy.
+    const c2 = mountContainer();
+    renderDecisionStrip(c2, mkCtx({ setChoice: vi.fn() }), {
+      items: [item({ ...parent, children: [item({ ...child, satisfied: false, status: "unresolved" })] })],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    expect(c2.querySelector(".pc-dstrip-fgroup .pc-dstrip-fc .pc-dstrip-fc-name")!.textContent)
+      .toBe("Languages: choose 2");
+  });
+
+  // ── `labelOf` names an ENTITY-level origin row by its choice (spec §13.3) ──
+  // `pushOrigin` passes the SAME `source` object for the entity-level and the
+  // trait-level rows, so only `featureName` discriminates them: the 2024 Soldier
+  // rendered three sibling rows all named "Soldier". BOTH predicate clauses are
+  // load-bearing and pinned here.
+  it("labelOf renames an entity-level origin row, and ONLY that shape", () => {
+    const nameOf = (over: Partial<DecisionItem>): string => {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx(), { items: [item(over)], pill: domainPill, live: true, stateKey: "t" });
+      return c.querySelector(".pc-dstrip-name")!.textContent!;
+    };
+    const langChoice = { kind: "select-proficiency", id: "languages", count: 2, domain: "language" };
+
+    // Entity-level: featureName IS the entity name → renamed after the choice.
+    expect(nameOf({
+      source: { kind: "background", slug: "srd-2024_background_soldier" },
+      featureName: "Soldier", choice: langChoice,
+    })).toBe("Languages");
+    // Same shape on a race, and toProfSlug's fold is why we never hand-roll it.
+    expect(nameOf({
+      source: { kind: "race", slug: "srd-5e_race_human" },
+      featureName: "Human", choice: langChoice,
+    })).toBe("Languages");
+    // Trait-level: same source object, different featureName → left ALONE.
+    // ("Extra Language" is the high-elf's, and it is already correct today.)
+    expect(nameOf({
+      source: { kind: "race", slug: "srd-5e_race_high-elf" },
+      featureName: "Extra Language", choice: langChoice,
+    })).toBe("Extra Language");
+    // The `kind` clause, NOT decoration: the origin-feat push sets
+    // featureName = originFeat.display AND source.slug = feat.slug, so it passes
+    // the name test and would be rewritten to "Languages" without it.
+    expect(nameOf({
+      source: { kind: "feat", slug: "srd-2024_feat_magic-initiate" },
+      featureName: "Magic Initiate", choice: langChoice,
+    })).toBe("Magic Initiate");
+    // Class rows can never be rewritten by construction (the `kind` clause).
+    expect(nameOf({
+      source: { kind: "class", slug: "srd-2024_class_bard", level: 1 }, level: 1,
+      featureName: "Bard", choice: langChoice,
+    })).toBe("Bard");
+    // An authored `choice.label` still wins: the rewrite sits in the
+    // featureName FALLBACK, so homebrew keeps its own copy.
+    expect(nameOf({
+      source: { kind: "background", slug: "srd-2024_background_soldier" },
+      featureName: "Soldier", choice: { ...langChoice, label: "Two Extra Tongues" },
+    })).toBe("Two Extra Tongues");
+  });
+
+  // ── `data-prof` on the builder chip (spec §10.3 deviation 4, §17 assertion 4) ──
+  // The rendered text is a humanized label and is prefixed "✓ " when selected,
+  // so it is not addressable by a CSS selector. Without this hook §17's
+  // `--expect-absent '.pc-bchoice-chip[data-prof="dwarvish"]'` matches nothing
+  // and passes UNCONDITIONALLY, which is a silent false green.
+  it("every builder chip carries data-prof with its option value", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), {
+      items: [item({
+        key: "languages",
+        choice: { kind: "select-proficiency", id: "languages", count: 2, domain: "language" },
+        options: [
+          { value: "dwarvish", label: "Dwarvish" },
+          { value: "elvish", label: "Elvish" },
+          { value: "sylvan", label: "Sylvan", missing: true },
+        ],
+        selected: ["elvish"],
+        status: "partial",
+      })],
+      pill: domainPill, live: true, stateKey: "t",
+    });
+    const chips = [...c.querySelectorAll(".pc-bchoice-chip")];
+    expect(chips.map((n) => n.getAttribute("data-prof")))
+      .toEqual(["dwarvish", "elvish", "sylvan"]);
+    // The hook survives BOTH text decorations that hide the value.
+    expect(c.querySelector('.pc-bchoice-chip[data-prof="elvish"]')!.textContent).toBe("✓ Elvish");
+    expect(c.querySelector('.pc-bchoice-chip[data-prof="sylvan"]')!.textContent).toBe("Sylvan (missing)");
+    // And the selector §17 asserts absent resolves on the live DOM.
+    expect(c.querySelector('.pc-bchoice-chip[data-prof="giant"]')).toBeNull();
+  });
+
   // ── Long select-entity lists open a filtered picker modal (smoke r1) ──
   // A registry-backed select-entity item (no `from`) with many candidates must
   // NOT splat the full table inline; instead it shows the current picks as
@@ -254,6 +531,28 @@ describe("renderDecisionStrip", () => {
       });
       (c2.querySelector(".pc-dstrip-browse.compact") as HTMLElement).click();
       expect(openSpy).toHaveBeenCalledTimes(2);
+    } finally {
+      openSpy.mockRestore();
+    }
+  });
+
+  // R4 {G5, G6} live rider V-10: the run read `Maneuvers — choose 3` off the open modal. The
+  // separator between the label and the count is the arc's `·` in BOTH copies the sentence reaches:
+  // the modal heading and the `.pc-dstrip-tlabel` twin the same control writes above it.
+  it("the long-list pick separates label from count with '·', in the tlabel and the modal title", () => {
+    const titles: string[] = [];
+    const openSpy = vi.spyOn(DecisionPickModal.prototype, "open").mockImplementation(function (this: DecisionPickModal) {
+      titles.push((this as unknown as { opts: { title: string } }).opts.title);
+    });
+    try {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+        items: [bigEntityItem(70)], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+      });
+      const nest = c.querySelector(".pc-dstrip-nest")!;
+      expect(nest.querySelector(".pc-dstrip-tlabel")!.textContent).toBe("Weapon Mastery · choose 3");
+      (nest.querySelector(".pc-dstrip-browse") as HTMLElement).click();
+      expect(titles).toEqual(["Weapon Mastery · choose 3"]);
     } finally {
       openSpy.mockRestore();
     }
@@ -384,31 +683,92 @@ describe("renderDecisionStrip", () => {
     const fc = c.querySelector(".pc-dstrip-fgroup .pc-dstrip-fc")!;
     expect(fc.classList.contains("partial")).toBe(true);
     expect(fc.querySelector(".pc-dstrip-fc-flag")!.textContent).toBe("!");
-    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Skills — choose 3 · 1 picked");
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Skills: choose 3 · 1 picked");
     expect(fc.querySelectorAll(".pc-bchoice-chip").length).toBe(4);
   });
 
-  // ── child long-list header (smoke r4) ──
-  // A feat CHILD whose registry-backed entity pick has a long candidate list
-  // (the flat L4 → Feat → Magic Initiate nesting) must NOT re-emit the
-  // parent-derived `.pc-dstrip-tlabel` header inside the child: the
-  // `.pc-dstrip-fcl` sub-label (childLabel → "Feat") already precedes the
-  // control. The control must NEVER surface the inherited parent featureName.
-  it("a long-list feat CHILD suppresses the tlabel and never shows the parent featureName", () => {
+  // ── flat top-level feat pick, long list (R4-P4) ──
+  // The SRD's authored two-step `select-inline#asi-or-feat` is normalized into a
+  // FLAT top-level `select-entity` feat pick, so no SRD output nests a feat
+  // child any more: there is no child group, and the parent-derived
+  // `.pc-dstrip-tlabel` header RENDERS, because `inChild` is false.
+  // This is NOT a claim that the child shape is gone. `flattenAsiOrFeat` is a
+  // permanent compatibility layer keyed strictly on the `asi-or-feat` id, so a
+  // feat `select-entity` CHILD stays reachable via homebrew it returns
+  // untouched · the test below this one covers that scope.
+  // What was wrong with the version this replaced: it modelled the two-step
+  // shape as SRD output and built the items by hand, so it stayed green while
+  // asserting the exact inverse of what the SRD path now produces.
+  it("a flat top-level feat pick renders its own tlabel and no child row", () => {
+    const flatItem = item({
+      key: "feat", level: 4, featureName: "Ability Score Improvement",
+      source: { kind: "class", slug: "srd-5e_class_wizard", level: 4 },
+      choice: { kind: "select-entity", id: "feat", entity_type: "feat", count: 1 },
+      options: Array.from({ length: 18 }, (_, i) => entityOpt(`feat-${i}`)),
+      selected: undefined, status: "unresolved", satisfied: false,
+    });
+    const root = mountContainer();
+    renderDecisionStrip(root, mkCtx({ setChoice: vi.fn() }), {
+      items: [flatItem], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+
+    // The child group is gone: a flat pick has no children until a feat is picked.
+    expect(root.querySelector(".pc-dstrip-fgroup")).toBeNull();
+    expect(root.querySelector(".pc-dstrip-fc")).toBeNull();
+
+    // The tlabel now RENDERS, because `inChild` is false at the top level.
+    const tlabel = root.querySelector(".pc-dstrip-tlabel")!;
+    // Do NOT delete this as redundant-after-the-`!`: the `!` is a compile-time
+    // assertion only, and this line is the sole detector for a mutation that
+    // drops the header. Without it the failure degrades to a TypeError.
+    expect(tlabel).not.toBeNull();
+    // Two `toContain` rather than one exact-string assertion on the whole tlabel:
+    // the separator the renderer puts between the label and "choose 1" is U+2014
+    // today and P8 will change it, so pinning the full string would couple this
+    // test to a phase that has not run.
+    expect(tlabel.textContent).toContain("Ability Score Improvement");
+    expect(tlabel.textContent).toContain("choose 1");
+
+    // Binding decision 8: the browse affordance is KEPT.
+    expect(root.querySelector(".pc-dstrip-browse")!.textContent).toContain("Browse all 18");
+  });
+
+  // ── homebrew two-step feat, CHILD scope (R4-P4) ──
+  // The suppression side of the `!inChild` guard at decision-strip.ts:464, which
+  // the flat test above cannot reach. `flattenAsiOrFeat` (dnd5e
+  // pc.asi-flatten.ts:19-31) is keyed strictly on `id === "asi-or-feat"` and
+  // returns its input BY IDENTITY otherwise (`:20`), so a differently-keyed
+  // homebrew `select-inline` keeps its feat `select-entity` child all the way
+  // into the render. Its own docstring calls it a permanent compatibility layer,
+  // not a migration shim.
+  // In child scope the `.pc-dstrip-fcl` sub-label (childLabel) already names the
+  // sub-choice and carries the requirement, so the control must NOT re-emit the
+  // parent-derived `.pc-dstrip-tlabel`: that is the "FEAT FEAT" duplication
+  // decision-strip.ts:237-241 exists to prevent. A child inherits the parent's
+  // `featureName` verbatim · BOTH of `buildItem`'s child recursions in dnd5e
+  // `pc.decision-engine.ts` (the select-inline branch reveal and the chosen-feat
+  // expansion) pass `featureName` straight through. Cited by SYMBOL, not line:
+  // a `:428` here went stale the moment a dnd5e commit on this same branch added
+  // lines above it, and no plugin-side check catches a cross-repo line move.
+  // So an unsuppressed header would also leak that name into the child row.
+  it("a feat CHILD of a homebrew two-step parent suppresses the tlabel and hides the parent featureName", () => {
     const c = mountContainer();
+    const hbSource = { kind: "class", slug: "hb_class_illrigger", level: 4 } as const;
     const featChild = item({
-      key: "feat", source: { kind: "class" } as never, level: 4,
-      featureName: "Ability Score Improvement",        // inherited parent name — must NOT leak
-      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" } as never,
+      key: "feat", source: hbSource, level: 4,
+      featureName: "Diabolic Boon",   // inherited from the parent verbatim, must NOT leak
+      choice: { kind: "select-entity", id: "feat", entity_type: "feat", count: 1 },
       options: Array.from({ length: 18 }, (_, i) => entityOpt(`feat-${i}`)),  // long list
-      selected: undefined, status: "unresolved",
+      selected: undefined, status: "unresolved", satisfied: false,
     });
     const parent = item({
-      key: "asi-or-feat", source: { kind: "class" } as never, level: 4,
-      featureName: "Ability Score Improvement",
-      choice: { kind: "select-inline", id: "asi-or-feat", count: 1, options: [] } as never,
+      key: "boon-or-feat", source: hbSource, level: 4,
+      featureName: "Diabolic Boon",
+      // Deliberately NOT the `asi-or-feat` id: that is what keeps this shape
+      // reachable, because flattenAsiOrFeat returns it untouched.
+      choice: { kind: "select-inline", id: "boon-or-feat", count: 1, options: [] },
       options: [{ value: "feat", label: "Take a Feat" }], selected: "feat",
-      status: "partial", children: [featChild],
+      status: "partial", satisfied: false, children: [featChild],
     });
     renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
       items: [parent], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
@@ -417,13 +777,14 @@ describe("renderDecisionStrip", () => {
       r.querySelector(".pc-dstrip-browse"),
     )!;
     expect(fc).not.toBeUndefined();
-    // The child's own sub-label names the sub-choice (childLabel → "Feat").
+    // The child's own sub-label names the sub-choice, and it is the ONLY label
+    // the child gets (childLabel maps the `feat` key to "Feat").
     expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Feat");
-    // No parent-derived caps header inside the child…
+    // The suppression itself: no parent-derived caps header inside the child.
     expect(fc.querySelector(".pc-dstrip-tlabel")).toBeNull();
-    // …and the inherited parent featureName never appears anywhere in the child.
-    expect(fc.textContent).not.toContain("Ability Score Improvement");
-    // The long-list ghost still renders (unresolved → "Browse all 18 ▸").
+    // And the inherited parent featureName never surfaces anywhere in the child.
+    expect(fc.textContent).not.toContain("Diabolic Boon");
+    // The long-list ghost still renders in child scope (unresolved, 18 > threshold).
     expect((fc.querySelector(".pc-dstrip-browse") as HTMLElement).textContent).toContain("Browse all 18");
   });
 
@@ -467,7 +828,7 @@ describe("renderDecisionStrip", () => {
     // humanizeSlug title-cases the unknown id; CSS uppercases it for display.
     const names = [...group.querySelectorAll(".pc-dstrip-fc-name")].map((n) => n.textContent);
     expect(names).toContain("Proficiency Shape");
-    expect(names).toContain("Skills — choose 3 · 1 picked");
+    expect(names).toContain("Skills: choose 3 · 1 picked");
     // Only ONE L-pill total (on the top-level row).
     expect(c.querySelectorAll(".pc-dstrip-pill").length).toBe(1);
   });
@@ -620,8 +981,10 @@ describe("renderDecisionStrip", () => {
 // resolved by the engine into item.options[].entity. Hidden compendiums drop
 // those candidates from the NEW-pick surfaces (inline table + long-list browse),
 // exempting the current selection; a two-tier empty copy distinguishes "hidden
-// by settings" from "vault has none". The `from` chips fall-through is
-// feature-curated and is never filtered.
+// by settings" from "vault has none". Since R4-G5 §3.2.2 the `from` chips arm
+// applies the SAME predicate, so sheet and builder answer one rule; an option
+// with no `entity` (a `missing` slug, and every non-entity choice kind) carries
+// no compendium and is kept.
 describe("compendium visibility (F6)", () => {
   const HIDDEN = "SRD 5e";
   const VISIBLE = "SRD 2024";
@@ -709,10 +1072,10 @@ describe("compendium visibility (F6)", () => {
       .toBe("No options available in your vault yet.");
   });
 
-  it("an explicit `from` chips list is NOT filtered", () => {
+  it("R4-G5 §3.2.2: an explicit `from` chips list IS filtered, on the SAME predicate as the table arm", () => {
     const c = mountContainer();
-    // select-entity WITH `from` (the chips fall-through): both option chips
-    // render despite BOTH options sitting in the hidden compendium.
+    // select-entity WITH `from` (the chips arm): both options sit in the hidden compendium and NEITHER
+    // is selected, so both chips go. Before R4-G5 this arm applied no filter and rendered 2 chips.
     const fromItem = selectEntityItem([
       compOpt("longsword", "Longsword", HIDDEN),
       compOpt("shortsword", "Shortsword", HIDDEN),
@@ -725,7 +1088,9 @@ describe("compendium visibility (F6)", () => {
     renderDecisionStrip(c, ctxHiding(HIDDEN), {
       items: [fromItem], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
     });
-    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(2);
+    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(0);
+    expect(c.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("No options available. Some exist in a hidden compendium (see Archivist settings).");
   });
 });
 
@@ -881,11 +1246,160 @@ describe("childLabel", () => {
     expect(childLabel(child("feat:skills", {
       choice: { kind: "select-proficiency", id: "skills", count: 3, domain: "skill" } as never,
       selected: ["acrobatics"],
-    }))).toBe("Skills — choose 3 · 1 picked");
+    }))).toBe("Skills: choose 3 · 1 picked");
     // choose-3, none picked → bare requirement, no "0 picked".
     expect(childLabel(child("feat:skills", {
       choice: { kind: "select-proficiency", id: "skills", count: 3, domain: "skill" } as never,
       selected: undefined,
-    }))).toBe("Skills — choose 3");
+    }))).toBe("Skills: choose 3");
+  });
+
+  // requirementSuffix's UPPER bound (`have < need`), previously unpinned: all
+  // other coverage is 1-of-3 or 0-of-3, so `have === need` was never exercised
+  // and dropping the bound to `have > 0` moved no assertion in the file. It is
+  // NOT equivalent: a FULLY-selected multi-pick is done, and "choose 2 · 2
+  // picked" is noise on a row with nothing left to do. The lower bound
+  // (`have > 0`) is pinned by the "none picked" case above; this pins the top.
+  it("drops the 'k picked' tail once the multi-pick is FULL, at every arity", () => {
+    const full = (count: number, selected: string[]) => childLabel(child("feat:skills", {
+      choice: { kind: "select-proficiency", id: "skills", count, domain: "skill" } as never,
+      selected,
+    }));
+    expect(full(2, ["acrobatics", "arcana"])).toBe("Skills: choose 2");
+    expect(full(3, ["acrobatics", "arcana", "athletics"])).toBe("Skills: choose 3");
+    // One short of full still carries the tail, so the bound is `<`, not `<=`.
+    expect(full(3, ["acrobatics", "arcana"])).toBe("Skills: choose 3 · 2 picked");
+  });
+});
+
+// ── R4-G5 §3 · the pool-synth item: long-list routing, the visibility filter, the stranded dress ──
+// The item shape is the one `buildDecisionLedger`'s pool synth emits (research A-02, replayed as DOM
+// by A-12): a `select-entity optional-feature` carrying `from`, plus T2's `pool` marker. A-12 measured
+// TODAY's behaviour on it: 43 options render 43 chips, no ghost, no tlabel.
+describe("renderDecisionStrip · the `from` pool-synth arm (R4-G5 §3.2.1-§3.2.3)", () => {
+  const fromOpt = (slug: string, over: Partial<ResolvedOption> = {}): ResolvedOption =>
+    ({ value: slug, label: slug, entity: registeredEntity(slug), ...over });
+
+  const poolItem = (
+    n: number,
+    over: Partial<DecisionItem> = {},
+    optOver: (i: number) => Partial<ResolvedOption> = () => ({}),
+  ): DecisionItem =>
+    item({
+      key: "battle-master-maneuvers", source: { kind: "class" } as never, level: 3,
+      featureName: "Maneuvers",
+      choice: {
+        kind: "select-entity", id: "battle-master-maneuvers", label: "Maneuvers", count: 3,
+        entity_type: "optional-feature", from: Array.from({ length: n }, (_, i) => `mv-${i}`),
+      } as never,
+      options: Array.from({ length: n }, (_, i) => fromOpt(`mv-${i}`, optOver(i))),
+      pool: { id: "battle-master-maneuvers", anchorLevel: 3 },
+      selected: undefined, status: "unresolved",
+      ...over,
+    } as Partial<DecisionItem>);
+
+  const hidingCtx = (editState: Record<string, unknown>, ...hiddenCompendiums: string[]): ComponentRenderContext =>
+    ({
+      resolved: { definition: {} }, derived: {},
+      services: { entities: {}, plugin: { settings: { hiddenCompendiums } } },
+      editState, builderUiState: new Map(),
+    }) as unknown as ComponentRenderContext;
+
+  const draw = (it_: DecisionItem, ctx: ComponentRenderContext): HTMLElement => {
+    const c = mountContainer();
+    renderDecisionStrip(c, ctx, { items: [it_], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t" });
+    return c;
+  };
+  const chipValues = (c: HTMLElement): (string | null)[] =>
+    Array.from(c.querySelectorAll(".pc-bchoice-chip")).map((n) => n.getAttribute("data-prof"));
+
+  it("RED FIRST (row 1): a 13-option `from` item renders the 'Browse all 13' ghost, not 13 chips", () => {
+    const c = draw(poolItem(13), mkCtx({ setChoice: vi.fn() }));
+    expect((c.querySelector(".pc-dstrip-browse") as HTMLElement | null)?.textContent).toContain("Browse all 13");
+    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(0);
+    // The `from` arm emits NO caps header: the chips row never had one and the route does not add one
+    // (the `!from` arm's own `.pc-dstrip-tlabel` is untouched, and A-12's control asserts it there).
+    expect(c.querySelectorAll(".pc-dstrip-tlabel").length).toBe(0);
+  });
+
+  it("row 2: a 12-option `from` item KEEPS its 12 chips and grows no ghost (the boundary)", () => {
+    const c = draw(poolItem(12), mkCtx({ setChoice: vi.fn() }));
+    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(12);
+    expect(c.querySelector(".pc-dstrip-browse")).toBeNull();
+  });
+
+  it("RED FIRST (row 3): a hidden-compendium `from` option loses its chip; a hidden SELECTED one keeps it", () => {
+    // mv-1 and mv-2 sit in the hidden compendium; mv-2 is the current pick, so the exemption keeps it.
+    const it_ = poolItem(3, { selected: ["mv-2"], status: "partial" }, (i) =>
+      i === 0 ? {} : { entity: { ...registeredEntity(`mv-${i}`), compendium: "SRD 5e" } as never });
+    const values = chipValues(draw(it_, hidingCtx({ setChoice: vi.fn() }, "SRD 5e")));
+    expect(values).not.toContain("mv-1");   // hidden, unselected: filtered
+    expect(values).toContain("mv-2");       // hidden BUT selected: exempt
+    expect(values).toContain("mv-0");       // visible
+  });
+
+  it("RED FIRST: a `stranded` option wears the prerequisite-unmet dress in the CHIPS arm", () => {
+    const it_ = poolItem(3, { selected: ["mv-2"], status: "partial" }, (i) => (i === 2 ? { stranded: true } : {}));
+    const c = draw(it_, mkCtx({ setChoice: vi.fn() }));
+    const chip = Array.from(c.querySelectorAll<HTMLElement>(".pc-bchoice-chip"))
+      .find((n) => n.getAttribute("data-prof") === "mv-2")!;
+    expect(chip.getAttribute("data-stranded")).toBe("true");
+    expect(chip.textContent).toContain("(prerequisite unmet)");
+    expect(chip.getAttribute("title")).toBe(STRANDED_TIP);
+    // The crimson IS `.sel`'s shipped dress: a stranded option is by construction a SELECTED one, so
+    // the task adds no CSS (spec §8 books three selectors, none in builder.css).
+    expect(chip.classList.contains("sel")).toBe(true);
+    // a non-stranded sibling carries neither the hook nor the wording (the assertion is not vacuous)
+    const plain = Array.from(c.querySelectorAll<HTMLElement>(".pc-bchoice-chip"))
+      .find((n) => n.getAttribute("data-prof") === "mv-0")!;
+    expect(plain.getAttribute("data-stranded")).toBeNull();
+  });
+
+  it("RED FIRST (row 5): a stranded SELECTION CHIP wears the dress beside the 'Change' ghost in the long-list arm", () => {
+    const it_ = poolItem(14, { selected: ["mv-13"], status: "partial" }, (i) => (i === 13 ? { stranded: true } : {}));
+    const c = draw(it_, mkCtx({ setChoice: vi.fn() }));
+    const chip = c.querySelector<HTMLElement>(".pc-bchoice-chip.sel")!;
+    expect(chip.getAttribute("data-stranded")).toBe("true");
+    expect(chip.textContent).toContain("(prerequisite unmet)");
+    expect((c.querySelector(".pc-dstrip-browse") as HTMLElement).textContent).toContain("Change");
+  });
+
+  it("RED FIRST (row 11): a POOL item at count 1 writes an ARRAY; a non-pool `from` item writes a string", () => {
+    const setChoice = vi.fn();
+    const one = poolItem(4);
+    (one.choice as { count: number }).count = 1;   // `poolItem` already stamps the `pool` marker
+    const c = draw(one, mkCtx({ setChoice }));
+    c.querySelectorAll<HTMLElement>(".pc-bchoice-chip")[0].click();
+    expect(setChoice).toHaveBeenCalledWith(0, 3, "battle-master-maneuvers", ["mv-0"]);
+    // The control: a `feat` pick keeps the STRING shape dnd5e `collectFeatPicks` reads (`typeof feat === "string"`).
+    const setChoice2 = vi.fn();
+    const feat = item({
+      key: "feat", source: { kind: "class" } as never, level: 19, featureName: "Epic Boon",
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat", from: ["boon-of-fate"] } as never,
+      options: [fromOpt("boon-of-fate")], selected: undefined, status: "unresolved",
+    });
+    const c2 = draw(feat, mkCtx({ setChoice: setChoice2 }));
+    c2.querySelectorAll<HTMLElement>(".pc-bchoice-chip")[0].click();
+    expect(setChoice2).toHaveBeenCalledWith(0, 19, "feat", "boon-of-fate");
+  });
+
+  it("the ORDER is filter-then-count: 13 options, one hidden, stays on the CHIPS row (fixture-only)", () => {
+    // 13 `from` options, exactly ONE of them in the hidden compendium and none selected. The
+    // route counts VISIBLE resolved candidates, so 12 survive the filter and the item stays
+    // below the threshold. Counting BEFORE filtering would route it and lose the chips wall.
+    // t3-m3 kills the predicate but not its PLACEMENT, which is what this case pins.
+    const it_ = poolItem(13, {}, (i) =>
+      i === 12 ? { entity: { ...registeredEntity("mv-12"), compendium: "SRD 5e" } as never } : {});
+    const c = draw(it_, hidingCtx({ setChoice: vi.fn() }, "SRD 5e"));
+    expect(c.querySelector(".pc-dstrip-browse")).toBeNull();
+    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(12);
+    expect(chipValues(c)).not.toContain("mv-12");
+  });
+
+  it("the filter can empty a `from` arm, and the copy says so (fixture-only: shipped data removes nothing)", () => {
+    const it_ = poolItem(2, {}, (i) => ({ entity: { ...registeredEntity(`mv-${i}`), compendium: "SRD 5e" } as never }));
+    const c = draw(it_, hidingCtx({ setChoice: vi.fn() }, "SRD 5e"));
+    expect(c.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("No options available. Some exist in a hidden compendium (see Archivist settings).");
   });
 });

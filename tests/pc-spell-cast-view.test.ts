@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
 import { renderCastView } from "../packages/obsidian/src/modules/pc/components/spells/cast-view";
+import { EMPTY_CELL } from "../packages/obsidian/src/modules/pc/components/spells/spell-display";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
@@ -36,6 +37,30 @@ function nonCasterCtx(spells: unknown[]): ComponentRenderContext {
       derivedSpellSlots: {},
       pactMagic: null,
       abilitySpellcasting: { wis: { saveDC: 14, attackBonus: 6 } },
+    },
+    editState: null,
+  } as never;
+}
+
+// R4-G3b §6 · a RACE grant on the same non-caster. A second builder rather than a
+// parameter on nonCasterCtx, so every pre-existing case above stays byte-unchanged.
+// abilitySpellcasting.con for an Air Genasi Fighter 5 (prof 3) with CON 14 (+2): DC 13, atk +5.
+const raceSpell = {
+  entity: { name: "Levitate", level: 2, school: "transmutation", saving_throw: { ability: "constitution" } },
+  slug: "eepc_spell_levitate", classSlug: null, source: "race", prepared: true, alwaysPrepared: true, ability: "con",
+};
+function nonCasterConCtx(spells: unknown[]): ComponentRenderContext {
+  return {
+    resolved: {
+      definition: { overrides: {} },
+      state: { spell_slots: {} },
+      spells,
+    },
+    derived: {
+      spellcastingClasses: [],
+      derivedSpellSlots: {},
+      pactMagic: null,
+      abilitySpellcasting: { con: { saveDC: 13, attackBonus: 5 } },
     },
     editState: null,
   } as never;
@@ -80,5 +105,50 @@ describe("renderCastView · feat-granted spells (non-caster)", () => {
     expect(secLabels(root)).toEqual(expect.arrayContaining(["Cantrips", "1st Level"]));
     expect(dcOf(rowByName(root, "Sacred Flame")!)).toBe("14");
     expect(dcOf(rowByName(root, "Command")!)).toBe("14");
+  });
+});
+
+// R4 {G5, G6} live rider N-1-19: on the Paladin's Spells tab `Protection from Evil and Good` carries no
+// `components` value, so its Components cell was EMPTY while every neighbour read `V` or `V S M`, and
+// the row sat a line short. The cell takes the same placeholder the Range cell already prints for an
+// absent value; the glyph itself is untouched (P8 owns the null-glyph ruling).
+describe("renderCastView · an absent cell value keeps the row's rhythm", () => {
+  const noComponents = {
+    entity: { name: "Protection from Evil and Good", level: 1, school: "abjuration" },
+    slug: "protection-from-evil-and-good", classSlug: null, source: "feat",
+    prepared: true, alwaysPrepared: true, ability: "wis",
+  };
+
+  it("prints the placeholder in the Components cell when the spell carries none", () => {
+    const root = mountContainer();
+    renderCastView(root, nonCasterCtx([noComponents]));
+    const row = rowByName(root, "Protection from Evil and Good")!;
+    expect(row).toBeDefined();
+    expect(row.querySelector(".pc-spell-comp")?.textContent).toBe(EMPTY_CELL);
+    // The same placeholder the Range cell prints for an absent range, and one glyph for both.
+    expect(row.querySelector(".pc-spell-range")?.textContent).toBe(EMPTY_CELL);
+  });
+
+  it("prints the letters, not the placeholder, when the spell carries components", () => {
+    const root = mountContainer();
+    renderCastView(root, nonCasterCtx([{ ...noComponents, entity: { ...noComponents.entity, components: "V, S" } }]));
+    const row = rowByName(root, "Protection from Evil and Good")!;
+    expect(row.querySelector(".pc-spell-comp")?.textContent).toBe("V S");
+  });
+});
+
+describe("renderCastView · race-granted spells (non-caster) · R4-G3b §6", () => {
+  it("surfaces a leveled race grant in its own free-cast level section, with its OWN (CON) DC", () => {
+    // RED FIRST before Task 7 (plugin 7bb5d39b): the free-cast block read
+    // `s.source === "feat"`, so a race row produced no "2nd Level" section at all.
+    const root = mountContainer();
+    renderCastView(root, nonCasterConCtx([raceSpell]));
+    expect(secLabels(root)).toContain("2nd Level"); // section exists despite zero owned slots
+    const row = rowByName(root, "Levitate");
+    expect(row).toBeDefined();
+    expect(dcOf(row!)).toBe("13"); // from abilitySpellcasting.con, NOT spellcastingClasses[0] ?? 0
+    expect(row!.querySelector(".pc-spell-free")).not.toBeNull();
+    expect(row!.querySelector(".pc-spell-castbtn")).toBeNull();
+    expect(row!.querySelector(".pc-spell-always")).not.toBeNull();
   });
 });

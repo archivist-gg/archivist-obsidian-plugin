@@ -1,4 +1,6 @@
 import type { ComponentRenderContext } from "../component.types";
+import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
+import { attributeUnclassedSpell } from "@archivist-gg/dnd5e/pc/pc.spellcasting";
 import { classSpellCandidates, type SpellCandidate } from "@archivist-gg/dnd5e/spell/spell.access";
 import { renderSpellBlock } from "../../../spell/spell.renderer";
 import { compactCastingTime, formatRange, componentLetters, abbrAbility } from "./spell-display";
@@ -8,6 +10,7 @@ import {
   SOURCES, SCHOOLS, CAST_TIMES, RANGES, DAMAGE_TYPES, SAVES,
 } from "./spell-filter";
 import { compareCandidates } from "@archivist-gg/dnd5e/spell/spell.filter";
+import { normalizeSpellDuration } from "@archivist-gg/dnd5e/spell/spell.parser";
 import type { SortKey } from "@archivist-gg/dnd5e/spell/spell.filter";
 import { confirmResetFilters } from "./reset-filters-modal";
 import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
@@ -18,11 +21,15 @@ const PAGE = 50;
 /**
  * Signature for the persisted shown-count. Keyed by every facet that changes the
  * candidate set (query + all-classes + sources/levels + the More-panel facets +
- * sort) so the count survives whole-sheet re-renders — the drawer is rebuilt with
- * a fresh `state`, but `ctx.builderUiState` persists — yet resets to PAGE the
- * moment the user changes a filter, the search text, or the sort. `moreOpen` is
- * excluded: opening the panel is not a filter. Namespaced `spellsadd.shown:` so
- * it can never collide with the inventory/browse shown-counts in the same bag.
+ * sort) so the count survives whole-sheet re-renders. Since R4-G3b §12 the drawer
+ * reads the SAME `state` object back out of `ctx.builderUiState`, so the key
+ * survives a re-render at whatever filter the user set; before that hoist `state`
+ * was re-created on every render, so a re-render fell back to the default-filter
+ * key and the count stored under the user's own filter was unreachable. It still
+ * resets to PAGE the moment the user changes a filter, the search text, or the
+ * sort. `moreOpen` is excluded: opening the panel is not a filter. Namespaced
+ * `spellsadd.shown:` so it can never collide with the inventory/browse
+ * shown-counts in the same bag.
  */
 function shownKey(f: FilterState): string {
   const set = (s: Set<unknown>): string => [...s].map(String).sort().join(",");
@@ -90,15 +97,26 @@ function renderRow(
 ): void {
   const e = c.entity;
   const isKnown = known.has(c.slug);
-  const firstClass = ctx.derived.spellcastingClasses[0]?.classSlug;
   const tr = body.createDiv({ cls: "pc-spell-add-row" });
 
   const addTd = tr.createDiv({ cls: "col-add" });
   const toggle = addTd.createEl("button", { cls: `pc-add-toggle${isKnown ? " on" : ""}`, text: isKnown ? "✓" : "＋" });
+  // removeKnownSpell edits character.spells.known, so the ✓ may only fire for a row
+  // that lives there. The handler holds just the known Set, so it re-reads the matching
+  // resolved spell's `persisted` flag; on a grant the ✓ is inert (no new copy: the row's
+  // "Always prepared" marker in the Prepare list is the explanation).
   toggle.addEventListener("click", (ev) => {
     ev.stopPropagation();
-    if (known.has(c.slug)) ctx.editState?.removeKnownSpell(c.slug);
-    else ctx.editState?.addKnownSpell(c.slug, { class: firstClass });
+    const existing = ctx.resolved.spells.find((s) => s.slug === c.slug);
+    if (known.has(c.slug)) {
+      if (existing?.persisted) ctx.editState?.removeKnownSpell(c.slug);
+    } else {
+      // R4-G7 T8 RIDER-19 fix round 1 (I-1): the saved `class:` is the engine's ONE attribution rule, the one the resolver
+      // applies to an un-classed entry, so a Paladin-first Paladin / Warlock saves Armor of Agathys as the Warlock's while
+      // an Eldritch Knight first keeps Shield. Rows without a `spellList` read as an unobservable list (the first caster).
+      const casters = ctx.derived.spellcastingClasses.map((k) => ({ classSlug: k.classSlug, spellList: k.spellList ?? null }));
+      ctx.editState?.addKnownSpell(c.slug, { class: attributeUnclassedSpell(e.classes, casters, ctx.services.entities) ?? undefined });
+    }
   });
 
   const nameTd = tr.createDiv({ cls: "col-name" });
@@ -107,7 +125,9 @@ function renderRow(
   if (e.ritual) nameTd.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
 
   tr.createDiv({ cls: "col-level", text: levelLabel(c.level) });
-  tr.createDiv({ cls: "col-time", text: compactCastingTime(e.casting_time) });
+  // RIDER-4: as in the cast view, the full authored token rides along as the cell's tooltip.
+  tr.createDiv({ cls: "col-time", text: compactCastingTime(e.casting_time),
+    attr: e.casting_time ? { title: e.casting_time } : {} });
   tr.createDiv({ cls: "col-school", text: e.school ?? "" });
   tr.createDiv({ cls: "col-range", text: formatRange(e.range) });
   tr.createDiv({ cls: "col-comp", text: componentLetters(e.components).letters.join(" ") });
@@ -116,7 +136,11 @@ function renderRow(
   if (ed) srcTd.createSpan({ cls: `pc-spell-srctag e${ed}`, text: ed === "2014" ? "5e" : ed });
   tr.createDiv({ cls: "col-damage", text: e.damage?.types?.[0] ?? "—" });
   tr.createDiv({ cls: "col-save", text: e.saving_throw?.ability ? abbrAbility(e.saving_throw.ability) : "—" });
-  tr.createDiv({ cls: "col-dur", text: e.duration ?? "" });
+  // R4-G7 §7.5 · a browse row reads the RAW registry entity, so a converter spell still carries the structured
+  // `duration` array here; the parser's OWN normaliser collapses it to the corpus's string form. A string passes
+  // through byte-unchanged and `undefined` answers "" (`toStringSafe`), so this is exactly the old `?? ""` for
+  // every spell that already authored a string.
+  tr.createDiv({ cls: "col-dur", text: normalizeSpellDuration(e.duration) });
 
   const toggleExpand = (): void => {
     const next = tr.nextElementSibling;
@@ -181,8 +205,16 @@ function renderMorePanel(host: HTMLElement, state: FilterState, draw: () => void
  *  multi-select filter toolbar. Built once; draw() rebuilds chips + table. */
 export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext): void {
   const drawer = parent.createDiv({ cls: "pc-spell-adddrawer" });
-  const state = defaultFilters();
-  const expanded = new Set<string>();
+  // R4-G3b §12: the filter state and the expanded-row set live in the per-file builderUiState bag (the
+  // decision-strip "the object itself lives in the bag" idiom), so a re-render keeps the search, facets, sort
+  // and open rows; this also makes shownKey's persisted count actually read back at the user's own filter (its
+  // key derives from a `state` that used to be re-created on every render). With no bag both stay
+  // render-scoped locals, exactly as they were.
+  const bag = ctx.builderUiState;
+  const state = (bag?.get("spellsadd.state") as FilterState | undefined) ?? defaultFilters();
+  bag?.set("spellsadd.state", state);
+  const expanded = (bag?.get("spellsadd.expanded") as Set<string> | undefined) ?? new Set<string>();
+  bag?.set("spellsadd.expanded", expanded);
 
   const classSlugs = ctx.derived.spellcastingClasses.map((c) => c.classSlug);
   const maxLevel = Math.max(
@@ -190,11 +222,12 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     ...Object.keys(ctx.derived.derivedSpellSlots).map(Number),
     ctx.derived.pactMagic?.level ?? 0,
   );
-  // Scroll-granted spells (source:"item") are NOT part of the known/prepared
-  // list, so excluding them keeps a caster's own class spell that they happen
-  // to carry a scroll of ADDABLE here (mirrors prepare-view / cast-view). AC-S4.
+  // Only rows the descriptor keeps in the Prepare list count as known here.
+  // Scroll-granted spells are NOT part of the known/prepared list, so excluding
+  // them keeps a caster's own class spell that they happen to carry a scroll of
+  // ADDABLE here (mirrors prepare-view / cast-view). AC-S4.
   const knownSet = () => new Set(
-    ctx.resolved.spells.filter((s) => s.source !== "item").map((s) => s.slug),
+    ctx.resolved.spells.filter((s) => spellSource(s).showInPrepare).map((s) => s.slug),
   );
 
   // Persistent toolbar shell (search must survive redraws or it loses focus).
@@ -213,10 +246,9 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
   // the top of every draw() so it can never accumulate across filter changes.
   const loadMoreHost = drawer.createDiv({ cls: "pc-spell-add-loadmore-host" });
 
-  // Shown-count lives in the per-file builderUiState bag so it survives the
+  // Shown-count lives in the same per-file builderUiState bag, so it survives the
   // whole-sheet re-render that any spell edit fires; when the bag is absent we
   // fall back to a render-scoped local (resets each fresh render).
-  const bag = ctx.builderUiState;
   const local = { shown: PAGE };
   const getShown = (): number =>
     bag ? ((bag.get(shownKey(state)) as number | undefined) ?? PAGE) : local.shown;
@@ -229,6 +261,11 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     chipsHost.empty();
     tableHost.empty();
     loadMoreHost.empty();
+    // The toolbar input is built once per renderAddDrawer call, so a whole-sheet
+    // re-render hands `draw` a NEW empty box: write the (bag-held) query back into
+    // it unconditionally. Typing sets state.query from search.value first, so for
+    // the live input this assigns the identical string and never moves the caret.
+    search.value = state.query;
     allBtn.classList.toggle("active", state.showAll);
     chipGroup(chipsHost, "Source", SOURCES, state.sources, draw);
     chipGroup(chipsHost, "Level", levelItems(maxLevel, state.showAll), state.levels, draw);

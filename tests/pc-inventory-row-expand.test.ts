@@ -11,7 +11,6 @@ import type { EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc
 const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
 vi.mock("../packages/obsidian/src/shared/modals/ConfirmModal", () => ({
   confirm: confirmMock,
-  confirmDelete: vi.fn().mockResolvedValue(true),
 }));
 
 const NoticeMock = vi.hoisted(() => vi.fn());

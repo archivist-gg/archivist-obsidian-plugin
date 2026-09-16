@@ -15,8 +15,39 @@
   padding: 15px 18px 14px;
   position: relative;
 }
+/* R4-G7 T7 fix round 1, RIDER-6 (found by this round's own eye pass on its own race frames, then
+   MEASURED live). The badge was `position: absolute; top: 11px; right: 13px` inside the relatively
+   positioned `.pc-cblock`, so it had NO width in flow: the card title `.pc-cb-name` (an h3) ran the
+   full card width UNDERNEATH it and a long title printed letter on letter through the grey source
+   text. The driver's card-head witness on the pre-fix build measured the badge box
+   `l 753 · r 919 · t 1826 · b 1840` intersecting the title box of `Goliath; Frost Giant Ancestry`,
+   and the same on the background card (`Forgotten Realms: Heroes of Faerun · 2024` over `Ice Fisher`).
+   This is the same defect class R4-G6b's rider R-4 fixed for the SHEET's `.pc-resource-card
+   .source-badge`; the builder's chronicle card is a second surface of it, and the comment below
+   already records the third (the band-right controls in owned-card mode, solved there by moving the
+   source inline).
+   A RIGHT FLOAT takes part in flow, so the title's line boxes shorten by exactly the badge's own
+   width, whatever that text is and in whatever face the theme renders it: no width is hardcoded, so
+   the reserve can never be the wrong size. The margins REPRODUCE the old position rather than
+   inventing a new one. `-4px` top: an absolute `top: 11px` is measured from the card's padding box,
+   while a float begins after the card's `padding-top: 15px`, so 11 - 15 = -4. `-5px` right: an
+   absolute `right: 13px` is measured from the padding box, while a float sits at the content edge,
+   which is the 1px border plus `padding-right: 18px` in, so 13 - 18 = -5. `12px` left keeps a gap
+   between the badge and the title text it now makes room for.
+   WHERE THIS RULE REACHES, measured by reading every `renderChronicleBlock` call site rather than
+   assumed. FIVE call sites pass a `badge` with NO `bandRight`, so five surfaces render the corner badge:
+   the builder's `race-step.ts` and `background-step.ts` preview cards (both measured above), the
+   builder's `class-modal.ts` browse card, and the SHEET's own `passive/race-block.ts` and
+   `passive/background-block.ts`, which render inside an EXPANDED race or background row on the Passive
+   tab. No capture in this phase expands those two rows, which is why no sheet frame shows the collision;
+   the surface is on the sheet all the same, and `g7-t8-riders.md` records it.
+   Owned cards (`bandRight`) render no corner badge at all, because the source rides the sub-line instead.
+   `collapsible` and `bandRight` are independent options, so a `collapsible` card without `bandRight`
+   would put a float beside a flex `.pc-cb-bh`, which establishes its own formatting context and would be
+   pushed below the float; MEASURED, no such call site exists: `class-step.ts` is the only caller that
+   passes `collapsible: true` and it passes `bandRight` in the same object. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-badge {
-  position: absolute; top: 11px; right: 13px;
+  position: static; float: right; margin: -4px -5px 0 12px;
   font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
   font-family: var(--pc-font-sans);
 }
@@ -47,9 +78,13 @@
    the absolute corner badge — which would collide with the band-right LV/REMOVE
    controls — and rides the sub-line as a quiet trailing run, matching the badge's
    muted sans dress so it reads as metadata, not part of the italic identity sub. */
+/* R4 {G5, G6} live rider 2, X-9-2: the segment carries its own leading ` · ` separator (the span is
+   written inside it) and never breaks, so a sub-line too long for the card moves the separator and
+   the source to the next line together instead of leaving the `·` dangling at the end of a line. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-src {
   font-style: normal; font-family: var(--pc-font-sans);
   font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub-sep { color: rgba(0, 0, 0, 0.4); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-flavor {
@@ -122,15 +157,37 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-name {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body);
 }
+/* R4-G7 T7 live rider RIDER-3. The value is `nowrap` and `margin-left: auto` inside the
+   `.pc-dstrip-head` flex row, and a flex child's default `min-width: auto` refuses to shrink below its
+   content width, so a long resolved summary ran past the row and the card CUT it mid-word with no
+   ellipsis: WITNESSED LIVE at S00 on `conv-fighter2024-5-B`'s Class step, where a choose-4 Weapon
+   Mastery row read `Antimatter Rifle, Antimatter Rifle, Automatic Pistol, Automa` and stopped at the
+   card edge. `min-width: 0` lets it shrink, and the clip becomes an honest ellipsis; the name keeps its
+   space first because the value is the flexible end of the row. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-val {
   margin-left: auto; font-size: var(--pc-fs-small); font-weight: 700; white-space: nowrap;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis;
 }
 /* Header wrapper (SP2 Plan 5, smoke r5): a 100%-basis flex child that hosts the
    pill/bang/name/val/chevron on one baseline-aligned line and owns the collapse
    click + pointer. The nest is a SEPARATE row child below it, so nest clicks
    never reach this toggle. Layout matches the legacy direct-child row exactly. */
+/* R4-G7 T7 FIX ROUND 1, RIDER-3 RE-TAKEN AT THE CAUSE. The first rider put `min-width: 0` on the VALUE
+   and did not fix the defect: MEASURED on the captured frames (2048 x 1600), the value's glyphs reached
+   x 1941 before it and x 1940 after it while the row's border sat at x 1905 in every one, so the value
+   still escaped its row by about 35 px and was still cut with no ellipsis. The rider's CSS was live, so
+   it was an ineffective fix, not an undeployed one.
+   THE CAUSE IS THIS BOX. `.pc-dstrip-head` is itself a flex ITEM of the wrapping `.pc-dstrip-row`, and a
+   flex item's default `min-width: auto` refuses to shrink below its content; its content includes the
+   `white-space: nowrap` value, so the HEAD is what overflows and the value is never the box that runs out
+   of room, which is why `text-overflow: ellipsis` on the value could never fire. MEASURED LIVE at S05-fx1
+   part A on `conv-fighter2024-5-B`'s Class step, Weapon Mastery row: row right 953, head right 1017,
+   value right 1017, overflow 64 px, `min-width: auto` on the head and `0px` on the value.
+   `min-width: 0` lets the head shrink to its row, which makes the value the flexible child and lets the
+   value's own (already shipped) shrink-and-ellipsis rules do their job. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-head {
   flex-basis: 100%; display: flex; align-items: baseline; gap: 9px;
+  min-width: 0;
   cursor: pointer; border-radius: var(--pc-radius-sm);
 }
 /* Collapse chevron — fold/card idiom (crimson, ~12px), sits at the far right
@@ -281,6 +338,27 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:last-child { border-bottom: none; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-n { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
+/* Resource tracker on a race trait (R4-G3a §11): the pips sit on the name line,
+   the description keeps its own full-width line under them. The whole row turns
+   into a wrapping flex ONLY when a `.pc-cb-trait-track` host is present, so a
+   trait without resources keeps the plain block layout it has always had; since
+   R4-G3b §11 that host serves only COSTLESS traits, so a routed trait (whose
+   tracker lives on its Actions row) keeps the plain layout too
+   (`:has()` is supported in every Chromium >= 105, i.e. all current Obsidian
+   builds; the same floor components.css already relies on). Nothing here dresses
+   the tracker itself: the pips are `.archivist-toggle-box` (archivist-dnd.css)
+   and the wrapper plus the italic recovery caption are `.pc-charge-boxes` /
+   `.pc-charge-recovery` (actions.css). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:has(> .pc-cb-trait-track) {
+  display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait > .pc-cb-trait-track { margin-left: auto; }
+/* The shared pip row carries a `margin: 6px 0 12px` for the stat-block contexts
+   it was written for (archivist-dnd.css); on this one-line trait header that
+   margin only skews the pips against the name, so it is zeroed HERE (scoped to
+   the trait track, leaving every other tracker host untouched). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait > .pc-cb-trait-track .archivist-toggle-box-row { margin: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:has(> .pc-cb-trait-track) > .pc-cb-trait-d { flex: 0 0 100%; }
 /* Markdown-rendered description dress (smoke r7): trait + decision descriptions
    now render through the shared markdown path, so their `p`/`table`/`ul` must
    inherit the quiet dress. Tables follow the progression cast-table idiom (caps
@@ -326,6 +404,13 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tr:last-child td { border-bottom: none; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d tbody tr:nth-child(even) td,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tbody tr:nth-child(even) td { background: rgba(232, 213, 176, 0.28); }
+/* R4-G3b §10: a background roll-table cell renders through the markdown path,
+   which wraps the cell text in a `<p>` carrying the app's own paragraph margin
+   (the `.pc-cb-trait-d > p` rule above is a CHILD selector and never reaches it).
+   EXPECTED-NOT-MEASURED (§10.2.2: no call site rendered markdown into a `<td>`
+   before Task 11); verified at the G3b live verify; dropped if it changes
+   nothing. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d td > p { margin: 0; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-more { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-crimson); cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop { display: flex; align-items: flex-start; gap: 0.5em; margin: 0.3em 0; font-size: 12.5px; color: var(--pc-text-primary); line-height: 1.5; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop-l { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); flex: none; min-width: 96px; margin-top: 2px; }

@@ -15,8 +15,8 @@ function monsterFiles(): string[] {
  * Normalized-idempotence contract (0c.1a B8).
  *
  * `monsterCodec` is now a NORMALIZING codec (it delegates `parse` to `parseMonster`),
- * not a raw passthrough. By design it drops unmodeled top-level keys (`slug`/`edition`/
- * `source`) and emits the canonical `Monster` field order, so raw-passthrough semantic
+ * not a raw passthrough. `slug` / `edition` / `source` are DECLARED since R4-G6 and round-trip;
+ * an undeclared top-level key lands in `raw`. It emits the canonical `Monster` field order, so raw-passthrough semantic
  * losslessness vs the original SRD body no longer holds — and is no longer the contract.
  * The correct contract for a normalizing codec is idempotence: re-parsing the codec's own
  * serialized output yields the same normalized `Monster`, i.e. `parse → serialize → parse`

@@ -1,0 +1,73 @@
+/** @vitest-environment jsdom */
+import { describe, it, expect, beforeAll, vi } from "vitest";
+import { renderPointPool } from "../packages/obsidian/src/modules/pc/components/actions/point-pool";
+import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
+
+beforeAll(() => installObsidianDomHelpers());
+
+describe("renderPointPool (R4-G4 §5.2.1)", () => {
+  it("renders 'N / M <name>' with steppers, no toggle boxes", () => {
+    const root = mountContainer();
+    renderPointPool(root, { id: "paladin:lay-on-hands", name: "Lay on Hands", used: 5, max: 25, resetLabel: "Long Rest", onSet: () => {} });
+    expect(root.querySelector(".pc-point-pool-value")!.textContent).toBe("20 / 25");
+    expect(root.querySelector(".pc-point-pool-name")!.textContent).toBe("Lay on Hands");
+    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(0);
+    // R4 {G5, G6} live rider V-7: the caption carries the separator that divides it from the name
+    // beside it. The live run read the Metamagic head as `2 / 2  Sorcery Point Long Rest`, two
+    // captions abutting with only the flex gap between them.
+    expect(root.querySelector(".pc-point-pool-reset")!.textContent).toBe("· Long Rest");
+    // The space the reader sees between the name and the mark is the widget's flex `gap`, so the DOM
+    // text abuts by design: this is the string, in order, that the head prints.
+    expect(root.textContent).toBe("−20 / 25+Lay on Hands· Long Rest");
+  });
+
+  it("− spends one (used + 1), + restores one (used − 1), both clamped to [0, max]", () => {
+    const root = mountContainer();
+    const onSet = vi.fn();
+    renderPointPool(root, { id: "x", name: "X", used: 0, max: 3, onSet });
+    // m12's RED FIRST (Gate 2 M-4): the clamp is the first assertion; the unclamped mutant reports -1 here
+    root.querySelector<HTMLElement>(".pc-point-pool-plus")!.click();
+    expect(onSet).toHaveBeenLastCalledWith(0);   // clamped: never below 0
+    root.querySelector<HTMLElement>(".pc-point-pool-minus")!.click();
+    expect(onSet).toHaveBeenLastCalledWith(1);
+    const full = mountContainer();
+    const onSet2 = vi.fn();
+    renderPointPool(full, { id: "y", name: "Y", used: 3, max: 3, onSet: onSet2 });
+    full.querySelector<HTMLElement>(".pc-point-pool-minus")!.click();
+    expect(onSet2).toHaveBeenLastCalledWith(3);  // clamped: never above max
+  });
+
+  // Spec §5.3 names "entry" beside the two steppers. The field shows REMAINING, so the value the
+  // user types is inverted before it reaches the caller: used = max - entered. `makeInlineInput`
+  // clamps the typed number to the [min, max] it was handed FIRST, then renderPointPool's own
+  // clamp floors the inversion, so both ends are covered. Enter is the explicit-commit path
+  // (`makeInlineInput`'s keydown handler); a blur only commits when the raw value differs.
+  it("RED FIRST: direct entry writes max - entered, clamped at both ends (m12b)", () => {
+    const enter = (max: number, used: number, typed: string) => {
+      const root = mountContainer();
+      const onSet = vi.fn();
+      renderPointPool(root, { id: "paladin:lay-on-hands", name: "Lay on Hands", used, max, onSet });
+      root.querySelector<HTMLElement>(".pc-point-pool-value")!.click();
+      const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
+      input.value = typed;
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+      return onSet;
+    };
+    expect(enter(25, 5, "10")).toHaveBeenLastCalledWith(15);   // 10 remaining left => 15 spent
+    expect(enter(25, 5, "40")).toHaveBeenLastCalledWith(0);    // entry clamps to 25 => nothing spent
+    expect(enter(25, 5, "-3")).toHaveBeenLastCalledWith(25);   // entry clamps to 0 => everything spent
+  });
+
+  // The `custom` recovery tooltip survives the NUMERIC path (R4-G4 T3 review M-5, taken at T5):
+  // `renderChargeBoxes` renders it as the caption's `title` through `recoveryTitle`, and a resource
+  // above CHARGE_BOX_LIMIT (or a point-pool head) reaches this widget instead, where the caption had
+  // no tooltip at all.
+  it("RED FIRST: resetTitle becomes the reset caption's title attribute", () => {
+    const root = mountContainer();
+    renderPointPool(root, { id: "z", name: "Z", used: 0, max: 4, resetLabel: "Special", resetTitle: "Recovery is described in this feature's text", onSet: () => {} });
+    expect(root.querySelector(".pc-point-pool-reset")!.getAttribute("title")).toBe("Recovery is described in this feature's text");
+    const bare = mountContainer();
+    renderPointPool(bare, { id: "z", name: "Z", used: 0, max: 4, resetLabel: "Special", onSet: () => {} });
+    expect(bare.querySelector(".pc-point-pool-reset")!.getAttribute("title")).toBeNull();
+  });
+});

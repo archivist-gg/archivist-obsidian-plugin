@@ -76,6 +76,15 @@ describe("rest resets feature resources", () => {
     }
   });
 
+  it("an either resource is restored by a SHORT rest (R4-G3a §8.2)", () => {
+    // The short-rest filter admitted exactly one member before this task, so an
+    // `either` resource was never planned and therefore never applied.
+    const { character, resolved, derived } = setup({ e: { used: 1, max: 1 } }, [feat("e", "E", "either")]);
+    const plan = computeRestPlan(character, resolved, derived, null, "short");
+    applyRestResets(character, resolved, derived, plan, new Set());
+    expect(character.state.feature_uses.e.used).toBe(0);
+  });
+
   it("a short-rest resource resets on BOTH a short and a long rest (§6.4)", () => {
     // long rest
     {

@@ -19,11 +19,22 @@ export function renderAvatarContent(
   portraitCrop: CropParams | null | undefined,
 ): void {
   if (portraitUrl) {
-    host.createEl("img", { cls: "pc-avatar-img", attr: { src: portraitUrl, alt: "" } });
+    const img = host.createEl("img", { cls: "pc-avatar-img", attr: { src: portraitUrl, alt: "" } });
     if (portraitCrop) {
       host.addClass("pc-avatar-cropped");
       host.setCssProps(cropCssProps(portraitCrop));
     }
+    // A dead resource path (image deleted while the sheet is open, then a
+    // handleChange re-render re-mounts the stale URL) must degrade to the d20,
+    // not a broken-image glyph.
+    img.addEventListener("error", () => {
+      if (!host.isConnected) return;              // a newer render already replaced us
+      host.removeClass("pc-avatar-cropped");
+      host.style.removeProperty("--pc-crop-w");
+      host.style.removeProperty("--pc-crop-x");
+      host.style.removeProperty("--pc-crop-y");
+      setPortraitPlaceholderIcon(host);           // clears the host itself
+    });
   } else {
     setPortraitPlaceholderIcon(host);
   }

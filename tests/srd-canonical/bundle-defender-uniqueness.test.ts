@@ -9,8 +9,9 @@
 // re-introduces an unprefixed sibling fails loudly.
 //
 // Note: vaults predating the canonical pipeline may still carry the legacy
-// unprefixed file. A future pass on the plugin's bootstrap could clean such
-// leftovers up; that's out of scope for PC-7.
+// unprefixed file. R4-P6's bootstrap prune trashes such a leftover on the next
+// real upgrade: it shipped with the seven-key legacy bundle shape and an empty
+// outside-fence body, which is exactly what the prune treats as pristine.
 
 import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";

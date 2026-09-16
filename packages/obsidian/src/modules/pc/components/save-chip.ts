@@ -1,7 +1,8 @@
 import { setTooltip } from "obsidian";
 import type { Ability } from "@archivist-gg/dnd5e";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import { renderConditionTag } from "./condition-tag";
+import { renderConditionTags, rollModifierTagSpec, saveOutcomeTagSpec, type ConditionTagSpec } from "./condition-tag";
+import { ROLL_MODE_TAG, AUTO_FAIL_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { numberOverride } from "./edit-primitives";
 import { attachStatTooltip } from "./stat-tooltip";
 import { renderSituationalRows } from "./situational-rows";
@@ -41,8 +42,10 @@ export class SaveChip implements SheetComponent {
     // ADV/DIS/AUTO-FAIL tags render on a wrapping sub-line BENEATH the chip (a
     // sibling in the .pc-ab-stack column) so they never overflow the narrow
     // ~64px ability cell the way an inline-appended tag did (Image #2).
+    // R4-G7 T8 RIDER-20: every tag is COLLECTED first and rendered once below, so same-text tags merge into one.
     let tagsEl: HTMLElement | null = null;
     const tags = (): HTMLElement => (tagsEl ??= el.createDiv({ cls: "pc-save-tags" }));
+    const specs: ConditionTagSpec[] = [];
 
     const overrides = ctx.resolved.definition?.overrides?.saves;
     const profOverridden = overrides?.[ability]?.proficient !== undefined;
@@ -76,7 +79,7 @@ export class SaveChip implements SheetComponent {
             return slug === "paralyzed" || slug === "petrified" || slug === "stunned" || slug === "unconscious";
           })
           .map((s) => s.condition);
-        renderConditionTag(tags(), "AUTO-FAIL", `Auto-fail from ${sources.join(", ") || "condition"}`);
+        specs.push({ kindClass: "fail", text: AUTO_FAIL_TAG, tooltip: `Auto-fail from ${sources.join(", ") || "condition"}` });
       } else if (dis) {
         const sources = ce.sources
           .filter((s) => {
@@ -85,7 +88,7 @@ export class SaveChip implements SheetComponent {
             return false;
           })
           .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
-        renderConditionTag(tags(), "DIS", `Disadvantage from ${sources.join(", ")}`);
+        specs.push({ kindClass: "dis", text: ROLL_MODE_TAG.disadvantage, tooltip: `Disadvantage from ${sources.join(", ")}` });
       }
 
       if (ce.d20_test_penalty !== 0 && !autofail) {
@@ -99,15 +102,22 @@ export class SaveChip implements SheetComponent {
 
     // Structured roll-modifier effects scoped to saving throws. An entry applies
     // to this chip when it is unscoped (all saves) or its scope matches this
-    // ability. Order-preserving; one tag per matching entry. Mirrors the
-    // ability-check loop in skills-panel.ts.
+    // ability. Order-preserving; one spec per matching entry (a conditional one is
+    // marked, RIDER-20). Mirrors the ability-check loop in skills-panel.ts.
     for (const rm of ctx.derived.rollModifiers ?? []) {
       if (rm.roll !== "saving-throw") continue;
       if (rm.scope && rm.scope !== this.ability) continue;
-      const tag = rm.mode === "advantage" ? "ADV" : "DIS";
-      const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
-      renderConditionTag(tags(), tag, tip);
+      specs.push(rollModifierTagSpec(rm));
     }
+
+    // R4-G3a §5.3 · `save-outcome` entries beside the roll-modifier loop. An ABSENT `ability` is
+    // the folded `ability: "any"` and matches every chip, exactly as an absent scope does above.
+    // The outcome glyphs come from dnd5e's OUTCOME table, never a plugin literal.
+    for (const e of ctx.derived.saveOutcomes ?? []) {
+      if (e.ability && e.ability !== this.ability) continue;
+      specs.push(saveOutcomeTagSpec(e));
+    }
+    renderConditionTags(tags, specs);
 
     if (ctx.editState) {
       chip.addEventListener("click", () => ctx.editState!.toggleSaveProficient(ability));

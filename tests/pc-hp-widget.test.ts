@@ -192,7 +192,7 @@ describe("HpWidget — unconscious body swap (SP4 polish)", () => {
     return {
       ctx: {
         derived: { hp: { current: 0, max: 30, temp: 0 } },
-        resolved: { state: { death_saves: { successes, failures } } },
+        resolved: { state: { hp: { current: 0, max: 30, temp: 0 }, death_saves: { successes, failures } } }, // `hp` is REQUIRED on `CharacterState` (dnd5e `pc.types.ts`); R4-G6b §6's `max: Math.max(derived.hp.max, state.hp.current)` reads it EAGERLY at render, where the old `getValue` closure read it only on click. Kept on ONE line so no pre-existing tsc error line in this file shifts.
         editState,
       } as unknown as ComponentRenderContext,
       editState,
@@ -405,6 +405,68 @@ describe("HpWidget — click-to-edit numerics (SP4b)", () => {
     // Death-saves panel should replace the nums
     expect(root.querySelector(".pc-hp-current")).toBeNull();
     expect(root.querySelector(".pc-hp-max")).toBeNull();
+  });
+  // R4-G6b §6 (Q-4): this block is NESTED in the SP4b describe so it reuses that block's
+  // `interactiveCtx`, whose editState double already carries `setCurrentHp`.
+  describe("current HP above max (R4-G6b §6)", () => {
+    // `interactiveCtx` returns `{ ctx, editState }` (Gate 2 B-5): destructure it.
+    it("40 / 28 is flagged and shown as-is", () => {
+      const root = mountContainer(); const { ctx } = interactiveCtx({ current: 40, max: 28, temp: 0 });
+      new HpWidget().render(root, ctx);
+      const cur = root.querySelector(".pc-hp-current")!;
+      expect(cur.classList.contains("pc-hp-over")).toBe(true);
+      expect(cur.querySelector(".pc-hp-over-mark")?.textContent).toBe("!");
+      expect(cur.querySelector(".pc-hp-val")?.getAttribute("aria-label")).toMatch(/exceeds the maximum of 28/);
+      // Fix round 1 (F-2): `components.css`'s `cursor: help` sits on the `!` mark, so the mark must answer the
+      // hover too, not only the value tile. The test double's `setTooltip` writes `aria-label`.
+      expect(cur.querySelector(".pc-hp-over-mark")?.getAttribute("aria-label")).toMatch(/exceeds the maximum of 28/);
+    });
+    it("the mark sits beside the value, so the value's text stays the bare number", () => {   // m13's kill row
+      const root = mountContainer(); const { ctx } = interactiveCtx({ current: 40, max: 28, temp: 0 });
+      new HpWidget().render(root, ctx);
+      expect(root.querySelector(".pc-hp-current .pc-hp-val")?.textContent).toBe("40");
+    });
+    it("an untyped Enter on the flagged tile writes nothing", () => {                      // m12's kill row
+      const root = mountContainer(); const { ctx, editState } = interactiveCtx({ current: 40, max: 28, temp: 0 });
+      new HpWidget().render(root, ctx);
+      const val = root.querySelector(".pc-hp-current .pc-hp-val") as HTMLElement;
+      val.click();
+      const input = root.querySelector(".pc-hp-current input")!;
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      expect(editState.setCurrentHp).not.toHaveBeenCalled();
+    });
+    it("an untyped Enter gives the tile back: the input is gone and the value still reads 40", () => {  // rA-m's kill row
+      // R4-G6b live rider F-A: the guard above writes nothing, so the consumer re-renders nothing and
+      // `makeInlineInput` used to leave its committed input mounted for ever (`done` is already true, so
+      // commit, cancel and Escape all early-return and the tile could never be edited again). The
+      // primitive now restores the value element in place whenever the input is still connected after
+      // `onCommit`, which is a no-op for every consumer that re-renders.
+      const root = mountContainer(); const { ctx } = interactiveCtx({ current: 40, max: 28, temp: 0 });
+      new HpWidget().render(root, ctx);
+      const val = root.querySelector(".pc-hp-current .pc-hp-val") as HTMLElement;
+      val.click();
+      const input = root.querySelector(".pc-hp-current input")!;
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      expect(root.querySelector(".pc-hp-current input")).toBeNull();
+      expect(root.querySelector(".pc-hp-current .pc-hp-val")?.textContent).toBe("40");
+    });
+    it("a typed 20 calls setCurrentHp with 20", () => {
+      const root = mountContainer(); const { ctx, editState } = interactiveCtx({ current: 40, max: 28, temp: 0 });
+      new HpWidget().render(root, ctx);
+      (root.querySelector(".pc-hp-current .pc-hp-val") as HTMLElement).click();
+      const input = root.querySelector(".pc-hp-current input") as HTMLInputElement;
+      input.value = "20";
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      expect(editState.setCurrentHp).toHaveBeenCalledWith(20);
+    });
+    it("28 / 28 is not flagged and 0 / 28 keeps the unconscious branch", () => {
+      const a = mountContainer(); new HpWidget().render(a, interactiveCtx({ current: 28, max: 28, temp: 0 }).ctx);
+      expect(a.querySelector(".pc-hp-over")).toBeNull();
+      expect(a.querySelector(".pc-hp-over-mark")).toBeNull();
+      const b = mountContainer(); new HpWidget().render(b, interactiveCtx({ current: 0, max: 28, temp: 0 }).ctx);
+      expect(b.querySelector(".pc-hp-widget")?.classList.contains("unconscious")).toBe(true);
+      expect(b.querySelector(".pc-hp-over")).toBeNull();
+    });
   });
 });
 });

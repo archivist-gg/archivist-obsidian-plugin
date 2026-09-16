@@ -47,12 +47,18 @@ describe("HitDiceWidget", () => {
     expect(root.querySelector(".pc-hd-label")?.textContent).toBe("HIT DICE · d8");
   });
 
-  it("empty hit_dice: placeholder — no actions, no numbers", () => {
+  // R4 {G5, G6} live rider N-3-18: the empty state used to be a bordered box holding one glyph and
+  // nothing else, so the reader had no way to know WHICH widget was empty. It keeps the glyph (P8 owns
+  // the null-glyph ruling) and gains the heading its populated twin carries, without the die suffix
+  // there is no die to name.
+  it("empty hit_dice: placeholder plus the HIT DICE label, no actions, no numbers", () => {
     const root = mountContainer();
     new HitDiceWidget().render(root, ctx({}));
     const wrap = root.querySelector(".pc-panel.pc-hd-widget");
     expect(wrap?.querySelector(".pc-hd-empty")?.textContent).toBe("—");
+    expect(wrap?.querySelector(".pc-hd-label")?.textContent).toBe("HIT DICE");
     expect(wrap?.querySelector(".pc-hd-actions")).toBeNull();
+    expect(wrap?.querySelector(".pc-hd-nums")).toBeNull();
   });
 });
 
