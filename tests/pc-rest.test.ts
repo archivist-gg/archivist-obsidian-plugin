@@ -380,6 +380,23 @@ describe("applyRestResets — short rest + edge cases", () => {
     expect(c.state.feature_uses["b:rage"].used).toBe(0);   // clamped, never negative
   });
 
+  // G8: a `restore: N` category is a MID-DAY partial recovery (R4-G4 §7.2.2), not the rest that ends the
+  // day, so it must NOT eat the bank: `used` is the spent boundary, and wiping the values while handing a
+  // use back would leave a checked box with no number above it.
+  it("a `restore: N` partial category hands uses back WITHOUT eating the bank", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    c.state.feature_uses = { "w:portent": { used: 2, max: 2 } };
+    c.state.feature_rolls = { "w:portent": [19, 7] };
+    const plan: RestPlan = {
+      type: "short",
+      categories: [{ id: "feature:w:portent", label: "Portent", preview: "1 of 2 used restored", restore: 1 }],
+      hdAvailable: [],
+    };
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses["w:portent"].used).toBe(1);
+    expect(c.state.feature_rolls?.["w:portent"]).toEqual([19, 7]);
+  });
+
   it("optouts referencing a missing category id are ignored", () => {
     const c = clone(WIZARD_5_WOUNDED);
     const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");

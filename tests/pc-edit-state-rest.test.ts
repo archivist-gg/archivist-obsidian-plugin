@@ -86,3 +86,67 @@ describe("CharacterEditState.shortRest", () => {
     expect(c.state.feature_uses.rage.used).toBe(3);
   });
 });
+
+/** G8: the bank clears in the SAME `feature:<key>` category as the uses, so ONE opt-out governs both
+ *  (brief §Design; the dnd5e `computeRestPlan` loops fire on spent uses OR banked rolls). */
+describe("CharacterEditState rest — banked rolls (G8)", () => {
+  const PORTENT = "wizard-2024:foretelling-roll";
+
+  function portent(reset: string) {
+    return [{ feature: { id: "portent", name: "Portent", resources: [{ id: PORTENT, reset }] }, source: null }];
+  }
+
+  function banked(used: number, rolls: number[]) {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    c.state.feature_uses[PORTENT] = { used, max: 2 };
+    if (rolls.length > 0) c.state.feature_rolls = { [PORTENT]: rolls };
+    return c;
+  }
+
+  it("a long rest clears the bank together with the uses", () => {
+    const c = banked(1, [19, 7]);
+    const { es } = makeState(c, portent("long-rest"));
+    es.longRest(new Set());
+    expect(c.state.feature_uses[PORTENT].used).toBe(0);
+    expect(c.state.feature_rolls?.[PORTENT]).toBeUndefined();
+  });
+
+  it("the mid-day shape with NOTHING spent still loses its rolls", () => {
+    const c = banked(0, [19, 7]);
+    const { es } = makeState(c, portent("long-rest"));
+    es.longRest(new Set());
+    expect(c.state.feature_rolls?.[PORTENT]).toBeUndefined();
+  });
+
+  it("one opt-out governs both axes: the rolls stay when the category is skipped", () => {
+    const c = banked(1, [19, 7]);
+    const { es } = makeState(c, portent("long-rest"));
+    es.longRest(new Set([`feature:${PORTENT}`]));
+    expect(c.state.feature_uses[PORTENT].used).toBe(1);
+    expect(c.state.feature_rolls?.[PORTENT]).toEqual([19, 7]);
+  });
+
+  it("a short-rest bank clears on a short rest", () => {
+    const c = banked(1, [4]);
+    const { es } = makeState(c, portent("short-rest"));
+    es.shortRest(new Set());
+    expect(c.state.feature_uses[PORTENT].used).toBe(0);
+    expect(c.state.feature_rolls?.[PORTENT]).toBeUndefined();
+  });
+
+  it("a long-rest bank survives a short rest", () => {
+    const c = banked(1, [19, 7]);
+    const { es } = makeState(c, portent("long-rest"));
+    es.shortRest(new Set());
+    expect(c.state.feature_uses[PORTENT].used).toBe(1);
+    expect(c.state.feature_rolls?.[PORTENT]).toEqual([19, 7]);
+  });
+
+  it("a rest on a resource with NO bank leaves no feature_rolls residue", () => {
+    const c = banked(1, []);
+    const { es } = makeState(c, portent("long-rest"));
+    es.longRest(new Set());
+    expect(c.state.feature_uses[PORTENT].used).toBe(0);
+    expect(c.state.feature_rolls).toBeUndefined();
+  });
+});

@@ -61,10 +61,21 @@ export function applyRestResets(
 
     if (cat.id.startsWith("feature:")) {
       const key = cat.id.slice("feature:".length);
+      // R4-G5 G8: the SAME category clears the resource's BANKED rolls (`state.feature_rolls[key]`), so
+      // ONE opt-out governs both axes, and the emptied bank is DELETED, not left as [] (the rule the
+      // `buff:` arm below and `CharacterEditState.setFeatureRolls` already share). Only a FULL reset
+      // clears it: a `restore: N` partial recovery (R4-G4 §7.2.2) is a mid-day regain, and dropping the
+      // values while handing a use back would leave a checked box with no number above it, breaking the
+      // `used <= bank.length` pairing `spendFeatureRoll` maintains.
+      const restore = cat.restore;
+      const isFullReset = restore === undefined || restore === "all";
+      if (isFullReset && character.state.feature_rolls?.[key]) {
+        delete character.state.feature_rolls[key];
+      }
       const fu = character.state.feature_uses?.[key];
       if (!fu) continue;
       // R4-G4 §7.2.2: a partial recovery category regains N uses (or all); the own reset regains to 0.
-      fu.used = cat.restore === undefined || cat.restore === "all" ? 0 : Math.max(0, fu.used - cat.restore);
+      fu.used = isFullReset ? 0 : Math.max(0, fu.used - restore);
       continue;
     }
 
