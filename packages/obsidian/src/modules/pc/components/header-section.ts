@@ -33,7 +33,18 @@ export class HeaderSection implements SheetComponent {
       attr: { "aria-label": "Manage & level up", title: "Manage & level up" },
     });
     setIcon(gear, "settings");
-    gear.addEventListener("click", () => ctx.editState?.openBuilder());
+    gear.addEventListener("click", () => {
+      if (ctx.builderUiState?.get("builder.previewSheet") === true) {
+        ctx.builderUiState.delete("builder.previewSheet");
+        ctx.builderUiState.delete("builder.details.hp");
+        ctx.onRequestRender?.();
+        return;
+      }
+      if (!ctx.editState) return;
+      ctx.builderUiState?.delete("builder.previewSheet");
+      ctx.builderUiState?.delete("builder.details.hp");
+      ctx.editState.openBuilder();
+    });
     identity.createDiv({ cls: "pc-subtitle", text: buildSubtitle(ctx.resolved) });
 
     const right = root.createDiv({ cls: "pc-hero-right" });

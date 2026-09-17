@@ -103,7 +103,8 @@ describe("HeaderSection", () => {
     const container = mountContainer();
     const registry = registryWith(["ac-shield", "hp-widget", "resource-band"]);
     const openBuilder = vi.fn();
-    const ctx = { ...fakeCtx(BASE_RESOLVED), editState: { openBuilder } as never };
+    const builderUiState = new Map<string, unknown>([["builder.details.hp", { mode: "rolled", value: 24 }]]);
+    const ctx = { ...fakeCtx(BASE_RESOLVED), editState: { openBuilder } as never, builderUiState };
     new HeaderSection(registry).render(container, ctx);
 
     const gear = container.querySelector(".pc-name-row .pc-manage-gear") as HTMLButtonElement | null;
@@ -114,5 +115,25 @@ describe("HeaderSection", () => {
 
     gear!.click();
     expect(openBuilder).toHaveBeenCalledTimes(1);
+    expect(builderUiState.has("builder.details.hp")).toBe(false);
+  });
+
+  it("returns from a draft sheet preview without writing the draft", () => {
+    const container = mountContainer();
+    const openBuilder = vi.fn();
+    const onRequestRender = vi.fn();
+    const builderUiState = new Map<string, unknown>([
+      ["builder.previewSheet", true],
+      ["builder.details.hp", { mode: "rolled", value: 24 }],
+    ]);
+    new HeaderSection(registryWith([])).render(container, {
+      ...fakeCtx(BASE_RESOLVED), editState: { openBuilder } as never,
+      builderUiState, onRequestRender,
+    });
+    container.querySelector<HTMLButtonElement>(".pc-manage-gear")!.click();
+    expect(openBuilder).not.toHaveBeenCalled();
+    expect(onRequestRender).toHaveBeenCalledTimes(1);
+    expect(builderUiState.has("builder.previewSheet")).toBe(false);
+    expect(builderUiState.has("builder.details.hp")).toBe(false);
   });
 });
