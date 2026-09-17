@@ -1,0 +1,81 @@
+/* ============================================================================
+   PROPOSED — banked foretelling rolls. The ONLY non-shipped CSS on this page.
+   Every idiom borrows verbatim from a shipped control:
+   - .pc-bank-die is .pc-die-icon's mask technique (dice-icons.css) wearing the
+     Michelle Lukezic outlined d20 (Noun Project 5336700, CC-BY 3.0 — see CREDITS.md),
+     a DIFFERENT glyph from the Tapscott set precisely so a banked face never
+     reads as the tracker's die-type readout.
+   - The spent X is .archivist-toggle-box-checked's exact cross geometry, scaled up.
+   - The empty face's dashed ring is .pc-roll-chip-empty's register.
+   ========================================================================== */
+.archivist-pc-sheet .pc-bank {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-bank-die {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  cursor: text;
+}
+.archivist-pc-sheet .pc-bank-die-glyph {
+  position: absolute;
+  inset: 0;
+  background-color: var(--pc-crimson);
+  -webkit-mask-image: var(--pc-bank-die-mask);
+  mask-image: var(--pc-bank-die-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+.archivist-pc-sheet .pc-bank-die-val {
+  position: relative;
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-mid);
+  line-height: var(--pc-lh-tight);
+  color: var(--pc-text-primary);
+  /* The value sits in the white central face of the glyph, whose optical center
+     is ~0.506 of the glyph height; nudge up so a two-digit number centers there. */
+  padding-top: 1px;
+}
+/* SPENT: the whole glyph fades and the shipped X-cross draws across it, at the
+   box's exact 2.5px:20px proportion scaled to 40px → 5px:40px. */
+.archivist-pc-sheet .pc-bank-die-spent .pc-bank-die-glyph { opacity: 0.35; }
+.archivist-pc-sheet .pc-bank-die-spent .pc-bank-die-val { color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bank-die-spent::before,
+.archivist-pc-sheet .pc-bank-die-spent::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 40px;
+  background-color: var(--d5e-text-accent, #7a200d);
+  border-radius: 1px;
+  pointer-events: none;
+}
+.archivist-pc-sheet .pc-bank-die-spent::before { transform: translate(-50%, -50%) rotate(45deg); }
+.archivist-pc-sheet .pc-bank-die-spent::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+/* EMPTY: no banked value yet — a muted ghost die with a dashed invitation ring.
+   The empty face is ALSO the manual-entry affordance: click, type, Enter. */
+.archivist-pc-sheet .pc-bank-die-empty .pc-bank-die-glyph { background-color: var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-bank-die-empty .pc-bank-die-val { color: var(--pc-text-muted); font-weight: 400; }
+.archivist-pc-sheet .pc-bank-die-empty::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 1.5px dashed var(--pc-tan-muted);
+  border-radius: 6px;
+  pointer-events: none;
+}

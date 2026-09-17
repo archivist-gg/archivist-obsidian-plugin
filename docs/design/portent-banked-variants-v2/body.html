@@ -1,0 +1,276 @@
+
+<body class="companion-page">
+
+<div class="companion-header">
+  <h1>Banked foretelling rolls — die-face variants, critically examined</h1>
+  <p>Round 2. The chip idiom of round 1 is demoted: a chip is a <i>label</i>, and Portent's values are physical dice — so the bank now draws <b>outlined d20 faces with the rolled number inside</b> (glyph: <a href="https://thenounproject.com/icon/d20-dice-5336700/">d20 dice by Michelle Lukezic</a>, Noun Project, CC-BY 3.0 — attributed in CREDITS.md). Click a face to <b>type</b> the roll by hand; the empty face is the entry point. Marking a face spent draws the sheet's own X-cross over the whole glyph. All panels are the Passive-tab row at the 620px default tier, both states shown.</p>
+  <p>Each variant now names what is <b>wrong with it</b>. A design that cannot say its failure mode is not ready to ship.</p>
+</div>
+
+<h2 class="companion-section-label">1 · Faces beside the pips — the direct translation</h2>
+<p class="companion-caption">Two banked faces inline before the pip track: <i>d20</i> label, <code>Roll 2d20</code> pill, the two faces, then the shipped tracker. Click a face value → inline edit (the shipped <code>numberField</code> dance). Click a face <i>frame</i> while a value sits in it → spent: X across the glyph, one pip checks.</p>
+
+<div class="archivist-pc-sheet" style="max-width:668px">
+  <div class="pc-content">
+  <div class="pc-tab-body pc-actions-body pc-actions-tab pc-passive-features-tab">
+    <div class="pc-actions-table pc-feature-list">
+
+      <div class="pc-action-row pc-feature-row">
+        <div class="pc-action-namecell">
+          <div class="pc-action-row-name">Portent</div>
+          <div class="pc-action-row-sub pc-cap-host pc-cap-spaced"><span class="pc-cap-unit"><span class="pc-cap-seg">Diviner 3</span></span></div>
+        </div>
+        <div class="pc-feature-detail">
+          <span class="pc-resource-die">d20</span>
+          <div class="pc-spend"><button class="pc-spend-control">Roll 2d20</button></div>
+          <span class="pc-bank">
+            <span class="pc-bank-die" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">7</span></span>
+            <span class="pc-bank-die" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+          </span>
+          <span class="pc-feature-track">
+            <span class="pc-charge-boxes pc-cap-host">
+              <span class="archivist-toggle-box-row">
+                <span class="archivist-toggle-box"></span>
+                <span class="archivist-toggle-box"></span>
+              </span>
+              <span class="pc-cap-unit pc-charge-recovery"><span class="pc-cap-sep" aria-hidden="true">/ </span><span class="pc-cap-seg">Long Rest</span></span>
+            </span>
+          </span>
+        </div>
+        <div class="pc-action-caret">›</div>
+      </div>
+
+      <div class="pc-action-row pc-feature-row">
+        <div class="pc-action-namecell">
+          <div class="pc-action-row-name">Portent</div>
+          <div class="pc-action-row-sub pc-cap-host pc-cap-spaced"><span class="pc-cap-unit"><span class="pc-cap-seg">Diviner 3</span></span></div>
+        </div>
+        <div class="pc-feature-detail">
+          <span class="pc-resource-die">d20</span>
+          <div class="pc-spend"><button class="pc-spend-control" disabled>Roll 2d20</button></div>
+          <span class="pc-bank">
+            <span class="pc-bank-die pc-bank-die-spent" title="Spent — the 7 replaced a D20 Test"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">7</span></span>
+            <span class="pc-bank-die" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+          </span>
+          <span class="pc-feature-track">
+            <span class="pc-charge-boxes pc-cap-host">
+              <span class="archivist-toggle-box-row">
+                <span class="archivist-toggle-box archivist-toggle-box-checked"></span>
+                <span class="archivist-toggle-box"></span>
+              </span>
+              <span class="pc-cap-unit pc-charge-recovery"><span class="pc-cap-sep" aria-hidden="true">/ </span><span class="pc-cap-seg">Long Rest</span></span>
+            </span>
+          </span>
+        </div>
+        <div class="pc-action-caret">›</div>
+      </div>
+
+    </div>
+  </div>
+  </div>
+</div>
+<p class="companion-caption"><b>Critique.</b> Two d20 glyphs now sit in one detail slot — the serif <i>d20</i> label and the face glyphs — and a reader who does not know the feature must guess which is which. The 40px faces (twice the pips' size) dominate a row whose shipped hierarchy puts the <i>count</i> first. And the row is getting <b>long</b>: label, pill, two faces, two pips, caption — five clusters where the shipped row has two. It works, but it is the least economical reading.</p>
+
+<h2 class="companion-section-label">2 · Faces replace the pips — the strongest claim, restated</h2>
+<p class="companion-caption">If the faces carry both value and spent-state, the pips are redundant — every face is its own pip. The tracker reduces to the faces plus the <code>/ Long Rest</code> caption. The count the engine tracks (<code>max − used</code>) is still the single source; it just has no widget of its own, exactly like a charge bar's zones carry no numbers.</p>
+
+<div class="archivist-pc-sheet" style="max-width:668px">
+  <div class="pc-content">
+  <div class="pc-tab-body pc-actions-body pc-actions-tab pc-passive-features-tab">
+    <div class="pc-actions-table pc-feature-list">
+
+      <div class="pc-action-row pc-feature-row">
+        <div class="pc-action-namecell">
+          <div class="pc-action-row-name">Portent</div>
+          <div class="pc-action-row-sub pc-cap-host pc-cap-spaced"><span class="pc-cap-unit"><span class="pc-cap-seg">Diviner 3</span></span></div>
+        </div>
+        <div class="pc-feature-detail">
+          <span class="pc-resource-die">d20</span>
+          <div class="pc-spend"><button class="pc-spend-control">Roll 2d20</button></div>
+          <span class="pc-bank">
+            <span class="pc-bank-die" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">7</span></span>
+            <span class="pc-bank-die" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+          </span>
+          <span class="pc-feature-track">
+            <span class="pc-charge-boxes pc-cap-host">
+              <span class="pc-cap-unit pc-charge-recovery"><span class="pc-cap-sep" aria-hidden="true">/ </span><span class="pc-cap-seg">Long Rest</span></span>
+            </span>
+          </span>
+        </div>
+        <div class="pc-action-caret">›</div>
+      </div>
+
+      <div class="pc-action-row pc-feature-row">
+        <div class="pc-action-namecell">
+          <div class="pc-action-row-name">Portent</div>
+          <div class="pc-action-row-sub pc-cap-host pc-cap-spaced"><span class="pc-cap-unit"><span class="pc-cap-seg">Diviner 3</span></span></div>
+        </div>
+        <div class="pc-feature-detail">
+          <span class="pc-resource-die">d20</span>
+          <div class="pc-spend"><button class="pc-spend-control" disabled>Roll 2d20</button></div>
+          <span class="pc-bank">
+            <span class="pc-bank-die pc-bank-die-spent" title="Spent"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">7</span></span>
+            <span class="pc-bank-die" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+          </span>
+          <span class="pc-feature-track">
+            <span class="pc-charge-boxes pc-cap-host">
+              <span class="pc-cap-unit pc-charge-recovery"><span class="pc-cap-sep" aria-hidden="true">/ </span><span class="pc-cap-seg">Long Rest</span></span>
+            </span>
+          </span>
+        </div>
+        <div class="pc-action-caret">›</div>
+      </div>
+
+    </div>
+  </div>
+  </div>
+</div>
+<p class="companion-caption"><b>Critique.</b> This is the honest shape of the feature — the faces ARE the state — but it breaks the sheet's contract: every other resource on this tab draws the shipped tracker, and Portent would be the one row with a bespoke widget. A player who never rolls d20s at all (all manual, empty faces) sees two ghost dice where the rest of the sheet shows countable boxes. It is also the variant that leans hardest on the X: at a glance, a spent face and a faded face are one opacity decision apart.</p>
+
+<h2 class="companion-section-label">3 · The faces live in the expand card — the quiet option</h2>
+<p class="companion-caption">Row unchanged from shipped. The card gains a <i>Foretelling rolls</i> line: the pill, then the faces, in the card's resource-line register. The faces are 32px here (card context, not row context) — proportionally what the shipped die label reads at.</p>
+
+<style>
+.archivist-pc-sheet .pc-bank-die-sm { width: 32px; height: 32px; }
+.archivist-pc-sheet .pc-bank-die-sm .pc-bank-die-val { font-size: var(--pc-fs-body); }
+</style>
+<div class="archivist-pc-sheet" style="max-width:668px">
+  <div class="pc-content">
+  <div class="pc-tab-body pc-actions-body pc-actions-tab pc-passive-features-tab">
+    <div class="pc-actions-table pc-feature-list">
+
+      <div class="pc-action-row pc-feature-row pc-row-open">
+        <div class="pc-action-namecell">
+          <div class="pc-action-row-name">Portent</div>
+          <div class="pc-action-row-sub pc-cap-host pc-cap-spaced"><span class="pc-cap-unit"><span class="pc-cap-seg">Diviner 3</span></span></div>
+        </div>
+        <div class="pc-feature-detail">
+          <span class="pc-resource-die">d20</span>
+          <span class="pc-feature-track">
+            <span class="pc-charge-boxes pc-cap-host">
+              <span class="archivist-toggle-box-row">
+                <span class="archivist-toggle-box archivist-toggle-box-checked"></span>
+                <span class="archivist-toggle-box"></span>
+              </span>
+              <span class="pc-cap-unit pc-charge-recovery"><span class="pc-cap-sep" aria-hidden="true">/ </span><span class="pc-cap-seg">Long Rest</span></span>
+            </span>
+          </span>
+        </div>
+        <div class="pc-action-caret">›</div>
+      </div>
+
+      <div class="pc-action-expand pc-open-expand">
+        <div class="pc-action-expand-inner">
+          <div class="archivist-item-block-wrapper pc-resource-card">
+            <div class="archivist-item-block">
+              <span class="source-badge">SRD 2024</span>
+              <div class="archivist-item-block-header">
+                <h3 class="archivist-item-name">Portent</h3>
+                <div class="archivist-item-subtitle">Diviner 3</div>
+              </div>
+              <div class="archivist-item-description">
+                <div class="description-paragraph"><p>Glimpses of the future begin to press on your awareness. Whenever you finish a Long Rest, roll two d20s and record the numbers rolled…</p></div>
+              </div>
+              <div class="pc-card-resource">
+                <span class="pc-card-resource-name">Foretelling rolls</span>
+                <div class="pc-spend"><button class="pc-spend-control">Roll 2d20</button></div>
+                <span class="pc-bank">
+                  <span class="pc-bank-die pc-bank-die-sm" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">7</span></span>
+                  <span class="pc-bank-die pc-bank-die-sm" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  </div>
+</div>
+<p class="companion-caption"><b>Critique.</b> Nothing new on the row, the values live beside the rule text that governs them. But the whole point of Portent is that the values are needed <b>mid-combat, someone else's turn</b> — "before the roll" — and burying them one click deep is the least available placement. The card is the right home for prose, not for state you read under time pressure.</p>
+
+<h2 class="companion-section-label">4 · Faces as the pip track — the merged widget</h2>
+<p class="companion-caption">What if the faces <b>are</b> the charge boxes? The pip row is replaced one-for-one by faces: same slot, same size rhythm as the toggle boxes. Empty unspent face → ghost die with the entry ring. This is the only variant where the shipped tracker's <i>position</i> survives unchanged — the widget inside it changes.</p>
+
+<style>
+.archivist-pc-sheet .pc-bank-die-pip { width: 24px; height: 24px; }
+.archivist-pc-sheet .pc-bank-die-pip .pc-bank-die-val { font-size: var(--pc-fs-small); font-weight: 700; }
+.archivist-pc-sheet .pc-bank-die-pip .pc-bank-die-glyph { opacity: 0.9; }
+.archivist-pc-sheet .pc-bank-die-pip.pc-bank-die-spent::before,
+.archivist-pc-sheet .pc-bank-die-pip.pc-bank-die-spent::after { height: 24px; width: 3px; }
+</style>
+<div class="archivist-pc-sheet" style="max-width:668px">
+  <div class="pc-content">
+  <div class="pc-tab-body pc-actions-body pc-actions-tab pc-passive-features-tab">
+    <div class="pc-actions-table pc-feature-list">
+
+      <div class="pc-action-row pc-feature-row">
+        <div class="pc-action-namecell">
+          <div class="pc-action-row-name">Portent</div>
+          <div class="pc-action-row-sub pc-cap-host pc-cap-spaced"><span class="pc-cap-unit"><span class="pc-cap-seg">Diviner 3</span></span></div>
+        </div>
+        <div class="pc-feature-detail">
+          <span class="pc-resource-die">d20</span>
+          <div class="pc-spend"><button class="pc-spend-control">Roll 2d20</button></div>
+          <span class="pc-bank">
+            <span class="pc-bank-die pc-bank-die-pip" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">7</span></span>
+            <span class="pc-bank-die pc-bank-die-pip" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+          </span>
+          <span class="pc-feature-track">
+            <span class="pc-charge-boxes pc-cap-host">
+              <span class="pc-cap-unit pc-charge-recovery"><span class="pc-cap-sep" aria-hidden="true">/ </span><span class="pc-cap-seg">Long Rest</span></span>
+            </span>
+          </span>
+        </div>
+        <div class="pc-action-caret">›</div>
+      </div>
+
+      <div class="pc-action-row pc-feature-row">
+        <div class="pc-action-namecell">
+          <div class="pc-action-row-name">Portent</div>
+          <div class="pc-action-row-sub pc-cap-host pc-cap-spaced"><span class="pc-cap-unit"><span class="pc-cap-seg">Diviner 3</span></span></div>
+        </div>
+        <div class="pc-feature-detail">
+          <span class="pc-resource-die">d20</span>
+          <div class="pc-spend"><button class="pc-spend-control" disabled>Roll 2d20</button></div>
+          <span class="pc-bank">
+            <span class="pc-bank-die pc-bank-die-pip pc-bank-die-spent" title="Spent"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">7</span></span>
+            <span class="pc-bank-die pc-bank-die-pip" title="Click the number to type it by hand · click the frame to spend"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+          </span>
+          <span class="pc-feature-track">
+            <span class="pc-charge-boxes pc-cap-host">
+              <span class="pc-cap-unit pc-charge-recovery"><span class="pc-cap-sep" aria-hidden="true">/ </span><span class="pc-cap-seg">Long Rest</span></span>
+            </span>
+          </span>
+        </div>
+        <div class="pc-action-caret">›</div>
+      </div>
+
+    </div>
+  </div>
+  </div>
+</div>
+<p class="companion-caption"><b>Critique.</b> The tightest composition — one widget where V1 had three — and it keeps the tracker slot. But 24px is small: a two-digit serif number inside a 24px outlined die is at the floor of legibility, and the X-cross at that scale competes with the number it crosses out. If the table plays on a laptop at 100% zoom this is the one to beat; if anyone is on a small window, V1's 40px is the safer size and the extra clusters are the price.</p>
+
+<h2 class="companion-section-label">The size ladder — same glyph, three contexts</h2>
+<p class="companion-caption">One face at each proposed size, so the number-inside-face is judged at actual scale, not inferred. Left to right: V4 pip-scale 24px · V3 card-scale 32px · V1/V2 row-scale 40px · spent state · empty ghost face · the shipped 40px Tapscott face for contrast.</p>
+
+<div class="archivist-pc-sheet" style="max-width:668px">
+  <div class="pc-content" style="padding: 16px">
+    <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap">
+      <span class="pc-bank-die pc-bank-die-pip"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+      <span class="pc-bank-die pc-bank-die-sm"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+      <span class="pc-bank-die"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+      <span class="pc-bank-die pc-bank-die-spent"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">16</span></span>
+      <span class="pc-bank-die pc-bank-die-empty"><span class="pc-bank-die-glyph"></span><span class="pc-bank-die-val">–</span></span>
+      <i class="pc-die-icon die-d20 pc-die-lg" aria-hidden="true" style="color: var(--pc-crimson)"></i>
+      <span style="font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic">← shipped 40px Tapscott face</span>
+    </div>
+  </div>
+</div>
+<p class="companion-caption"><b>Attribution.</b> The banked face glyph is <a href="https://thenounproject.com/icon/d20-dice-5336700/">"d20 dice" by Michelle Lukezic</a> from the <a href="https://thenounproject.com/">Noun Project</a>, CC-BY 3.0 — recorded in <code>CREDITS.md</code> beside the Tapscott die set. It was chosen over reusing the Tapscott d20 on purpose: the two glyphs must never be confusable, because the tracker's face is a readout (what die you roll) and the bank's face is state (what you rolled) — same silhouette family, different drawing.</p>
+
+<div class="companion-foot">Static — no JS; the click-to-edit input is described, not wired. Mechanics unchanged from the G8 booking (feature_rolls, splice-and-decrement, rest clears beside uses). Tell me which variant survives the critique — or which two to merge — and I'll refine it.</div>
+
+</body>
