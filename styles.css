@@ -10774,6 +10774,87 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt.sel .pc-cb-eqtext { color: var(--pc-crimson); font-weight: 700; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqgold { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: .04em; color: var(--pc-coin-gp); margin-top: 2px; }
 
+/* ── Details step, R5 redesign ─────────────────────────────────────
+   The v5 companion (docs/design/builder-details-redesign) is the spec:
+   width harmony, alignment cells that say one thing, and HP in the
+   Max-HP modal's own three-mode vocabulary. */
+
+/* The View-sheet exit: beside the character name, the footer Back's dress. */
+.archivist-pc-sheet .pc-builder-title { display: inline-flex; align-items: center; gap: 10px; }
+.archivist-pc-sheet .pc-builder-exit {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm);
+  background: transparent; color: var(--pc-crimson);
+  border: 1px solid var(--pc-crimson); padding: 5px 12px; cursor: pointer;
+  border-radius: var(--pc-radius-sm); line-height: 1; box-shadow: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.archivist-pc-sheet .pc-builder-exit:hover { background: rgba(146, 38, 16, 0.10); box-shadow: none; }
+.archivist-pc-sheet .pc-builder-exit:focus-visible { outline: 2px solid var(--pc-crimson); outline-offset: 2px; box-shadow: none; }
+.archivist-pc-sheet .pc-builder-exit svg { width: 13px; height: 13px; color: var(--pc-crimson); }
+
+/* Width harmony: identity controls share the HP card's 340px cap. border-box
+   so each element's own chrome counts inside the cap and the right edges meet. */
+.archivist-pc-sheet .pc-bform-narrow { max-width: 340px; box-sizing: border-box; }
+
+/* The HP field-card: one unit — big number, equation chips, mode segment, control, hint. */
+.archivist-pc-sheet .pc-bhp {
+  max-width: 340px; box-sizing: border-box;
+  background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-md); padding: 12px 14px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+}
+.archivist-pc-sheet .pc-bhp-big {
+  font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-display);
+  line-height: var(--pc-lh-value); color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-bhp-eq { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.archivist-pc-sheet .pc-bhp-eq.is-greyed { opacity: 0.45; }
+.archivist-pc-sheet .pc-bhp-term {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft); background: rgba(255, 248, 220, 0.6);
+  border: 1px solid var(--pc-tan-muted); border-radius: 999px; padding: 1px 8px;
+}
+/* The mode segment: the spell tab's Cast/Prepare dress (pc-spell-modetoggle /
+   pc-mode-seg), content-sized options — never stretched, no dead track. */
+.archivist-pc-sheet .pc-bhp .pc-bseg {
+  display: inline-flex; border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-md); overflow: hidden; margin-bottom: 0;
+}
+.archivist-pc-sheet .pc-bhp .pc-bseg-opt {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); padding: 4px 14px;
+  background: transparent; color: var(--pc-text-soft); border: none; cursor: pointer;
+}
+.archivist-pc-sheet .pc-bhp .pc-bseg-opt.on { background: var(--pc-crimson); color: var(--pc-white); }
+.archivist-pc-sheet .pc-bhp-inputrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.archivist-pc-sheet .pc-bhp-inputrow .pc-binp { width: 120px; }
+.archivist-pc-sheet .pc-bhp-ghost {
+  font-family: var(--pc-font-serif); font-style: italic;
+  font-size: var(--pc-fs-small); color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-bhp .pc-bhint { margin-top: 0; }
+
+/* In a narrow leaf the fixed 150px step rail leaves too little room for the
+   Details controls. Stack the steps above the form so its card and footer stay
+   inside the sheet without horizontal scrolling. */
+@container pc-sheet (max-width: 499px) {
+  .archivist-pc-sheet .pc-builder-layout { grid-template-columns: minmax(0, 1fr); }
+  .archivist-pc-sheet .pc-builder-rail {
+    border-right: 0; border-bottom: 1px solid var(--pc-tan);
+    padding: 6px 10px;
+  }
+  .archivist-pc-sheet .pc-builder-rail-steps {
+    position: static; display: flex; flex-wrap: wrap; gap: 2px 4px;
+  }
+  .archivist-pc-sheet .pc-builder-step { padding: 4px 6px; }
+  .archivist-pc-sheet .pc-builder-main { min-width: 0; }
+  .archivist-pc-sheet .pc-builder-topbar,
+  .archivist-pc-sheet .pc-builder-title { flex-wrap: wrap; }
+  .archivist-pc-sheet .pc-builder-title { min-width: 0; }
+  .archivist-pc-sheet .pc-builder-title > span { overflow-wrap: anywhere; }
+  .archivist-pc-sheet .pc-builder-summary { margin-left: 0; }
+}
+
 
 /* ============================================
    pc/chronicle.css

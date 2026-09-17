@@ -68,4 +68,16 @@ describe("renderPCSheet — builder branch", () => {
     expect(o.root.querySelector(".pc-builder")).toBeNull();
     expect(o.root.querySelector(".pc-stats-band")).not.toBeNull();
   });
+
+  it("previews the sheet on View sheet while retaining the draft flag", () => {
+    const o = opts(1, [], true) as { root: HTMLElement; resolved: { definition: { builder: boolean } }; builderUiState: Map<string, unknown>; onRequestRender: () => void };
+    o.builderUiState = new Map();
+    o.onRequestRender = () => renderPCSheet(o as never);
+    renderPCSheet(o as never);
+    o.root.querySelector<HTMLButtonElement>(".pc-builder-exit")!.click();
+    expect(o.builderUiState.get("builder.previewSheet")).toBe(true);
+    expect(o.resolved.definition.builder).toBe(true);
+    expect(o.root.querySelector(".pc-builder")).toBeNull();
+    expect(o.root.querySelector(".pc-stats-band")).not.toBeNull();
+  });
 });

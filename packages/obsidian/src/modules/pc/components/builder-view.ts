@@ -1,3 +1,4 @@
+import { setIcon } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { BUILDER_STEPS } from "./builder-steps";
 import { renderRaceStep } from "./builder/race-step";
@@ -28,7 +29,22 @@ export class BuilderView implements SheetComponent {
     const bar = root.createDiv({ cls: "pc-builder-topbar" });
     const av = bar.createDiv({ cls: "pc-builder-avatar" });
     renderAvatarContent(av, ctx.portraitUrl, ctx.portraitCrop);
-    bar.createDiv({ cls: "pc-builder-title", text: `Create Character: ${name}` });
+    // R5 exit: the title row carries the View-sheet button so the topbar reads
+    // "Create Character: NAME [View sheet]" — the action sits ON its subject. A
+    // session-only preview (pc.sheet's builder.previewSheet clause): the draft
+    // flag is untouched and the sheet's gear re-opens the builder.
+    const title = bar.createDiv({ cls: "pc-builder-title" });
+    title.createSpan({ text: `Create Character: ${name}` });
+    const exit = title.createEl("button", {
+      cls: "pc-builder-exit",
+      attr: { title: "Show the sheet as it stands — the builder stays a draft; the header gear re-opens it" },
+    });
+    setIcon(exit, "eye");
+    exit.createSpan({ text: "View sheet" });
+    exit.addEventListener("click", () => {
+      ctx.builderUiState?.set("builder.previewSheet", true);
+      ctx.onRequestRender?.();
+    });
     const sum = bar.createDiv({ cls: "pc-builder-summary" });
     const lvl = ctx.derived?.totalLevel ?? 0;
     sum.createSpan({ cls: "pc-builder-sum-item", text: `Lv ${lvl}` });
@@ -126,15 +142,22 @@ export class BuilderView implements SheetComponent {
       finish.addEventListener("click", () => {
         if (!ctx.editState) return;
         // Seed the survival numbers a finished sheet needs — finishBuild last.
-        // D10: HP per the Details-step choice; Average is the default. Either
-        // way the finished sheet never opens at 0 HP.
-        ctx.editState.seedHitDice();
+        // Rolled and Override normally write at the Details step. If a mode was
+        // chosen before a class supplied hit dice, commit its default now.
         const hp = getHpSeedChoice(ctx);
-        if (hp.mode === "manual" && hp.value != null && hp.value > 0) {
-          ctx.editState.setHpMax(hp.value);
-        } else {
-          ctx.editState.seedHpToMax();
+        const breakdown = ctx.derived?.hpBreakdown;
+        if (hp.mode === "rolled" && breakdown?.diceSource !== "rolled") {
+          const value = hp.value != null && hp.value > 0 ? hp.value : breakdown?.averageDiceSum;
+          if (value != null && value > 0) ctx.editState.setRolledHp(value);
         }
+        if (hp.mode === "override" && breakdown?.override == null) {
+          const value = hp.value != null && hp.value > 0 ? hp.value : breakdown?.final ?? ctx.derived?.hp?.max;
+          if (value != null && value > 0) ctx.editState.setMaxHpOverride(value);
+        }
+        // All three modes now have a derived max. Fill current HP before opening
+        // the finished sheet.
+        ctx.editState.seedHitDice();
+        ctx.editState.seedHpToMax();
         ctx.editState.finishBuild();
       });
     }

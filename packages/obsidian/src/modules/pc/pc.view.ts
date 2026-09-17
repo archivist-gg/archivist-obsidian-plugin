@@ -331,6 +331,7 @@ export class PCSheetView extends TextFileView {
       onActiveStepChange: (stepId) => {
         this.activeStepId = stepId;
       },
+      onRequestRender: () => this.renderSheet(this.lastWarnings),
       builderUiState: this.builderUiState,
       portraitUrl: this.portraitUrl,
       portraitCrop: this.portraitCrop,

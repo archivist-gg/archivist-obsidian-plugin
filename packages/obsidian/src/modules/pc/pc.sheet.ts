@@ -29,6 +29,8 @@ export interface RenderSheetOptions {
   activeStepId?: string;
   /** Setter the parent uses to remember step changes across re-renders. */
   onActiveStepChange?: (stepId: string) => void;
+  /** Redraw after a session-only switch between Builder and sheet preview. */
+  onRequestRender?: () => void;
   /** Per-file transient Builder UI state bag (lifted to PCSheetView). */
   builderUiState?: Map<string, unknown>;
   /** Resolved portrait image URL for the header avatar, or null/undefined for
@@ -63,8 +65,14 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
   // kept as a fallback so legacy drafts written before the flag still open the
   // Builder. Suppress the warnings banner here: a draft has no race/speed yet, so
   // the warnings are expected noise mid-creation rather than something to surface.
+  // R5 builder exit (the "View sheet" button): a session-only PREVIEW of the sheet
+  // that leaves the draft flag alone — the builder is one gear-click away and nothing
+  // is written to the file by looking at it. Read from `opts` because `ctx` is
+  // declared below; the bag survives re-renders and resets on file switch.
+  const previewSheet = opts.builderUiState?.get("builder.previewSheet") === true;
   const isBuilder =
-    resolved.definition?.builder === true || (resolved.definition?.class?.length ?? 0) === 0;
+    !previewSheet &&
+    (resolved.definition?.builder === true || (resolved.definition?.class?.length ?? 0) === 0);
 
   if (!isBuilder && warnings.length > 0) renderWarnings(sheet, warnings);
 
@@ -78,6 +86,7 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
     onActiveTabChange: opts.onActiveTabChange,
     activeStepId: opts.activeStepId,
     onActiveStepChange: opts.onActiveStepChange,
+    onRequestRender: opts.onRequestRender,
     builderUiState: opts.builderUiState,
     portraitUrl: opts.portraitUrl,
     portraitCrop: opts.portraitCrop,

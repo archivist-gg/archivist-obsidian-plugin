@@ -90,24 +90,103 @@ describe("renderDetailsStep", () => {
   });
 });
 
-describe("renderDetailsStep — hit points choice (D10)", () => {
-  it("renders the Hit Points seg toggle with Average selected by default, no number input", () => {
+describe("renderDetailsStep — hit points, three modes (R5 redesign)", () => {
+  function mkHpCtx(over: {
+    bag?: Map<string, unknown>;
+    editState?: unknown;
+    breakdown?: Record<string, unknown>;
+  } = {}): ComponentRenderContext {
+    const breakdown = {
+      diceSum: 30, diceSource: "average", averageDiceSum: 30,
+      conMod: 1, conLevels: 1, clampApplied: false,
+      perLevelTerms: [{ label: "Durable feat", perLevel: 2, levels: 1, total: 2 }],
+      modifier: null, exhaustionMultiplier: 1, exhaustionLevel: 0,
+      derivedMax: 33, override: null, final: 33,
+      ...over.breakdown,
+    };
+    return {
+      resolved: { definition: { name: "T", class: [] } },
+      derived: { hpBreakdown: breakdown, hp: { max: 33 } },
+      editState: over.editState ?? null,
+      builderUiState: over.bag ?? new Map(),
+    } as unknown as ComponentRenderContext;
+  }
+
+  it("renders the HP field-card: big number, equation terms, Average selected by default, the first-level-max hint", () => {
     const body = mountContainer();
-    renderDetailsStep(body, mkCtx());
-    const seg = body.querySelector(".pc-bseg");
-    expect(seg).not.toBeNull();
-    const avg = [...body.querySelectorAll<HTMLElement>(".pc-bseg-opt")].find((o) => o.textContent === "Average");
-    expect(avg?.classList.contains("on")).toBe(true);
-    expect(body.querySelector(".pc-bhp-input")).toBeNull();
+    renderDetailsStep(body, mkHpCtx());
+    const card = body.querySelector(".pc-bhp");
+    expect(card).not.toBeNull();
+    expect(card.querySelector(".pc-bhp-big")?.textContent).toBe("33");
+    const terms = [...card.querySelectorAll(".pc-bhp-term")].map((t) => t.textContent);
+    expect(terms.some((t) => t.includes("d6"))).toBe(false); // no dice context in this fixture
+    expect(terms.some((t) => t.includes("CON"))).toBe(true);
+    expect(terms.some((t) => t.includes("Durable"))).toBe(true);
+    const segs = [...card.querySelectorAll(".pc-bseg-opt")].map((b) => ({ t: b.textContent, on: b.classList.contains("on") }));
+    expect(segs).toEqual([{ t: "Average", on: true }, { t: "Rolled", on: false }, { t: "Override", on: false }]);
+    expect(card.querySelector(".pc-bhint")?.textContent).toContain("average");
   });
 
-  it("switching to Manual shows a number input and persists the mode in builderUiState", () => {
+  it("Rolled shows the input, writes hp.rolled through setRolledHp, keeps the average as the ghost", () => {
+    const setRolledHp = vi.fn();
     const bag = new Map<string, unknown>();
     const body = mountContainer();
-    renderDetailsStep(body, mkCtx({ bag }));
-    const man = [...body.querySelectorAll<HTMLElement>(".pc-bseg-opt")].find((o) => o.textContent === "Manual")!;
-    man.click();
-    expect(body.querySelector(".pc-bhp-input")).not.toBeNull();
-    expect(bag.get("builder.details.hp")).toEqual({ mode: "manual", value: null });
+    renderDetailsStep(body, mkHpCtx({ bag, editState: { setRolledHp } }));
+    const rolled = [...body.querySelectorAll<HTMLElement>(".pc-bseg-opt")].find((o) => o.textContent === "Rolled")!;
+    rolled.click();
+    expect(setRolledHp).toHaveBeenCalledWith(30);
+    const input = body.querySelector<HTMLInputElement>(".pc-bhp input[type=number]");
+    expect(input).not.toBeNull();
+    expect(input.value).toBe("30"); // seeded with the average as the starting point
+    input.value = "38";
+    input.dispatchEvent(new Event("change"));
+    expect(setRolledHp).toHaveBeenCalledWith(38);
+    expect(bag.get("builder.details.hp")).toMatchObject({ mode: "rolled" });
+  });
+
+  it("Override writes overrides.hp.max via setMaxHpOverride and the equation grays", () => {
+    const setMaxHpOverride = vi.fn();
+    const bag = new Map<string, unknown>();
+    const body = mountContainer();
+    renderDetailsStep(body, mkHpCtx({ bag, editState: { setMaxHpOverride } }));
+    const over = [...body.querySelectorAll<HTMLElement>(".pc-bseg-opt")].find((o) => o.textContent === "Override")!;
+    over.click();
+    expect(setMaxHpOverride).toHaveBeenCalledWith(33);
+    expect(body.querySelector(".pc-bhp-eq")?.classList.contains("is-greyed")).toBe(true);
+    const input = body.querySelector<HTMLInputElement>(".pc-bhp input[type=number]")!;
+    input.value = "45";
+    input.dispatchEvent(new Event("change"));
+    expect(setMaxHpOverride).toHaveBeenCalledWith(45);
+  });
+
+  it("switching back to Average clears what the other modes wrote", () => {
+    const clearRolledHp = vi.fn();
+    const clearMaxHpOverride = vi.fn();
+    const setRolledHp = vi.fn();
+    const setMaxHpOverride = vi.fn();
+    const bag = new Map<string, unknown>();
+    const body = mountContainer();
+    renderDetailsStep(body, mkHpCtx({ bag, editState: { clearRolledHp, clearMaxHpOverride, setRolledHp, setMaxHpOverride } }));
+    const rolled = [...body.querySelectorAll<HTMLElement>(".pc-bseg-opt")].find((o) => o.textContent === "Rolled")!;
+    rolled.click();
+    const over = [...body.querySelectorAll<HTMLElement>(".pc-bseg-opt")].find((o) => o.textContent === "Override")!;
+    over.click();
+    const avg = [...body.querySelectorAll<HTMLElement>(".pc-bseg-opt")].find((o) => o.textContent === "Average")!;
+    avg.click();
+    expect(clearRolledHp).toHaveBeenCalled();
+    expect(clearMaxHpOverride).toHaveBeenCalled();
+    expect(body.querySelector(".pc-bhp input[type=number]")).toBeNull();
+  });
+
+  it("recovers the saved mode from derived HP when the session bag is reset", () => {
+    const rolled = mountContainer();
+    renderDetailsStep(rolled, mkHpCtx({ breakdown: { diceSource: "rolled", diceSum: 38, final: 41 } }));
+    expect(rolled.querySelector(".pc-bseg-opt.on")?.textContent).toBe("Rolled");
+    expect(rolled.querySelector<HTMLInputElement>(".pc-bhp-input")?.value).toBe("38");
+
+    const override = mountContainer();
+    renderDetailsStep(override, mkHpCtx({ breakdown: { override: 45, final: 45 } }));
+    expect(override.querySelector(".pc-bseg-opt.on")?.textContent).toBe("Override");
+    expect(override.querySelector<HTMLInputElement>(".pc-bhp-input")?.value).toBe("45");
   });
 });

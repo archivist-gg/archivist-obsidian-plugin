@@ -36,6 +36,8 @@ export interface ComponentRenderContext {
   activeStepId?: string;
   /** Callback fired when the user moves to a different Builder step. */
   onActiveStepChange?: (stepId: string) => void;
+  /** Redraw after a session-only switch between the Builder and sheet preview. */
+  onRequestRender?: () => void;
   /** Per-loaded-file bag for Builder state that must survive re-renders (search
    *  queries, ticked compendiums, expanded rows, and the
    *  Equipment step's gold baseline). Owned by PCSheetView; reassigned on every

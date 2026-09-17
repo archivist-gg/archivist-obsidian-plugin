@@ -15,6 +15,15 @@ function ctx(): ComponentRenderContext {
   } as unknown as ComponentRenderContext;
 }
 
+function hpBreakdown(over: Record<string, unknown> = {}) {
+  return {
+    diceSum: 10, diceSource: "average", averageDiceSum: 10,
+    conMod: 0, conLevels: 1, perLevelTerms: [], modifier: null,
+    exhaustionMultiplier: 1, exhaustionLevel: 0, override: null, final: 10,
+    ...over,
+  };
+}
+
 describe("BuilderView shell", () => {
   it("renders six step-rail items", () => {
     const root = mountContainer();
@@ -174,7 +183,7 @@ describe("BuilderView shell", () => {
     expect(editState.setHpMax).not.toHaveBeenCalled();
   });
 
-  it("Finish with Manual 25 seeds hit dice + writes the manual max, NOT seedHpToMax", () => {
+  it("Finish with a saved Override seeds current HP from the derived max", () => {
     const root = mountContainer();
     const order: string[] = [];
     const editState = {
@@ -183,34 +192,11 @@ describe("BuilderView shell", () => {
       setHpMax: vi.fn(() => order.push("setHpMax")),
       finishBuild: vi.fn(() => order.push("finishBuild")),
     };
-    const bag = new Map<string, unknown>([["builder.details.hp", { mode: "manual", value: 25 }]]);
+    const bag = new Map<string, unknown>([["builder.details.hp", { mode: "override", value: 25 }]]);
     const c = {
       ...ctx(),
       resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
-      editState,
-      builderUiState: bag,
-    } as unknown as ComponentRenderContext;
-    new BuilderView().render(root, c);
-    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
-    root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
-    expect(order).toEqual(["seedHitDice", "setHpMax", "finishBuild"]);
-    expect(editState.setHpMax).toHaveBeenCalledWith(25);
-    expect(editState.seedHpToMax).not.toHaveBeenCalled();
-  });
-
-  it("Finish with Manual but no/invalid value falls back to Average seeding", () => {
-    const root = mountContainer();
-    const order: string[] = [];
-    const editState = {
-      seedHitDice: vi.fn(() => order.push("seedHitDice")),
-      seedHpToMax: vi.fn(() => order.push("seedHpToMax")),
-      setHpMax: vi.fn(() => order.push("setHpMax")),
-      finishBuild: vi.fn(() => order.push("finishBuild")),
-    };
-    const bag = new Map<string, unknown>([["builder.details.hp", { mode: "manual", value: null }]]);
-    const c = {
-      ...ctx(),
-      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      derived: { totalLevel: 1, hp: { max: 25 }, hpBreakdown: hpBreakdown({ override: 25, final: 25 }) },
       editState,
       builderUiState: bag,
     } as unknown as ComponentRenderContext;
@@ -219,6 +205,52 @@ describe("BuilderView shell", () => {
     root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
     expect(order).toEqual(["seedHitDice", "seedHpToMax", "finishBuild"]);
     expect(editState.setHpMax).not.toHaveBeenCalled();
+  });
+
+  it("Finish with Rolled seeds current HP from the derived max", () => {
+    const root = mountContainer();
+    const order: string[] = [];
+    const editState = {
+      seedHitDice: vi.fn(() => order.push("seedHitDice")),
+      seedHpToMax: vi.fn(() => order.push("seedHpToMax")),
+      setHpMax: vi.fn(() => order.push("setHpMax")),
+      finishBuild: vi.fn(() => order.push("finishBuild")),
+    };
+    const bag = new Map<string, unknown>([["builder.details.hp", { mode: "rolled", value: 25 }]]);
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      derived: { totalLevel: 1, hp: { max: 25 }, hpBreakdown: hpBreakdown({ diceSource: "rolled", diceSum: 25, final: 25 }) },
+      editState,
+      builderUiState: bag,
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
+    expect(order).toEqual(["seedHitDice", "seedHpToMax", "finishBuild"]);
+    expect(editState.setHpMax).not.toHaveBeenCalled();
+  });
+
+  it("Finish commits a mode picked before the draft had class hit dice", () => {
+    const root = mountContainer();
+    const order: string[] = [];
+    const editState = {
+      setRolledHp: vi.fn((value: number) => order.push(`setRolledHp:${value}`)),
+      seedHitDice: vi.fn(() => order.push("seedHitDice")),
+      seedHpToMax: vi.fn(() => order.push("seedHpToMax")),
+      finishBuild: vi.fn(() => order.push("finishBuild")),
+    };
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      derived: { totalLevel: 1, hp: { max: 10 }, hpBreakdown: hpBreakdown() },
+      editState,
+      builderUiState: new Map([["builder.details.hp", { mode: "rolled", value: null }]]),
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
+    expect(order).toEqual(["setRolledHp:10", "seedHitDice", "seedHpToMax", "finishBuild"]);
   });
 
   it("prefixes each rail step with a 1-based numbered circle when nothing is done", () => {
