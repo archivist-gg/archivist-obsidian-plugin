@@ -5,6 +5,7 @@ import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { renderCostBadge } from "./cost-badge";
 import { CHARGE_BOX_LIMIT } from "./charge-boxes";
 import { renderResourceTracker } from "./resource-tracker";
+import { bankedDieFor, renderFeatureBank } from "./bank";
 import { renderEffectCaptions } from "./effect-captions";
 import { renderSpendControl } from "./spend-control";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
@@ -207,11 +208,13 @@ export function renderFeatureRow(
       ? { resource: recoveryRes, source: rf.source, ctx, fu: ctx.resolved.state.feature_uses?.[recoveryRes.id] }
       : undefined,
   });
-  for (const res of (feature.resources ?? []).slice(1)) renderCardResource(inner, res, ctx);
+  for (const res of (feature.resources ?? []).slice(1)) renderCardResource(inner, res, ctx, feature.rendering_hint);
   // Secondary (merged) features' trackers: the in-row tracker only holds the
   // PRIMARY's first resource, so each secondary's resources surface in the card.
+  // Each secondary carries its OWN feature-level `rendering_hint` (G8: the banked-rolls gate reads
+  // the hint of the feature that DECLARES the resource, not the collapsed primary's).
   for (const m of secondaries) {
-    for (const res of m.feature.resources ?? []) renderCardResource(inner, res, ctx);
+    for (const res of m.feature.resources ?? []) renderCardResource(inner, res, ctx, m.feature.rendering_hint);
   }
   // The owner-and-spender control (R4-G4 §3.2.5): the row kept its tracker, so the
   // spend lands here beside the card's other resource lines.
@@ -246,13 +249,20 @@ function resourceLevel(id: string | undefined, ctx: ComponentRenderContext): num
 /** A resource tracker rendered inside the card. `renderFeatureRow` calls it from TWO loops over
  *  its expand card: one over the primary's `(feature.resources ?? []).slice(1)`, and one over every
  *  resource of each merged secondary in `secondaries` · so the call COUNT is the size of those two
- *  sets, not two (review M-10). */
-export function renderCardResource(parent: HTMLElement, resource: Resource, ctx: ComponentRenderContext): void {
+ *  sets, not two (review M-10).
+ *
+ *  `featureHint` is the declaring feature's `rendering_hint`, threaded because the BANK gate (G8,
+ *  `./bank`) reads the FEATURE-level hint and a `Resource` cannot see its owner. Both loops pass
+ *  it; the race block and the tests that call this directly may omit it, and a resource that
+ *  declares the hint itself still banks. */
+export function renderCardResource(parent: HTMLElement, resource: Resource, ctx: ComponentRenderContext, featureHint?: string): void {
   const id = resource.id;
   const fu = id ? ctx.resolved.state.feature_uses?.[id] : undefined;
   if (!id || !fu) return;
   const line = parent.createDiv({ cls: "pc-card-resource" });
   line.createSpan({ cls: "pc-card-resource-name", text: resource.name });
+  const die = bankedDieFor(featureHint, resource, resourceLevel(id, ctx));
+  if (die && renderFeatureBank(line, ctx, { id, name: resource.name, reset: resource.reset, die })) return;
   renderResourceTracker(line, ctx, {
     id, name: resource.name, reset: resource.reset,
     die: resource.die, level: resource.die ? resourceLevel(resource.id, ctx) : undefined,
@@ -276,6 +286,13 @@ export function renderFirstResourceTracker(detail: HTMLElement, feature: Feature
   const res0 = feature.resources?.[0];
   const key = res0?.id ?? feature.id;
   if (!key) return false;
+  // G8: a `prerolled-dice` feature draws the BANK in this slot instead of the pip row (number over
+  // box per roll, plus the Roll pill), and falls THROUGH to the shipped tracker when the bank
+  // declines (an unowned resource, or a max above `CHARGE_BOX_LIMIT`).
+  const banked = bankedDieFor(feature.rendering_hint, res0, resourceLevel(res0?.id, ctx));
+  if (banked && renderFeatureBank(detail, ctx, { id: key, name: res0?.name ?? feature.name, reset: res0?.reset ?? "long-rest", die: banked })) {
+    return true;
+  }
   return renderResourceTracker(detail, ctx, {
     id: key,
     name: res0?.name ?? feature.name,

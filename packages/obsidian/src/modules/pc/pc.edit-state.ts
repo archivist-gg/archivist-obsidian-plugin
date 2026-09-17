@@ -1256,6 +1256,73 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Replace a resource's whole bank (G8 brief §Design, rulings 1 and 6): the Roll pill writes a full
+   *  max-length array, the ghost-slot input writes the array with one value filled in, and BOTH arrive
+   *  here whole so a single writer owns the shape. `state.feature_rolls` (dnd5e
+   *  `characterStateSchema.feature_rolls`) is keyed by the SAME resource id as `feature_uses` and is
+   *  read defensively, because a file parsed before that schema key existed carries no container: the
+   *  rule `eq.expendFeatureUse` already follows for `feature_uses`.
+   *
+   *  Values are sanitized to integers in 1..999 (the schema's element bound on |value|, capped so a
+   *  fat-fingered entry cannot render a four-digit slot) and banked POSITIVE: a fresh roll is live by
+   *  definition (SIGN IS STATE, see `spendFeatureRoll`). Duplicates are KEPT, since two dice really
+   *  do roll the same face. An emptied bank DELETES its key rather than storing `[]`, and never seeds
+   *  a container just to empty it, so a no-bank file carries no `feature_rolls` entry: the rule
+   *  `toggleActiveBuff` and `applyRestResets`'s `feature:` arm already share.
+   *
+   *  `feature_uses` stays the single usage COUNT, so it is RESET to 0 with a fresh bank (a whole-bank
+   *  replace is a re-roll: no checked box may outlive the numbers it was counting) and the writers'
+   *  invariant |negatives| === used holds trivially. */
+  setFeatureRolls(featureKey: string, values: number[]): void {
+    const clean = values.filter((v) => Number.isInteger(v) && v >= 1 && v <= 999);
+    const state = this.character.state;
+    if (clean.length === 0) {
+      if (state.feature_rolls) delete state.feature_rolls[featureKey];
+    } else {
+      const banks = state.feature_rolls ?? (state.feature_rolls = {});
+      banks[featureKey] = clean;
+    }
+    const fu = state.feature_uses?.[featureKey];
+    if (fu && fu.used > 0) eq.setFeatureUse(this.character, featureKey, 0);
+    this.onChange();
+  }
+
+  /** Spend the roll sitting above box `index` (G8 brief §Design; rulings 2, 3 and 7).
+   *
+   *  SIGN IS STATE (the shuffle fix): the bank's values NEVER MOVE; a SPENT roll is stored NEGATIVE
+   *  (-16 = the spent 16) and a live roll positive, so spending is ONE flip in place. The earlier
+   *  spent-prefix shape moved the value into a prefix and visibly shuffled its neighbours (spend the
+   *  16 of [7,16] and the bank read [16,7] with the X on the box the player did not click), which
+   *  broke ruling 7's positional identity; the sign keeps value `i` above box `i` all day.
+   *
+   *  `spendFeatureUse` stays the single usage COUNT and fires the one persist for the click; the
+   *  writers' invariant is |negatives| === used. Guards: the slot must hold a LIVE (positive) value
+   *  and the tracker must be under its max · a box with no number above it cannot be spent, and an
+   *  unowned resource is a no-op, the ownership rule `spendFeatureUse` already follows. */
+  spendFeatureRoll(featureKey: string, index: number): void {
+    const fu = this.character.state.feature_uses?.[featureKey];
+    const bank = this.character.state.feature_rolls?.[featureKey];
+    if (!fu || !bank) return;
+    if (!Number.isInteger(index) || index < 0 || index >= bank.length) return;
+    if (bank[index] <= 0 || fu.used >= fu.max) return;
+    bank[index] = -bank[index];
+    this.spendFeatureUse(featureKey, 1);
+  }
+
+  /** Un-spend the roll above box `index`, the inverse of `spendFeatureRoll`: the slot's value flips
+   *  POSITIVE in place and `restoreFeatureUse` hands the use back, keeping the sign and the count in
+   *  step. `index` must address a SPENT (negative) slot; anything else, including an unowned
+   *  resource, is a no-op. */
+  restoreFeatureRoll(featureKey: string, index: number): void {
+    const fu = this.character.state.feature_uses?.[featureKey];
+    const bank = this.character.state.feature_rolls?.[featureKey];
+    if (!fu || !bank) return;
+    if (!Number.isInteger(index) || index < 0 || index >= bank.length) return;
+    if (bank[index] >= 0) return;
+    bank[index] = -bank[index];
+    this.restoreFeatureUse(featureKey);
+  }
+
   setAttunementLimitOverride(n: number): void {
     if (!Number.isFinite(n)) return;
     this.character.overrides.attunement_limit = Math.max(0, Math.floor(n));

@@ -8758,6 +8758,170 @@ body.theme-light .archivist-tag-atk:hover {
 
 
 /* ============================================
+   pc/bank-dice.css
+   ============================================ */
+/* ============================================================
+   BANKED ROLLS (G8) · the ghost-die masks and the bank widget.
+
+   Art: the "Role Playing Game UI - RPG DnD MTG" set by Michelle
+   Lukezic via Noun Project, CC BY 3.0. See CREDITS.md, which
+   names the set once. The six SVGs are the source art with their
+   embedded credit lines stripped and each viewBox cropped to the
+   face's own measured bounds, so all six read at one optical
+   weight in a 28px slot.
+
+   Its OWN file, not an addition to dice-icons.css: that file
+   carries a different set (Lonnie Tapscott, numbered faces, drawn
+   in perspective) which the resource badges and the hit-dice
+   widget spend through `--pc-die-mask`. Two sets in one file
+   would make `.die-d20` and `--pc-bank-die-d20` read as
+   variants of one thing when they are different artwork with
+   different jobs: a LABEL glyph that takes currentColor, versus
+   an EMPTY-SLOT ghost that is always tan-muted.
+
+   Drawn as CSS MASKS for the same reason the other set is: only
+   the alpha is read, so one copy of the art serves any colour.
+   The artwork below is generated; do not hand-edit it.
+   ============================================================ */
+
+.archivist-pc-sheet { --pc-bank-die-d4: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIwLjIgNC45IDk5LjEgOTIuOCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTAwIDEwMDsiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Ik05OC41Niw2Ni4wNUw1My4xOSw2LjQ0Yy0wLjYzLTAuODMtMS41OC0xLjMtMi42Mi0xLjMxYy0wLjAxLDAtMC4wMSwwLTAuMDIsMGMtMS4wMywwLTEuOTgsMC40Ni0yLjYxLDEuMjhMMS41LDY2LjAxICBjLTAuNiwwLjc3LTAuODMsMS43NS0wLjYzLDIuN2MwLjE5LDAuOTUsMC43OSwxLjc2LDEuNjQsMi4yM2w0Ni40NSwyNS43OGMwLjIyLDAuMTIsMC40NSwwLjIsMC42OCwwLjI3ICBjMC4yMywwLjI3LDAuNTYsMC40NSwwLjk0LDAuNDVjMC4zOSwwLDAuNzItMC4xOSwwLjk1LTAuNDZjMC4yMy0wLjA3LDAuNDYtMC4xNSwwLjY4LTAuMjdsNDUuMzctMjUuNzcgIGMwLjgzLTAuNDcsMS40Mi0xLjI4LDEuNjEtMi4yMkM5OS4zNyw2Ny43OCw5OS4xNCw2Ni44MSw5OC41Niw2Ni4wNXogTTQ5LjMyLDk0LjA3TDMuNzIsNjguNzZjLTAuMjgtMC4xNi0wLjM3LTAuNDEtMC40LTAuNTUgIGMtMC4wMy0wLjE0LTAuMDQtMC40MSwwLjE2LTAuNjZMNDkuMzIsOC43Vjk0LjA3eiBNOTYuNzIsNjguMjJjLTAuMDMsMC4xNC0wLjEyLDAuMzktMC40LDAuNTRMNTEuODIsOTQuMDRWOC43N2w0NC43NSw1OC43OSAgQzk2Ljc3LDY3LjgxLDk2Ljc1LDY4LjA4LDk2LjcyLDY4LjIyeiIvPjwvc3ZnPg=="); }
+.archivist-pc-sheet { --pc-bank-die-d6: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSI4LjUgMS4wIDg0LjUgOTguNyIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTAwIDEwMDsiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Ik05Mi4zNiwyMy4zOGMtMC4zNi0wLjQzLTAuODMtMC44Mi0xLjE4LTFjMCwwLTQwLjA2LTIwLjc2LTQwLjA2LTIwLjc2Yy0wLjc1LTAuMzktMS42NC0wLjM4LTIuMzksMC4wMiAgYzAsMC0zOC4yMywyMC43Ni0zOC4yMywyMC43NmMtMi4xNiwxLjE3LTEuNjEsNC4wNi0xLjYxLDYuMTFjMCwzLjAxLDAsMzkuNDYsMCw0My4yOWMwLDAuODcsMC40NCwxLjY4LDEuMTYsMi4xNGwzOC41NywyNS4zICBjMC4xMiwwLjA4LDAuMjYsMC4xMiwwLjM5LDAuMThjMC4yMywwLjI2LDAuNTUsMC40MywwLjkzLDAuNDNjMC4zNSwwLDAuNjYtMC4xNCwwLjg4LTAuMzdjMC4xMy0wLjA1LDAuMjctMC4wOSwwLjM5LTAuMTUgIGw0MC4zOC0yMi4zNGMwLjgzLTAuNDUsMS4zNC0xLjMsMS4zNC0yLjI0YzAsMCwwLTUwLjE3LDAtNTAuMTdDOTIuOTMsMjQuMiw5Mi42OSwyMy43Nyw5Mi4zNiwyMy4zOHogTTQ4LjY4LDk2LjNsLTM3LjMtMjQuNDlWMjcuNDUgIGwzNy4yMSwyMy4yYzAuMDMsMC4wMiwwLjA2LDAuMDIsMC4wOCwwLjA0Vjk2LjN6IE00OS45Miw0OC41M0wxMS42OSwyNC42TDQ5LjkyLDMuODRjMCwwLDAuMDQsMCwwLjA0LDBsNDAuMDYsMjAuODVMNDkuOTIsNDguNTN6ICAgTTkwLjM5LDc0Ljc5TDUxLjE4LDk2LjQ3VjUwLjcxYzAuMDItMC4wMSwwLjA1LTAuMDIsMC4wNy0wLjAzbDM5LjE3LTIzLjMxTDkwLjM5LDc0Ljc5eiIvPjwvc3ZnPg=="); }
+.archivist-pc-sheet { --pc-bank-die-d8: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIwLjcgMi40IDk4LjIgOTUuNyIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTAwIDEwMDsiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Ik05OC4wNiw0OC40N0w1My40OSwzLjc5Yy0wLjU4LTAuNTgtMS4zNS0wLjg4LTIuMTEtMC44OGMtMC43NCwwLTEuNDcsMC4yNy0yLjA1LDAuODJMMi4xMyw0OC40MSAgYy0xLjI0LDEuMTgtMS4yNCwzLjE2LDAsNC4zM2w0Ny4yLDQ0LjY3YzAuNTgsMC41NSwxLjMxLDAuODIsMi4wNSwwLjgyYzAuNzcsMCwxLjUzLTAuMjksMi4xMS0wLjg4bDQ0LjU3LTQ0LjY3ICBDOTkuMjIsNTEuNTIsOTkuMjIsNDkuNjMsOTguMDYsNDguNDd6IE01MC4xOSw5NC43OUw1LjQxLDUyLjRsNDQuNzksOS41NlY5NC43OXogTTUwLjE5LDU5LjQxTDQuNDYsNDkuNjRMNTAuMTksNi4zNlY1OS40MXogICBNNTIuNjksOTQuNjJWNjEuOTVsNDIuMTMtOS41Nkw1Mi42OSw5NC42MnogTTUyLjY5LDU5LjM5VjYuNTNsNDIuOTksNDMuMUw1Mi42OSw1OS4zOXoiLz48L3N2Zz4="); }
+.archivist-pc-sheet { --pc-bank-die-d10: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIzLjEgMS41IDkzLjMgOTcuNyIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTAwIDEwMDsiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Ik05NS4zNiw0OS4xMUw1My4wMiwyLjk5Yy0wLjY2LTAuNzItMS41Ny0xLjA5LTIuNDctMS4wOWMtMC44OCwwLTEuNzcsMC4zNS0yLjQzLDEuMDRMNC42OCw0OC41ICBjLTAuNiwwLjYyLTAuOTMsMS40NS0wLjkzLDIuMzJWNjBjMCwxLjAzLDAuNDcsMiwxLjI4LDIuNjRMNTAuNzUsOTguNmMwLjYxLDAuNDgsMS4zNCwwLjcyLDIuMDgsMC43MmMwLjgsMCwxLjYtMC4yOSwyLjI0LTAuODYgIGw0MC4wNi0zNS44M2MwLjcxLTAuNjQsMS4xMi0xLjU1LDEuMTItMi41di04Ljc1Qzk2LjI0LDUwLjU0LDk1LjkzLDQ5LjczLDk1LjM2LDQ5LjExeiBNNTEuMjUsNDIuMDlsMC41OC0zNi43bDQxLjA3LDQ0LjczICBMNzIuOTgsNTUuMUw1MS4wNyw0Mi42OEM1MS4xNyw0Mi41LDUxLjI1LDQyLjMsNTEuMjUsNDIuMDl6IE02LjQ5LDUwLjIzTDQ5LjMzLDUuM2wtMC41OCwzNi43NWMwLDAuMjUsMC4wOCwwLjQ3LDAuMjEsMC42NyAgTDI4LjkxLDU1LjE4TDYuNDIsNTAuMzRDNi40NSw1MC4zMSw2LjQ2LDUwLjI2LDYuNDksNTAuMjN6IE02LjU4LDYwLjY4QzYuMzgsNjAuNTEsNi4yNiw2MC4yNyw2LjI2LDYwdi03LjE0bDIzLjA0LDQuOTUgIGwyMi4zOSwzOC4zNEw2LjU4LDYwLjY4eiBNNTIuNzMsOTIuOTlMMzEuNDUsNTYuNTRsMTguNjYtMTEuNmwyMC4zMiwxMS42N0w1Mi43Myw5Mi45OXogTTkzLjc0LDYwLjEzYzAsMC4yNC0wLjEsMC40OC0wLjI5LDAuNjQgIEw1NC4xMiw5NS45NmwxOC41LTM4LjE5bDIxLjEyLTUuMjhWNjAuMTN6Ii8+PC9zdmc+"); }
+.archivist-pc-sheet { --pc-bank-die-d12: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIyLjEgMS4wIDk0LjggOTguMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTAwIDEwMDsiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Ik05NS44NywzNS41OWMtMC4wNC0xLjI0LTAuNDUtMi40NC0xLjE4LTMuNDRsLTE1LjItMjAuNzRjLTAuNzktMS4wOC0xLjkyLTEuODgtMy4yMS0yLjI2TDUxLjYsMS44NCAgYy0wLjU3LTAuMTctMS4xNi0wLjI1LTEuNzQtMC4yNWMtMC42OSwwLTEuMzgsMC4xMi0yLjA0LDAuMzVMMjIuNSwxMC44N2MtMS4xOCwwLjQyLTIuMiwxLjE4LTIuOTQsMi4yTDMuODcsMzQuODUgIGMtMC43OSwxLjEtMS4yLDIuNDItMS4xNiwzLjc4bDAuOCwyNi4xOWMwLjA0LDEuMywwLjQ5LDIuNTUsMS4yOCwzLjU3bDE2LjEsMjAuNzljMC43OSwxLjAyLDEuODksMS43NywzLjE0LDIuMTNsMjUuMjUsNy4zNSAgYzAuNTYsMC4xNiwxLjE0LDAuMjQsMS43MiwwLjI0YzAuNywwLDEuNC0wLjEyLDIuMDctMC4zNmwyNC43NS04Ljg5YzEuMjItMC40NCwyLjI3LTEuMjUsMy0yLjMybDE0LjgtMjEuNzQgIGMwLjczLTEuMDcsMS4xLTIuMzUsMS4wNi0zLjY0TDk1Ljg3LDM1LjU5eiBNNTAuOTQsMjguMDRWNC4yNWwyNC42Myw3LjNjMC43NiwwLjIyLDEuNDMsMC43LDEuOSwxLjM0bDE1LjEyLDIwLjYzICBjLTAuMDYsMC4wMi0wLjEyLDAuMDItMC4xOCwwLjA2bC0xOS41LDEwLjg4Yy0wLjE3LTAuMjMtMC4zNy0wLjQzLTAuNjEtMC42MWwtMjAuOTItMTUuMmMtMC4xNi0wLjEyLTAuMzMtMC4yMS0wLjUxLTAuMjkgIEM1MC45MSwyOC4yNiw1MC45NCwyOC4xNiw1MC45NCwyOC4wNHogTTQ5LjkyLDMwLjY4bDIwLjkyLDE1LjJjMC4xNSwwLjExLDAuMjIsMC4zMSwwLjE2LDAuNDlsLTcuOTksMjQuNTkgIGMtMC4wNiwwLjE4LTAuMjMsMC4zMS0wLjQyLDAuMzFIMzYuNzNjLTAuMTksMC0wLjM2LTAuMTItMC40Mi0wLjMxbC03Ljk5LTI0LjU5Yy0wLjA2LTAuMTgsMC4wMS0wLjM4LDAuMTYtMC40OWwyMC45Mi0xNS4yICBDNDkuNTUsMzAuNTYsNDkuNzYsMzAuNTYsNDkuOTIsMzAuNjh6IE01LjksMzYuMzFsMTUuNy0yMS43OGMwLjQ0LTAuNiwxLjA0LTEuMDYsMS43NC0xLjNsMjUuMTEtOC44NnYyMy42NyAgYzAsMC4xMSwwLjA0LDAuMiwwLjA2LDAuM2MtMC4yLDAuMDktMC4zOSwwLjE5LTAuNTgsMC4zMmwtMjAuOTIsMTUuMmMtMC4yNCwwLjE3LTAuNDQsMC4zOC0wLjYyLDAuNjFMNS42NiwzNi43ICBDNS43MywzNi41Nyw1LjgxLDM2LjQ0LDUuOSwzNi4zMXogTTIyLjY2LDg3LjM3TDYuNzgsNjYuODZjLTAuNDctMC42MS0wLjc0LTEuMzQtMC43Ni0yLjEyTDUuMjMsMzkuMjFsMjAuNjYsNy43MyAgYzAuMDIsMC4wNywwLjAzLDAuMTMsMC4wNSwwLjJsNy45OSwyNC41OWMwLjAxLDAuMDQsMC4wMywwLjA4LDAuMDUsMC4xMkwyMi42Niw4Ny4zN3ogTTUyLjIzLDk2LjJjLTAuNCwwLjE0LTAuODEsMC4yMS0xLjIzLDAuMjEgIGMtMC4zNCwwLTAuNjktMC4wNS0xLjAyLTAuMTVsLTI1LjI1LTcuMzVjLTAuMDMtMC4wMS0wLjA1LTAuMDItMC4wOC0wLjAzbDExLjEzLTE1LjI3YzAuMywwLjEsMC42MSwwLjE1LDAuOTQsMC4xNWgyNS44NiAgYzAuNDEsMCwwLjgxLTAuMDksMS4xNy0wLjI1bDEyLjM1LDE0LjExTDUyLjIzLDk2LjJ6IE05My41NSw2NC4ybC0xNC44LDIxLjc0Yy0wLjEyLDAuMTctMC4yNSwwLjMzLTAuMzksMC40N0w2NS40Myw3MS42NCAgYzAsMC0wLjAxLTAuMDEtMC4wMS0wLjAxbDcuOTUtMjQuNDhjMC4wMS0wLjAzLDAuMDEtMC4wNiwwLjAyLTAuMDlsMTkuOTgtMTEuMTVsMC44LDI2LjEzQzk0LjIsNjIuODEsOTMuOTgsNjMuNTYsOTMuNTUsNjQuMnoiLz48L3N2Zz4="); }
+.archivist-pc-sheet { --pc-bank-die-d20: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSI3LjAgMi40IDg1LjUgOTYuMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTAwIDEwMDsiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Ik04OC4wMiwyMy4wOEw1NS4wNyw0LjE4Yy0xLjMxLTAuNzUtMi43OC0xLjEzLTQuMjQtMS4xM2MtMS40MSwwLTIuODMsMC4zNS00LjExLDEuMDVsLTM0LjYsMTkgIGMtMS40NywwLjgxLTIuNjIsMi4wMS0zLjM5LDMuNDNsLTAuMDQsMGwwLjAxLDAuMDVjLTAuNjUsMS4yMS0xLjAxLDIuNTgtMS4wMSw0djQwLjQzYzAsMy4xMSwxLjcsNS45OCw0LjQyLDcuNDhsMzQuNiwxOSAgYzEuMjgsMC43LDIuNjksMS4wNSw0LjExLDEuMDVjMS40NywwLDIuOTMtMC4zOCw0LjI0LTEuMTNsMzIuOTUtMTguOWMyLjY1LTEuNTIsNC4yOS00LjM0LDQuMjktNy40VjMwLjQ4ICBDOTIuMywyNy40Miw5MC42NywyNC42LDg4LjAyLDIzLjA4eiBNNTIuMTMsNS43MWMwLjU5LDAuMTMsMS4xNiwwLjM0LDEuNjksMC42NGwzMi45NSwxOC45YzEsMC41NywxLjc5LDEuNDIsMi4zMiwyLjQxbC0zNy42NSwyLjA2ICBsLTAuMTgtMC4yN0w1Mi4xMyw1LjcxeiBNODcuNzMsMzAuMjRMNzUuMjcsNjYuNDJMNTMuMDEsMzIuMTRMODcuNzMsMzAuMjR6IE00OS44LDMyLjI5YzAuMDcsMC4wMSwwLjEzLDAuMDEsMC4yLDAuMDEgIGMwLjA0LDAsMC4wOSwwLDAuMTMsMGwyNC4wMywzNy4wMWwtNDkuNDktMC41Nkw0OS44LDMyLjI5TDQ5LjgsMzIuMjl6IE0yMy42Myw2NS44NUwxMi4xOSwyOS4zMmwzNC43MywyLjc0TDIzLjYzLDY1Ljg1eiAgIE0xMy4zMiwyNS4zbDM0LjYtMTlDNDguNDYsNiw0OS4wMyw1LjgsNDkuNjMsNS42OGwtMC44NywyMy43MWwtMC4yLDAuM2wtMzYuOTktMi45MkMxMi4wNSwyNi4xOCwxMi42NCwyNS42OCwxMy4zMiwyNS4zeiAgIE0xMC4yLDcxLjAyVjMxLjMzbDExLjYzLDM3LjEzbC0wLjMyLDAuNDdsLTExLjAzLDMuODhDMTAuMyw3Mi4yNCwxMC4yLDcxLjY0LDEwLjIsNzEuMDJ6IE0xMy4zMiw3Ni4zICBjLTAuNjEtMC4zNC0xLjE0LTAuNzgtMS41OS0xLjI4bDEwLjc3LTMuNzlsMS4wNSwwLjAxbDIzLjMxLDIzLjQ5TDEzLjMyLDc2LjN6IE0yNy4xMiw3MS4yOGw0NC45LDAuNTFMNTAuODMsOTUuMTdMMjcuMTIsNzEuMjh6ICAgTTg2Ljc3LDc2LjM1TDU0LjQ2LDk0Ljg4bDIwLjg5LTIzLjA2bDAuOSwwLjAxbDExLjMyLDMuOTVDODcuMzMsNzUuOTksODcuMDYsNzYuMTksODYuNzcsNzYuMzV6IE04OS44LDcxLjEyICBjMCwwLjkxLTAuMjIsMS43OS0wLjYsMi41OEw3Ny4zLDY5LjU0TDc3LDY5LjA4TDg5LjgsMzEuODlWNzEuMTJ6Ii8+PC9zdmc+"); }
+
+/* The fallback face. The renderer sets `--pc-bank-die-mask` inline on every
+   glyph it draws (from its own face map, `components/actions/bank.ts`), so this
+   only answers a glyph that reached the DOM without one, where an unset mask
+   would paint the whole 28px box tan instead of a die. */
+.archivist-pc-sheet .pc-bank-entry-glyph { --pc-bank-die-mask: var(--pc-bank-die-d20); }
+
+/* ============================================================================
+   The bank itself (v7 FINAL model, docs/design/portent-banked-variants-v7).
+   Three widgets, three verbs, no overlaps:
+   - GHOST DIE = empty slot. The glyph is MAPPED from the resource's declared
+     die: d4 ghosts a d4 face, d6 a d6 face, and so on. Click types the number
+     by hand; the Roll pill fills every ghost at once.
+   - NUMBER = the value. Click edits it (the shipped numberField: Enter commits,
+     Escape cancels). No spend here and no hover marks: the number's one meaning
+     is "this is what I rolled; fix it if wrong".
+   - CHECKBOX = usage. The SHIPPED toggle-box, unrestyled, one per banked roll,
+     sitting under its number: click spends (the X is drawn by the existing
+     .archivist-toggle-box-checked rule), click again restores. Pairing is
+     positional: number i over box i, left to right.
+   A SPENT number only grays out (ruling 3): the box's X is the single spend
+   mark, and the number stays editable. feature_uses keeps its engine meaning as
+   the usage count; feature_rolls carries the values.
+   ========================================================================== */
+.archivist-pc-sheet .pc-bank {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--pc-space-2);
+  flex-wrap: wrap;
+  row-gap: var(--pc-space-1);
+}
+/* One roll = a column: the value above, its checkbox below. */
+.archivist-pc-sheet .pc-bank-slot {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+.archivist-pc-sheet .pc-bank-val {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-mid);
+  line-height: var(--pc-lh-tight);
+  color: var(--pc-text-primary);
+  padding: 1px 3px;
+  border-radius: 4px;
+  cursor: text;
+}
+.archivist-pc-sheet .pc-bank-val:hover {
+  background: rgba(217, 196, 132, 0.25);
+  box-shadow: 0 0 0 1px var(--pc-tan);
+}
+/* Spent: the number just goes gray. The box's X is the spend mark, so the
+   number's only job left is to stop shouting. Still editable (click). */
+.archivist-pc-sheet .pc-bank-slot-spent .pc-bank-val {
+  color: var(--pc-text-muted);
+}
+/* The slot's checkbox: the SHIPPED toggle-box, just re-homed (no restyle; its
+   margin is zeroed here because the slot's own gap carries the spacing). */
+.archivist-pc-sheet .pc-bank-slot .archivist-toggle-box-row { margin: 0; }
+/* The inline editor. `makeInlineInput` (components/edit-primitives.ts) copies the
+   value element's classes onto the input it swaps in, so `pc-bank-input` is
+   carried by the number and by the ghost and BINDS here, on the input alone.
+   The type selector plus the later barrel position also win the cascade over
+   the shared `input.pc-edit-inline` base (components.css), which is borderless
+   by design: v7 draws this field with a crimson border and parchment fill, so
+   the base's dashed edit-mode outline would double the mark and is dropped.
+   The `:focus` ring still applies, as it does on every inline field. */
+.archivist-pc-sheet input.pc-bank-input {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-mid);
+  line-height: var(--pc-lh-tight);
+  color: var(--pc-text-primary);
+  display: inline-block;
+  position: static;
+  width: 2.1em;
+  height: auto;
+  min-height: 0;
+  text-align: center;
+  border: 1px solid var(--pc-crimson);
+  border-radius: 4px;
+  background: var(--pc-parchment-light);
+  padding: 0;
+  margin: 0;
+  outline: none;
+  box-shadow: none;
+}
+/* The same class copy carries the GHOST's own geometry onto its editor, and the
+   dashed ring is a pseudo-element, which no cascade reset above can reach:
+   Chromium does render it once the copied `display: inline-flex` makes the input
+   a flex box, leaving a tan ring around the crimson field. Cancel it there. */
+.archivist-pc-sheet input.pc-bank-entry::after { content: none; }
+/* The ghost-die empty slot. --pc-bank-die-mask is set per face by the renderer's
+   map; the entry glyph reads it the same way at any face. */
+.archivist-pc-sheet .pc-bank-entry {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  cursor: pointer;
+  align-self: center;
+}
+.archivist-pc-sheet .pc-bank-entry-glyph {
+  position: absolute;
+  inset: 0;
+  background-color: var(--pc-tan-muted);
+  opacity: 0.6;
+  -webkit-mask-image: var(--pc-bank-die-mask);
+  mask-image: var(--pc-bank-die-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+.archivist-pc-sheet .pc-bank-entry::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 1.5px dashed var(--pc-tan-muted);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+
+/* ============================================
    pc/resources.css
    ============================================ */
 /* ============================================================
