@@ -1893,6 +1893,10 @@
   min-width: 180px;
 }
 .pc-stat-tooltip-title { font-weight: 600; margin-bottom: 0.3em; }
+.archivist-pc-sheet .pc-skill-bonus,
+.archivist-pc-sheet .pc-stats-tile-val { position: relative; }
+.archivist-pc-sheet .pc-skill-bonus > .pc-stat-tooltip,
+.archivist-pc-sheet .pc-stats-tile-val > .pc-stat-tooltip { right: 0; left: auto; top: 100%; text-align: left; }
 
 .pc-charges-widget { display: inline-flex; flex-direction: column; align-items: center; }
 .pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }

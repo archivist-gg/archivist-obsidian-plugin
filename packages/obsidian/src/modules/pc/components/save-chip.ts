@@ -1,11 +1,9 @@
-import { setTooltip } from "obsidian";
 import type { Ability } from "@archivist-gg/dnd5e";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { renderConditionTags, rollModifierTagSpec, saveOutcomeTagSpec, type ConditionTagSpec } from "./condition-tag";
 import { ROLL_MODE_TAG, AUTO_FAIL_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { numberOverride } from "./edit-primitives";
-import { attachStatTooltip } from "./stat-tooltip";
-import { renderSituationalRows } from "./situational-rows";
+import { attachStatBreakdown } from "./stat-breakdown";
 
 /**
  * Save chip rendered beneath each ability cartouche. Reads the ability-save's
@@ -51,17 +49,12 @@ export class SaveChip implements SheetComponent {
     const profOverridden = overrides?.[ability]?.proficient !== undefined;
     const bonusOverridden = overrides?.[ability]?.bonus !== undefined;
 
-    // Situational saving-throw bonuses (e.g. conditional item boosts) surface in
-    // a hover popover. Saves render as per-ability chips with no single "all
-    // saves" container, so the global savesInformational slice attaches to each
-    // chip. Coexists with the per-chip exhaustion setTooltip on bonusEl below.
     const savesInfo = ctx.derived.savesInformational ?? [];
-    if (savesInfo.length > 0) {
-      attachStatTooltip(chip, (host) => {
-        host.createDiv({ cls: "pc-stat-tooltip-title", text: "Saves — situational" });
-        renderSituationalRows(host, savesInfo);
-      });
-    }
+    attachStatBreakdown(chip, {
+      title: `${ability.toUpperCase()} save`, total: entry.bonus,
+      terms: ctx.derived.statBreakdowns?.saves[ability], overridden: bonusOverridden,
+      informational: savesInfo,
+    });
 
     const ce = ctx.derived.conditionEffects;
     if (ce) {
@@ -91,13 +84,6 @@ export class SaveChip implements SheetComponent {
         specs.push({ kindClass: "dis", text: ROLL_MODE_TAG.disadvantage, tooltip: `Disadvantage from ${sources.join(", ")}` });
       }
 
-      if (ce.d20_test_penalty !== 0 && !autofail) {
-        const baseBonus = entry.bonus - ce.d20_test_penalty;
-        setTooltip(
-          bonusEl,
-          `${formatBonus(baseBonus)} base ${ce.d20_test_penalty < 0 ? "−" : "+"} ${Math.abs(ce.d20_test_penalty)} from exhaustion = ${formatBonus(entry.bonus)}`,
-        );
-      }
     }
 
     // Structured roll-modifier effects scoped to saving throws. An entry applies

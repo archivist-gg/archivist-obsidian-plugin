@@ -83,7 +83,7 @@ export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo
 }
 
 /** Compact casting-time label for the Cast table. Real tokens: action,
- *  bonus-action, reaction, 1minute|minute, 10minutes, 1hour|hour, 8/12/24hours.
+ *  bonus-action, 1 bonus action, reaction, 1minute|minute, 10minutes, 1hour|hour, 8/12/24hours.
  *
  *  The token is MATCHED after normalisation (R4 {G5, G6} live rider N-1-17): case folded and every
  *  space and hyphen dropped, so `bonus-action`, `bonus action` and `Bonus Action` are one token and
@@ -93,19 +93,16 @@ export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo
  *  spelling fell through to the raw string. A token that matches nothing still passes through
  *  verbatim, and an absent one still reads as the placeholder. */
 export function compactCastingTime(token: string | undefined): string {
+  // Authored spells can put a trigger after the action type. Both table callers
+  // keep the full casting time in a tooltip.
+  const castingTime = token?.trim() ?? "";
+  if (/^(?:1\s*)?reaction\b/i.test(castingTime)) return "1R";
+  if (/^(?:1\s*)?bonus[\s-]*action\b/i.test(castingTime)) return "BA";
   const norm = token?.toLowerCase().replace(/[\s-]+/g, "");
-  // R4-G7 T7 live rider RIDER-4. A reaction may carry its TRIGGER in the same field
-  // (`reaction (which you take when you or a creature you can see within 60 feet of you falls)`), which
-  // the switch below cannot match, so it fell through verbatim into a column sized for `1A` and wrapped
-  // onto seven lines: WITNESSED at S00 on `conv-diviner2024-20`'s Spells tab (Feather Fall). MEASURED in
-  // the converter corpus: 24 distinct `casting_time` values, THIRTEEN of them this shape. The prefix is
-  // matched, never a bare `includes`, so `1 minute (reaction optional)` still passes through; the
-  // trigger is not lost, because both callers put the FULL token in the cell's `title`.
-  if (norm && norm.startsWith("reaction(")) return "1R";
   switch (norm) {
     // The case labels are the NORMALISED forms (no hyphen, no space, lower case).
     case "action": return "1A";
-    case "bonusaction": return "1BA";
+    case "bonusaction": return "BA";
     case "reaction": return "1R";
     case "minute":
     case "1minute": return "1 min";

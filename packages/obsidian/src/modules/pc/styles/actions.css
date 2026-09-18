@@ -341,6 +341,54 @@
   row-gap: var(--pc-space-1);
   column-gap: var(--pc-space-2);
 }
+/* The Actions tab's rest trackers share one right edge. Activatable features
+   keep their button and duration together to the left of that same column. */
+.archivist-pc-sheet .pc-resource-aligned-row > .pc-feature-detail { justify-content: flex-end; }
+.archivist-pc-sheet .pc-resource-aligned-row > .pc-activation-detail {
+  justify-content: space-between;
+  column-gap: 34px;
+}
+.archivist-pc-sheet .pc-feature-activation {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.archivist-pc-sheet .pc-spend-control.pc-feature-activate-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  min-height: 26px;
+  padding: 1px 12px;
+  font: 700 var(--pc-fs-body)/1.25 var(--pc-font-sans);
+  white-space: nowrap;
+}
+.archivist-pc-sheet .pc-feature-activate-btn.is-active-filled {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+}
+.archivist-pc-sheet .pc-feature-activation .pc-action-buff-duration {
+  color: var(--pc-text-soft);
+  font: italic var(--pc-fs-small)/1.25 var(--pc-font-serif);
+}
+@container pc-content (min-width: 788px) {
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row.pc-resource-aligned-row {
+    grid-template-columns: 66px minmax(0, 1fr) 360px 18px;
+  }
+}
+@container pc-content (max-width: 787px) {
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row.pc-activation-row {
+    grid-template-columns: 66px minmax(0, 1fr) 18px;
+  }
+  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row.pc-activation-row {
+    grid-template-columns: minmax(0, 1fr) 18px;
+  }
+  .archivist-pc-sheet .pc-feature-list .pc-feature-row.pc-activation-row > .pc-activation-detail {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
 .archivist-pc-sheet .pc-feature-attack-note {
   font-family: var(--pc-font-serif);
   font-style: italic;
@@ -829,6 +877,51 @@
 .archivist-pc-sheet .pc-spend-caption {
   font-size: 0.85em;
   opacity: 0.8;
+}
+
+/* A spell-slot cost opens over the action rows. The picker stays inside the
+   sheet and uses the same parchment, pip and crimson vocabulary as Spells. */
+.archivist-pc-sheet .pc-slot-pop-anchor { position: relative; }
+.archivist-pc-sheet .pc-slot-pop-anchor > .pc-pop.pc-slot-pop {
+  left: 0; top: auto; bottom: calc(100% + 9px); transform: none;
+  width: 292px; max-width: min(292px, 80vw);
+  padding: 9px 10px 7px; background: var(--pc-parchment-dark);
+  border-color: var(--pc-tan-muted); box-shadow: 0 7px 20px rgba(77, 49, 21, .25);
+  z-index: 1000;
+}
+.archivist-pc-sheet .pc-slot-pop-anchor > .pc-slot-pop.opens-down {
+  top: calc(100% + 9px); bottom: auto;
+}
+.archivist-pc-sheet .pc-slot-pop .pc-pop-arrow {
+  bottom: auto; top: calc(100% - 1px); left: auto; right: 29px; margin-left: 0;
+  background: var(--pc-parchment-dark); border-left: 0; border-top: 0;
+  border-right: 1px solid var(--pc-tan-muted); border-bottom: 1px solid var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-slot-pop.opens-down .pc-pop-arrow {
+  top: -5px; bottom: auto; border-right: 0; border-bottom: 0;
+  border-left: 1px solid var(--pc-tan-muted); border-top: 1px solid var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-slot-pop .pc-pop-h {
+  color: var(--pc-crimson); border-bottom-color: var(--pc-tan-muted);
+  text-align: left; margin-bottom: 4px;
+}
+.archivist-pc-sheet .pc-slot-pop-list { overflow-y: auto; }
+.archivist-pc-sheet .pc-slot-pop-row {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 34px;
+  padding: 5px 3px; border: 0; border-bottom: 1px dashed var(--pc-tan-muted);
+  background: transparent; box-shadow: none; color: var(--pc-text-primary);
+  cursor: pointer; text-align: left;
+}
+.archivist-pc-sheet .pc-slot-pop-row:last-child { border-bottom: 0; }
+.archivist-pc-sheet .pc-slot-pop-row:hover:not(:disabled) { background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-slot-pop-row:disabled { opacity: .48; cursor: default; }
+.archivist-pc-sheet .pc-slot-pop-level {
+  min-width: 61px; font: 700 var(--pc-fs-small)/1.2 var(--pc-font-serif);
+}
+.archivist-pc-sheet .pc-slot-pop-row .pc-charge-boxes { margin-left: auto; }
+.archivist-pc-sheet .pc-slot-pop-count {
+  min-width: 28px; text-align: right;
+  font: 700 var(--pc-fs-label)/1.2 var(--pc-font-sans); color: var(--pc-text-soft);
 }
 
 /* The granted-die recipient caption (R4-G5 §4.2.2 a). It takes `.pc-spend-caption`'s values verbatim:

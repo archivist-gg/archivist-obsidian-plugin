@@ -1,9 +1,7 @@
-import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { formatModifier } from "@archivist-gg/dnd5e/dnd/math";
 import { numberOverride } from "./edit-primitives";
-import { attachStatTooltip } from "./stat-tooltip";
-import { renderSituationalRows } from "./situational-rows";
+import { attachStatBreakdown } from "./stat-breakdown";
 
 /**
  * Right side of the stats band: four bordered tiles in a 2×2 grid.
@@ -23,6 +21,11 @@ export class StatsTiles implements SheetComponent {
     const initTile = grid.createDiv({ cls: "pc-panel pc-stats-tile", attr: { "data-stat": "init" } });
     initTile.createDiv({ cls: "pc-stats-tile-lbl", text: "INITIATIVE" });
     const initVal = initTile.createDiv({ cls: "pc-stats-tile-val", text: formatModifier(ctx.derived.initiative) });
+    attachStatBreakdown(initVal, {
+      title: "Initiative", total: ctx.derived.initiative,
+      terms: ctx.derived.statBreakdowns?.initiative,
+      overridden: ctx.resolved.definition?.overrides?.initiative !== undefined,
+    });
     if (ctx.editState) {
       numberOverride(initVal, {
         getEffective: () => ctx.derived.initiative,
@@ -40,6 +43,12 @@ export class StatsTiles implements SheetComponent {
     speedTile.createDiv({ cls: "pc-stats-tile-lbl", text: "SPEED" });
     const speedVal = speedTile.createDiv({ cls: "pc-stats-tile-val" });
     const speedNum = speedVal.createSpan({ cls: "pc-stats-tile-num", text: String(ctx.derived.speed) });
+    attachStatBreakdown(speedTile, {
+      title: "Speed", total: ctx.derived.speed, unit: "ft",
+      terms: ctx.derived.statBreakdowns?.speed,
+      overridden: ctx.resolved.definition?.overrides?.speed !== undefined,
+      informational: ctx.derived.speedInformational ?? [],
+    });
     speedVal.createSpan({ cls: "pc-stats-tile-unit", text: "ft" });
     if (ctx.editState) {
       numberOverride(speedNum, {
@@ -49,34 +58,6 @@ export class StatsTiles implements SheetComponent {
         onClear: () => ctx.editState!.clearSpeedOverride(),
         min: 0, max: 240,
       });
-    }
-
-    // Situational speed bonuses (e.g. conditional item boosts) surface in a
-    // hover popover. Coexists with the speed condition-reduction text below.
-    const speedInfo = ctx.derived.speedInformational ?? [];
-    if (speedInfo.length > 0) {
-      attachStatTooltip(speedTile, (host) => {
-        host.createDiv({ cls: "pc-stat-tooltip-title", text: "Speed — situational" });
-        renderSituationalRows(host, speedInfo);
-      });
-    }
-
-    const ce = ctx.derived.conditionEffects;
-    if (ce) {
-      const speedAffected =
-        ce.speed_floor_zero ||
-        ce.speed_multiplier !== 1 ||
-        ce.speed_reduction_ft !== 0;
-      if (speedAffected) {
-        const sources = ce.sources
-          .filter((s) => {
-            const c = s.condition;
-            return c === "grappled" || c === "paralyzed" || c === "petrified" ||
-                   c === "restrained" || c === "unconscious" || c === "exhaustion";
-          })
-          .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
-        setTooltip(speedTile, `Speed reduced by: ${sources.join(", ")}`);
-      }
     }
 
     // INSPIRATION — unchanged from SP4

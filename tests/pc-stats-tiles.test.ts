@@ -18,6 +18,17 @@ function ctx(over: Partial<{ prof: number; init: number; speed: number; insp: nu
 }
 
 describe("StatsTiles", () => {
+  it("shows the original initiative and feature bonus on hover", () => {
+    const root = mountContainer();
+    const c = ctx({ init: 5 });
+    c.derived.statBreakdowns = { skills: {}, saves: {} as never, speed: [], initiative: [
+      { source: "DEX", amount: 2 }, { source: "Alert", amount: 3 },
+    ] };
+    new StatsTiles().render(root, c);
+    const val = root.querySelector<HTMLElement>("[data-stat='init'] .pc-stats-tile-val")!;
+    val.dispatchEvent(new Event("mouseenter"));
+    expect(val.querySelector(".pc-stat-tooltip")?.textContent).toContain("Alert+3");
+  });
   it("renders 4 tiles: PROFICIENCY / INITIATIVE / SPEED / INSPIRATION", () => {
     const root = mountContainer();
     new StatsTiles().render(root, ctx());
@@ -73,27 +84,27 @@ describe("StatsTiles — situational speed tooltip (Task 9)", () => {
     speedTile.dispatchEvent(new Event("mouseenter"));
     const tip = speedTile.querySelector(".pc-stat-tooltip");
     expect(tip).not.toBeNull();
-    expect(tip?.querySelector(".pc-stat-tooltip-title")?.textContent).toBe("Speed — situational");
+    expect(tip?.querySelector(".pc-stat-tooltip-title")?.textContent).toBe("Speed: 30 ft");
     const rows = tip!.querySelectorAll(".pc-situational-row");
     expect(rows.length).toBe(1);
     expect(rows[0].textContent).toContain("Boots of Speed");
     expect(rows[0].textContent).toContain("while activated");
   });
 
-  it("attaches NO popover when the speed slice is absent (situational-free character)", () => {
+  it("still shows the original speed when no situational bonus exists", () => {
     const root = mountContainer();
     new StatsTiles().render(root, ctxWithSpeedInfo(undefined));
     const speedTile = root.querySelector<HTMLElement>(".pc-stats-tile[data-stat='speed']")!;
     speedTile.dispatchEvent(new Event("mouseenter"));
-    expect(speedTile.querySelector(".pc-stat-tooltip")).toBeNull();
+    expect(speedTile.querySelector(".pc-stat-tooltip")?.textContent).toContain("Original30 ft");
   });
 
-  it("attaches NO popover when the speed slice is empty", () => {
+  it("still shows the original speed when the situational slice is empty", () => {
     const root = mountContainer();
     new StatsTiles().render(root, ctxWithSpeedInfo([]));
     const speedTile = root.querySelector<HTMLElement>(".pc-stats-tile[data-stat='speed']")!;
     speedTile.dispatchEvent(new Event("mouseenter"));
-    expect(speedTile.querySelector(".pc-stat-tooltip")).toBeNull();
+    expect(speedTile.querySelector(".pc-stat-tooltip")?.textContent).toContain("Original30 ft");
   });
 });
 

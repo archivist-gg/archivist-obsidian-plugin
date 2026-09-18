@@ -245,26 +245,26 @@ describe("SaveChip — situational saves tooltip (Task 9)", () => {
     chip.dispatchEvent(new Event("mouseenter"));
     const tip = chip.querySelector(".pc-stat-tooltip");
     expect(tip).not.toBeNull();
-    expect(tip?.querySelector(".pc-stat-tooltip-title")?.textContent).toBe("Saves — situational");
+    expect(tip?.querySelector(".pc-stat-tooltip-title")?.textContent).toBe("STR save: +3");
     const rows = tip!.querySelectorAll(".pc-situational-row");
     expect(rows.length).toBe(1);
     expect(rows[0].textContent).toContain("Ring of Protection");
   });
 
-  it("attaches NO popover when the saves slice is absent (situational-free character)", () => {
+  it("still shows the original save when no situational bonus exists", () => {
     const root = mountContainer();
     new SaveChip("str").render(root, ctxWithSavesInfo(undefined));
     const chip = root.querySelector<HTMLElement>(".pc-save-chip")!;
     chip.dispatchEvent(new Event("mouseenter"));
-    expect(chip.querySelector(".pc-stat-tooltip")).toBeNull();
+    expect(chip.querySelector(".pc-stat-tooltip")?.textContent).toContain("Original+3");
   });
 
-  it("attaches NO popover when the saves slice is empty", () => {
+  it("still shows the original save when the situational slice is empty", () => {
     const root = mountContainer();
     new SaveChip("str").render(root, ctxWithSavesInfo([]));
     const chip = root.querySelector<HTMLElement>(".pc-save-chip")!;
     chip.dispatchEvent(new Event("mouseenter"));
-    expect(chip.querySelector(".pc-stat-tooltip")).toBeNull();
+    expect(chip.querySelector(".pc-stat-tooltip")?.textContent).toContain("Original+3");
   });
 });
 

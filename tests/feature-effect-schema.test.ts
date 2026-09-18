@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { featureEffectSchema } from "@archivist-gg/dnd5e/schemas/feature-effect-schema";
+
+describe("featureEffectSchema — numeric skill bonus", () => {
+  it("accepts an ability modifier with a minimum for selected skills", () => {
+    expect(featureEffectSchema.safeParse({ kind: "skill-bonus", skills: ["acrobatics"], ability: "int", minimum: 1 }).success).toBe(true);
+    expect(featureEffectSchema.safeParse({ kind: "skill-bonus", skills: [], ability: "int" }).success).toBe(false);
+  });
+});
 import type { FeatureEffect } from "@archivist-gg/dnd5e/types/feature-effect";
 
 describe("featureEffectSchema — ac-bonus", () => {
@@ -228,17 +235,17 @@ describe("featureEffectSchema — speed-bonus set", () => {
   });
 });
 
-const KINDS_26 = [
-  "initiative-bonus", "immune-condition", "resistance", "hp-per-level-bonus", "speed-bonus", "attunement-limit", "sense",
+const KINDS_27 = [
+  "initiative-bonus", "skill-bonus", "immune-condition", "resistance", "hp-per-level-bonus", "speed-bonus", "attunement-limit", "sense",
   "apply-condition", "damage-bonus", "proficiency", "ac-bonus", "unarmored-ac", "unarmed-strike", "weapon-ability", "roll-modifier",
   "extra-attack", "crit-range", "reroll-damage", "attack-rule",
   "immunity", "vulnerability", "temp-hp", "heal", "ability-score-increase", "extra-action", "save-outcome",
 ] as const;
 
-describe("featureEffectSchema · the 26-arm union (R4-G1a D1, G1; R4-G6b §5.2)", () => {
-  it("declares exactly the 26 kinds, in order", () => {
+describe("featureEffectSchema · the 27-arm union (R4-G1a D1, G1; R4-G6b §5.2)", () => {
+  it("declares exactly the 27 kinds, in order", () => {
     const kinds = featureEffectSchema.options.map((o) => (o.shape.kind as { value: string }).value);
-    expect(kinds).toEqual([...KINDS_26]);
+    expect(kinds).toEqual([...KINDS_27]);
   });
   it("every arm declares subject; every arm but the two condition-name arms declares the condition qualifier; proficiency declares expertise (G5)", () => {
     for (const o of featureEffectSchema.options) {
@@ -295,5 +302,5 @@ describe("featureEffectSchema · the 26-arm union (R4-G1a D1, G1; R4-G6b §5.2)"
 
 // Compile-time twin of the runtime pin (spec D8): the union's discriminators and the hand-written type agree.
 type Equals<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
-const _kindsAgree: Equals<FeatureEffect["kind"], (typeof KINDS_26)[number]> = true;
+const _kindsAgree: Equals<FeatureEffect["kind"], (typeof KINDS_27)[number]> = true;
 void _kindsAgree;

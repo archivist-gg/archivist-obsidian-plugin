@@ -37,6 +37,19 @@ const ctx: ComponentRenderContext = {
 };
 
 describe("SkillsPanel", () => {
+  it("shows the original skill modifier and Blade Dance bonus on hover", () => {
+    const container = mountContainer();
+    const withBreakdown = {
+      ...ctx,
+      derived: { ...ctx.derived, statBreakdowns: { skills: {
+        athletics: [{ source: "STR", amount: 0 }, { source: "Proficiency", amount: 2 }, { source: "Blade Dance", amount: 3 }],
+      } } },
+    } as ComponentRenderContext;
+    new SkillsPanel().render(container, withBreakdown);
+    const bonus = container.querySelector<HTMLElement>("[data-skill='athletics'] .pc-skill-bonus")!;
+    bonus.dispatchEvent(new Event("mouseenter"));
+    expect(bonus.querySelector(".pc-stat-tooltip")?.textContent).toContain("Blade Dance+3");
+  });
   it("renders 18 skill rows", () => {
     const container = mountContainer();
     new SkillsPanel().render(container, ctx);
