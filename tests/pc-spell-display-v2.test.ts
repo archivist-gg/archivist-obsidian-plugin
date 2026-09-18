@@ -12,7 +12,7 @@ function sp(extra: Partial<ResolvedSpell["entity"]>): ResolvedSpell {
 describe("compactCastingTime", () => {
   it("maps the real casting_time tokens to compact labels", () => {
     expect(compactCastingTime("action")).toBe("1A");
-    expect(compactCastingTime("bonus-action")).toBe("1BA");
+    expect(compactCastingTime("bonus-action")).toBe("BA");
     expect(compactCastingTime("reaction")).toBe("1R");
     expect(compactCastingTime("1minute")).toBe("1 min");
     expect(compactCastingTime("minute")).toBe("1 min");
@@ -30,8 +30,9 @@ describe("compactCastingTime", () => {
   // through the switch to the raw string. The token is normalised before it is matched, so one
   // vocabulary reaches the column whatever the document spells.
   it("matches a token whatever its spacing, hyphenation or case", () => {
-    expect(compactCastingTime("bonus action")).toBe("1BA");
-    expect(compactCastingTime("Bonus Action")).toBe("1BA");
+    expect(compactCastingTime("bonus action")).toBe("BA");
+    expect(compactCastingTime("Bonus Action")).toBe("BA");
+    expect(compactCastingTime("1 bonus action")).toBe("BA");
     expect(compactCastingTime("1 minute")).toBe("1 min");
     expect(compactCastingTime("10 minutes")).toBe("10 min");
     expect(compactCastingTime("Action")).toBe("1A");
@@ -99,10 +100,11 @@ describe("R4-G7 T7 live rider RIDER-4 · a PROSE reaction casting time", () => {
   it("compacts a reaction that carries its trigger, and keeps every other token exactly as it was", () => {
     expect(compactCastingTime("reaction (which you take when you or a creature you can see within 60 feet of you falls)")).toBe("1R");
     expect(compactCastingTime("Reaction (which you take when you are hit by an attack)")).toBe("1R");
+    expect(compactCastingTime("1 reaction, which you take when you are hit by an attack you can see or targeted by magic missile")).toBe("1R");
     // the controls: nothing else moves
     expect(compactCastingTime("reaction")).toBe("1R");
     expect(compactCastingTime("action")).toBe("1A");
-    expect(compactCastingTime("bonus action")).toBe("1BA");
+    expect(compactCastingTime("bonus action")).toBe("BA");
     expect(compactCastingTime("1 minute")).toBe("1 min");
     expect(compactCastingTime("1 week")).toBe("1 week");
     expect(compactCastingTime("weird")).toBe("weird");
@@ -111,5 +113,6 @@ describe("R4-G7 T7 live rider RIDER-4 · a PROSE reaction casting time", () => {
 
   it("does not swallow a token that merely CONTAINS the word reaction", () => {
     expect(compactCastingTime("1 minute (reaction optional)")).toBe("1 minute (reaction optional)");
+    expect(compactCastingTime("reactionary")).toBe("reactionary");
   });
 });

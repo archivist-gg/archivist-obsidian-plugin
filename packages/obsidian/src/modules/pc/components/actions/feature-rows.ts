@@ -8,6 +8,7 @@ import { renderResourceTracker } from "./resource-tracker";
 import { bankedDieFor, renderFeatureBank } from "./bank";
 import { renderEffectCaptions } from "./effect-captions";
 import { renderSpendControl } from "./spend-control";
+import { renderSlotSpendControl } from "./slot-spend-control";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { AT_WILL_MAX } from "@archivist-gg/dnd5e/dnd/resource-formula";
@@ -66,6 +67,8 @@ export function renderFeatureRow(
   const sourceLabel = sourceLabels.join(" · ");
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
+  const hasActivation = !!(feature.activatable && feature.id);
+  if (hasActivation) row.addClass("pc-activation-row");
 
   // The Actions tab keeps the 66px badge column; the Passive tab drops it and
   // renders NO cost pill at all: all passive costs are unmarked (free/special/
@@ -82,11 +85,8 @@ export function renderFeatureRow(
   const isAction = cost === "action" || cost === "bonus-action" || cost === "reaction";
   if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
 
-  // Name cell — title, source sub-label, and (optionally) the activatable
-  // buff toggle. Toggle wiring is carried verbatim from the retired
-  // features-table.ts: bound to state.active_buffs by feature id, toggled via
-  // editState.toggleActiveBuff, with a static duration label. stopPropagation
-  // keeps the toggle click from bubbling into the row-expand handler.
+  // Name cell — title, source sub-label, and effect captions. Activation lives
+  // in the detail column beside the resource tracker on every feature row.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
   nameCell.createDiv({ cls: "pc-action-row-name", text: title });
   if (sourceLabels.length) renderSeparated(nameCell.createDiv({ cls: "pc-action-row-sub" }), sourceLabels, { sep: "·" });
@@ -97,33 +97,6 @@ export function renderFeatureRow(
   // a caption matters most on. Boon rows do not come through here; since R4-G4 §10
   // `renderBoonRow` makes the same call into its OWN name cell.
   renderEffectCaptions(nameCell, rf.feature.effects ?? [], ctx);
-  if (feature.activatable && feature.id) {
-    const buffId = feature.id;
-    const buffWrap = nameCell.createDiv({ cls: "pc-action-buff" });
-    const active = (ctx.resolved.state.active_buffs ?? []).includes(buffId);
-    const label = buffWrap.createEl("label", { cls: "pc-action-buff-control" });
-    const cb = label.createEl("input", { cls: "pc-action-buff-toggle", type: "checkbox" });
-    cb.checked = active;
-    label.createSpan({ cls: "pc-action-buff-text", text: active ? "Active" : "Activate" });
-    label.addEventListener("click", (e) => e.stopPropagation());
-    cb.addEventListener("change", (e) => {
-      e.stopPropagation();
-      ctx.editState?.toggleActiveBuff(buffId);
-    });
-    // The line is the label, one plain space and the duration UNIT, whose separator is out of flow
-    // and clipped when the unit starts a line: R4-G6b §10 (Q-8). `renderSeparated` writes the space
-    // itself (the host already has the label as a child), so the composed `Active · 1 minute` is
-    // byte-identical to what the two elements plus an explicit " · " printed before. The unit is a
-    // counted English noun and takes an English plural when the amount is not 1 ("10 minutes"),
-    // which is copy about a number, not game vocabulary: the four units dnd5e's `durationSchema`
-    // admits (round, minute, hour, day) all pluralise regularly, and no branch here reads WHICH unit
-    // it is.
-    if (feature.duration && typeof feature.duration === "object") {
-      const { amount, unit } = feature.duration;
-      renderSeparated(buffWrap, [`${amount} ${unit}${amount === 1 ? "" : "s"}`], { sep: "·", leading: true, segCls: "pc-action-buff-duration" });
-    }
-  }
-
   // Right detail, in order: first resource tracker, then the spend control, then the feature's
   // attack note. The tracker and the control are INDEPENDENT (the tracker is keyed on
   // `resources`, the control on `consumes`, R4-G4 §3.2.5) and can share the detail, which is how
@@ -132,9 +105,29 @@ export function renderFeatureRow(
   // other two rendered; when either did, it moves to the expand card below (Finding B: the detail
   // is never dropped).
   const detail = row.createDiv({ cls: "pc-feature-detail" });
+  if (hasActivation && feature.id) {
+    detail.addClass("pc-activation-detail");
+    const buffId = feature.id;
+    const active = (ctx.resolved.state.active_buffs ?? []).includes(buffId);
+    const buffWrap = detail.createDiv({ cls: "pc-action-buff pc-feature-activation" });
+    const button = buffWrap.createEl("button", {
+      cls: `pc-spend-control pc-feature-activate-btn${active ? " is-active-filled" : ""}`,
+      text: active ? "Active" : "Activate",
+      attr: { type: "button", "aria-pressed": String(active) },
+    });
+    button.addEventListener("click", (e) => {
+      e.stopPropagation();
+      ctx.editState?.toggleActiveBuff(buffId);
+    });
+    if (feature.duration && typeof feature.duration === "object") {
+      const { amount, unit } = feature.duration;
+      renderSeparated(buffWrap, [`${amount} ${unit}${amount === 1 ? "" : "s"}`], { sep: "·", leading: true, segCls: "pc-action-buff-duration" });
+    }
+  }
   const hasTracker = renderFirstResourceTracker(detail, feature, ctx);
+  if (hasTracker && !opts.passive) row.addClass("pc-resource-aligned-row");
   const consumes = feature.consumes;
-  const spendId = consumes?.resource;
+  const spendId = consumes?.source === "spell-slots" ? undefined : consumes?.resource;
   const ownsIt = !!spendId && (feature.resources ?? []).some((r) => r.id === spendId);
   const fu = spendId ? ctx.resolved.state.feature_uses?.[spendId] : undefined;
   // The former `&& fu.max !== AT_WILL_MAX` clause is DROPPED (review M-6). It cannot change the
@@ -155,9 +148,12 @@ export function renderFeatureRow(
   // the widget renders the words "at will" and tracks no count for a spend to move. A pure spender
   // (Flurry of Blows), which owns nothing, takes the row slot whatever the owner's widget is.
   const controlInSlot = !!spendId && !ownsIt;
-  const controlInCard = !!spendId && ownsIt && !isAtWill && !(consumes.amount === 1 && trackerIsBoxes);
+  const controlInCard = !!spendId && ownsIt && !isAtWill && !(consumes?.amount === 1 && trackerIsBoxes);
   let hasControl = false;
   if (controlInSlot && consumes) hasControl = renderSpendControl(detail, { consumes, ctx }) !== null;
+  if (consumes?.source === "spell-slots" && consumes.amount === 1) {
+    hasControl = renderSlotSpendControl(detail, ctx);
+  }
   const attackNote = formatFeatureAttackNote(feature, ctx);
   if (!hasTracker && !hasControl && attackNote) {
     detail.createSpan({ cls: "pc-feature-attack-note", text: attackNote });
@@ -229,7 +225,7 @@ export function renderFeatureRow(
   row.addEventListener("click", (e) => {
     const t = e.target as HTMLElement | null;
     // Tracker + buff-toggle clicks are handled by their own listeners; never expand.
-    if (t?.closest(".pc-feature-track") || t?.closest(".pc-action-buff")) return;
+    if (t?.closest(".pc-feature-track") || t?.closest(".pc-action-buff") || t?.closest(".pc-slot-pop-anchor")) return;
     expand.hidden = !expand.hidden;
     const nowOpen = !expand.hidden;
     row.classList.toggle("open", nowOpen);

@@ -217,16 +217,49 @@ describe("ActionsTab — grouped structure", () => {
     expect(rowByName(c, "Holy Nimbus").querySelector(".pc-action-buff")!.textContent).toBe("Activate · 10 minutes");
   });
 
-  it("wires the activatable buff toggle on an action-feature via editState", () => {
+  it("wires the activation button on an action-feature via editState", () => {
     const c = mountContainer();
     const toggleActiveBuff = vi.fn();
     new ActionsTab().render(c, renderCtx([
       rf({ id: "majesty", name: "Infernal Majesty", action: "bonus-action", activatable: true, duration: { amount: 1, unit: "minute" } }),
     ], { editState: { toggleActiveBuff } }));
-    const toggle = c.querySelector<HTMLInputElement>(".pc-action-buff-toggle");
-    expect(toggle).not.toBeNull();
-    toggle!.checked = true;
-    toggle!.dispatchEvent(new Event("change"));
+    const toggle = c.querySelector<HTMLButtonElement>(".pc-feature-activate-btn");
+    expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+    toggle!.click();
     expect(toggleActiveBuff).toHaveBeenCalledWith("majesty");
+    expect(rowByName(c, "Infernal Majesty").querySelector(".pc-action-buff-toggle")).toBeNull();
+  });
+
+  it("places every feature activation beside its duration and aligns its rest tracker with other resource rows", () => {
+    const c = mountContainer();
+    const toggleActiveBuff = vi.fn();
+    const features = [
+      rf({ id: "spellsight", name: "Spellsight", action: "action", resources: [{ id: "spellsight-use", name: "Spellsight", reset: "either" }] }),
+      rf({ id: "blade-dance", name: "Blade Dance", action: "bonus-action", activatable: true,
+        duration: { amount: 1, unit: "minute" }, resources: [{ id: "blade-dance-use", name: "Blade Dance", reset: "either" }] }),
+    ];
+    const opts = { featureUses: { "spellsight-use": { used: 0, max: 1 }, "blade-dance-use": { used: 0, max: 1 } }, editState: { toggleActiveBuff } };
+    new ActionsTab().render(c, renderCtx(features, opts));
+
+    const blade = rowByName(c, "Blade Dance");
+    const spellsight = rowByName(c, "Spellsight");
+    expect(blade.classList.contains("pc-resource-aligned-row")).toBe(true);
+    expect(spellsight.classList.contains("pc-resource-aligned-row")).toBe(true);
+    const detail = blade.querySelector(".pc-activation-detail")!;
+    expect([...detail.children].map((el) => el.classList.contains("pc-feature-track"))).toEqual([false, true]);
+    expect(detail.querySelector(".pc-feature-activation")?.textContent).toBe("Activate · 1 minute");
+    expect(blade.querySelector(".pc-action-buff-toggle")).toBeNull();
+    const button = detail.querySelector<HTMLButtonElement>(".pc-feature-activate-btn")!;
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+    button.click();
+    expect(toggleActiveBuff).toHaveBeenCalledWith("blade-dance");
+    expect((blade.nextElementSibling as HTMLElement).hidden).toBe(true);
+
+    const active = mountContainer();
+    new ActionsTab().render(active, renderCtx(features, { ...opts, activeBuffs: ["blade-dance"] }));
+    const activeButton = rowByName(active, "Blade Dance").querySelector<HTMLButtonElement>(".pc-feature-activate-btn")!;
+    expect(activeButton.textContent).toBe("Active");
+    expect(activeButton.classList.contains("is-active-filled")).toBe(true);
+    expect(activeButton.getAttribute("aria-pressed")).toBe("true");
   });
 });
