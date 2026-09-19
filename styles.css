@@ -6162,10 +6162,6 @@ body.theme-light .archivist-tag-atk:hover {
   min-width: 180px;
 }
 .pc-stat-tooltip-title { font-weight: 600; margin-bottom: 0.3em; }
-.archivist-pc-sheet .pc-skill-bonus,
-.archivist-pc-sheet .pc-stats-tile-val { position: relative; }
-.archivist-pc-sheet .pc-skill-bonus > .pc-stat-tooltip,
-.archivist-pc-sheet .pc-stats-tile-val > .pc-stat-tooltip { right: 0; left: auto; top: 100%; text-align: left; }
 
 .pc-charges-widget { display: inline-flex; flex-direction: column; align-items: center; }
 .pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }
@@ -8156,54 +8152,6 @@ body.theme-light .archivist-tag-atk:hover {
   flex-wrap: wrap;
   row-gap: var(--pc-space-1);
   column-gap: var(--pc-space-2);
-}
-/* The Actions tab's rest trackers share one right edge. Activatable features
-   keep their button and duration together to the left of that same column. */
-.archivist-pc-sheet .pc-resource-aligned-row > .pc-feature-detail { justify-content: flex-end; }
-.archivist-pc-sheet .pc-resource-aligned-row > .pc-activation-detail {
-  justify-content: space-between;
-  column-gap: 34px;
-}
-.archivist-pc-sheet .pc-feature-activation {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-.archivist-pc-sheet .pc-spend-control.pc-feature-activate-btn {
-  display: inline-flex;
-  align-items: center;
-  height: 26px;
-  min-height: 26px;
-  padding: 1px 12px;
-  font: 700 var(--pc-fs-body)/1.25 var(--pc-font-sans);
-  white-space: nowrap;
-}
-.archivist-pc-sheet .pc-feature-activate-btn.is-active-filled {
-  background: var(--pc-crimson);
-  color: var(--pc-parchment-light);
-}
-.archivist-pc-sheet .pc-feature-activation .pc-action-buff-duration {
-  color: var(--pc-text-soft);
-  font: italic var(--pc-fs-small)/1.25 var(--pc-font-serif);
-}
-@container pc-content (min-width: 788px) {
-  .archivist-pc-sheet .pc-feature-list .pc-feature-row.pc-resource-aligned-row {
-    grid-template-columns: 66px minmax(0, 1fr) 360px 18px;
-  }
-}
-@container pc-content (max-width: 787px) {
-  .archivist-pc-sheet .pc-feature-list .pc-feature-row.pc-activation-row {
-    grid-template-columns: 66px minmax(0, 1fr) 18px;
-  }
-  .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row.pc-activation-row {
-    grid-template-columns: minmax(0, 1fr) 18px;
-  }
-  .archivist-pc-sheet .pc-feature-list .pc-feature-row.pc-activation-row > .pc-activation-detail {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
 }
 .archivist-pc-sheet .pc-feature-attack-note {
   font-family: var(--pc-font-serif);
