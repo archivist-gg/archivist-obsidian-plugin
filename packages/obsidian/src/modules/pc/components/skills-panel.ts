@@ -1,3 +1,4 @@
+import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { ALL_SKILLS } from "@archivist-gg/dnd5e/dnd/constants";
 import { formatModifier } from "@archivist-gg/dnd5e/dnd/math";
@@ -5,7 +6,6 @@ import type { SkillSlug } from "@archivist-gg/dnd5e";
 import { renderConditionTags, rollModifierTagSpec, type ConditionTagSpec } from "./condition-tag";
 import { ROLL_MODE_TAG } from "@archivist-gg/dnd5e/pc/roll-tag-labels";
 import { numberOverride } from "./edit-primitives";
-import { attachStatBreakdown } from "./stat-breakdown";
 
 const SKILL_DISPLAY_NAMES: Record<SkillSlug, string> = {
   "acrobatics": "Acrobatics",
@@ -52,12 +52,6 @@ export class SkillsPanel implements SheetComponent {
       else if (entry.proficiency === "proficient") toggleClasses.push("proficient");
       row.createSpan({ cls: toggleClasses.join(" ") });
       const bonusEl = row.createSpan({ cls: "pc-skill-bonus", text: formatModifier(entry.bonus) });
-      attachStatBreakdown(bonusEl, {
-        title: SKILL_DISPLAY_NAMES[skillSlug] ?? display,
-        total: entry.bonus,
-        terms: ctx.derived.statBreakdowns?.skills[skillSlug],
-        overridden: ctx.resolved.definition?.overrides?.skills?.[skillSlug]?.bonus !== undefined,
-      });
       row.createSpan({ cls: "pc-skill-name", text: SKILL_DISPLAY_NAMES[skillSlug] ?? display });
       // R4-G7 T8 RIDER-20: the row's tags are collected, then rendered once so same-text tags merge.
       const specs: ConditionTagSpec[] = [];
@@ -68,6 +62,13 @@ export class SkillsPanel implements SheetComponent {
             .filter((s) => skillDisSources.has(s.condition))
             .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
           specs.push({ kindClass: "dis", text: ROLL_MODE_TAG.disadvantage, tooltip: `Disadvantage on ability checks from ${sources.join(", ")}` });
+        }
+        if (ce.d20_test_penalty !== 0) {
+          const baseBonus = entry.bonus - ce.d20_test_penalty;
+          setTooltip(
+            bonusEl,
+            `${baseBonus >= 0 ? "+" : ""}${baseBonus} base ${ce.d20_test_penalty < 0 ? "−" : "+"} ${Math.abs(ce.d20_test_penalty)} from exhaustion`,
+          );
         }
       }
 

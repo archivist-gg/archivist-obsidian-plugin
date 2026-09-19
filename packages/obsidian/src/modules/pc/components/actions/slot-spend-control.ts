@@ -1,7 +1,10 @@
 import type { ComponentRenderContext } from "../component.types";
 
+// CharacterEditState survives sheet re-renders; the action-row DOM does not.
+const openPickerByEditState = new WeakMap<object, string>();
+
 /** Spend one ordinary spell slot from an action row, using the Spells tab's writer. */
-export function renderSlotSpendControl(parent: HTMLElement, ctx: ComponentRenderContext): boolean {
+export function renderSlotSpendControl(parent: HTMLElement, ctx: ComponentRenderContext, controlKey: string): boolean {
   const levels = Array.from({ length: 9 }, (_, index) => index + 1)
     .map((level) => ({
       level,
@@ -21,7 +24,7 @@ export function renderSlotSpendControl(parent: HTMLElement, ctx: ComponentRender
   let pop: HTMLElement | null = null;
   let observer: MutationObserver | null = null;
   const doc = anchor.ownerDocument;
-  const close = () => {
+  const close = (forgetOpen = true) => {
     pop?.remove();
     pop = null;
     trigger.classList.remove("is-open");
@@ -30,6 +33,9 @@ export function renderSlotSpendControl(parent: HTMLElement, ctx: ComponentRender
     doc.removeEventListener("keydown", escape);
     observer?.disconnect();
     observer = null;
+    if (forgetOpen && ctx.editState && openPickerByEditState.get(ctx.editState) === controlKey) {
+      openPickerByEditState.delete(ctx.editState);
+    }
   };
   const outside = (event: Event) => {
     if (!anchor.contains(event.target as Node)) close();
@@ -38,29 +44,42 @@ export function renderSlotSpendControl(parent: HTMLElement, ctx: ComponentRender
     if (event.key === "Escape") close();
   };
 
-  trigger.addEventListener("click", (event) => {
-    event.stopPropagation();
-    if (pop) { close(); return; }
+  const open = () => {
+    if (pop) return;
+    if (ctx.editState) openPickerByEditState.set(ctx.editState, controlKey);
     pop = anchor.createDiv({ cls: "pc-pop pc-slot-pop" });
     pop.createSpan({ cls: "pc-pop-arrow" });
     pop.createDiv({ cls: "pc-pop-h", text: "Choose a spell slot" });
     const list = pop.createDiv({ cls: "pc-slot-pop-list" });
-    for (const { level, total, used } of levels) {
-      const remaining = Math.max(0, total - used);
+    for (const slot of levels) {
+      const { level, total } = slot;
       const row = list.createEl("button", {
         cls: "pc-slot-pop-row",
-        attr: { type: "button", "aria-label": `Spend a ${ordinal(level)}-level spell slot (${remaining} of ${total} available)` },
+        attr: { type: "button" },
       });
-      row.disabled = remaining === 0;
       row.createSpan({ cls: "pc-slot-pop-level", text: `${ordinal(level)} level` });
       const boxes = row.createSpan({ cls: "pc-charge-boxes" }).createSpan({ cls: "archivist-toggle-box-row" });
-      for (let i = 0; i < total; i++) boxes.createSpan({ cls: `archivist-toggle-box${i < used ? " archivist-toggle-box-checked" : ""}` });
-      row.createSpan({ cls: "pc-slot-pop-count", text: `${remaining}/${total}` });
+      const pips = Array.from({ length: total }, () => boxes.createSpan({ cls: "archivist-toggle-box" }));
+      const count = row.createSpan({ cls: "pc-slot-pop-count" });
+      const update = () => {
+        const remaining = Math.max(0, total - slot.used);
+        row.disabled = remaining === 0;
+        row.setAttribute("aria-label", `Spend a ${ordinal(level)}-level spell slot (${remaining} of ${total} available)`);
+        pips.forEach((pip, i) => pip.classList.toggle("archivist-toggle-box-checked", i < slot.used));
+        count.textContent = `${remaining}/${total}`;
+      };
+      update();
       row.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (!remaining) return;
-        close();
+        if (slot.used >= total) return;
         ctx.editState?.expendSlot(level);
+        // The real writer re-renders the sheet synchronously. In isolated uses,
+        // update this still-connected picker without closing it.
+        if (anchor.isConnected) {
+          slot.used += 1;
+          update();
+          trigger.disabled = levels.every(({ total, used }) => used >= total);
+        }
       });
     }
     trigger.classList.add("is-open");
@@ -85,10 +104,18 @@ export function renderSlotSpendControl(parent: HTMLElement, ctx: ComponentRender
     doc.addEventListener("keydown", escape);
     const Observer = doc.defaultView?.MutationObserver;
     if (Observer) {
-      observer = new Observer(() => { if (!anchor.isConnected) close(); });
+      // A re-render removes this anchor, but the new anchor inherits the open key.
+      observer = new Observer(() => { if (!anchor.isConnected) close(false); });
       observer.observe(doc, { childList: true, subtree: true });
     }
+  };
+  trigger.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (pop) close(); else open();
   });
+  if (ctx.editState && openPickerByEditState.get(ctx.editState) === controlKey) {
+    queueMicrotask(() => { if (anchor.isConnected) open(); });
+  }
   return true;
 }
 
