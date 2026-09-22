@@ -1,10 +1,11 @@
-import { type App } from "obsidian";
+import { type App, type Scope } from "obsidian";
 import { PaneCenteredModal } from "../../../../shared/modals/pane-centered-modal";
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist-gg/core";
 import type { ColSpec } from "./selection-table";
 import { renderEntityPicker } from "./entity-picker";
 import { renderClassChronicle, type ClassData } from "./class-chronicle";
+import { closeCompendiumFilterPopover } from "./compendium-filter";
 
 const dieOf = (e: RegisteredEntity): string => String((e.data as ClassData).hit_die ?? "");
 const savesOf = (e: RegisteredEntity): string =>
@@ -39,16 +40,20 @@ export class AddClassModal extends PaneCenteredModal {
     this.contentEl.empty();
     this.contentEl.addClass("archivist-modal");
     this.contentEl.addClass("pc-bclass-modal");
-    renderAddClassBody(this.contentEl, this.ctx, { ...this.opts, close: () => this.close() });
+    renderAddClassBody(this.contentEl, this.ctx, { ...this.opts, close: () => this.close(), scope: this.scope });
   }
 
-  onClose(): void { this.contentEl.empty(); }
+  onClose(): void {
+    // The picker's filter popover lives on the body, outside contentEl.
+    closeCompendiumFilterPopover();
+    this.contentEl.empty();
+  }
 }
 
 export function renderAddClassBody(
   host: HTMLElement,
   ctx: ComponentRenderContext,
-  opts: AddClassModalOptions & { close: () => void },
+  opts: AddClassModalOptions & { close: () => void; scope?: Scope },
 ): void {
   let highlighted: string | null = null;
   const commit = (slug: string): void => { opts.onAdd(slug); opts.close(); };
@@ -69,6 +74,7 @@ export function renderAddClassBody(
       onSelect: (slug) => { highlighted = slug; draw(); },
       columns: CLASS_COLUMNS,
       expandSelect: true,
+      scope: opts.scope,
       renderExpand: (wrap, e) => {
         renderClassChronicle(wrap, ctx, { entity: e, level: 1, mode: "browse", stateKey: "builder.class-modal.read" });
         const claim = wrap.createEl("button", { cls: "pc-bcm-claim", text: `Add ${e.name} ▸` });

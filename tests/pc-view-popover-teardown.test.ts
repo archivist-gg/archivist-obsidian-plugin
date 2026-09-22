@@ -4,6 +4,10 @@ import { PCSheetView } from "../packages/obsidian/src/modules/pc/pc.view";
 import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { closeDefenseTypePopover } from "../packages/obsidian/src/modules/pc/components/defense-type-popover";
 import { closeConditionsPopover } from "../packages/obsidian/src/modules/pc/components/conditions-popover";
+import {
+  allTicked, closeCompendiumFilterPopover, renderCompendiumFilter,
+} from "../packages/obsidian/src/modules/pc/components/builder/compendium-filter";
+import type { Compendium } from "../packages/obsidian/src/shared/entities/compendium-manager";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
@@ -18,6 +22,7 @@ beforeAll(() => installObsidianDomHelpers());
 afterEach(() => {
   closeDefenseTypePopover();
   closeConditionsPopover();
+  closeCompendiumFilterPopover();
 });
 
 const BLADESWORN = {
@@ -116,6 +121,23 @@ function openConditions(view: PCSheetView): void {
   if (!document.body.querySelector(".pc-cond-popover")) throw new Error("conditions popover did not open");
 }
 
+/** Open a REAL compendium filter popover. It is the builder pickers' popover,
+ *  and this fixture's sheet has no two-compendium pick to host one, so the
+ *  filter is mounted on its own: what the hooks must close is the body-level
+ *  node (and its pushed keymap scope), whichever picker opened it. */
+function openCompendiumFilter(): void {
+  const host = document.body.createDiv();
+  const compendiums = ["A", "B"].map((name) =>
+    ({ name, description: "", readonly: true, homebrew: false, folderPath: "" }) as Compendium);
+  renderCompendiumFilter(host, {
+    compendiums, counts: new Map([["A", 1], ["B", 1]]), state: allTicked(compendiums), onChange: () => {},
+  });
+  host.querySelector<HTMLElement>(".pc-bfilter-btn")!.click();
+  if (!document.body.querySelector(".pc-bfilter-pop")) throw new Error("compendium filter did not open");
+  // The popover lives on the body, not in the host: the host has done its job.
+  host.remove();
+}
+
 /**
  * The four teardown hooks on `PCSheetView`, named by enclosing method. They are
  * the same four that already close the four sheet-owned modals, and the popovers
@@ -147,6 +169,14 @@ describe("PCSheetView tears down the defenses popovers", () => {
       stallNextRender();
       await run(view);
       expect(document.body.querySelector(".pc-cond-popover")).toBeNull();
+    });
+
+    it(`${hook} removes an open compendium filter popover from the document`, async () => {
+      const { view, stallNextRender } = await bootView();
+      openCompendiumFilter();
+      stallNextRender();
+      await run(view);
+      expect(document.body.querySelector(".pc-bfilter-pop")).toBeNull();
     });
   }
 });

@@ -123,19 +123,84 @@
   opacity: 0.45; cursor: not-allowed; box-shadow: none;
 }
 
-/* ── Shared selection UI: compendium filter + source tags ── */
-:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter { display: flex; align-items: center; gap: var(--pc-space-2); flex-wrap: wrap; }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-label {
+/* ── Shared selection UI: compendium filter + source tags ──
+   The filter is ONE button on the picker's search row (`.pc-bpicker-bar`); its
+   checklist is a popover on the document body, outside both the sheet and the
+   modal, so the popover rules key on `.archivist-modal.pc-bfilter-pop` itself
+   (the class that declares the parchment tokens and the crimson checkbox).
+   Every button rule is (0,3,0): Obsidian's `button:hover` and
+   `button:focus-visible` are (0,1,1) and `.is-tablet button:not(.clickable-icon)`
+   is (0,2,1). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-bar {
+  display: flex; align-items: stretch; flex-wrap: wrap; gap: var(--pc-space-2); margin-bottom: var(--pc-space-2);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-bar > .pc-bpicker-search { flex: 1 1 160px; min-width: 0; margin-bottom: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-bar .pc-bfilter-btn {
+  display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto;
+  height: auto; line-height: 1.4; padding: 4px 10px;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 400; color: var(--pc-text-soft);
+  background: transparent; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  box-shadow: none; cursor: pointer; white-space: nowrap;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-bar .pc-bfilter-btn:hover { background: var(--pc-row-open-bg); box-shadow: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-bar .pc-bfilter-btn:focus-visible { outline: 2px solid var(--pc-crimson); outline-offset: 2px; box-shadow: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-bar .pc-bfilter-btn:is(.is-filtered, .is-open) { border-color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-bar .pc-bfilter-btn.is-filtered { background: var(--pc-row-open-bg); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-btn-k {
+  font-weight: 700; font-size: var(--pc-fs-label); text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-btn-v { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-primary); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-caret { font-size: 9px; color: var(--pc-text-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-btn.is-filtered :is(.pc-bfilter-btn-v, .pc-bfilter-caret) { color: var(--pc-crimson); }
+
+/* The popover: the conditions popover's frame (.pc-cond-popover). */
+.archivist-modal.pc-bfilter-pop {
+  position: absolute; z-index: 1000; box-sizing: border-box; width: 290px; max-width: calc(100vw - 16px);
+  padding: 8px; border: 1.5px solid var(--pc-tan); border-radius: var(--pc-radius-md);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
+}
+.archivist-modal.pc-bfilter-pop .pc-bfilter-pop-h {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-primary);
+  padding: 0 4px 5px; margin-bottom: 4px; border-bottom: 1px solid var(--pc-tan);
+}
+.archivist-modal.pc-bfilter-pop .pc-bfilter-acts { display: inline-flex; align-items: baseline; gap: 5px; text-transform: none; letter-spacing: normal; font-weight: 400; }
+.archivist-modal.pc-bfilter-pop .pc-bfilter-act {
+  height: auto; padding: 0; border: none; background: transparent; box-shadow: none;
+  font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-crimson);
+  text-decoration: underline dotted; text-underline-offset: 2px; cursor: pointer;
+}
+.archivist-modal.pc-bfilter-pop .pc-bfilter-act:hover { background: transparent; box-shadow: none; text-decoration-style: solid; }
+.archivist-modal.pc-bfilter-pop .pc-bfilter-act:focus-visible { outline: 2px solid var(--pc-crimson); outline-offset: 1px; box-shadow: none; }
+.archivist-modal.pc-bfilter-pop .pc-bfilter-dot { color: var(--pc-text-muted); }
+.archivist-modal.pc-bfilter-pop .pc-bfilter-list { display: flex; flex-direction: column; gap: 1px; max-height: 260px; overflow-y: auto; }
+.archivist-modal.pc-bfilter-pop .pc-bfilter-row {
+  display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 8px;
+  padding: 4px; border-radius: var(--pc-radius-sm); cursor: pointer; color: var(--pc-text-primary);
+}
+.archivist-modal.pc-bfilter-pop .pc-bfilter-row:hover { background: var(--pc-row-open-bg); }
+.archivist-modal.pc-bfilter-pop .pc-bfilter-name { overflow-wrap: anywhere; }
+.archivist-modal.pc-bfilter-pop .pc-bfilter-row.off .pc-bfilter-name { color: var(--pc-text-muted); }
+.archivist-modal.pc-bfilter-pop .pc-bfilter-n {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
-  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
+  color: var(--pc-text-muted); font-variant-numeric: tabular-nums;
 }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-chip {
-  font-size: var(--pc-fs-small); color: var(--pc-text-muted);
-  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
-  padding: 2px 9px; cursor: pointer;
+.archivist-modal.pc-bfilter-pop .pc-bfilter-foot {
+  margin-top: 4px; padding: 6px 4px 0; border-top: 1px dashed var(--pc-tan-muted);
+  font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted);
 }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-chip.on { color: var(--pc-crimson); border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+/* In a narrow leaf the search and a full `COMPENDIUM · 2 of 3` button do not
+   share a line (measured live at a 400px pane: the bar is 252px wide, so the
+   button wrapped beneath the search). The caption is hidden VISUALLY, still
+   read out, so the button shrinks to its value and stays on the search row. */
+@container pc-sheet (max-width: 499px) {
+  .archivist-pc-sheet .pc-bpicker-bar > .pc-bpicker-search { flex-basis: 120px; }
+  .archivist-pc-sheet .pc-bfilter-btn-k {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+}
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; margin-left: 5px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2014 { color: var(--pc-text-muted); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2024 { color: #1f3f7a; }
@@ -322,7 +387,6 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search:hover,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search:focus,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); outline: none; box-shadow: none; }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-filter { margin-bottom: var(--pc-space-2); }
 
 /* ── Inert (visible-but-unselectable) callout chip: a `from` slug with no entity
    behind it. Muted + un-clickable, distinct from `.muted` (over-limit dim). ── */

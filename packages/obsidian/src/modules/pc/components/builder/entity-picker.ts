@@ -1,7 +1,8 @@
+import type { Scope } from "obsidian";
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist-gg/core";
 import {
-  allTicked, matchesTicked, renderCompendiumFilter,
+  allTicked, matchesTicked, countByCompendium, renderCompendiumFilter,
   type CompendiumTickState,
 } from "./compendium-filter";
 import { renderSelectionTable, type ColSpec } from "./selection-table";
@@ -41,6 +42,10 @@ export interface EntityPickerOptions {
    *  threaded to renderSelectionTable as its resting-default expansion. */
   defaultExpandSlug?: string;
   renderExpand?: (wrap: HTMLElement, entity: RegisteredEntity) => void;
+  /** The host modal's scope, when the picker lives in one (AddClassModal):
+   *  threaded to the compendium filter so its popover keeps the modal's
+   *  hotkey isolation. */
+  scope?: Scope;
 }
 
 interface PickerUiState {
@@ -49,11 +54,11 @@ interface PickerUiState {
 }
 
 /** The universal entity picker as a single-select ledger: a persistent search
- *  input + compendium tick-filter over the shared selection table in seal
- *  dress. Row click unfolds the entity's real block inline (the add-drawer
+ *  row (input + compendium filter button) over the shared selection table in
+ *  seal dress. Row click unfolds the entity's real block inline (the add-drawer
  *  idiom, via the table); the seal takes the entity without opening it.
- *  Persistent shell: the search input is built once and never rebuilt, so
- *  typing keeps focus through redraws. */
+ *  Persistent shell: the search row is built once and never rebuilt, so
+ *  typing keeps focus through redraws and the filter keeps its node. */
 export function renderEntityPicker(
   parent: HTMLElement,
   ctx: ComponentRenderContext,
@@ -64,7 +69,7 @@ export function renderEntityPicker(
     (bag?.get(opts.stateKey) as PickerUiState | undefined) ?? { query: "", ticked: null };
   bag?.set(opts.stateKey, st);
 
-  // Hidden compendiums (R3-P6): removed from the chip list AND hard-filtered
+  // Hidden compendiums (R3-P6): removed from the filter's list AND hard-filtered
   // from candidates so stale persisted ticks can't resurrect them. The current
   // selection is exempt from BOTH gates (selected-exemption): its seal row and
   // resting expansion must survive hiding.
@@ -73,18 +78,25 @@ export function renderEntityPicker(
   if (!st.ticked) st.ticked = allTicked(compendiums);
 
   const root = parent.createDiv({ cls: "pc-bpicker" });
-  const search = root.createEl("input", {
+  const bar = root.createDiv({ cls: "pc-bpicker-bar" });
+  const search = bar.createEl("input", {
     cls: "pc-bpicker-search",
     attr: { type: "text", placeholder: "Search…" },
   });
   search.value = st.query;
-  const filterHost = root.createDiv({ cls: "pc-bpicker-filter" });
+  // Counted over the whole pool (visibility and exclusions, not the search), so
+  // the filter's rows and numbers hold still while the user types.
+  const pool = ctx.services.entities
+    .search("", opts.entityType, Number.POSITIVE_INFINITY)
+    .filter((e) => entityCompendiumVisible(e, hidden) && !opts.exclude?.has(e.slug));
+  renderCompendiumFilter(bar, {
+    compendiums, counts: countByCompendium(pool), state: st.ticked, onChange: () => draw(),
+    app: ctx.app, scope: opts.scope,
+  });
   const tableHost = root.createDiv({ cls: "pc-bpicker-table" });
 
   const draw = (): void => {
-    filterHost.empty();
     tableHost.empty();
-    renderCompendiumFilter(filterHost, compendiums, st.ticked!, draw);
 
     const cands = ctx.services.entities
       .search(st.query, opts.entityType, Number.POSITIVE_INFINITY)

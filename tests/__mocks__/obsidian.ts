@@ -13,6 +13,22 @@ export interface ScopeEntry {
   key: string;
   func: () => boolean | void;
 }
+/** Standalone `Scope` (what `app.keymap.pushScope` takes): the same FIFO `keys`
+ *  array and identity `unregister` as the modal scope below, plus the parent
+ *  a real Scope falls back to for keys it does not handle. */
+export class Scope {
+  keys: ScopeEntry[] = [];
+  constructor(public parent?: Scope) {}
+  register(mods: unknown, key: string, cb: () => boolean | void): ScopeEntry {
+    const entry: ScopeEntry = { modifiers: mods, key, func: cb };
+    this.keys.push(entry);
+    return entry;
+  }
+  unregister(h: ScopeEntry): void {
+    const i = this.keys.indexOf(h);
+    if (i >= 0) this.keys.splice(i, 1);
+  }
+}
 /** Mirrors Obsidian's real portal nesting — containerEl (.modal-container) >
  *  modalEl (.modal) > contentEl — because PaneCenteredModal measures and pads
  *  containerEl. contentEl still lands in the document on construction, as
