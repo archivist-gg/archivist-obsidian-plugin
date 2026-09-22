@@ -16,8 +16,8 @@
    standard property. Writing the data URI into each property
    directly, as this file first did, shipped every die TWICE: 107 KB
    of stylesheet for 40 KB of art. The sources are also masks, so
-   only their alpha is read — they are stored at 128px, three times
-   the 40px `.pc-die-lg` render and four times the inline one.
+   only their alpha is read — they are stored at 128px, comfortably
+   above both the 44px `.pc-die-lg` and 26px inline renders.
 
    The six `.die-d*` rules below are the artwork, generated from the
    source PNGs. Do not hand-edit them.
@@ -25,8 +25,8 @@
 
 .archivist-pc-sheet .pc-die-icon {
   display: inline-block;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   flex: none;
   background-color: currentColor;
   -webkit-mask-image: var(--pc-die-mask);
@@ -40,8 +40,8 @@
 }
 
 .archivist-pc-sheet .pc-die-lg {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
 }
 
 /* ── the artwork, one data URI per die ─────────────── */

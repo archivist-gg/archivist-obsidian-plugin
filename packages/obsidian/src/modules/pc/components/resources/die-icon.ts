@@ -15,13 +15,15 @@
  */
 
 export interface DieIconOpts {
-  /** `pc-die-lg` for the 40px face the counter components use inline. */
+  /** `pc-die-lg` for the 44px face the counter components use inline. */
   size?: "sm" | "lg";
 }
 
 /** One masked die glyph. Returns the element so a caller can restyle its face. */
 export function renderDieIcon(host: HTMLElement, face: string, opts: DieIconOpts = {}): HTMLElement {
-  const cls = ["pc-die-icon", `die-${face}`];
+  const normalized = face.trim().toLowerCase();
+  const supportedFace = /^(?:1)?(d(?:4|6|8|10|12|20))$/.exec(normalized)?.[1] ?? normalized;
+  const cls = ["pc-die-icon", `die-${supportedFace}`];
   if (opts.size === "lg") cls.splice(1, 0, "pc-die-lg");
   return host.createEl("i", { cls: cls.join(" "), attr: { "aria-hidden": "true" } });
 }
