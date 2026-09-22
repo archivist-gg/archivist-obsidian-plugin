@@ -12,7 +12,7 @@ function sp(extra: Partial<ResolvedSpell["entity"]>): ResolvedSpell {
 describe("compactCastingTime", () => {
   it("maps the real casting_time tokens to compact labels", () => {
     expect(compactCastingTime("action")).toBe("1A");
-    expect(compactCastingTime("bonus-action")).toBe("BA");
+    expect(compactCastingTime("bonus-action")).toBe("1BA");
     expect(compactCastingTime("reaction")).toBe("1R");
     expect(compactCastingTime("1minute")).toBe("1 min");
     expect(compactCastingTime("minute")).toBe("1 min");
@@ -30,9 +30,9 @@ describe("compactCastingTime", () => {
   // through the switch to the raw string. The token is normalised before it is matched, so one
   // vocabulary reaches the column whatever the document spells.
   it("matches a token whatever its spacing, hyphenation or case", () => {
-    expect(compactCastingTime("bonus action")).toBe("BA");
-    expect(compactCastingTime("Bonus Action")).toBe("BA");
-    expect(compactCastingTime("1 bonus action")).toBe("BA");
+    expect(compactCastingTime("bonus action")).toBe("1BA");
+    expect(compactCastingTime("Bonus Action")).toBe("1BA");
+    expect(compactCastingTime("1 bonus action")).toBe("1BA");
     expect(compactCastingTime("1 minute")).toBe("1 min");
     expect(compactCastingTime("10 minutes")).toBe("10 min");
     expect(compactCastingTime("Action")).toBe("1A");
@@ -104,7 +104,7 @@ describe("R4-G7 T7 live rider RIDER-4 · a PROSE reaction casting time", () => {
     // the controls: nothing else moves
     expect(compactCastingTime("reaction")).toBe("1R");
     expect(compactCastingTime("action")).toBe("1A");
-    expect(compactCastingTime("bonus action")).toBe("BA");
+    expect(compactCastingTime("bonus action")).toBe("1BA");
     expect(compactCastingTime("1 minute")).toBe("1 min");
     expect(compactCastingTime("1 week")).toBe("1 week");
     expect(compactCastingTime("weird")).toBe("weird");
@@ -114,5 +114,26 @@ describe("R4-G7 T7 live rider RIDER-4 · a PROSE reaction casting time", () => {
   it("does not swallow a token that merely CONTAINS the word reaction", () => {
     expect(compactCastingTime("1 minute (reaction optional)")).toBe("1 minute (reaction optional)");
     expect(compactCastingTime("reactionary")).toBe("reactionary");
+  });
+});
+
+describe("compactCastingTime · a bonus action written without the word `action`", () => {
+  // User request 2026-09-22: a hand-authored spell may write its casting time as `1 bonus` or plain
+  // `bonus`. The matcher required the word `action`, so those fell through to the raw string in a
+  // column sized for the compact label. The label also reads `1BA` now, in line with `1A` / `1R`.
+  it("compacts `bonus` and `1 bonus` to 1BA, with or without trailing prose", () => {
+    expect(compactCastingTime("bonus")).toBe("1BA");
+    expect(compactCastingTime("1 bonus")).toBe("1BA");
+    expect(compactCastingTime("1bonus")).toBe("1BA");
+    expect(compactCastingTime("Bonus")).toBe("1BA");
+    expect(compactCastingTime("1 Bonus, which you take immediately after hitting a creature")).toBe("1BA");
+    expect(compactCastingTime("bonus-action")).toBe("1BA");
+    expect(compactCastingTime("1 bonus action")).toBe("1BA");
+  });
+
+  it("does not swallow a token that merely CONTAINS the word bonus", () => {
+    expect(compactCastingTime("bonuses")).toBe("bonuses");
+    expect(compactCastingTime("1 minute (bonus action to end)")).toBe("1 minute (bonus action to end)");
+    expect(compactCastingTime("action")).toBe("1A");
   });
 });
