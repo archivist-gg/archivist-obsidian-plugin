@@ -1,9 +1,9 @@
-import { type App } from "obsidian";
+import { type App, type Scope } from "obsidian";
 import { PaneCenteredModal } from "../../../../shared/modals/pane-centered-modal";
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist-gg/core";
 import {
-  allTicked, matchesTicked, renderCompendiumFilter,
+  allTicked, matchesTicked, countByCompendium, renderCompendiumFilter, closeCompendiumFilterPopover,
   type CompendiumTickState,
 } from "./compendium-filter";
 import { renderSelectionTable } from "./selection-table";
@@ -27,6 +27,8 @@ export interface DecisionPickBodyOptions {
   close: () => void;
   /** builderUiState namespace for the search/filter/table state. */
   stateKey: string;
+  /** The hosting modal's scope, the parent of the filter popover's own. */
+  scope?: Scope;
 }
 
 interface PickUiState {
@@ -35,8 +37,8 @@ interface PickUiState {
 }
 
 /** Pure body of the long-list decision picker, exported for tests. Mirrors the
- *  entity-picker shell (persistent search input + compendium tick-filter over
- *  the shared selection table) but in MULTI-select mode against a modal-local
+ *  entity-picker shell (persistent search row, input + compendium filter
+ *  button, over the shared selection table) but in MULTI-select mode against a modal-local
  *  Set: each row toggle writes immediately (the sheet re-renders behind the
  *  modal), and the modal redraws itself from its own Set — never from the now
  *  stale ctx.resolved. A live count + Done (close-only) sit in the footer. */
@@ -55,7 +57,7 @@ export function renderDecisionPickBody(
     (bag?.get(opts.stateKey) as PickUiState | undefined) ?? { query: "", ticked: null };
   bag?.set(opts.stateKey, st);
 
-  // Hidden compendiums (R3-P6): chips omit hidden names; the candidate chain is
+  // Hidden compendiums (R3-P6): the filter omits hidden names; the candidate chain is
   // self-protecting (callers pre-filter today · decision-strip, scroll-spell-,
   // identify-item-picker · but a future caller must not leak hidden rows).
   // Selected entities are exempt (selected-exemption).
@@ -69,12 +71,20 @@ export function renderDecisionPickBody(
   host.createEl("h2", { cls: "pc-bcm-title" }).setText(title);
 
   const root = host.createDiv({ cls: "pc-bpicker pc-bcm-scroll" });
-  const search = root.createEl("input", {
+  const bar = root.createDiv({ cls: "pc-bpicker-bar" });
+  const search = bar.createEl("input", {
     cls: "pc-bpicker-search",
     attr: { type: "text", placeholder: "Search…" },
   });
   search.value = st.query;
-  const filterHost = root.createDiv({ cls: "pc-bpicker-filter" });
+  renderCompendiumFilter(bar, {
+    compendiums,
+    counts: countByCompendium(opts.candidates.filter((e) => entityCompendiumVisible(e, hidden))),
+    state: st.ticked,
+    onChange: () => draw(),
+    app: ctx.app,
+    scope: opts.scope,
+  });
   const tableHost = root.createDiv({ cls: "pc-bpicker-table" });
 
   const foot = host.createDiv({ cls: "pc-bcm-foot" });
@@ -87,9 +97,7 @@ export function renderDecisionPickBody(
   };
 
   const draw = (): void => {
-    filterHost.empty();
     tableHost.empty();
-    renderCompendiumFilter(filterHost, compendiums, st.ticked!, draw);
 
     const q = st.query.trim().toLowerCase();
     const cands = opts.candidates
@@ -152,8 +160,13 @@ export class DecisionPickModal extends PaneCenteredModal {
     this.contentEl.empty();
     this.contentEl.addClass("archivist-modal");
     this.contentEl.addClass("pc-bdecide-modal");
-    renderDecisionPickBody(this.contentEl, this.ctx, { ...this.opts, close: () => this.close() });
+    renderDecisionPickBody(this.contentEl, this.ctx, { ...this.opts, close: () => this.close(), scope: this.scope });
   }
 
-  onClose(): void { this.contentEl.empty(); }
+  onClose(): void {
+    // The filter popover lives on the body, not in contentEl: it would outlive
+    // the modal (and keep its keymap scope pushed) if it were not closed here.
+    closeCompendiumFilterPopover();
+    this.contentEl.empty();
+  }
 }

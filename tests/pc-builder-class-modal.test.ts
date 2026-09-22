@@ -1,12 +1,19 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterEach, vi } from "vitest";
+import type { App } from "obsidian";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderAddClassBody } from "../packages/obsidian/src/modules/pc/components/builder/class-modal";
+import { renderAddClassBody, AddClassModal } from "../packages/obsidian/src/modules/pc/components/builder/class-modal";
+import { closeCompendiumFilterPopover } from "../packages/obsidian/src/modules/pc/components/builder/compendium-filter";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "@core/entity-registry";
 import type { ClassData } from "../packages/obsidian/src/modules/pc/components/builder/class-chronicle";
 
 beforeAll(() => installObsidianDomHelpers());
+
+afterEach(() => {
+  closeCompendiumFilterPopover();
+  while (document.body.firstChild) document.body.removeChild(document.body.firstChild);
+});
 
 /** A ClassData-shaped data bag per slug. Deliberately spare prose so the
  *  exclude test ("Bard" must not appear anywhere) is honest: no entry's
@@ -103,5 +110,49 @@ describe("renderAddClassBody", () => {
     (c.querySelector(".pc-bcm-claim") as HTMLElement).click();
     expect(onAdd).toHaveBeenCalledWith("srd-2024_bard");
     expect(close).toHaveBeenCalled();
+  });
+});
+
+describe("AddClassModal · compendium filter popover", () => {
+  /** Two classes in two compendiums, so the picker shows a filter button. */
+  function twoCompendiumCtx(app: App): ComponentRenderContext {
+    const entities = [
+      classEntity("srd-2024_bard"),
+      { ...classEntity("me_warlock"), compendium: "Me", readonly: false, homebrew: true },
+    ];
+    return {
+      app,
+      services: {
+        plugin: {},
+        entities: {
+          search: (q: string, type: string) =>
+            entities.filter((e) => e.entityType === type && e.name.toLowerCase().includes(q.toLowerCase())),
+          getByTypeAndSlug: (type: string, slug: string) =>
+            entities.find((e) => e.entityType === type && e.slug === slug),
+        },
+        compendiums: {
+          getAll: () => ["SRD 5.2", "Me"].map((name) =>
+            ({ name, description: "", readonly: true, homebrew: false, folderPath: "" })),
+        },
+        modules: { getByEntityType: () => undefined },
+      },
+      builderUiState: new Map(),
+    } as unknown as ComponentRenderContext;
+  }
+
+  it("the popover's scope sits on the modal's own scope, and closing the modal takes the popover with it", () => {
+    const stack: unknown[] = [];
+    const app = {
+      scope: { keys: [] },
+      keymap: { pushScope: (s: unknown) => { stack.push(s); }, popScope: () => { stack.pop(); } },
+    } as unknown as App;
+    const modal = new AddClassModal(app, twoCompendiumCtx(app), { exclude: new Set(), onAdd: vi.fn() });
+    modal.open();
+    modal.contentEl.querySelector<HTMLElement>(".pc-bfilter-btn")!.click();
+    expect(document.body.querySelector(".pc-bfilter-pop")).not.toBeNull();
+    expect((stack[0] as { parent?: unknown }).parent).toBe(modal.scope);
+    modal.close();
+    expect(document.body.querySelector(".pc-bfilter-pop")).toBeNull();
+    expect(stack).toHaveLength(0);
   });
 });

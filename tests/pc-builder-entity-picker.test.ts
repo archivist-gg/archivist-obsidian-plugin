@@ -1,12 +1,18 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterEach, vi } from "vitest";
 import { renderEntityPicker } from "../packages/obsidian/src/modules/pc/components/builder/entity-picker";
+import { closeCompendiumFilterPopover } from "../packages/obsidian/src/modules/pc/components/builder/compendium-filter";
 import type { ColSpec } from "../packages/obsidian/src/modules/pc/components/builder/selection-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
+
+afterEach(() => {
+  closeCompendiumFilterPopover();
+  while (document.body.firstChild) document.body.removeChild(document.body.firstChild);
+});
 
 const races: RegisteredEntity[] = [
   { slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
@@ -15,18 +21,20 @@ const races: RegisteredEntity[] = [
     data: { name: "Human", edition: "2024", size: "medium" }, compendium: "SRD 2024", readonly: true, homebrew: false },
 ];
 
-function fakeCtx(bag: Map<string, unknown>, hidden: string[] = []): ComponentRenderContext {
+const SRD_COMPS = ["SRD 5e", "SRD 2024"];
+
+function fakeCtx(
+  bag: Map<string, unknown>, hidden: string[] = [], list: RegisteredEntity[] = races, comps: string[] = SRD_COMPS,
+): ComponentRenderContext {
   return {
     services: {
       plugin: { settings: { hiddenCompendiums: hidden } },
       entities: {
         search: (q: string, type: string) =>
-          races.filter((r) => r.entityType === type && r.name.toLowerCase().includes(q.toLowerCase())),
+          list.filter((r) => r.entityType === type && r.name.toLowerCase().includes(q.toLowerCase())),
       },
-      compendiums: { getAll: () => [
-        { name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" },
-        { name: "SRD 2024", description: "", readonly: true, homebrew: false, folderPath: "" },
-      ] },
+      compendiums: { getAll: () =>
+        comps.map((name) => ({ name, description: "", readonly: true, homebrew: false, folderPath: "" })) },
       modules: { getByEntityType: () => undefined }, // expand falls back to the name line
     },
     builderUiState: bag,
@@ -35,6 +43,15 @@ function fakeCtx(bag: Map<string, unknown>, hidden: string[] = []): ComponentRen
 
 const baseOpts = (onSelect = vi.fn()) =>
   ({ entityType: "race", stateKey: "p", selectedSlug: null, onSelect });
+
+const pop = (): HTMLElement | null => document.body.querySelector<HTMLElement>(".pc-bfilter-pop");
+const popRows = (): [string | null, string | null][] =>
+  [...pop()!.querySelectorAll(".pc-bfilter-row")].map((r) =>
+    [r.querySelector(".pc-bfilter-name")!.textContent, r.querySelector(".pc-bfilter-n")!.textContent]);
+const boxOf = (name: string): HTMLInputElement =>
+  [...pop()!.querySelectorAll<HTMLElement>(".pc-bfilter-row")]
+    .find((r) => r.querySelector(".pc-bfilter-name")?.textContent === name)!
+    .querySelector<HTMLInputElement>("input")!;
 
 const rowByName = (root: HTMLElement, name: string): HTMLElement =>
   [...root.querySelectorAll<HTMLElement>(".pc-btable-row")]
@@ -60,14 +77,46 @@ describe("renderEntityPicker (single-select ledger)", () => {
     expect(root.querySelector<HTMLInputElement>(".pc-bpicker-search")).toBe(input);
   });
 
-  it("unticking a compendium hides its rows", () => {
+  it("the compendium filter is a button on the search row", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
-    const chip = [...root.querySelectorAll<HTMLElement>(".pc-bfilter-chip")]
-      .find((c) => c.textContent === "SRD 2024")!;
-    chip.click();
+    const bar = root.querySelector(".pc-bpicker-bar")!;
+    expect(bar.querySelector(".pc-bpicker-search")).not.toBeNull();
+    expect(bar.querySelector(".pc-bfilter-btn")).not.toBeNull();
+  });
+
+  it("unticking a compendium in the popover hides its rows", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
+    root.querySelector<HTMLElement>(".pc-bfilter-btn")!.click();
+    boxOf("SRD 2024").click();
     const names = [...root.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
     expect(names).toEqual(["Elf"]);
+  });
+
+  it("a tick survives typing: the button node is not rebuilt by the table redraw", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
+    const btn = root.querySelector<HTMLElement>(".pc-bfilter-btn")!;
+    btn.click();
+    boxOf("SRD 2024").click();
+    const input = root.querySelector<HTMLInputElement>(".pc-bpicker-search")!;
+    input.value = "e";
+    input.dispatchEvent(new Event("input"));
+    expect(root.querySelector(".pc-bfilter-btn")).toBe(btn);
+    expect(btn.querySelector(".pc-bfilter-btn-v")!.textContent).toBe("1 of 2");
+  });
+
+  it("the popover's counts come from the whole list, not the current search", () => {
+    // The query is SEEDED (a persisted search surviving a re-render): the counts
+    // are taken at render time, so typing after it could not tell them apart.
+    const bag = new Map<string, unknown>([["p", { query: "hum", ticked: null }]]);
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(bag), baseOpts());
+    expect([...root.querySelectorAll(".pc-btable-name")].map((n) => n.textContent)).toEqual(["Human"]);
+    root.querySelector<HTMLElement>(".pc-bfilter-btn")!.click();
+    // Natural order, as Obsidian's file explorer sorts: 5 before 2024.
+    expect(popRows()).toEqual([["SRD 5e", "1"], ["SRD 2024", "1"]]);
   });
 
   it("row click unfolds the entity block inline; the seal selects", () => {
@@ -154,6 +203,12 @@ describe("renderEntityPicker (single-select ledger)", () => {
     expect(root2.querySelector(".pc-btable-expand .pc-bblock-fallback")?.textContent).toBe("Human");
   });
 
+  it("excluded slugs are not counted: with one compendium left there is nothing to filter", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(), exclude: new Set(["srd-5e_elf"]) });
+    expect(root.querySelector(".pc-bfilter-btn")).toBeNull();
+  });
+
   it("excluded slugs never render a row", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(), exclude: new Set(["srd-5e_elf"]) });
@@ -173,13 +228,17 @@ describe("renderEntityPicker (single-select ledger)", () => {
 });
 
 describe("compendium visibility (F2)", () => {
-  it("a hidden compendium's chip is absent and its rows are gone", () => {
+  it("a hidden compendium is absent from the popover and its rows are gone", () => {
+    const dwarf: RegisteredEntity = {
+      slug: "me_dwarf", name: "Dwarf", entityType: "race", filePath: "dwarf.md",
+      data: { name: "Dwarf", size: "medium" }, compendium: "Me", readonly: false, homebrew: true,
+    };
     const root = mountContainer();
-    renderEntityPicker(root, fakeCtx(new Map(), ["SRD 5e"]), baseOpts());
-    const chips = [...root.querySelectorAll(".pc-bfilter-chip")].map((c) => c.textContent);
-    expect(chips).toEqual(["SRD 2024"]);
+    renderEntityPicker(root, fakeCtx(new Map(), ["SRD 5e"], [...races, dwarf], [...SRD_COMPS, "Me"]), baseOpts());
+    root.querySelector<HTMLElement>(".pc-bfilter-btn")!.click();
+    expect(popRows()).toEqual([["Me", "1"], ["SRD 2024", "1"]]);
     const names = [...root.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
-    expect(names).toEqual(["Human"]);
+    expect(names).toEqual(["Dwarf", "Human"]);
   });
 
   it("stale persisted ticked state cannot resurrect a hidden compendium", () => {

@@ -24,6 +24,7 @@ import { closeSpellAbilityModal } from "./components/spell-ability-modal";
 import { closeProficiencyModal } from "./components/proficiency-edit-modal";
 import { closeDefenseTypePopover } from "./components/defense-type-popover";
 import { closeConditionsPopover } from "./components/conditions-popover";
+import { closeCompendiumFilterPopover } from "./components/builder/compendium-filter";
 import type { PCModule } from "./pc.module";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -119,8 +120,12 @@ export class PCSheetView extends TextFileView {
     // only on the NEXT render, which this method defers behind
     // `compendiumsReady` (a real wait on cold start); the conditions popover has
     // no refresher at all and would otherwise survive indefinitely.
+    // The builder pickers' compendium filter popover rides along at all four
+    // sites too: it holds a pushed keymap scope, and a surviving one would
+    // keep swallowing Escape.
     closeDefenseTypePopover();
     closeConditionsPopover();
+    closeCompendiumFilterPopover();
     this.rawFileData = data;
     this.isDirty = false;
     this.lastWrittenData = null;
@@ -234,6 +239,7 @@ export class PCSheetView extends TextFileView {
     closeProficiencyModal();
     closeDefenseTypePopover();
     closeConditionsPopover();
+    closeCompendiumFilterPopover();
     this.character = null;
     this.derived = null;
     this.editState = null;
@@ -262,6 +268,7 @@ export class PCSheetView extends TextFileView {
     closeProficiencyModal();
     closeDefenseTypePopover();
     closeConditionsPopover();
+    closeCompendiumFilterPopover();
     super.onunload();
   }
 
@@ -279,6 +286,7 @@ export class PCSheetView extends TextFileView {
     closeProficiencyModal();
     closeDefenseTypePopover();
     closeConditionsPopover();
+    closeCompendiumFilterPopover();
     // Obsidian calls this when the view's underlying file changes. Reset all
     // SP4 mutation/persistence state so no stale references survive across
     // file switches (especially lastWrittenData, which would otherwise cause
