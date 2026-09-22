@@ -112,7 +112,9 @@ describe("R4-G7 T7 live rider RIDER-4 · a PROSE reaction casting time", () => {
   });
 
   it("does not swallow a token that merely CONTAINS the word reaction", () => {
-    expect(compactCastingTime("1 minute (reaction optional)")).toBe("1 minute (reaction optional)");
+    // The LEADING token decides, so a minute cast with prose after it compacts to its minutes; the word
+    // `reaction` later in the string never makes it a reaction.
+    expect(compactCastingTime("1 minute (reaction optional)")).toBe("1 min");
     expect(compactCastingTime("reactionary")).toBe("reactionary");
   });
 });
@@ -133,7 +135,36 @@ describe("compactCastingTime · a bonus action written without the word `action`
 
   it("does not swallow a token that merely CONTAINS the word bonus", () => {
     expect(compactCastingTime("bonuses")).toBe("bonuses");
-    expect(compactCastingTime("1 minute (bonus action to end)")).toBe("1 minute (bonus action to end)");
+    expect(compactCastingTime("1 minute (bonus action to end)")).toBe("1 min");
     expect(compactCastingTime("action")).toBe("1A");
+  });
+});
+
+describe("compactCastingTime · action, minutes and hours in any spelling (shared parseCastingTime)", () => {
+  // User report 2026-09-22 (screenshot): the Cast table printed `1 action` and `10 minute` raw beside `1A`
+  // and `1BA`. The matcher only knew the bundle's exact tokens; it now reads through dnd5e's
+  // `parseCastingTime`, the same reader the add-drawer filter uses.
+  it("compacts the screenshot's rows", () => {
+    expect(compactCastingTime("1 action")).toBe("1A");
+    expect(compactCastingTime("10 minute")).toBe("10 min");
+  });
+
+  it("compacts every count / plural / spacing variant of action, minute and hour", () => {
+    expect(compactCastingTime("1action")).toBe("1A");
+    expect(compactCastingTime("1 Action")).toBe("1A");
+    expect(compactCastingTime("1 action or 8 hours")).toBe("1A");
+    expect(compactCastingTime("10 Minutes")).toBe("10 min");
+    expect(compactCastingTime("1 min")).toBe("1 min");
+    expect(compactCastingTime("1 hour")).toBe("1 hr");
+    expect(compactCastingTime("8 hours")).toBe("8 hr");
+    expect(compactCastingTime("24 hours")).toBe("24 hr");
+    expect(compactCastingTime("12 hr")).toBe("12 hr");
+  });
+
+  it("still passes an unreadable token through verbatim", () => {
+    expect(compactCastingTime("1 week")).toBe("1 week");
+    expect(compactCastingTime("actions")).toBe("actions");
+    expect(compactCastingTime("hourly")).toBe("hourly");
+    expect(compactCastingTime(undefined)).toBe("\u2014");
   });
 });

@@ -1,6 +1,7 @@
 import type { ResolvedSpell, SpellLimitInfo } from "@archivist-gg/dnd5e/pc/pc.types";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
 import { bareEntitySlug } from "@archivist-gg/dnd5e/entities/slug";
+import { parseCastingTime } from "@archivist-gg/dnd5e/spell/casting-time";
 import { ATTACK_ROLL_SPELLS } from "./attack-spells";
 
 const ABBR: Record<string, string> = { strength: "STR", dexterity: "DEX", constitution: "CON", intelligence: "INT", wisdom: "WIS", charisma: "CHA" };
@@ -82,40 +83,21 @@ export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo
   return out;
 }
 
-/** Compact casting-time label for the Cast table. Real tokens: action,
- *  bonus-action, 1 bonus action, reaction, 1minute|minute, 10minutes, 1hour|hour, 8/12/24hours.
- *  A bonus action may also be written without the word `action` (`bonus`, `1 bonus`), which a
- *  hand-authored spell does; it reads `1BA`, matching `1A` / `1R`.
+/** Compact casting-time label for the Cast table and the add drawer: `1A`, `1BA`, `1R`, `N min`, `N hr`.
  *
- *  The token is MATCHED after normalisation (R4 {G5, G6} live rider N-1-17): case folded and every
- *  space and hyphen dropped, so `bonus-action`, `bonus action` and `Bonus Action` are one token and
- *  `1 minute` is `1minute`. The live Paladin's Spells tab mixed `1A` with `bonus action` and
- *  `1 minute` in one column because a converted book spells the same token differently from the
- *  bundle's (measured: all 601 bundle spells carry the hyphenated / unspaced forms), and every other
- *  spelling fell through to the raw string. A token that matches nothing still passes through
- *  verbatim, and an absent one still reads as the placeholder. */
+ *  Reads through dnd5e's `parseCastingTime`, the same reader the add-drawer filter buckets with, so a
+ *  spelling one understands the other does too. The leading token decides, in any case, spacing, count or
+ *  plural (`1 action`, `10 minute`, `8 hours`, `bonus`), and prose after it (a reaction's trigger) stays for
+ *  the tooltip both callers set. A token the parser cannot read passes through verbatim, and an absent one
+ *  reads as the placeholder. */
 export function compactCastingTime(token: string | undefined): string {
-  // Authored spells can put a trigger after the action type. Both table callers
-  // keep the full casting time in a tooltip.
-  const castingTime = token?.trim() ?? "";
-  if (/^(?:1\s*)?reaction\b/i.test(castingTime)) return "1R";
-  // `action` is optional after `bonus`; the trailing `\b` still rejects `bonuses`.
-  if (/^(?:1\s*)?bonus(?:[\s-]*action)?\b/i.test(castingTime)) return "1BA";
-  const norm = token?.toLowerCase().replace(/[\s-]+/g, "");
-  switch (norm) {
-    // The case labels are the NORMALISED forms (no hyphen, no space, lower case).
+  const parsed = parseCastingTime(token);
+  if (!parsed) return token ? token : EMPTY_CELL;
+  switch (parsed.kind) {
     case "action": return "1A";
-    case "bonusaction": return "1BA";
+    case "bonus": return "1BA";
     case "reaction": return "1R";
-    case "minute":
-    case "1minute": return "1 min";
-    case "10minutes": return "10 min";
-    case "hour":
-    case "1hour": return "1 hr";
-    case "8hours": return "8 hr";
-    case "12hours": return "12 hr";
-    case "24hours": return "24 hr";
-    default: return token ? token : EMPTY_CELL;
+    case "time": return `${parsed.count} ${parsed.unit === "hour" ? "hr" : "min"}`;
   }
 }
 
