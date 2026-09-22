@@ -8,6 +8,7 @@ import { HitDiceWidget } from "../packages/obsidian/src/modules/pc/components/hi
 import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
 import { collectResourceGroups, collectBandRows } from "../packages/obsidian/src/modules/pc/components/resources/resource-model";
 import { renderSpendControl } from "../packages/obsidian/src/modules/pc/components/actions/spend-control";
+import { renderDieIcon } from "../packages/obsidian/src/modules/pc/components/resources/die-icon";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
@@ -15,6 +16,17 @@ import type { ResolvedCharacter, ResolvedFeature } from "@archivist-gg/dnd5e/pc/
 import type { Resource, ResetTrigger } from "@archivist-gg/dnd5e/types/resource";
 
 beforeAll(() => installObsidianDomHelpers());
+
+describe("renderDieIcon", () => {
+  it("uses the same face mask for dX and 1dX notation", () => {
+    const host = mountContainer();
+    for (const face of ["d4", "d6", "d8", "d10", "d12", "d20"]) {
+      expect(renderDieIcon(host, face).classList.contains(`die-${face}`)).toBe(true);
+      expect(renderDieIcon(host, `1${face}`).classList.contains(`die-${face}`)).toBe(true);
+    }
+    host.remove();
+  });
+});
 
 // ─────────────────────────────────────────────────────────────
 // Fixtures
@@ -881,7 +893,8 @@ describe("CSS contracts", () => {
   it("the die faces are MASKS, so they take currentColor like every other glyph", () => {
     expect(dice).toMatch(/\.pc-die-icon \{[^}]*background-color: currentColor;/);
     expect(dice).toMatch(/\.pc-die-icon \{[^}]*mask-size: contain;/);
-    expect(dice).toMatch(/\.pc-die-lg \{\s*width: 40px;\s*height: 40px;/);
+    expect(dice).toMatch(/\.pc-die-icon \{[^}]*width: 26px;[^}]*height: 26px;/);
+    expect(dice).toMatch(/\.pc-die-lg \{\s*width: 44px;\s*height: 44px;/);
   });
 
   it("ships one mask per face, d4 to d20, each data URI carried ONCE", () => {

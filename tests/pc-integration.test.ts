@@ -75,6 +75,7 @@ describe("PC end-to-end: Grendal the Wary", () => {
     expect(root.querySelector(".pc-name")?.textContent).toBe("Grendal the Wary");
     expect(root.querySelector(".pc-subtitle")?.textContent).toContain("Hill Folk");
     expect(root.querySelector(".pc-subtitle")?.textContent).toContain("Bladesworn");
+    expect(root.querySelector(".pc-subtitle")?.textContent).not.toContain("Drifter");
     expect(root.querySelector(".pc-subtitle")?.textContent).not.toContain("Lawful Good");
     expect(root.querySelector(".archivist-pc-sheet")).not.toBeNull();
     // V7 hero-right cluster: AC shield + HP widget + HD widget

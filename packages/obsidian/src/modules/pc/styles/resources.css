@@ -39,7 +39,7 @@
 
 /* A die face BESIDE the number rather than above it. `.pc-hd-nums` is otherwise
    a plain text block, so the glyph would sit on the text baseline and ride high
-   against a 40px face; this centres the two against each other. */
+   against a 44px face; this centres the two against each other. */
 .archivist-pc-sheet .pc-hd-nums-die {
   display: flex;
   align-items: center;

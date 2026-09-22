@@ -42,15 +42,15 @@ const fakeCtx = (resolved: ResolvedCharacter): ComponentRenderContext => ({
 });
 
 describe("buildSubtitle", () => {
-  it("joins race, class+level, and background with bullets (alignment dropped in V7)", () => {
-    expect(buildSubtitle(BASE_RESOLVED)).toBe("Hill Folk • Bladesworn 3 • Drifter");
+  it("joins race and class+level while omitting background and alignment", () => {
+    expect(buildSubtitle(BASE_RESOLVED)).toBe("Hill Folk • Bladesworn 3");
   });
   // R4 {G5, G6} live rider 2, X-1-14: the subclass sits BESIDE its class, not inside a parenthesis.
   // A converted subclass name carries its own edition parenthetical, so wrapping it in a second pair
   // read `Ranger (Beast Master (2024 XPHB)) 3` on the live sheet header.
   it("names the subclass beside the class, never inside a second parenthesis", () => {
     const r = { ...BASE_RESOLVED, classes: [{ ...BASE_RESOLVED.classes[0], subclass: { slug: "beast-master", name: "Beast Master (2024 XPHB)" } as never }] };
-    expect(buildSubtitle(r)).toBe("Hill Folk • Bladesworn · Beast Master (2024 XPHB) 3 • Drifter");
+    expect(buildSubtitle(r)).toBe("Hill Folk • Bladesworn · Beast Master (2024 XPHB) 3");
   });
   it("names the subclass beside the class when the name carries no parenthetical of its own", () => {
     const r = { ...BASE_RESOLVED, classes: [{ ...BASE_RESOLVED.classes[0], subclass: { slug: "path-of-shadow", name: "Path of Shadow" } as never }] };
@@ -82,6 +82,7 @@ describe("HeaderSection", () => {
     new HeaderSection(registry).render(container, fakeCtx(BASE_RESOLVED));
     expect(container.querySelector(".pc-name")?.textContent).toBe("Grendal the Wary");
     expect(container.querySelector(".pc-subtitle")?.textContent).toContain("Hill Folk");
+    expect(container.querySelector(".pc-subtitle")?.textContent).not.toContain("Drifter");
     expect(container.querySelector(".pc-avatar")).not.toBeNull();
     expect(container.querySelectorAll(".pc-rest-btn").length).toBe(2);
     expect(container.querySelector(".pc-hero-right .probe-ac-shield")).not.toBeNull();

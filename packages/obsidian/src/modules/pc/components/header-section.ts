@@ -7,8 +7,8 @@ import { renderAvatarContent } from "./avatar-content";
 
 /**
  * V7 hero: crest + name/subtitle on the left, right cluster with AC shield,
- * HP widget, and Hit Dice widget. Rest buttons removed; alignment dropped
- * from the subtitle.
+ * HP widget, and Hit Dice widget. Rest buttons removed; alignment and
+ * background dropped from the subtitle.
  */
 export class HeaderSection implements SheetComponent {
   readonly type = "header-section";
@@ -89,8 +89,7 @@ export function buildSubtitle(resolved: ResolvedCharacter): string {
     .join(" / ");
   if (classLabel.trim()) parts.push(classLabel);
 
-  if (resolved.background?.name) parts.push(resolved.background.name);
-  // Alignment intentionally dropped in V7.
+  // Alignment and background intentionally stay out of the compact identity line.
   return parts.join(" • ");
 }
 

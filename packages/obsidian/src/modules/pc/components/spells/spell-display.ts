@@ -84,6 +84,8 @@ export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo
 
 /** Compact casting-time label for the Cast table. Real tokens: action,
  *  bonus-action, 1 bonus action, reaction, 1minute|minute, 10minutes, 1hour|hour, 8/12/24hours.
+ *  A bonus action may also be written without the word `action` (`bonus`, `1 bonus`), which a
+ *  hand-authored spell does; it reads `1BA`, matching `1A` / `1R`.
  *
  *  The token is MATCHED after normalisation (R4 {G5, G6} live rider N-1-17): case folded and every
  *  space and hyphen dropped, so `bonus-action`, `bonus action` and `Bonus Action` are one token and
@@ -97,12 +99,13 @@ export function compactCastingTime(token: string | undefined): string {
   // keep the full casting time in a tooltip.
   const castingTime = token?.trim() ?? "";
   if (/^(?:1\s*)?reaction\b/i.test(castingTime)) return "1R";
-  if (/^(?:1\s*)?bonus[\s-]*action\b/i.test(castingTime)) return "BA";
+  // `action` is optional after `bonus`; the trailing `\b` still rejects `bonuses`.
+  if (/^(?:1\s*)?bonus(?:[\s-]*action)?\b/i.test(castingTime)) return "1BA";
   const norm = token?.toLowerCase().replace(/[\s-]+/g, "");
   switch (norm) {
     // The case labels are the NORMALISED forms (no hyphen, no space, lower case).
     case "action": return "1A";
-    case "bonusaction": return "BA";
+    case "bonusaction": return "1BA";
     case "reaction": return "1R";
     case "minute":
     case "1minute": return "1 min";
