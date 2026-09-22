@@ -11168,7 +11168,20 @@ body.theme-light .archivist-tag-atk:hover {
   flex: none; align-self: center; width: 14px; text-align: center;
   color: var(--pc-crimson); font-size: 12px; line-height: 1;
 }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-nest { flex-basis: 100%; margin: 7px 0 1px; padding-left: 39px; }
+/* The nest is the head's sibling flex item in the same wrapping row, so it carries the same trap: at
+   its default `min-width: auto` it grows to its content's minimum, and an inline selection table's
+   minimum is its track sum (30 + 200 + 110 px). MEASURED LIVE at a 400 px pane on the Wizard Subclass
+   row: row 214 px, nest 379 px, so the card's `overflow-x: hidden` cut the description mid-word and
+   the table's right edge. `min-width: 0` holds the nest to its row: the description wraps and the
+   table scrolls inside its own `.pc-btable-host`. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-nest { flex-basis: 100%; margin: 7px 0 1px; padding-left: 39px; min-width: 0; }
+/* In a narrow leaf the head cannot hold the name AND a `choose 1` value on one line, and the value is
+   the flexible end (RIDER-3 above), so it shrank to `c..` (MEASURED LIVE at a 400 px pane). Wrapping
+   lets the value drop to its own right-aligned line; a long summary still ellipsizes there. Narrow tier
+   only: wide rows keep RIDER-3's same-line ellipsis. */
+@container pc-sheet (max-width: 499px) {
+  .archivist-pc-sheet .pc-dstrip-head { flex-wrap: wrap; }
+}
 /* resolved */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done { border-color: var(--pc-rarity-uncommon); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done .pc-dstrip-pill {
