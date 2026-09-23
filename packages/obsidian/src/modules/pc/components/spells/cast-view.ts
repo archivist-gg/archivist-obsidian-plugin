@@ -296,10 +296,13 @@ function renderRow(
   const effTd = tr.createDiv({ cls: "pc-spell-effcell" });
   const eff = effectDescriptor(spell);
   // RIDER-15: a cantrip scales with the character's TOTAL level (`player_level_<N>`, a roll), a slot row with its slot.
+  // Every row reads through the dnd5e scaling readers, so a row cast at the spell's own level (its base section, a
+  // free cast, a scroll, a pact slot of that level) prints the spell's BASE roll (`damage_roll`), and a cantrip below
+  // its first tier prints its tier-1 roll.
   const cantripRoll = opts.cantrip ? spellEffectAtCharacterLevel(spell.entity, ctx.derived.totalLevel) : null;
-  const scaled: SpellEffectParts | null = cantripRoll
-    ? { field: "damage_roll", value: cantripRoll }
-    : (opts.upcast || opts.pact) ? spellEffectPartsAtSlot(spell.entity, level) : null;
+  const scaled: SpellEffectParts | null = opts.cantrip
+    ? (cantripRoll ? { field: "damage_roll", value: cantripRoll } : null)
+    : spellEffectPartsAtSlot(spell.entity, level);
   // RIDER-16: where the value prints is decided by its FIELD, never by a spell list. A roll is the chip wearing the
   // damage icon; a target count is a plain chip; a duration replaces the duration text below; an authored sentence
   // is a caption line under the type word, never the chip.

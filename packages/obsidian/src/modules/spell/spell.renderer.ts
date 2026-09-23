@@ -53,7 +53,12 @@ export async function renderSpellBlock(
   if (spell.components) createIconProperty(props, "box", "Components:", spell.components);
   if (spell.duration) createIconProperty(props, "sparkles", "Duration:", spell.duration);
   if (spell.damage?.types && spell.damage.types.length > 0) {
-    createIconProperty(props, "flame", "Damage Type:", spell.damage.types.map(titleCase).join(", "));
+    // With the spell's base roll the line carries the dice too ("8d6 Fire"). A roll with NO damage type (a heal, a
+    // hit-point pool) prints nothing here: the block does not guess what the roll is; the prose says it.
+    const types = spell.damage.types.map(titleCase).join(", ");
+    const roll = spell.damage_roll?.trim();
+    if (roll) createIconProperty(props, "flame", "Damage:", `${roll} ${types}`);
+    else createIconProperty(props, "flame", "Damage Type:", types);
   }
   if (spell.saving_throw?.ability) {
     createIconProperty(props, "shield-alert", "Save:", titleCase(spell.saving_throw.ability));
