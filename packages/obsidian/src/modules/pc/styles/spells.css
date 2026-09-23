@@ -187,6 +187,31 @@
    name + effect beside it, and the time / range / hit-DC / components metadata
    wrapping onto lines below. All tracks are shrinkable so nothing overflows or
    overlaps. The wide (>=499px) layout is untouched. */
+/* Between the narrow tier and ~640px the seven-track row leaves the Effect track at 65px (measured at a
+   518px .pc-content), so a base roll such as "1d4 + 1" (78px) wrapped INSIDE its chip and "2d10" (68px)
+   spilled 3px into Components. Here the effect moves under the name, spanning the name through Hit / DC,
+   chip and damage word on one line; its header cell drops out so the six headers still sit over six tracks.
+   From 640px up the Effect track is at least 121px, so the wide row is untouched. */
+@container pc-content (min-width: 500px) and (max-width: 639px) {
+  .archivist-pc-sheet .pc-spell-cast-head,
+  .archivist-pc-sheet .pc-spell-cast-row { grid-template-columns: 56px minmax(0, 1fr) 64px 72px 56px minmax(80px, .8fr); }
+  .archivist-pc-sheet .pc-spell-cast-head > .pc-spell-cast-hcell:nth-child(6) { display: none; }
+  .archivist-pc-sheet .pc-spell-cast-row { row-gap: 2px; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-act { grid-column: 1; grid-row: 1 / span 2; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-namecell { grid-column: 2; grid-row: 1; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-time { grid-column: 3; grid-row: 1; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-range { grid-column: 4; grid-row: 1; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-hitdc { grid-column: 5; grid-row: 1; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-comp { grid-column: 6; grid-row: 1 / span 2; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-effcell {
+    grid-column: 2 / 6; grid-row: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 3px var(--pc-space-2);
+  }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-effcell > .pc-spell-eff { margin-bottom: 0; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-effcell > .pc-spell-eff-note { flex-basis: 100%; }
+}
+/* A chip is one value: it never breaks inside itself ("1d4 / + 1"); the tracks above guarantee it room. */
+.archivist-pc-sheet .pc-spell-eff { white-space: nowrap; }
+
 @container pc-content (max-width: 499px) {
   .archivist-pc-sheet .pc-spell-cast-head { display: none; }
 
