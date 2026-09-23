@@ -95,6 +95,29 @@ describe("renderSpellBlock", () => {
     expect(props.some(p => p.textContent?.includes("Save") && p.textContent?.includes("Dexterity"))).toBe(true);
   });
 
+  it("a spell with a base roll prints it WITH its damage type on one Damage line (the type-only line retires)", async () => {
+    const w = await renderSpellBlock({ ...fireball, damage_roll: "8d6" } as never);
+    const props = Array.from(w.querySelectorAll(".spell-properties .archivist-property-line-icon"));
+    const line = props.find(p => p.querySelector(".archivist-property-label")?.textContent === "Damage:");
+    expect(line?.querySelector(".archivist-property-value")?.textContent).toBe("8d6 Fire");
+    expect(props.some(p => p.textContent?.includes("Damage Type"))).toBe(false);
+  });
+
+  it("SEVERAL damage types never fuse with the one roll: Meteor Swarm keeps Damage Type and prints the roll on its own line", async () => {
+    const w = await renderSpellBlock({ ...fireball, name: "Meteor Swarm", damage: { types: ["fire", "bludgeoning"] }, damage_roll: "20d6" } as never);
+    const lines = Array.from(w.querySelectorAll(".spell-properties .archivist-property-line-icon")).map(p => ({
+      label: p.querySelector(".archivist-property-label")?.textContent, value: p.querySelector(".archivist-property-value")?.textContent }));
+    expect(lines).toContainEqual({ label: "Damage Type:", value: "Fire, Bludgeoning" });
+    expect(lines).toContainEqual({ label: "Damage Roll:", value: "20d6" });
+    expect(lines.some(l => l.label === "Damage:")).toBe(false);
+  });
+
+  it("a base roll with NO damage type (a heal) adds no Damage line: the block does not guess what the roll is", async () => {
+    const w = await renderSpellBlock({ name: "Cure Wounds", level: 1, damage_roll: "2d8" } as never);
+    const labels = Array.from(w.querySelectorAll(".spell-properties .archivist-property-label")).map(l => l.textContent);
+    expect(labels.some(l => /Damage/.test(l ?? ""))).toBe(false);
+  });
+
   it("renders class list with sorcerer and wizard", async () => {
     const w = await renderSpellBlock(fireball);
     const classes = w.querySelector(".spell-classes")?.textContent ?? "";

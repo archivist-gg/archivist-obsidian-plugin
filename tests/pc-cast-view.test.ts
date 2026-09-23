@@ -158,7 +158,7 @@ describe("renderCastView · a cantrip's damage at the character's level (R4-G7 T
     expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).not.toBeNull();
     expect(row.querySelector(".pc-spell-dtype")?.textContent).toBe("fire");
   });
-  it("a level-4 caster's Fire Bolt row has no chip (the base roll is not in the data), the type word keeps its icon", () => {
+  it("a level-4 caster's Fire Bolt row from a document with NO damage_roll has no chip, the type word keeps its icon", () => {
     const row = atLevel(4);
     expect(row.querySelector(".pc-spell-eff")).toBeNull();
     expect(row.querySelector(".pc-spell-dtype .pc-spell-dtype-icon")).not.toBeNull();
@@ -220,8 +220,8 @@ describe("renderCastView · the scaled value prints where its FIELD says (R4-G7 
 });
 
 // ---- pact casters ----
-function pactSp(name: string, level: number): ResolvedSpell {
-  return { entity: { name, level } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),
+function pactSp(name: string, level: number, extra: Partial<ResolvedSpell["entity"]> = {}): ResolvedSpell {
+  return { entity: { name, level, ...extra } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),
     classSlug: "warlock", source: "class", prepared: true, alwaysPrepared: false };
 }
 function ctxForPact(spells: ResolvedSpell[], editState: unknown = null): ComponentRenderContext {
@@ -615,5 +615,118 @@ describe("renderCastView · a Paladin / Warlock multiclass routes the Warlock's 
     expect(names("1st Level")).toEqual(["Bless"]);
     expect(names("2nd Level")).not.toContain("Armor of Agathys");
     expect(sectionTableAfter(root, "Pact Magic (L3)").querySelector(".pc-spell-empty-row")).toBeNull();
+  });
+});
+
+// The spell's BASE roll (`damage_roll`): every row cast at the spell's own level prints it through the dnd5e scaling
+// readers, in the same `.pc-spell-eff` chip an upcast row prints. Shapes are the shipped SRD 2024 documents.
+describe("renderCastView · the base roll on own-level, cantrip, pact and scroll rows", () => {
+  const fireball = (extra: Partial<ResolvedSpell["entity"]> = {}) => ({
+    damage: { types: ["fire"] }, damage_roll: "8d6",
+    at_higher_levels: ["The damage increases by 1d6 for each spell slot level above 3."],
+    casting_options: [{ type: "slot_level_4", damage_roll: "9d6" }],
+    ...extra,
+  }) as never;
+  const rowNamed = (root: HTMLElement, section: string, name: string, upcast = false): HTMLElement =>
+    Array.from(sectionTableAfter(root, section).querySelectorAll<HTMLElement>(".pc-spell-cast-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === name && !!r.querySelector(".pc-spell-up") === upcast)!;
+
+  it("a 3rd-level Fireball row prints 8d6 in the chip with the damage icon; the 4th-level upcast row still prints 9d6", () => {
+    const root = mountContainer();
+    const ctx = ctxFor([sp("Fireball", 3, fireball())]);
+    (ctx.derived as unknown as { derivedSpellSlots: Record<number, number> }).derivedSpellSlots = { 3: 3, 4: 1 };
+    renderCastView(root, ctx);
+    const base = rowNamed(root, "3rd Level", "Fireball");
+    expect(base.querySelector(".pc-spell-eff")?.textContent).toBe("8d6");
+    expect(base.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).not.toBeNull();
+    expect(base.querySelector(".pc-spell-dtype")?.textContent).toBe("fire");
+    expect(rowNamed(root, "4th Level", "Fireball", true).querySelector(".pc-spell-eff")?.textContent).toBe("9d6");
+  });
+  it("a healing base roll (Cure Wounds 2d8, no damage type) is a plain chip with no damage icon", () => {
+    const root = mountContainer();
+    renderCastView(root, ctxFor([sp("Cure Wounds", 1, { damage_roll: "2d8", casting_options: [{ type: "slot_level_2", damage_roll: "4d8" }] } as never)]));
+    const row = rowNamed(root, "1st Level", "Cure Wounds");
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("2d8");
+    expect(row.querySelector(".pc-spell-dtype-icon")).toBeNull();
+  });
+  it("a spell with no base roll still prints no chip (Shield)", () => {
+    const root = mountContainer();
+    renderCastView(root, ctxFor([sp("Shield", 1)]));
+    expect(rowNamed(root, "1st Level", "Shield").querySelector(".pc-spell-eff")).toBeNull();
+  });
+  it("a cantrip below its first tier prints its tier-1 roll: Fire Bolt 1d10 at level 4", () => {
+    const root = mountContainer();
+    const ctx = ctxFor([sp("Fire Bolt", 0, { damage: { types: ["fire"] }, damage_roll: "1d10",
+      casting_options: [{ type: "player_level_5", damage_roll: "2d10" }] } as never)]);
+    (ctx.derived as unknown as { totalLevel: number }).totalLevel = 4;
+    renderCastView(root, ctx);
+    const row = sectionTableAfter(root, "Cantrips").querySelector(".pc-spell-cast-row") as HTMLElement;
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("1d10");
+  });
+  it("a pact row at the spell's own level prints the base roll (Hex 1d6 in a 1st-level pact slot)", () => {
+    const root = mountContainer();
+    renderCastView(root, ctxForPact([pactSp("Hex", 1, { damage: { types: ["necrotic"] }, damage_roll: "1d6" } as never)]));
+    const row = [...root.querySelectorAll<HTMLElement>(".pc-spell-cast-row")].find((r) => r.querySelector(".pc-spell-name")?.textContent === "Hex")!;
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("1d6");
+  });
+  it("a scroll row, cast at the spell's own level, prints the base roll", () => {
+    const root = mountContainer();
+    renderCastView(root, ctxForScroll([itemSp("Fireball", 3, 0, { extra: fireball() as never })]));
+    expect(rowNamed(root, "Scrolls & Consumables", "Fireball").querySelector(".pc-spell-eff")?.textContent).toBe("8d6");
+  });
+});
+
+// Review round: a cantrip's roll follows the CHARACTER's level on every row (a cantrip scroll included), and above
+// its own level a spell whose damage does not scale (2024 Hex's durations, Magic Missile's target counts) still prints
+// its base roll, the roll beside the target count and the duration in its own cell.
+describe("renderCastView · cantrip scrolls and above-level rows whose damage does not scale", () => {
+  it("a Fire Bolt SCROLL at character level 11 prints 3d10, the same roll as the class cantrip row", () => {
+    const root = mountContainer();
+    const fireBolt = { damage: { types: ["fire"] }, damage_roll: "1d10",
+      casting_options: [{ type: "player_level_5", damage_roll: "2d10" }, { type: "player_level_11", damage_roll: "3d10" }] } as never;
+    const ctx = ctxForScroll([sp("Fire Bolt", 0, fireBolt), itemSp("Fire Bolt", 0, 0, { extra: fireBolt })]);
+    (ctx.derived as unknown as { totalLevel: number }).totalLevel = 11;
+    renderCastView(root, ctx);
+    const scrollRow = sectionTableAfter(root, "Scrolls & Consumables").querySelector(".pc-spell-cast-row") as HTMLElement;
+    expect(scrollRow.querySelector(".pc-spell-eff")?.textContent).toBe("3d10");
+    const classRow = sectionTableAfter(root, "Cantrips").querySelector(".pc-spell-cast-row") as HTMLElement;
+    expect(classRow.querySelector(".pc-spell-eff")?.textContent).toBe("3d10");
+  });
+  it("Hex in a 3rd-level pact slot prints its 1d6 with the necrotic icon; the 8-hour duration stays in its own cell", () => {
+    const root = mountContainer();
+    const ctx = ctxForPact([pactSp("Hex", 1, { damage: { types: ["necrotic"] }, damage_roll: "1d6", duration: "1 hour",
+      casting_options: [{ type: "slot_level_2", duration: "4 hours" }, { type: "slot_level_3", duration: "8 hours" }] } as never)]);
+    (ctx.derived as unknown as { pactMagic: { level: number; total: number } }).pactMagic = { level: 3, total: 2 };
+    (ctx.resolved.state as never as { spell_slots_pact: unknown }).spell_slots_pact = { level: 3, used: 0, total: 2 };
+    renderCastView(root, ctx);
+    const row = [...root.querySelectorAll<HTMLElement>(".pc-spell-cast-row")].find((r) => r.querySelector(".pc-spell-name")?.textContent === "Hex")!;
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("1d6");
+    expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).not.toBeNull();
+    expect(row.querySelector(".pc-spell-dur")?.textContent).toBe("8 hours");
+  });
+  it("a PROSE-only scaling spell (2014 Cure Wounds: at_higher_levels, no options) prints no chip on its upcast row, never the unscaled 1d8", () => {
+    const root = mountContainer();
+    const ctx = ctxFor([sp("Cure Wounds", 1, { damage_roll: "1d8",
+      at_higher_levels: ["When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d8 for each slot level above 1st."] } as never)]);
+    renderCastView(root, ctx);
+    const upcast = Array.from(sectionTableAfter(root, "2nd Level").querySelectorAll<HTMLElement>(".pc-spell-cast-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === "Cure Wounds")!;
+    expect(upcast.querySelector(".pc-spell-up")).not.toBeNull();
+    expect(upcast.querySelector(".pc-spell-eff")).toBeNull();
+    const base = Array.from(sectionTableAfter(root, "1st Level").querySelectorAll<HTMLElement>(".pc-spell-cast-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === "Cure Wounds")!;
+    expect(base.querySelector(".pc-spell-eff")?.textContent).toBe("1d8");
+  });
+  it("Magic Missile at 2nd prints the per-dart 1d4 + 1 chip (damage icon) beside the plain 4 targets chip", () => {
+    const root = mountContainer();
+    const ctx = ctxFor([sp("Magic Missile", 1, { damage: { types: ["force"] }, damage_roll: "1d4 + 1",
+      casting_options: [{ type: "slot_level_2", target_count: 4 }] } as never)]);
+    renderCastView(root, ctx);
+    const row = Array.from(sectionTableAfter(root, "2nd Level").querySelectorAll<HTMLElement>(".pc-spell-cast-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === "Magic Missile")!;
+    const chips = [...row.querySelectorAll(".pc-spell-eff")].map((c) => c.textContent);
+    expect(chips).toEqual(["1d4 + 1", "4 targets"]);
+    expect(row.querySelectorAll(".pc-spell-eff")[0].querySelector(".pc-spell-dtype-icon")).not.toBeNull();
+    expect(row.querySelectorAll(".pc-spell-eff")[1].querySelector(".pc-spell-dtype-icon")).toBeNull();
   });
 });

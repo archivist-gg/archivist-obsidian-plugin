@@ -134,10 +134,12 @@ export function hitDcDescriptor(spell: ResolvedSpell, saveDC: number, atk?: numb
   return { kind: "save", ability: abbrAbility(save), dc: saveDC };
 }
 
-/** Structured-only effect descriptor. Base damage dice are NOT in the model,
- *  so this returns the damage TYPE word only (or null). Scaled dice come from
- *  dnd5e `spell.scaling`, not here: spellEffectAtSlot for a slot row,
- *  spellEffectAtCharacterLevel for a cantrip (R4-G7 T8 RIDER-15). */
+/** Structured-only effect descriptor: the damage TYPE word only (or null). The
+ *  dice, base and scaled, come from dnd5e `spell.scaling`, not here:
+ *  spellEffectPartsAtSlot for a slot row (the spell's base `damage_roll` at its
+ *  own level, a `casting_options` roll above it), spellBaseRollAtSlot above the
+ *  spell's level where its damage does not scale, spellEffectAtCharacterLevel
+ *  for a cantrip on every row (its tier-1 base roll below the first tier). */
 export function effectDescriptor(spell: ResolvedSpell): { damageType: string | null } {
   return { damageType: spell.entity.damage?.types?.[0] ?? null };
 }

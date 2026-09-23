@@ -2,7 +2,7 @@ import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 import { spellSource } from "@archivist-gg/dnd5e/pc/spell-source";
 import { renderChargeBoxes } from "../actions/charge-boxes";
-import { spellEffectPartsAtSlot, spellEffectAtCharacterLevel, upcastLevelsFor, type SpellEffectParts } from "@archivist-gg/dnd5e/spell/spell.scaling";
+import { spellEffectPartsAtSlot, spellEffectAtCharacterLevel, spellBaseRollAtSlot, upcastLevelsFor, type SpellEffectParts } from "@archivist-gg/dnd5e/spell/spell.scaling";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
@@ -295,22 +295,28 @@ function renderRow(
   // EFFECT
   const effTd = tr.createDiv({ cls: "pc-spell-effcell" });
   const eff = effectDescriptor(spell);
-  // RIDER-15: a cantrip scales with the character's TOTAL level (`player_level_<N>`, a roll), a slot row with its slot.
-  const cantripRoll = opts.cantrip ? spellEffectAtCharacterLevel(spell.entity, ctx.derived.totalLevel) : null;
-  const scaled: SpellEffectParts | null = cantripRoll
-    ? { field: "damage_roll", value: cantripRoll }
-    : (opts.upcast || opts.pact) ? spellEffectPartsAtSlot(spell.entity, level) : null;
+  // RIDER-15: a CANTRIP scales with the character's TOTAL level (`player_level_<N>`, a roll) on every row, a cantrip
+  // scroll included; a levelled row reads its slot. Through the dnd5e scaling readers a row cast at the spell's own
+  // level (its base section, a free cast, a scroll, a pact slot of that level) prints the BASE roll (`damage_roll`),
+  // a cantrip below its first tier its tier-1 roll, and a row above the spell's level whose DAMAGE does not scale
+  // (Hex's durations, Magic Missile's target counts) still prints the base roll beside what its slot option says.
+  const isCantrip = (spell.entity.level ?? 0) === 0;
+  const scaled: SpellEffectParts | null = isCantrip ? null : spellEffectPartsAtSlot(spell.entity, level);
+  const roll = isCantrip
+    ? spellEffectAtCharacterLevel(spell.entity, ctx.derived.totalLevel)
+    : scaled?.field === "damage_roll" ? scaled.value : spellBaseRollAtSlot(spell.entity, level);
   // RIDER-16: where the value prints is decided by its FIELD, never by a spell list. A roll is the chip wearing the
-  // damage icon; a target count is a plain chip; a duration replaces the duration text below; an authored sentence
-  // is a caption line under the type word, never the chip.
-  const damageChip = scaled?.field === "damage_roll";
-  if (scaled && (damageChip || scaled.field === "target_count")) {
+  // damage icon; a target count is a plain chip (beside the roll when both apply); a duration replaces the duration
+  // text below; an authored sentence is a caption line under the type word, never the chip.
+  const damageChip = roll !== null;
+  if (roll !== null) {
     const chip = effTd.createSpan({ cls: "pc-spell-eff" });
-    if (damageChip && eff.damageType && hasDamageTypeIcon(eff.damageType)) {
+    if (eff.damageType && hasDamageTypeIcon(eff.damageType)) {
       setDamageTypeIcon(chip.createSpan({ cls: "pc-spell-dtype-icon dmg" }), eff.damageType);
     }
-    chip.createSpan({ text: scaled.value });
+    chip.createSpan({ text: roll });
   }
+  if (scaled?.field === "target_count") effTd.createSpan({ cls: "pc-spell-eff", text: scaled.value });
   if (eff.damageType) {
     const dt = effTd.createSpan({ cls: "pc-spell-dtype" });
     if (!damageChip && hasDamageTypeIcon(eff.damageType)) {

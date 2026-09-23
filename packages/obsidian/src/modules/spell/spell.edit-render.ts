@@ -69,6 +69,8 @@ export function buildSpellYamlObject(draft: Spell): Record<string, unknown> {
   // Restored by R4-G2 Task 7 (spec §2.1): declared `Spell` fields both former
   // builders dropped on every save.
   if (draft.damage != null) clean.damage = draft.damage;
+  // The spell's base roll: a save must never strip it (the twin-builder bug this function exists to end).
+  if (draft.damage_roll != null) clean.damage_roll = draft.damage_roll;
   if (draft.saving_throw != null) clean.saving_throw = draft.saving_throw;
   if (draft.casting_options != null) clean.casting_options = draft.casting_options;
   if (draft.source != null) clean.source = draft.source;
