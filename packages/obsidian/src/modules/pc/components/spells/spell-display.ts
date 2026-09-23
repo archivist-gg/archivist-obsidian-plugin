@@ -137,8 +137,9 @@ export function hitDcDescriptor(spell: ResolvedSpell, saveDC: number, atk?: numb
 /** Structured-only effect descriptor: the damage TYPE word only (or null). The
  *  dice, base and scaled, come from dnd5e `spell.scaling`, not here:
  *  spellEffectPartsAtSlot for a slot row (the spell's base `damage_roll` at its
- *  own level, a `casting_options` roll above it), spellEffectAtCharacterLevel
- *  for a cantrip (its tier-1 base roll below the first tier; R4-G7 T8 RIDER-15). */
+ *  own level, a `casting_options` roll above it), spellBaseRollAtSlot above the
+ *  spell's level where its damage does not scale, spellEffectAtCharacterLevel
+ *  for a cantrip on every row (its tier-1 base roll below the first tier). */
 export function effectDescriptor(spell: ResolvedSpell): { damageType: string | null } {
   return { damageType: spell.entity.damage?.types?.[0] ?? null };
 }

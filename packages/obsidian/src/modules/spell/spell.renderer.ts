@@ -1,5 +1,6 @@
 import { setIcon, type App, Component } from "obsidian";
 import type { Spell } from "@archivist-gg/dnd5e/spell/spell.types";
+import { spellBaseRoll } from "@archivist-gg/dnd5e/spell/spell.scaling";
 import {
   el,
   createIconProperty,
@@ -53,12 +54,17 @@ export async function renderSpellBlock(
   if (spell.components) createIconProperty(props, "box", "Components:", spell.components);
   if (spell.duration) createIconProperty(props, "sparkles", "Duration:", spell.duration);
   if (spell.damage?.types && spell.damage.types.length > 0) {
-    // With the spell's base roll the line carries the dice too ("8d6 Fire"). A roll with NO damage type (a heal, a
-    // hit-point pool) prints nothing here: the block does not guess what the roll is; the prose says it.
-    const types = spell.damage.types.map(titleCase).join(", ");
-    const roll = spell.damage_roll?.trim();
-    if (roll) createIconProperty(props, "flame", "Damage:", `${roll} ${types}`);
-    else createIconProperty(props, "flame", "Damage Type:", types);
+    // With ONE damage type the base roll fuses with it ("Damage: 8d6 Fire"). With several, the one roll is not every
+    // type's (Meteor Swarm's 20d6 is its fire half), so the types keep their line and the roll prints on its own. A
+    // roll with NO damage type (a heal, a hit-point pool) prints nothing here: the block does not guess what it is.
+    const types = spell.damage.types.map(titleCase);
+    const roll = spellBaseRoll(spell);
+    if (roll && types.length === 1) {
+      createIconProperty(props, "flame", "Damage:", `${roll} ${types[0]}`);
+    } else {
+      createIconProperty(props, "flame", "Damage Type:", types.join(", "));
+      if (roll) createIconProperty(props, "dices", "Damage Roll:", roll);
+    }
   }
   if (spell.saving_throw?.ability) {
     createIconProperty(props, "shield-alert", "Save:", titleCase(spell.saving_throw.ability));

@@ -675,3 +675,45 @@ describe("renderCastView · the base roll on own-level, cantrip, pact and scroll
     expect(rowNamed(root, "Scrolls & Consumables", "Fireball").querySelector(".pc-spell-eff")?.textContent).toBe("8d6");
   });
 });
+
+// Review round: a cantrip's roll follows the CHARACTER's level on every row (a cantrip scroll included), and above
+// its own level a spell whose damage does not scale (2024 Hex's durations, Magic Missile's target counts) still prints
+// its base roll, the roll beside the target count and the duration in its own cell.
+describe("renderCastView · cantrip scrolls and above-level rows whose damage does not scale", () => {
+  it("a Fire Bolt SCROLL at character level 11 prints 3d10, the same roll as the class cantrip row", () => {
+    const root = mountContainer();
+    const fireBolt = { damage: { types: ["fire"] }, damage_roll: "1d10",
+      casting_options: [{ type: "player_level_5", damage_roll: "2d10" }, { type: "player_level_11", damage_roll: "3d10" }] } as never;
+    const ctx = ctxForScroll([sp("Fire Bolt", 0, fireBolt), itemSp("Fire Bolt", 0, 0, { extra: fireBolt })]);
+    (ctx.derived as unknown as { totalLevel: number }).totalLevel = 11;
+    renderCastView(root, ctx);
+    const scrollRow = sectionTableAfter(root, "Scrolls & Consumables").querySelector(".pc-spell-cast-row") as HTMLElement;
+    expect(scrollRow.querySelector(".pc-spell-eff")?.textContent).toBe("3d10");
+    const classRow = sectionTableAfter(root, "Cantrips").querySelector(".pc-spell-cast-row") as HTMLElement;
+    expect(classRow.querySelector(".pc-spell-eff")?.textContent).toBe("3d10");
+  });
+  it("Hex in a 3rd-level pact slot prints its 1d6 with the necrotic icon; the 8-hour duration stays in its own cell", () => {
+    const root = mountContainer();
+    const ctx = ctxForPact([pactSp("Hex", 1, { damage: { types: ["necrotic"] }, damage_roll: "1d6", duration: "1 hour",
+      casting_options: [{ type: "slot_level_2", duration: "4 hours" }, { type: "slot_level_3", duration: "8 hours" }] } as never)]);
+    (ctx.derived as unknown as { pactMagic: { level: number; total: number } }).pactMagic = { level: 3, total: 2 };
+    (ctx.resolved.state as never as { spell_slots_pact: unknown }).spell_slots_pact = { level: 3, used: 0, total: 2 };
+    renderCastView(root, ctx);
+    const row = [...root.querySelectorAll<HTMLElement>(".pc-spell-cast-row")].find((r) => r.querySelector(".pc-spell-name")?.textContent === "Hex")!;
+    expect(row.querySelector(".pc-spell-eff")?.textContent).toBe("1d6");
+    expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).not.toBeNull();
+    expect(row.querySelector(".pc-spell-dur")?.textContent).toBe("8 hours");
+  });
+  it("Magic Missile at 2nd prints the per-dart 1d4 + 1 chip (damage icon) beside the plain 4 targets chip", () => {
+    const root = mountContainer();
+    const ctx = ctxFor([sp("Magic Missile", 1, { damage: { types: ["force"] }, damage_roll: "1d4 + 1",
+      casting_options: [{ type: "slot_level_2", target_count: 4 }] } as never)]);
+    renderCastView(root, ctx);
+    const row = Array.from(sectionTableAfter(root, "2nd Level").querySelectorAll<HTMLElement>(".pc-spell-cast-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === "Magic Missile")!;
+    const chips = [...row.querySelectorAll(".pc-spell-eff")].map((c) => c.textContent);
+    expect(chips).toEqual(["1d4 + 1", "4 targets"]);
+    expect(row.querySelectorAll(".pc-spell-eff")[0].querySelector(".pc-spell-dtype-icon")).not.toBeNull();
+    expect(row.querySelectorAll(".pc-spell-eff")[1].querySelector(".pc-spell-dtype-icon")).toBeNull();
+  });
+});
