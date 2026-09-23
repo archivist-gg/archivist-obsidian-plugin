@@ -704,6 +704,19 @@ describe("renderCastView · cantrip scrolls and above-level rows whose damage do
     expect(row.querySelector(".pc-spell-eff .pc-spell-dtype-icon")).not.toBeNull();
     expect(row.querySelector(".pc-spell-dur")?.textContent).toBe("8 hours");
   });
+  it("a PROSE-only scaling spell (2014 Cure Wounds: at_higher_levels, no options) prints no chip on its upcast row, never the unscaled 1d8", () => {
+    const root = mountContainer();
+    const ctx = ctxFor([sp("Cure Wounds", 1, { damage_roll: "1d8",
+      at_higher_levels: ["When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d8 for each slot level above 1st."] } as never)]);
+    renderCastView(root, ctx);
+    const upcast = Array.from(sectionTableAfter(root, "2nd Level").querySelectorAll<HTMLElement>(".pc-spell-cast-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === "Cure Wounds")!;
+    expect(upcast.querySelector(".pc-spell-up")).not.toBeNull();
+    expect(upcast.querySelector(".pc-spell-eff")).toBeNull();
+    const base = Array.from(sectionTableAfter(root, "1st Level").querySelectorAll<HTMLElement>(".pc-spell-cast-row"))
+      .find((r) => r.querySelector(".pc-spell-name")?.textContent === "Cure Wounds")!;
+    expect(base.querySelector(".pc-spell-eff")?.textContent).toBe("1d8");
+  });
   it("Magic Missile at 2nd prints the per-dart 1d4 + 1 chip (damage icon) beside the plain 4 targets chip", () => {
     const root = mountContainer();
     const ctx = ctxFor([sp("Magic Missile", 1, { damage: { types: ["force"] }, damage_roll: "1d4 + 1",
