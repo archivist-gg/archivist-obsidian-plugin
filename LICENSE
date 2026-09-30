@@ -1,0 +1,48 @@
+Archivist Freeware Licence
+
+Copyright (c) 2025-2026 Shinoobi. All rights reserved.
+
+This licence applies to Archivist, the Obsidian plugin: the released files main.js,
+manifest.json and styles.css and the documentation that comes with them, from version 0.10.0
+on ("the Software"). Versions released before 0.10.0 stay under the licence they were
+released with (0.9.0 and earlier: the GNU Affero General Public License, version 3).
+
+1. What you may do
+
+You may download, install and use the Software free of charge, for any lawful purpose, on
+as many devices as you like. You may keep backup copies for your own use.
+
+2. What you may not do
+
+Unless the copyright holder has given you written permission, you may not:
+
+  (a) modify, adapt or translate the Software, or build other works on it;
+  (b) sell, rent, lease or sublicense the Software, or charge anyone for it;
+  (c) redistribute, publish or host copies of the Software, on their own or as part of
+      anything else. Point people to the official download instead.
+
+3. Third-party material
+
+The Software contains material made by others and licensed under their own terms, listed in
+THIRD-PARTY-NOTICES.md: content from the System Reference Document 5.1 and 5.2 (Creative
+Commons Attribution 4.0 International, CC-BY-4.0), icons (Creative Commons Attribution 3.0,
+CC BY 3.0), fonts (SIL Open Font License 1.1) and open-source libraries (MIT and ISC). That
+material stays under its own licence. Nothing in this licence limits the rights that licence
+gives you, and where the two differ for that material, its own licence applies.
+
+4. No warranty
+
+The Software is provided "as is", without warranty of any kind, express or implied,
+including the warranties of merchantability, fitness for a particular purpose and
+non-infringement.
+
+5. Limitation of liability
+
+In no event shall the copyright holder be liable for any claim, damages or other liability,
+whether in an action of contract, tort or otherwise, arising from, out of or in connection
+with the Software or its use.
+
+6. End of this permission
+
+This permission ends automatically if you break these terms. When it ends, you must stop
+using the Software and delete your copies.
