@@ -1,6 +1,6 @@
 # Archivist
 
-A D&D 5e toolkit for [Obsidian](https://obsidian.md), for both the 2014 and 2024 rules: parchment stat blocks written as YAML code blocks, inline dice tags that roll on click, the full System Reference Document as a compendium in your vault, your own homebrew compendiums, and player-character sheets with a character builder.
+A fifth edition toolkit for [Obsidian](https://obsidian.md), for both the 2014 and 2024 rules: parchment stat blocks written as YAML code blocks, inline dice tags that roll on click, the full System Reference Document as a compendium in your vault, your own homebrew compendiums, and player-character sheets with a character builder.
 
 ## Features
 
@@ -33,14 +33,14 @@ Versions up to 0.9.0 were released under the GNU Affero General Public License, 
 
 ## Credits
 
-- **System Reference Document.** This work includes material from the System Reference Document 5.1 ("SRD 5.1") and the System Reference Document 5.2 ("SRD 5.2") by Wizards of the Coast LLC, licensed under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/legalcode). The full attribution, and how the material was changed, is in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+- **System Reference Document.** This work includes material taken from the System Reference Document 5.1 ("SRD 5.1") by Wizards of the Coast LLC and available at https://dnd.wizards.com/resources/systems-reference-document. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License available at https://creativecommons.org/licenses/by/4.0/legalcode. This work includes material from the System Reference Document 5.2 ("SRD 5.2") by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode. How the material was changed is in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 - **Icons** by Noun Project creators, under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/): see [CREDITS.md](CREDITS.md).
 - **Fonts:** Libre Baskerville and Noto Sans, under the SIL Open Font License 1.1.
 - **Libraries:** js-yaml and zod (MIT), monkey-around (ISC).
 
 Every notice is in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
-Archivist is unofficial. It is not affiliated with or endorsed by Wizards of the Coast. "Dungeons & Dragons" and "D&D" are trademarks of Wizards of the Coast LLC.
+Archivist is unofficial. It is not affiliated with or endorsed by Wizards of the Coast.
 
 ## Feedback
 

@@ -6,25 +6,17 @@ gives you.
 
 ## System Reference Document 5.1 and 5.2 (CC-BY-4.0)
 
-Archivist bundles content from the Dungeons & Dragons System Reference Document, both the 5.1
-(2014) and 5.2 (2024) editions, released by Wizards of the Coast under the Creative Commons
-Attribution 4.0 International License (CC-BY-4.0). The plugin copies it into your vault as the
-read-only SRD 5e and SRD 2024 compendiums.
+Archivist bundles content from the System Reference Document 5.1 (2014) and 5.2 (2024), both
+licensed under the Creative Commons Attribution 4.0 International License (CC-BY-4.0). The plugin
+copies it into your vault as the read-only SRD 5e and SRD 2024 compendiums.
 
 ### Required attribution
 
-This work includes material from the System Reference Document 5.1 ("SRD 5.1") by Wizards of the
-Coast LLC and available at https://dnd.wizards.com/resources/systems-reference-document. The SRD
-5.1 is licensed under the Creative Commons Attribution 4.0 International License, available at
-https://creativecommons.org/licenses/by/4.0/legalcode.
+This work includes material taken from the System Reference Document 5.1 ("SRD 5.1") by Wizards of the Coast LLC and available at https://dnd.wizards.com/resources/systems-reference-document. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License available at https://creativecommons.org/licenses/by/4.0/legalcode.
 
-This work includes material from the System Reference Document 5.2 ("SRD 5.2") by Wizards of the
-Coast LLC and available at https://www.dndbeyond.com/srd. The SRD 5.2 is licensed under the
-Creative Commons Attribution 4.0 International License, available at
-https://creativecommons.org/licenses/by/4.0/legalcode.
+This work includes material from the System Reference Document 5.2 ("SRD 5.2") by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.
 
-Copyright © Wizards of the Coast LLC. "Dungeons & Dragons" is a trademark of Wizards of the
-Coast. This project is unofficial and not affiliated with or endorsed by Wizards of the Coast.
+This project is unofficial and not affiliated with or endorsed by Wizards of the Coast.
 
 ### Changes made
 
