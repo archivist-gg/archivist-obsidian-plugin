@@ -82,7 +82,7 @@ At a glance:
 - A **portrait** for every character: pick a picture and choose the part that shows.
 - **Click to roll** skills, saves, ability checks, Initiative, death saves, attacks and damage, with advantage, critical hits and a window for special rolls.
 - A **Builder** for new characters and level ups, with every choice explained in its own words.
-- **Spells**, **resources** and an **inventory** with bags, stacks, attunement and item icons.
+- **Spells**, **resources** and an **inventory** with bags, stacks, drag and drop, attunement and item icons.
 - The **SRD 5.1 and SRD 5.2** as compendiums, plus **your own homebrew** next to them.
 - **Stat blocks** for monsters, spells, items and more, written right in your notes.
 - **Dice in your notes** that roll with a click, and any compendium entry pulled into a note by typing `{{`.
@@ -101,6 +101,7 @@ Every character is an ordinary note in your vault. Open it and you get the sheet
 
 **Abilities and saves**
 - The six abilities with modifiers, scores and saving throws, Proficiency Bonus, **Initiative**, **Speed** and Inspiration.
+- Hover an ability to see how its score adds up: the base score, then species, background, Ability Score Improvements, feats and items, each with its amount.
 - Hover **Speed** to see every speed you have (walk, fly, swim, climb, burrow) and where each one comes from: species, feats, items, features, and conditions such as Restrained or Exhaustion.
 - An **All saves** strip for what helps every save, such as the bonus from Aura of Protection or a reroll.
 - **Defenses** (resistances, immunities, vulnerabilities, condition immunities) and **Conditions** as tags. A tag that comes from an item has a dashed border and names the item when you hover it; its × offers to take the item off.
@@ -150,7 +151,7 @@ Click a number on the sheet and it rolls. The result appears right next to what 
 
 **Roll damage…** lets you tick what this hit adds: a critical hit, both hands on a Versatile weapon, a bonus that only applies sometimes such as Sneak Attack, **Savage Attacker** (roll the weapon's dice twice and keep the higher) or **Great Weapon Fighting**, and a spell that adds damage to the attack, such as **Divine Smite** or **Searing Smite**, at the slot level you choose. It shows the whole roll before you make it, and it spends nothing: you cast the spell on the Spells tab.
 
-**Saved rolls.** **Save as…** keeps what you ticked, for this weapon or for all your attacks, and the right-click menu lists it under Saved. A saved roll that no longer fits (say, for a weapon you no longer carry) is greyed out with the reason. **Manage saved rolls…** renames and deletes them.
+**Saved rolls.** **Save as…** keeps what you ticked, for this weapon or for all your attacks, and the right-click menu lists it under Saved. A saved roll that no longer fits (say, for a weapon you no longer carry) is greyed out with the reason. **Manage saved rolls…** renames, reorders and deletes them.
 
 **The result** shows what you rolled ("Stealth · Check · Advantage"), the total, every die (a die that was not kept is struck through, and a natural 20 or 1 stands out in colour), where your advantage came from, and each damage type's subtotal. Close it with its ×, a click anywhere else, Esc, or your next roll.
 
@@ -166,6 +167,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 
 **Actions tab.** Everything you can do on your turn, grouped into Actions, Bonus Actions and Reactions:
 - Your weapons with range, to hit, damage and **mastery** (Vex, Sap, Slow and the rest, with what each does on a hit), how many attacks you make, which weapons are equipped, weapons a feature gives you, and the Unarmed Strike.
+- **Natural weapons**, such as a species' claws, fangs or horns, get their own row next to the Unarmed Strike, with their own damage die and damage type. A trait you switch on adds its attack only while it is on.
 - Damage bonuses such as Sneak Attack or Radiant Strikes sit right in the damage column, and a critical range wider than 20 shows under the weapon.
 - Class features with their uses, items with charges, and consumables with a **Use** button.
 - Mark a row as a **Favorite** from its right-click menu to pin it to the top; the **Show** filters narrow the list and **Hide** tucks rows away.
@@ -195,6 +197,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 - **Search**, filters for equipped, attuned or carried items, type and rarity, and **Add item** from any compendium you can see.
 - Sections for Favorites, **On you**, and each **container** (a Backpack, a Quiver, a Bag of Holding whose contents weigh nothing), with the total weight you carry.
 - **Stacks.** Click a stack's ×N to change how many you have (−, +, or type a number; it also shows what one weighs and costs). Anything you add, move or unequip joins a matching stack; **Split one off** separates one, and equipping a stack of weapons takes one from it.
+- **Drag and drop.** Drag a row into a container, out of it, or onto **On you**. Drop it on a matching item to add it to that stack. An item that is equipped or attuned, has its own note, charges or changes, or is a container keeps its own row.
 - Each row's menu: Equip or Unequip, **Move to** another container, Quantity, Split one off, Edit note, Remove.
 - **Benefits follow what you wear.** An item's resistances, immunities, AC, saves, senses, speeds and effects count while it is equipped (and attuned, if it needs attunement). A magic weapon that needs attunement attacks as a plain weapon until you attune it.
 - Item **notes**, **charges** with when they come back ("Dawn 1d6+1"), and a **Customize** card for changes to one item.
@@ -211,6 +214,9 @@ Make a character with **New character** (the command or the ribbon button) or **
 - **What you decide** lists every choice your pick asks for (skills, a lineage, a Fighting Style, Weapon Mastery, a subclass, feats or Ability Score Improvements) with its level, and marks what is still open.
 - **Features by level** shows the whole class progression: features you have are filled in, the ones ahead are hollow.
 - Multiclass with **Add another class**, set ability scores by standard array, point buy, typing them in or rolling, and take your starting equipment from your class and background.
+- **An older species with a 2024 background.** When your background gives ability increases, a species written for the 2014 rules adds none of its own, as the 2024 rules say. The Abilities step explains it, and its **Keep species ability increases** switch keeps both if your table allows it.
+- **The same skill or tool twice.** When your species and your background give you the same skill or tool, the Builder lets you take a different one in its place.
+- The SRD 5.1 subraces (Hill Dwarf, High Elf, Lightfoot Halfling, Rock Gnome) get their parent species' ability increases, speed, senses, languages and traits.
 
 ![The Builder on the Class & Levels step: a level 1 Fighter with skill proficiencies picked, Weapon Mastery still open, and Defense chosen as the Fighting Style.](images/builder.png)
 
@@ -220,6 +226,7 @@ A compendium is a folder of notes inside your `Compendium` folder, one note for 
 
 - **SRD 5.1 and SRD 5.2 included.** Archivist adds both as read-only compendiums (`SRD 5e` and `SRD 2024`): every SRD spell, monster, magic item, class, subclass, species, background, feat and condition. An update only touches the notes that changed. SRD 5e starts hidden from the lists you pick from.
 - **Your own homebrew.** Keep your own monsters, spells, items and more in your own compendiums, next to the SRD. Save any stat block to a compendium with the button beside it; if you do not have one yet, Archivist offers to make one.
+- **Name them your way.** Give SRD 5e and SRD 2024 any name in **Settings → Archivist → Compendiums**, and Archivist shows it wherever it names them. Your folders, notes and links keep their names.
 - **Show or hide, lock or unlock.** Each compendium has a **Visible** switch (whether its entries show up in the sheet's and the Builder's lists and when you type `{{`) and a **Read-only** switch. "Save as new" copies an entry from a read-only compendium into one you can edit.
 - **Changes show up right away.** Edit, add, rename or delete a compendium note and Archivist uses it at once, with no restart. An open sheet shows the change the next time it updates.
 - **Quick to start.** Archivist remembers your compendiums on each device, so later starts only read the notes that changed.
@@ -265,9 +272,9 @@ Put a roll between backticks anywhere in a note, like `` `dice:2d6` ``, and it t
 
 ### Compendium entries in your notes
 
-Type `{{` and start typing a name to pull any spell, monster or item from your compendiums into a note. Pick it from the list, and on a line of its own it shows as the full stat block, both while you write and when you read.
+Type `{{` and start typing a name to pull any entry from your compendiums into a note: a spell, monster, item, species, subclass, class option such as an Eldritch Invocation, and more. Pick it from the list, and on a line of its own it shows as the full stat block, both while you write and when you read.
 
-- Each one shows a badge with the compendium it came from. If the name no longer matches anything, it says so.
+- A block that names its compendium in its corner, such as a spell or an item, shows it there; the others get a badge with the compendium it came from. If the name no longer matches anything, it says so.
 - **Save to compendium** on a stat block in a note files it in a compendium, and the note keeps showing the same block, now read from there.
 
 ![A session prep note with dice buttons (+7 to hit, 2d8+5, DC 13, 2d6, 3d6, 2d4+2) and the Owlbear stat block pulled in from the SRD 2024 compendium.](images/note-inline.png)
@@ -282,7 +289,7 @@ Type `{{` and start typing a name to pull any spell, monster or item from your c
 | Player characters folder | Where **New character** puts new characters. A character works in any folder. |
 | Portraits folder | Where the portrait picker looks for pictures and keeps the ones you import (`PlayerCharacters/Portraits` unless you change it). |
 | Rolls → Critical hits | What a critical hit does to damage: double the dice (the default), maximum dice plus a roll, or double the total. |
-| Compendiums | One row per compendium, with how many entries it holds and its **Visible** and **Read-only** switches. |
+| Compendiums | **SRD 5.1 name** and **SRD 5.2 name** to rename the two SRD compendiums, then one row per compendium, with how many entries it holds and its **Visible** and **Read-only** switches. |
 
 ### Commands
 

@@ -1,9 +1,9 @@
 {
   "id": "archivist-gg",
   "name": "Archivist",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "minAppVersion": "1.7.2",
-  "description": "D&D 5e/2024 toolkit: parchment stat blocks from YAML code blocks, inline dice tags, a full SRD compendium, homebrew compendiums, and player-character sheets.",
+  "description": "Fifth edition character sheets that do the math and roll on click, with a step-by-step builder, spells, resources and an inventory with containers, plus parchment stat blocks and the SRD 5.1 and 5.2 as linked compendiums.",
   "author": "Shinoobi",
   "authorUrl": "https://github.com/archivist-gg",
   "isDesktopOnly": true
