@@ -237,7 +237,7 @@ The character sheet's item, condition and spell effect icons are line icons from
 (https://thenounproject.com/) creators, each licensed under the Creative Commons Attribution 3.0
 License (CC BY 3.0, https://creativecommons.org/licenses/by/3.0/). They are embedded in main.js
 with the attribution text removed, and credited here in the form "Title by Creator from Noun
-Project (CC BY 3.0)". 120 icons (122 keys), 26 creators.
+Project (CC BY 3.0)". 134 icons (136 keys), 30 creators.
 
 ### 4urbrand
 
@@ -250,6 +250,8 @@ Project (CC BY 3.0)". 120 icons (122 keys), 26 creators.
 ### Amethyst Studio
 
 - necklace by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5097791/ (key `amulet`)
+- Laser Gun by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5367256/ (a firearm icon)
+- Gun by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5098383/ (a firearm icon)
 - Backpack by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4839405/ (key `backpack`)
 - Barrel by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4947752/ (key `barrel`)
 - Axe by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5043208/ (key `battleaxe`)
@@ -276,6 +278,7 @@ Project (CC BY 3.0)". 120 icons (122 keys), 26 creators.
 - Hand by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5218434/ (key `grappled`)
 - Axe by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5099503/ (key `greataxe`)
 - Sword by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4944637/ (key `greatsword`)
+- Grenade by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5098394/ (key `grenade`)
 - Axe by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4947753/ (key `handaxe`)
 - first aid kit by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5098375/ (key `healer-kit`)
 - armour by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5099529/ (key `heavy-armor`)
@@ -291,6 +294,7 @@ Project (CC BY 3.0)". 120 icons (122 keys), 26 creators.
 - Key by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5098616/ (key `key`)
 - lance by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5043207/ (key `lance`)
 - Lantern by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5098626/ (key `lantern`)
+- futuristic gun by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5367273/ (a firearm icon)
 - armor by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4947755/ (key `light-armor`)
 - Crossbow by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5043212/ (key `light-crossbow`)
 - Hammer by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4944623/ (key `light-hammer`)
@@ -302,6 +306,8 @@ Project (CC BY 3.0)". 120 icons (122 keys), 26 creators.
 - Hammer by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5367248/ (key `maul`)
 - armor by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4283387/ (key `medium-armor`)
 - Mace by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4944622/ (key `morningstar`)
+- blunderbuss by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5097439/ (key `musket`)
+- Gun by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5369017/ (key `pistol`)
 - Vomiting by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5048447/ (key `poisoned`)
 - Cooking Pot by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4947761/ (key `pot`)
 - potion by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4944634/ (key `potion`)
@@ -317,9 +323,11 @@ Project (CC BY 3.0)". 120 icons (122 keys), 26 creators.
 - Money Bag by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4947754/ (key `sack`)
 - cutlass by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5097433/ (key `scimitar`)
 - Scroll by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5043214/ (key `scroll`)
+- Pistol by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5098386/ (a firearm icon)
 - Shield by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4283854/ (key `shield`)
 - bow by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5043201/ (key `shortbow`)
 - Sword by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5099501/ (key `shortsword`)
+- Shotgun by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5367272/ (key `shotgun`)
 - spears by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4944635/ (key `spear`)
 - spell book by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5043216/ (key `spellbook`)
 - spyglass by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5098623/ (key `spyglass`)
@@ -341,10 +349,15 @@ Project (CC BY 3.0)". 120 icons (122 keys), 26 creators.
 - Skull by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4136173/ (spell effect `necrotic`)
 - Brain by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4284644/ (spell effect `psychic`)
 - sun by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5042666/ (spell effect `radiant`)
+- Swords by Amethyst Studio from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5043215/ (generic weapon)
 
 ### Andrejs Kirma
 
 - explosion by Andrejs Kirma from Noun Project (CC BY 3.0) https://thenounproject.com/icon/2181796/ (spell effect `physical`)
+
+### Arkinasi
+
+- Bomb by Arkinasi from Noun Project (CC BY 3.0) https://thenounproject.com/icon/8404843/ (key `bomb`)
 
 ### Art Isnakafa
 
@@ -384,11 +397,20 @@ Project (CC BY 3.0)". 120 icons (122 keys), 26 creators.
 ### Hey Rabbit
 
 - war club by Hey Rabbit from Noun Project (CC BY 3.0) https://thenounproject.com/icon/3571405/ (key `club`)
+- Rifle by Hey Rabbit from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4932468/ (a firearm icon)
 - Ring by Hey Rabbit from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4151845/ (key `ring`)
+
+### Icon Designer
+
+- dynamite by Icon Designer from Noun Project (CC BY 3.0) https://thenounproject.com/icon/8102696/ (key `dynamite`)
 
 ### Kalaakarini
 
 - fishing net by Kalaakarini from Noun Project (CC BY 3.0) https://thenounproject.com/icon/6374838/ (key `net`)
+
+### kenzi mebius
+
+- revolver by kenzi mebius from Noun Project (CC BY 3.0) https://thenounproject.com/icon/7897846/ (key `revolver`)
 
 ### Lucid Formation
 
@@ -422,6 +444,10 @@ Project (CC BY 3.0)". 120 icons (122 keys), 26 creators.
 
 - Spear by Shayan Lee from Noun Project (CC BY 3.0) https://thenounproject.com/icon/7759022/ (key `glaive`)
 - Halberd by Shayan Lee from Noun Project (CC BY 3.0) https://thenounproject.com/icon/7759029/ (key `halberd`)
+
+### Symbolon
+
+- Machine Gun by Symbolon from Noun Project (CC BY 3.0) https://thenounproject.com/icon/648131/ (a firearm icon)
 
 ### Teewara soontorn
 
