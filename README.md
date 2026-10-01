@@ -85,7 +85,7 @@ At a glance:
 - The **SRD 5.1 and SRD 5.2** as compendiums of notes, plus **homebrew compendiums** in the same format.
 - **Stat blocks** for monsters, spells, items and ten other entity types, written as YAML in any note.
 - **Inline dice tags** and **`{{type:slug}}` references** that embed a compendium entry anywhere.
-- Blocks and the sheet look the same **under any theme**, in light and dark mode.
+- Blocks and the sheet keep their own parchment look **under any theme**.
 
 ### Character sheet
 
@@ -242,8 +242,6 @@ actions:
 - **Rules math.** Ability modifiers, Proficiency Bonus and XP come from the scores and challenge rating, the edit form works out saves, skills, passive Perception and hit points (any of them can be overridden), and tags like `atk:STR+PB` or `dc:WIS` resolve from the creature's own scores.
 - **Side buttons** on each block: **save to compendium**, delete, **edit** in a form for monster, spell, item and condition blocks (with tag autocomplete), and a **two-column** layout for monsters.
 - **Insert commands** for monster, spell and magic item blocks start from a template.
-
-<p align="center"><img src="images/statblock-light-dark.png" width="880" alt="The same Young Red Dragon stat block drawn under Obsidian's light theme and dark theme, identical parchment in both."></p>
 
 <p align="center"><img src="images/spell-block.png" width="652" alt="The Fireball spell block: casting time, range, components, duration, damage and save, the description with clickable 8d6, At Higher Levels, and the Sorcerer and Wizard class links."></p>
 
