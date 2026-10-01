@@ -115,7 +115,7 @@ Every character is an ordinary note in your vault. Open it and you get the sheet
 - Right-click (or long-press) Armor Class, Speed, an ability score or a passive sense and choose **Edit…**. A number you have set yourself offers **Go back to the rules**, with the rules' number beside it. Option+click (Alt+click) opens the edit box straight away.
 - The sheet follows the rules for species, classes, subclasses, backgrounds, feats and items, and for what they give you: Weapon Mastery, Extra Attack, Aura of Protection, Rage on and off, armor too heavy for your Strength, resistances a feat lets you choose, and more.
 
-![Hovering Armor Class and Speed on the sheet. Armor Class 21 adds up Plate Armor (Armor of Necrotic Resistance) +18, Shield +2 and Cloak of Protection +1. Speed shows a walking speed of 30 ft. from Halfling and a climbing speed of 30 ft. from Slippers of Spider Climbing.](images/sheet-popovers.png)
+![Hovering Armor Class and Speed on the sheet. Armor Class 21 adds up Plate Armor (Armor of Necrotic Resistance) +18, Shield +2 and Cloak of Protection +1. Speed shows a walking speed of 30 ft. from Halfling and a climbing speed of 30 ft. from Slippers of Spider Climbing.](images/sheet-breakdowns.png)
 
 ### Portrait
 
@@ -158,7 +158,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 
 | | |
 | --- | --- |
-| <img src="images/roll-popover.png" width="352" alt="A Stealth check rolled with advantage: 33, with a natural 20 kept and a 17 struck through, and the advantage coming from Cloak of Elvenkind and Boots of Elvenkind."> | <img src="images/roll-damage-dialog.png" width="472" alt="The Roll damage window for a Longsword with Critical hit, Savage Attacker and a 2nd-level Searing Smite ticked, showing the whole roll before it is made."> |
+| <img src="images/roll-result.png" width="352" alt="A Stealth check rolled with advantage: 33, with a natural 20 kept and a 17 struck through, and the advantage coming from Cloak of Elvenkind and Boots of Elvenkind."> | <img src="images/roll-damage-dialog.png" width="472" alt="The Roll damage window for a Longsword with Critical hit, Savage Attacker and a 2nd-level Searing Smite ticked, showing the whole roll before it is made."> |
 
 ![A critical Longsword hit with Savage Attacker and Searing Smite: 42 damage, split into Slashing 8, Radiant 15 and Fire 19, with every die shown and the Savage Attacker dice that were not kept struck through.](images/roll-damage-result.png)
 
@@ -322,7 +322,7 @@ Rolling uses the Dice Roller plugin. Stat blocks, the compendiums and the charac
 
 ### Does it work with my theme?
 
-Yes. Stat blocks, the character sheet and the Builder keep their parchment look under any theme, in light and dark mode.
+Yes. Stat blocks, the character sheet and the Builder keep their parchment look under any theme.
 
 ### Is this the Archivist I saw elsewhere?
 
