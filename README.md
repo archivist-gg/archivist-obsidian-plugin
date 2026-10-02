@@ -193,7 +193,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 
 ### Inventory
 
-- Three **attunement** slots with your attuned items' icons, and your **coins** (PP, GP, SP, CP).
+- Three **attunement** slots with your attuned items' icons, and a **Coins** card with every coin (PP, GP, EP, SP, CP) and your total in gold. Click the card to add or subtract coins.
 - **Search**, filters for equipped, attuned or carried items, type and rarity, and **Add item** from any compendium you can see.
 - Sections for Favorites, **On you**, and each **container** (a Backpack, a Quiver, a Bag of Holding whose contents weigh nothing), with the total weight you carry.
 - **Stacks.** Click a stack's ×N to change how many you have (−, +, or type a number; it also shows what one weighs and costs). Anything you add, move or unequip joins a matching stack; **Split one off** separates one, and equipping a stack of weapons takes one from it.
