@@ -145,7 +145,7 @@ Click a number on the sheet and it rolls. The result appears right next to what 
 
 **Death saves.** At 0 HP, click DEATH SAVES to roll one and fill in its circle: 10 or more is a success, a natural 1 counts as two failures, and a natural 20 brings you back with 1 HP.
 
-**Attacks.** Click the HIT of a weapon, an Unarmed Strike or a feature's attack to roll to hit; a spell attack rolls the same way on the Spells tab. **Roll attack…** lets you choose normal, advantage or disadvantage and add something extra, such as `+1d4`.
+**Attacks.** Click the HIT of a weapon, an Unarmed Strike or a feature's attack to roll to hit; a spell attack rolls the same way on the Spells tab. **Roll attack…** lets you choose normal, advantage or disadvantage and add something extra, such as `+1d4`. With **Extra Attack**, a weapon shows ×2 (or ×3) after its to-hit: hover it to see where the extra attacks come from, such as "Extra Attack, Paladin 5", and click it (or **Roll 2 attacks** at the top of the right-click menu) to roll every attack at once, one line each.
 
 **Damage.** One click rolls the weapon's dice and modifier plus every bonus that applies on every hit, all at once. A bonus that only applies sometimes keeps its own line and its own roll. Shift+click rolls a critical hit by the rule you choose in the **Critical hits** setting: double the dice (the default), maximum dice plus a roll, or double the total. A hit with two or more damage types shows each type's subtotal.
 
@@ -166,10 +166,11 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 ### Actions, features and resources
 
 **Actions tab.** Everything you can do on your turn, grouped into Actions, Bonus Actions and Reactions:
-- Your weapons with range, to hit, damage and **mastery** (Vex, Sap, Slow and the rest, with what each does on a hit), how many attacks you make, which weapons are equipped, weapons a feature gives you, and the Unarmed Strike.
+- Your weapons with range, to hit, damage and **mastery** (Vex, Sap, Slow and the rest, with what each does on a hit), how many attacks each one makes (×2 after the to-hit with Extra Attack), which weapons are equipped, weapons a feature gives you, and the Unarmed Strike.
 - **Natural weapons**, such as a species' claws, fangs or horns, get their own row next to the Unarmed Strike, with their own damage die and damage type. A trait you switch on adds its attack only while it is on.
 - Damage bonuses such as Sneak Attack or Radiant Strikes sit right in the damage column, and a critical range wider than 20 shows under the weapon.
 - Class features with their uses, items with charges, and consumables with a **Use** button.
+- A feature you switch on, such as **Rage**, has an **Activate** button in front of its uses, which reads **Active** while it is on. How long it lasts shows under its name.
 - Mark a row as a **Favorite** from its right-click menu to pin it to the top; the **Show** filters narrow the list and **Hide** tucks rows away.
 - Click a row to open its full text and see how its numbers add up.
 
