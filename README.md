@@ -135,6 +135,8 @@ The picture stays an ordinary image in your vault, and the character's note reme
 
 Click a number on the sheet and it rolls. The result appears right next to what you clicked.
 
+Rolling your own dice at the table? Turn off **Roll dice when you click a number on the sheet** in Settings. A plain click on the sheet then rolls nothing, while Shift+click, Cmd+click (Ctrl+click) and the right-click menu still roll, and dice in your notes still roll with a click.
+
 | On the sheet | Click | Shift+click | Cmd+click (Ctrl+click) | Option+click (Alt+click) | Right-click |
 | --- | --- | --- | --- | --- | --- |
 | Skill, save, ability modifier, Initiative | Roll d20 + bonus | Advantage | Disadvantage | Edit the number | Menu: the rolls, Edit, proficiency, Go back to the rules |
@@ -292,6 +294,7 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 | Player characters folder | Where **New character** puts new characters. A character works in any folder. |
 | Portraits folder | Where the portrait picker looks for pictures and keeps the ones you import (`PlayerCharacters/Portraits` unless you change it). |
 | Rolls → Critical hits | What a critical hit does to damage: double the dice (the default), maximum dice plus a roll, or double the total. |
+| Rolls → Roll dice when you click a number on the sheet | On unless you turn it off. Off, a plain click on a to-hit, damage, save, skill, check or Initiative number rolls nothing; Shift+click and the right-click menu still roll. |
 | Compendiums | **SRD 5.1 name** and **SRD 5.2 name** to rename the two SRD compendiums, then one row per compendium, with how many entries it holds and its **Visible** and **Read-only** switches. |
 
 ### Commands
