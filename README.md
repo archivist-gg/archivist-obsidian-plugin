@@ -97,7 +97,7 @@ Every character is an ordinary note in your vault. Open it and you get the sheet
 - **Armor Class**. Hover it to see how it is worked out: armor, shield, Dexterity, items and features, each with its amount.
 - **Hit points** with Heal and Damage buttons, current, maximum and temporary hit points, and **death saves** at 0 HP.
 - **Hit Dice** with + and −, and the **Short Rest** (a campfire) and **Long Rest** (a moon) buttons. A rest shows what it restores; on a Short Rest you spend Hit Dice and take the average or your own roll.
-- **Manage & level up** opens the Builder; **Customize appearance** changes the sheet's layout, such as saves as their own section or as a strip.
+- **Manage & level up** opens the Builder; **Customize appearance** changes the sheet's layout, such as saves as their own section or as a strip, and the order of the tabs: drag them, or hide the ones you never use, for this character or with **Use these tabs for every character**.
 
 **Abilities and saves**
 - The six abilities with modifiers, scores and saving throws, Proficiency Bonus, **Initiative**, **Speed** and Inspiration.
@@ -105,6 +105,7 @@ Every character is an ordinary note in your vault. Open it and you get the sheet
 - Hover **Speed** to see every speed you have (walk, fly, swim, climb, burrow) and where each one comes from: species, feats, items, features, and conditions such as Restrained or Exhaustion.
 - An **All saves** strip for what helps every save, such as the bonus from Aura of Protection or a reroll.
 - **Defenses** (resistances, immunities, vulnerabilities, condition immunities) and **Conditions** as tags. A tag that comes from an item has a dashed border and names the item when you hover it; its × offers to take the item off. A condition that a feature you switch on gives you, such as Invisible from **Nature's Veil**, is dashed too and names the feature; its × switches the feature off.
+- **Your own conditions.** The Conditions window lists conditions of your own next to the standard ones. **New condition** makes one: what it does on the sheet, such as a lower Speed or disadvantage on Dexterity saves, or plain words that always show. Right-click a standard condition to use your own words for it. A condition you add can carry a short note, such as how long it lasts, and so can a defense you add yourself.
 
 **Skills, senses and proficiencies**
 - Every skill with its bonus. The box in front of a skill sets your proficiency. Proficiency and expertise from the rules fill in on their own and say where they come from when you hover ("Expertise from Rogue"); you can also set half proficiency yourself.
@@ -157,7 +158,7 @@ Rolling your own dice at the table? Turn off **Roll dice when you click a number
 
 **Saved rolls.** **Save as…** keeps what you ticked, for this weapon or for all your attacks, and the right-click menu lists it under Saved. A saved roll that no longer fits (say, for a weapon you no longer carry) is greyed out with the reason. **Manage saved rolls…** renames, reorders and deletes them.
 
-**The result** shows what you rolled ("Stealth · Check · Advantage"), the total, every die (a die that was not kept is struck through, and a natural 20 or 1 stands out in colour), where your advantage came from, and each damage type's subtotal. In a corner of the window it shows every roll, from the sheet, a stat block or the dice in your notes, and your last three stay: the newest as a card, the two before it as a line each. Close one with its ×, or press Esc to close them all. Next to the number, close it with its ×, a click anywhere else, Esc, or your next roll.
+**The result** shows what you rolled ("Stealth · Check · Advantage"), the total, every die (a die that was not kept is struck through, and a natural 20 or 1 stands out in colour), where your advantage came from, and each damage type's subtotal. In a corner of the window it shows every roll, from the sheet, a stat block or the dice in your notes, and your last three stay in one panel: the newest in full, the two before it as a line each, starting with its result. A line's × removes that line; the card's × or Esc closes them all. Next to the number, close it with its ×, a click anywhere else, Esc, or your next roll.
 
 Anything you can roll gets a dotted underline when you hover it. Dice in your notes and in stat blocks roll the same way.
 
@@ -209,7 +210,9 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 - Sections for Favorites, **On you**, and each **container** (a Backpack, a Quiver, a Bag of Holding whose contents weigh nothing), with the total weight you carry.
 - **Stacks.** Click a stack's ×N to change how many you have (−, +, or type a number; it also shows what one weighs and costs). Anything you add, move or unequip joins a matching stack; **Split one off** separates one, and equipping a stack of weapons takes one from it.
 - **Drag and drop.** Drag a row into a container, out of it, or onto **On you**. Drop it on a matching item to add it to that stack. An item that is equipped or attuned, has its own note, charges or changes, or is a container keeps its own row.
-- Each row's menu: Equip or Unequip, **Move to** another container, Quantity, Split one off, Edit note, Remove.
+- Each row's menu: Equip or Unequip, **Move to** another container, **Trade with…** another character, Quantity, Split one off, Edit note, Remove.
+- **Select** picks several rows at once to trade, move or remove them together.
+- **Trade** items and coins with another character in your vault. The Trade window shows both inventories side by side: move items either way (part of a stack, a container with what is in it; worn or attuned items come off), add coins, then **Trade**. **Undo** puts both characters back, and each Inventory keeps a **Given and received** list.
 - **Benefits follow what you wear.** An item's resistances, immunities, AC, saves, senses, speeds and effects count while it is equipped (and attuned, if it needs attunement). A magic weapon that needs attunement attacks as a plain weapon until you attune it.
 - Item **notes**, **charges** with when they come back ("Dawn 1d6+1"), and a **Customize** card for changes to one item.
 - **Icons** for weapons, armor, gear, potions, wands, rings and more.
@@ -273,6 +276,7 @@ actions:
 - **Twelve kinds of stat block:** monsters, spells, magic items, armor, weapons, classes, subclasses, species, backgrounds, feats, class options and conditions.
 - **The math is done for you.** Ability modifiers, Proficiency Bonus and XP come from the scores and challenge rating, and the edit form works out saves, skills, passive Perception and hit points, which you can change. Write `atk:STR+PB` or `dc:WIS` in an action and the block fills in the number from the creature's own scores.
 - **Buttons beside each block:** **save to compendium**, delete, **edit** in a form (for monsters, spells, items and conditions, with suggestions as you type), and a **two-column** layout for monsters.
+- A creature a spell summons, such as the **Otherworldly Steed** of Find Steed, shows the numbers that grow with the spell in words: "AC 10 + the spell's level".
 - The **Insert monster block**, **Insert spell block** and **Insert magic item block** commands start you off with a ready-made outline.
 
 <p align="center"><img src="images/spell-block.png" width="652" alt="The Fireball spell block: casting time, range, components, duration, damage and save, the description with a clickable 8d6, At Higher Levels, and links to the Sorcerer and Wizard classes."></p>
@@ -285,7 +289,7 @@ Put a roll between backticks anywhere in a note, like `` `dice:2d6` ``, and it t
 
 Type `{{` and start typing a name to pull any entry from your compendiums into a note: a spell, monster, item, species, subclass, class option such as an Eldritch Invocation, and more. Pick it from the list, and on a line of its own it shows as the full stat block, both while you write and when you read.
 
-- A block that names its compendium in its corner, such as a spell or an item, shows it there; the others get a badge with the compendium it came from. If the name no longer matches anything, it says so.
+- Every block names where it comes from in its top right corner, such as SRD 2024 or your own compendium. If the name no longer matches anything, it says so.
 - **Save to compendium** on a stat block in a note files it in a compendium, and the note keeps showing the same block, now read from there.
 
 ![A session prep note with dice buttons (+7 to hit, 2d8+5, DC 13, 2d6, 3d6, 2d4+2) and the Owlbear stat block pulled in from the SRD 2024 compendium.](images/note-inline.png)
