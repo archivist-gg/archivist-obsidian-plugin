@@ -104,7 +104,7 @@ Every character is an ordinary note in your vault. Open it and you get the sheet
 - Hover an ability to see how its score adds up: the base score, then species, background, Ability Score Improvements, feats and items, each with its amount.
 - Hover **Speed** to see every speed you have (walk, fly, swim, climb, burrow) and where each one comes from: species, feats, items, features, and conditions such as Restrained or Exhaustion.
 - An **All saves** strip for what helps every save, such as the bonus from Aura of Protection or a reroll.
-- **Defenses** (resistances, immunities, vulnerabilities, condition immunities) and **Conditions** as tags. A tag that comes from an item has a dashed border and names the item when you hover it; its × offers to take the item off.
+- **Defenses** (resistances, immunities, vulnerabilities, condition immunities) and **Conditions** as tags. A tag that comes from an item has a dashed border and names the item when you hover it; its × offers to take the item off. A condition that a feature you switch on gives you, such as Invisible from **Nature's Veil**, is dashed too and names the feature; its × switches the feature off.
 
 **Skills, senses and proficiencies**
 - Every skill with its bonus. The box in front of a skill sets your proficiency. Proficiency and expertise from the rules fill in on their own and say where they come from when you hover ("Expertise from Rogue"); you can also set half proficiency yourself.
@@ -170,7 +170,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 - **Natural weapons**, such as a species' claws, fangs or horns, get their own row next to the Unarmed Strike, with their own damage die and damage type. A trait you switch on adds its attack only while it is on.
 - Damage bonuses such as Sneak Attack or Radiant Strikes sit right in the damage column, and a critical range wider than 20 shows under the weapon.
 - Class features with their uses, items with charges, and consumables with a **Use** button.
-- A feature you switch on, such as **Rage**, has an **Activate** button in front of its uses, which reads **Active** while it is on. How long it lasts shows under its name.
+- A feature you switch on, such as **Rage**, has an **Activate** button in front of its uses, which reads **Active** while it is on. How long it lasts shows under its name. A later feature can give it another way to pay: from Sorcerer 7, **Innate Sorcery** also offers **Spend 2 Sorcery Points**.
 - Mark a row as a **Favorite** from its right-click menu to pin it to the top; the **Show** filters narrow the list and **Hide** tucks rows away.
 - Click a row to open its full text and see how its numbers add up.
 
@@ -185,6 +185,8 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 ### Spells
 
 - Your spell save DC and spell attack at the top, with **Cast** and **Manage** modes.
+- A bonus to one class's spells changes only that class: while **Innate Sorcery** is on, your Sorcerer spell save DC goes up by 1 and your Sorcerer spell attacks roll with advantage, and your other classes' spells stay as they are.
+- A feature that gives you an extra cantrip, such as the Druid's **Magician** or the Cleric's **Thaumaturge**, adds one to how many cantrips you can have.
 - Spells grouped by level: cantrips, leveled spells with their **slot boxes**, a Warlock's **Pact Magic** slots, spells you can cast for free or at will from a species, feat or invocation, and always-prepared spells marked as such.
 - Columns for casting time, range, **Hit / DC**, effect (damage dice with a damage type icon, healing, targets) and components with duration, plus concentration and ritual marks.
 - **CAST** spends a slot. A spell attack's Atk rolls to hit.
