@@ -1,7 +1,7 @@
 {
   "id": "archivist-gg",
   "name": "Archivist",
-  "version": "0.12.6",
+  "version": "0.12.7",
   "minAppVersion": "1.7.2",
   "description": "Fifth edition character sheets that do the math and roll on click, with a step-by-step builder, spells, resources and an inventory with containers, plus parchment stat blocks and the SRD 5.1 and 5.2 as linked compendiums.",
   "author": "Shinoobi",

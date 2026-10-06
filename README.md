@@ -96,7 +96,7 @@ Every character is an ordinary note in your vault. Open it and you get the sheet
 - Your portrait, name, species, class and subclass with levels.
 - **Armor Class**. Hover it to see how it is worked out: armor, shield, Dexterity, items and features, each with its amount.
 - **Hit points** with Heal and Damage buttons, current, maximum and temporary hit points, and **death saves** at 0 HP.
-- **Hit Dice** with + and −, and the **Short Rest** and **Long Rest** buttons. A rest shows what it restores; on a Short Rest you spend Hit Dice and take the average or your own roll.
+- **Hit Dice** with + and −, and the **Short Rest** (a campfire) and **Long Rest** (a moon) buttons. A rest shows what it restores; on a Short Rest you spend Hit Dice and take the average or your own roll.
 - **Manage & level up** opens the Builder; **Customize appearance** changes the sheet's layout, such as saves as their own section or as a strip.
 
 **Abilities and saves**
@@ -113,8 +113,8 @@ Every character is an ordinary note in your vault. Open it and you get the sheet
 - Passive Perception, Investigation and Insight, and your armor, weapon, tool and language proficiencies, all of which you can edit.
 
 **Changing a number yourself**
-- Right-click (or long-press) Armor Class, Speed, an ability score or a passive sense and choose **Edit…**. A number you have set yourself offers **Go back to the rules**, with the rules' number beside it. Option+click (Alt+click) opens the edit box straight away.
-- The sheet follows the rules for species, classes, subclasses, backgrounds, feats and items, and for what they give you: Weapon Mastery, Extra Attack, Aura of Protection, Rage on and off, armor too heavy for your Strength, resistances a feat lets you choose, and more.
+- Right-click (or press and hold on a touch screen) Armor Class, Speed, an ability score or a passive sense and choose **Edit…**. A number you have set yourself offers **Go back to the rules**, with the rules' number beside it. Option+click (Alt+click) opens the edit box straight away.
+- The sheet follows the rules for species, classes, subclasses, backgrounds, feats and items, and for what they give you: Weapon Mastery, Extra Attack, Aura of Protection, Rage on and off, a Warlock's pact weapon, armor too heavy for your Strength, resistances a feat lets you choose, and more.
 
 ![Hovering Armor Class and Speed on the sheet. Armor Class 21 adds up Plate Armor (Armor of Necrotic Resistance) +18, Shield +2 and Cloak of Protection +1. Speed shows a walking speed of 30 ft. from Halfling and a climbing speed of 30 ft. from Slippers of Spider Climbing.](images/sheet-breakdowns.png)
 
@@ -133,7 +133,9 @@ The picture stays an ordinary image in your vault, and the character's note reme
 
 ### Rolling dice
 
-Click a number on the sheet and it rolls. The result appears right next to what you clicked.
+Click a number on the sheet and it rolls. The result appears in the top right corner of the window. **Where roll results appear** in Settings moves it to another corner, or next to the number you clicked.
+
+On a touch screen, press and hold anywhere on the sheet to open the menu a right-click opens, or to see what hovering shows.
 
 Rolling your own dice at the table? Turn off **Roll dice when you click a number on the sheet** in Settings. A plain click on the sheet then rolls nothing, while Shift+click, Cmd+click (Ctrl+click) and the right-click menu still roll, and dice in your notes still roll with a click.
 
@@ -155,7 +157,7 @@ Rolling your own dice at the table? Turn off **Roll dice when you click a number
 
 **Saved rolls.** **Save as…** keeps what you ticked, for this weapon or for all your attacks, and the right-click menu lists it under Saved. A saved roll that no longer fits (say, for a weapon you no longer carry) is greyed out with the reason. **Manage saved rolls…** renames, reorders and deletes them.
 
-**The result** shows what you rolled ("Stealth · Check · Advantage"), the total, every die (a die that was not kept is struck through, and a natural 20 or 1 stands out in colour), where your advantage came from, and each damage type's subtotal. Close it with its ×, a click anywhere else, Esc, or your next roll.
+**The result** shows what you rolled ("Stealth · Check · Advantage"), the total, every die (a die that was not kept is struck through, and a natural 20 or 1 stands out in colour), where your advantage came from, and each damage type's subtotal. In a corner of the window it shows every roll, from the sheet, a stat block or the dice in your notes, and your last three stay: the newest as a card, the two before it as a line each. Close one with its ×, or press Esc to close them all. Next to the number, close it with its ×, a click anywhere else, Esc, or your next roll.
 
 Anything you can roll gets a dotted underline when you hover it. Dice in your notes and in stat blocks roll the same way.
 
@@ -172,7 +174,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 - **Natural weapons**, such as a species' claws, fangs or horns, get their own row next to the Unarmed Strike, with their own damage die and damage type. A trait you switch on adds its attack only while it is on.
 - Damage bonuses such as Sneak Attack or Radiant Strikes sit right in the damage column, and a critical range wider than 20 shows under the weapon.
 - Class features with their uses, items with charges, and consumables with a **Use** button.
-- A feature you switch on, such as **Rage**, has an **Activate** button in front of its uses, which reads **Active** while it is on. How long it lasts shows under its name. A later feature can give it another way to pay: from Sorcerer 7, **Innate Sorcery** also offers **Spend 2 Sorcery Points**.
+- A feature you switch on, such as **Rage**, has an **Activate** button in front of its uses, which reads **Active** while it is on. How long it lasts shows under its name, and a rest ends it. A later feature can give it another way to pay: from Sorcerer 7, **Innate Sorcery** also offers **Spend 2 Sorcery Points**.
 - Mark a row as a **Favorite** from its right-click menu to pin it to the top; the **Show** filters narrow the list and **Hide** tucks rows away.
 - Click a row to open its full text and see how its numbers add up.
 
@@ -191,7 +193,11 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 - A feature that gives you an extra cantrip, such as the Druid's **Magician** or the Cleric's **Thaumaturge**, adds one to how many cantrips you can have.
 - Spells grouped by level: cantrips, leveled spells with their **slot boxes**, a Warlock's **Pact Magic** slots, spells you can cast for free or at will from a species, feat or invocation, and always-prepared spells marked as such.
 - Columns for casting time, range, **Hit / DC**, effect (damage dice with a damage type icon, healing, targets) and components with duration, plus concentration and ritual marks.
-- **CAST** spends a slot. A spell attack's Atk rolls to hit.
+- **CAST** spends a slot. A spell attack's Atk rolls to hit, with its **ADV** or **DIS** on a line under the number, as on a weapon.
+- **Free casts.** A spell you can cast once per Long Rest without a slot, such as a species' spells or the level 1 spell from **Magic Initiate**, has an outlined **CAST** that counts the cast and greys out once it is used; a rest gives it back.
+- A cantrip that needs concentration, such as **Guidance**, has a **CAST** button in place of At Will, and casting it starts your concentration.
+- A choice that picks a list of spells, such as a **Circle of the Land** Druid's land, prepares that list's spells, and **Natural Recovery** casts one of them without a slot.
+- The Spells tab tells you when each class can change its prepared spells: after a Long Rest or when you gain a level, how many, and from where (a Wizard's spellbook).
 - **Items that hold spells** (a wand or staff with charges) get their own section with the item's charges. CAST spends those charges and uses the item's own save DC and attack bonus, and works only while the item is equipped (and attuned, if it needs attunement). Spell scrolls work too.
 
 ![The Spells tab of a level 9 Warlock: spell save DC 17 and spell attack +10, cantrips with their attack and damage, free and at-will spells, and Pact Magic with its slot boxes and CAST buttons.](images/spells.png)
@@ -199,7 +205,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 ### Inventory
 
 - Three **attunement** slots with your attuned items' icons, and a **Coins** card with every coin (PP, GP, EP, SP, CP) and your total in gold. Click the card to add or subtract coins.
-- **Search**, filters for equipped, attuned or carried items, type and rarity, and **Add item** from any compendium you can see.
+- **Search**, filters for equipped, attuned or carried items, type and rarity, and **Add item** from any compendium you can see. The list stays open while you add several items, each with − and + to add more than one at a time, and shows what you have added.
 - Sections for Favorites, **On you**, and each **container** (a Backpack, a Quiver, a Bag of Holding whose contents weigh nothing), with the total weight you carry.
 - **Stacks.** Click a stack's ×N to change how many you have (−, +, or type a number; it also shows what one weighs and costs). Anything you add, move or unequip joins a matching stack; **Split one off** separates one, and equipping a stack of weapons takes one from it.
 - **Drag and drop.** Drag a row into a container, out of it, or onto **On you**. Drop it on a matching item to add it to that stack. An item that is equipped or attuned, has its own note, charges or changes, or is a container keeps its own row.
@@ -294,6 +300,7 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 | Player characters folder | Where **New character** puts new characters. A character works in any folder. |
 | Portraits folder | Where the portrait picker looks for pictures and keeps the ones you import (`PlayerCharacters/Portraits` unless you change it). |
 | Rolls → Critical hits | What a critical hit does to damage: double the dice (the default), maximum dice plus a roll, or double the total. |
+| Rolls → Where roll results appear | Top right (the default), bottom right, top left or bottom left of the window, for every roll: the sheet's, a stat block's and the dice in your notes. **Next to the number** opens a sheet roll's result beside the number you clicked. |
 | Rolls → Roll dice when you click a number on the sheet | On unless you turn it off. Off, a plain click on a to-hit, damage, save, skill, check or Initiative number rolls nothing; Shift+click and the right-click menu still roll. |
 | Compendiums | **SRD 5.1 name** and **SRD 5.2 name** to rename the two SRD compendiums, then one row per compendium, with how many entries it holds and its **Visible** and **Read-only** switches. |
 
