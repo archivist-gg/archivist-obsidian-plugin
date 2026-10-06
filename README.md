@@ -1,7 +1,7 @@
 # Archivist
 
 [![Latest release](https://img.shields.io/github/v/release/archivist-gg/archivist-obsidian-plugin?label=release&color=8b2a1a)](https://github.com/archivist-gg/archivist-obsidian-plugin/releases/latest)
-[![Obsidian 1.7.2+ desktop](https://img.shields.io/badge/Obsidian-1.7.2%2B%20desktop-7c3aed?logo=obsidian&logoColor=white)](https://obsidian.md)
+[![Obsidian 1.7.2+ desktop and tablet](https://img.shields.io/badge/Obsidian-1.7.2%2B%20desktop%20and%20tablet-7c3aed?logo=obsidian&logoColor=white)](https://obsidian.md)
 [![Telegram @archivist_gg](https://img.shields.io/badge/Telegram-%40archivist__gg-26a5e4?logo=telegram&logoColor=white)](https://t.me/archivist_gg)
 
 **Fifth edition character sheets for [Obsidian](https://obsidian.md) that do the math for you and roll with a click.** Build your character step by step, and the sheet works out every number from the rules: saves, skills, attacks, damage, spells, resources and rests. Give your character a portrait, fill a backpack, and watch an item's benefits switch on when you put it on. Around the sheet, monsters and spells you write in your notes appear as parchment stat blocks, dice in your notes roll with a click, and the System Reference Document 5.1 and 5.2 arrive as linked compendiums next to your own homebrew. Everything stays in your vault as ordinary notes you own.
@@ -29,13 +29,13 @@ obsidian://brat?plugin=archivist-gg/archivist-obsidian-plugin
 
 ### Recommended: the Dice Roller plugin
 
-Archivist rolls its dice with the free **Dice Roller** plugin (by Javalent). Install it from **Settings → Community plugins → Browse** and enable it. Without it, everything else works, and clicking a die shows a message instead of rolling. Archivist's rolls show Dice Roller's 3D dice only when **Always Render Dice** is on in Dice Roller's own settings: turn it on if you want to see them.
+Archivist rolls its dice with the free **Dice Roller** plugin (by Javalent). Install it from **Settings → Community plugins → Browse** and enable it. Without it, everything else works, and clicking a die shows a message instead of rolling. Archivist's rolls show Dice Roller's 3D dice. To see only the result, turn off **Show 3D dice when you roll** in Archivist's settings.
 
 ### Requirements
 
 | | |
 | --- | --- |
-| Obsidian | 1.7.2 or later, **desktop only** (Windows, macOS, Linux). Phones and tablets are not supported. |
+| Obsidian | 1.7.2 or later, on a computer (Windows, macOS, Linux), an iPad or another tablet. Phones work too, but the layout is not polished for a small screen yet. |
 | BRAT | The current BRAT needs Obsidian 1.11.4 or later. |
 | Rolling | The Dice Roller plugin. |
 
@@ -89,6 +89,7 @@ At a glance:
 - **Stat blocks** for monsters, spells, items and more, written right in your notes.
 - **Dice in your notes** that roll with a click, and any compendium entry pulled into a note by typing `{{`.
 - Stat blocks and the sheet keep their parchment look **under any theme**, light or dark.
+- On an **iPad** or another **tablet** the sheet fills the screen, and pressing and holding opens the menus.
 
 ### Character sheet
 
@@ -138,7 +139,7 @@ The picture stays an ordinary image in your vault, and the character's note reme
 
 Click a number on the sheet and it rolls. The result appears in the top right corner of the window. **Where roll results appear** in Settings moves it to another corner, or next to the number you clicked.
 
-Want to see 3D dice? Turn on **Always Render Dice** in Dice Roller's own settings, and Archivist's rolls show them.
+Every roll shows Dice Roller's 3D dice, and the result appears once they settle. Rather see only the result, straight away? Turn off **Show 3D dice when you roll** in Settings.
 
 On a touch screen, press and hold anywhere on the sheet to open the menu a right-click opens, or to see what hovering shows.
 
@@ -210,12 +211,13 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 
 ### Companions and Wild Shape
 
-A familiar, a steed, the creatures you animate or summon, and your Wild Shape forms get their own **Companions** tab, after Spells. It appears once a character has a companion, or a spell or feature that brings one, such as **Find Familiar**, **Find Steed**, **Animate Dead**, **Animate Objects**, **Giant Insect** or **Summon Dragon**.
+A familiar, a steed, the creatures you animate or summon, and your Wild Shape forms get their own **Companions** tab, after Spells. It appears once a character has a companion, or a spell, feature or class option that brings one, such as **Find Familiar**, **Find Steed**, **Animate Dead**, **Animate Objects**, **Giant Insect** or **Summon Dragon**.
 
 - **Cast to summon.** **CAST** on a spell that summons a creature opens a window to pick the creature and what it asks for, such as its kind (celestial, fey or fiend) or its size, then adds it to the tab. A free cast, a spell scroll or an item that holds the spell works the same way. Casting a spell that gives you only one creature again, such as **Find Steed**, updates the one you have. Until you cast, a card with **Summon** waits on the tab for each spell or feature that can bring a creature.
-- **A full stat block, worked out for you.** Each creature has its own Hit Points with Heal and Damage, temporary Hit Points and Hit Dice, its abilities, saves, skills and Initiative, and attacks that roll on its own numbers. Hover a number that grows with you or with the spell to see how it is worked out, such as "10 + the spell's level (2)".
+- **A full stat block, worked out for you.** Each creature has its own Hit Points with Heal and Damage, temporary Hit Points and Hit Dice, its abilities, saves, skills and Initiative, and attacks that roll on its own numbers. Hover a number that grows with you or with the spell to see how it is worked out, such as "10 + the spell's level (2)". A creature from a class option uses that class's level, also when you have more than one class.
 - **Its own conditions.** A creature has its own conditions and Exhaustion, which change its rolls and never yours. The Conditions window greys out the conditions it is immune to.
 - **Dismiss and Summon.** **Dismiss** sends a creature away and **Summon** brings it back. Its menu renames it, adds a note, changes its form (a familiar from an owl to a cat) or removes it.
+- **At 0 Hit Points.** A creature a spell brings, such as a familiar or Animate Dead's Skeletons, is gone at 0 Hit Points until you cast the spell again: a Long Rest heals the ones still standing and leaves the fallen out, and the block says so. A companion from a feature or a feat comes back at full Hit Points after a Long Rest.
 - **Its attacks in your Favorites.** Mark a companion's attack as a Favorite and it joins the Favorites at the top of the Actions tab, with its own to-hit and damage.
 - **Several of one creature.** Animate Dead's Skeletons or Animate Objects' objects share one stat block with a row of Hit Points boxes. Click a box to pick that creature, or Shift+click to pick several: Heal and Damage act on the ones you picked, **Apply to** in the Conditions window gives a condition to the ones you choose, and an attack rolls for the picked creature or for **each standing** one, each with its own advantage or disadvantage. A box's own menu heals that creature, drops it to 0, dismisses it or removes it.
 - **Features that change a companion.** **Investment of the Chain Master** gives your familiar a flying or swimming speed and lets it attack when you command it with a Bonus Action. A Draconic Sorcerer's **Dragon Companion** casts Summon Dragon without Concentration: the summon window asks.
@@ -301,6 +303,7 @@ actions:
 
 - **Twelve kinds of stat block:** monsters, spells, magic items, armor, weapons, classes, subclasses, species, backgrounds, feats, class options and conditions.
 - **The math is done for you.** Ability modifiers, Proficiency Bonus and XP come from the scores and challenge rating, and the edit form works out saves, skills, passive Perception and hit points, which you can change. Write `atk:STR+PB` or `dc:WIS` in an action and the block fills in the number from the creature's own scores.
+- **Senses** read the way the SRD 5.2 prints them, on every block and in both editions: "Darkvision 60 ft.; Passive Perception 15". Your note keeps its own words.
 - **Buttons beside each block:** **save to compendium**, delete, **edit** in a form (for monsters, spells, items and conditions, with suggestions as you type), and a **two-column** layout for monsters.
 - A creature a spell summons, such as the **Otherworldly Steed** of Find Steed, shows the numbers that grow with the spell in words: "AC 10 + the spell's level". On a character's **Companions** tab it shows the numbers worked out for that character.
 - The **Insert monster block**, **Insert spell block** and **Insert magic item block** commands start you off with a ready-made outline.
@@ -315,7 +318,7 @@ Put a roll between backticks anywhere in a note, like `` `dice:2d6` ``, and it t
 
 Type `{{` and start typing a name to pull any entry from your compendiums into a note: a spell, monster, item, species, subclass, class option such as an Eldritch Invocation, and more. Pick it from the list, and on a line of its own it shows as the full stat block, both while you write and when you read.
 
-- Every block names where it comes from in its top right corner, such as SRD 2024 or your own compendium. If the name no longer matches anything, it says so.
+- Every block names where it comes from in its top right corner, such as SRD 2024 or your own compendium, and so does an item's expanded row in the Inventory. If the name no longer matches anything, it says so.
 - **Save to compendium** on a stat block in a note files it in a compendium, and the note keeps showing the same block, now read from there.
 
 ![A session prep note with dice buttons (+7 to hit, 2d8+5, DC 13, 2d6, 3d6, 2d4+2) and the Owlbear stat block pulled in from the SRD 2024 compendium.](images/note-inline.png)
@@ -331,6 +334,7 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 | Portraits folder | Where the portrait picker looks for pictures and keeps the ones you import (`PlayerCharacters/Portraits` unless you change it). |
 | Rolls → Critical hits | What a critical hit does to damage: double the dice (the default), maximum dice plus a roll, or double the total. |
 | Rolls → Where roll results appear | Top right (the default), bottom right, top left or bottom left of the window, for every roll: the sheet's, a stat block's and the dice in your notes. **Next to the number** opens a sheet roll's result beside the number you clicked. |
+| Rolls → Show 3D dice when you roll | On unless you turn it off. On, Dice Roller's 3D dice roll on screen for every roll and the result appears once they settle. Off, no dice: the result appears at once. |
 | Rolls → Roll dice when you click a number on the sheet | On unless you turn it off. Off, a plain click on a to-hit, damage, save, skill, check or Initiative number rolls nothing; Shift+click and the right-click menu still roll. |
 | Compendiums | **SRD 5.1 name** and **SRD 5.2 name** to rename the two SRD compendiums, then one row per compendium, with how many entries it holds and its **Visible** and **Read-only** switches. |
 
@@ -360,7 +364,7 @@ It is not listed there yet. Until it is, BRAT installs it from this page and kee
 
 ### Does it work on mobile?
 
-No. Archivist is desktop only.
+On an iPad or another tablet, yes: the sheet fills the screen edge to edge, and pressing and holding opens the menu a right-click opens on a computer, or shows what hovering shows. BRAT installs and updates it as on a computer. On a phone Archivist works too, but the layout is not polished for a small screen yet.
 
 ### What content does it include?
 
