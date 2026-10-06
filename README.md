@@ -29,7 +29,7 @@ obsidian://brat?plugin=archivist-gg/archivist-obsidian-plugin
 
 ### Recommended: the Dice Roller plugin
 
-Archivist rolls its dice with the free **Dice Roller** plugin (by Javalent). Install it from **Settings → Community plugins → Browse** and enable it. Without it, everything else works, and clicking a die shows a message instead of rolling.
+Archivist rolls its dice with the free **Dice Roller** plugin (by Javalent). Install it from **Settings → Community plugins → Browse** and enable it. Without it, everything else works, and clicking a die shows a message instead of rolling. Archivist's rolls show Dice Roller's 3D dice only when **Always Render Dice** is on in Dice Roller's own settings: turn it on if you want to see them.
 
 ### Requirements
 
@@ -62,6 +62,7 @@ Then make a character with the **New character** command, the ribbon button, or 
   - [Rolling dice](#rolling-dice)
   - [Actions, features and resources](#actions-features-and-resources)
   - [Spells](#spells)
+  - [Companions and Wild Shape](#companions-and-wild-shape)
   - [Inventory](#inventory)
   - [Builder](#builder)
   - [Compendiums](#compendiums)
@@ -83,6 +84,7 @@ At a glance:
 - **Click to roll** skills, saves, ability checks, Initiative, death saves, attacks and damage, with advantage, critical hits and a window for special rolls.
 - A **Builder** for new characters and level ups, with every choice explained in its own words.
 - **Spells**, **resources** and an **inventory** with bags, stacks, drag and drop, attunement and item icons.
+- A **Companions** tab for familiars, steeds, summoned creatures and Wild Shape forms, each a full stat block that rolls.
 - The **SRD 5.1 and SRD 5.2** as compendiums, plus **your own homebrew** next to them.
 - **Stat blocks** for monsters, spells, items and more, written right in your notes.
 - **Dice in your notes** that roll with a click, and any compendium entry pulled into a note by typing `{{`.
@@ -96,7 +98,7 @@ Every character is an ordinary note in your vault. Open it and you get the sheet
 - Your portrait, name, species, class and subclass with levels.
 - **Armor Class**. Hover it to see how it is worked out: armor, shield, Dexterity, items and features, each with its amount.
 - **Hit points** with Heal and Damage buttons, current, maximum and temporary hit points, and **death saves** at 0 HP.
-- **Hit Dice** with + and −, and the **Short Rest** (a campfire) and **Long Rest** (a moon) buttons. A rest shows what it restores; on a Short Rest you spend Hit Dice and take the average or your own roll.
+- **Hit Dice** with + and −, worked out from your class levels, so a character you wrote by hand or imported has them too, and the **Short Rest** (a campfire) and **Long Rest** (a moon) buttons. A rest shows what it restores; on a Short Rest you spend Hit Dice and take the average or your own roll.
 - **Manage & level up** opens the Builder; **Customize appearance** changes the sheet's layout, such as saves as their own section or as a strip, and the order of the tabs: drag them, or hide the ones you never use, for this character or with **Use these tabs for every character**.
 
 **Abilities and saves**
@@ -135,6 +137,8 @@ The picture stays an ordinary image in your vault, and the character's note reme
 ### Rolling dice
 
 Click a number on the sheet and it rolls. The result appears in the top right corner of the window. **Where roll results appear** in Settings moves it to another corner, or next to the number you clicked.
+
+Want to see 3D dice? Turn on **Always Render Dice** in Dice Roller's own settings, and Archivist's rolls show them.
 
 On a touch screen, press and hold anywhere on the sheet to open the menu a right-click opens, or to see what hovering shows.
 
@@ -195,6 +199,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 - Spells grouped by level: cantrips, leveled spells with their **slot boxes**, a Warlock's **Pact Magic** slots, spells you can cast for free or at will from a species, feat or invocation, and always-prepared spells marked as such.
 - Columns for casting time, range, **Hit / DC**, effect (damage dice with a damage type icon, healing, targets) and components with duration, plus concentration and ritual marks.
 - **CAST** spends a slot. A spell attack's Atk rolls to hit, with its **ADV** or **DIS** on a line under the number, as on a weapon.
+- **CAST** on a spell that summons a creature, such as **Find Familiar** or **Animate Dead**, also adds the creature to the **Companions** tab.
 - **Free casts.** A spell you can cast once per Long Rest without a slot, such as a species' spells or the level 1 spell from **Magic Initiate**, has an outlined **CAST** that counts the cast and greys out once it is used; a rest gives it back.
 - A cantrip that needs concentration, such as **Guidance**, has a **CAST** button in place of At Will, and casting it starts your concentration.
 - A choice that picks a list of spells, such as a **Circle of the Land** Druid's land, prepares that list's spells, and **Natural Recovery** casts one of them without a slot.
@@ -202,6 +207,26 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 - **Items that hold spells** (a wand or staff with charges) get their own section with the item's charges. CAST spends those charges and uses the item's own save DC and attack bonus, and works only while the item is equipped (and attuned, if it needs attunement). Spell scrolls work too.
 
 ![The Spells tab of a level 9 Warlock: spell save DC 17 and spell attack +10, cantrips with their attack and damage, free and at-will spells, and Pact Magic with its slot boxes and CAST buttons.](images/spells.png)
+
+### Companions and Wild Shape
+
+A familiar, a steed, the creatures you animate or summon, and your Wild Shape forms get their own **Companions** tab, after Spells. It appears once a character has a companion, or a spell or feature that brings one, such as **Find Familiar**, **Find Steed**, **Animate Dead**, **Animate Objects**, **Giant Insect** or **Summon Dragon**.
+
+- **Cast to summon.** **CAST** on a spell that summons a creature opens a window to pick the creature and what it asks for, such as its kind (celestial, fey or fiend) or its size, then adds it to the tab. A free cast, a spell scroll or an item that holds the spell works the same way. Casting a spell that gives you only one creature again, such as **Find Steed**, updates the one you have. Until you cast, a card with **Summon** waits on the tab for each spell or feature that can bring a creature.
+- **A full stat block, worked out for you.** Each creature has its own Hit Points with Heal and Damage, temporary Hit Points and Hit Dice, its abilities, saves, skills and Initiative, and attacks that roll on its own numbers. Hover a number that grows with you or with the spell to see how it is worked out, such as "10 + the spell's level (2)".
+- **Its own conditions.** A creature has its own conditions and Exhaustion, which change its rolls and never yours. The Conditions window greys out the conditions it is immune to.
+- **Dismiss and Summon.** **Dismiss** sends a creature away and **Summon** brings it back. Its menu renames it, adds a note, changes its form (a familiar from an owl to a cat) or removes it.
+- **Its attacks in your Favorites.** Mark a companion's attack as a Favorite and it joins the Favorites at the top of the Actions tab, with its own to-hit and damage.
+- **Several of one creature.** Animate Dead's Skeletons or Animate Objects' objects share one stat block with a row of Hit Points boxes. Click a box to pick that creature, or Shift+click to pick several: Heal and Damage act on the ones you picked, **Apply to** in the Conditions window gives a condition to the ones you choose, and an attack rolls for the picked creature or for **each standing** one, each with its own advantage or disadvantage. A box's own menu heals that creature, drops it to 0, dismisses it or removes it.
+- **Features that change a companion.** **Investment of the Chain Master** gives your familiar a flying or swimming speed and lets it attack when you command it with a Bonus Action. A Draconic Sorcerer's **Dragon Companion** casts Summon Dragon without Concentration: the summon window asks.
+
+**Wild Shape.** A Druid's Companions tab holds a **Wild Shape** block: the beasts you can turn into (a 2024 Druid picks its known forms in the Builder), each with its challenge rating, AC, Speed and first attack, and your uses. **SHIFT** turns you into one and spends a use:
+- The form's stat block comes first, with your Hit Points (2024) or the beast's Hit Points in front of yours (2014), and the beast's attacks.
+- A strip under the sheet's header names the form, with **END** to change back.
+- Numbers the form gives you, such as its AC, Speed and Strength, turn green on the sheet, and hovering one says it comes from the form.
+- The Spells tab says you can't cast spells in this form, and the Wild Shape row on the Actions tab has **SHIFT** and **END**.
+- The form ends when the rules say so, with a message: when you have the Incapacitated condition (2024), or when the beast drops to 0 Hit Points (2014), and then the rest of the damage carries over to you.
+- After a Long Rest, the rest window offers to change one of your known forms (2024).
 
 ### Inventory
 
@@ -231,6 +256,7 @@ Make a character with **New character** (the command or the ribbon button) or **
 - **An older species with a 2024 background.** When your background gives ability increases, a species written for the 2014 rules adds none of its own, as the 2024 rules say. The Abilities step explains it, and its **Keep species ability increases** switch keeps both if your table allows it.
 - **The same skill or tool twice.** When your species and your background give you the same skill or tool, the Builder lets you take a different one in its place.
 - The SRD 5.1 subraces (Hill Dwarf, High Elf, Lightfoot Halfling, Rock Gnome) get their parent species' ability increases, speed, senses, languages and traits.
+- A 2024 Druid picks its **Wild Shape** forms under **Known forms**, with the class's other choices.
 
 ![The Builder on the Class & Levels step: a level 1 Fighter with skill proficiencies picked, Weapon Mastery still open, and Defense chosen as the Fighting Style.](images/builder.png)
 
@@ -276,7 +302,7 @@ actions:
 - **Twelve kinds of stat block:** monsters, spells, magic items, armor, weapons, classes, subclasses, species, backgrounds, feats, class options and conditions.
 - **The math is done for you.** Ability modifiers, Proficiency Bonus and XP come from the scores and challenge rating, and the edit form works out saves, skills, passive Perception and hit points, which you can change. Write `atk:STR+PB` or `dc:WIS` in an action and the block fills in the number from the creature's own scores.
 - **Buttons beside each block:** **save to compendium**, delete, **edit** in a form (for monsters, spells, items and conditions, with suggestions as you type), and a **two-column** layout for monsters.
-- A creature a spell summons, such as the **Otherworldly Steed** of Find Steed, shows the numbers that grow with the spell in words: "AC 10 + the spell's level".
+- A creature a spell summons, such as the **Otherworldly Steed** of Find Steed, shows the numbers that grow with the spell in words: "AC 10 + the spell's level". On a character's **Companions** tab it shows the numbers worked out for that character.
 - The **Insert monster block**, **Insert spell block** and **Insert magic item block** commands start you off with a ready-made outline.
 
 <p align="center"><img src="images/spell-block.png" width="652" alt="The Fireball spell block: casting time, range, components, duration, damage and save, the description with a clickable 8d6, At Higher Levels, and links to the Sorcerer and Wizard classes."></p>
