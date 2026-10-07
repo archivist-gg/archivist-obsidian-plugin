@@ -80,6 +80,7 @@ Then make a character with the **New character** command, the ribbon button, or 
 At a glance:
 
 - A **character sheet** that works out every number from the rules and your choices, and lets you change any of them yourself.
+- **Find in the sheet** with Cmd+F (Ctrl+F): every match lights up, and each tab says how many it holds.
 - A **portrait** for every character: pick a picture and choose the part that shows.
 - **Click to roll** skills, saves, ability checks, Initiative, death saves, attacks and damage, with advantage, critical hits and a window for special rolls.
 - A **Builder** for new characters and level ups, with every choice explained in its own words.
@@ -88,12 +89,14 @@ At a glance:
 - The **SRD 5.1 and SRD 5.2** as compendiums, plus **your own homebrew** next to them.
 - **Stat blocks** for monsters, spells, items and more, written right in your notes.
 - **Dice in your notes** that roll with a click, and any compendium entry pulled into a note by typing `{{`.
-- Stat blocks and the sheet keep their parchment look **under any theme**, light or dark.
+- Stat blocks, the sheet and its windows keep their parchment look **under any theme**, light or dark.
 - On an **iPad** or another **tablet** the sheet fills the screen, and pressing and holding opens the menus.
 
 ### Character sheet
 
 Every character is an ordinary note in your vault. Open it and you get the sheet. Keep it in any folder, and link, search and back it up like any other note.
+
+**Find in the sheet.** Press Cmd+F (Ctrl+F) on a sheet, or the search button at the top of it, and type: every match lights up and the bar counts them ("3 of 23"). Enter and Shift+Enter step through them, and Esc closes the bar. Each tab shows how many matches it holds, and Enter after the last one goes on to the next tab. The sheet uses the same keys as Obsidian's own search in a note.
 
 **Header**
 - Your portrait, name, species, class and subclass with levels.
@@ -104,6 +107,8 @@ Every character is an ordinary note in your vault. Open it and you get the sheet
 
 **Abilities and saves**
 - The six abilities with modifiers, scores and saving throws, Proficiency Bonus, **Initiative**, **Speed** and Inspiration.
+- The **Initiative** box shows an **ADV** or **DIS** tag on its top edge when something gives you advantage or disadvantage on Initiative, such as **Feral Instinct** or a **Weapon of Warning** you are attuned to. Hover the tag to see where each one comes from.
+- **Heroic Inspiration** as a counter with − and +, or as a tick box or a star: click it when you gain Heroic Inspiration and again when you use it. Choose the look for each character in **Customize appearance**.
 - Hover an ability to see how its score adds up: the base score, then species, background, Ability Score Improvements, feats and items, each with its amount.
 - Hover **Speed** to see every speed you have (walk, fly, swim, climb, burrow) and where each one comes from: species, feats, items, features, and conditions such as Restrained or Exhaustion.
 - An **All saves** strip for what helps every save, such as the bonus from Aura of Protection or a reroll.
@@ -200,26 +205,28 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 - Spells grouped by level: cantrips, leveled spells with their **slot boxes**, a Warlock's **Pact Magic** slots, spells you can cast for free or at will from a species, feat or invocation, and always-prepared spells marked as such.
 - Columns for casting time, range, **Hit / DC**, effect (damage dice with a damage type icon, healing, targets) and components with duration, plus concentration and ritual marks.
 - **CAST** spends a slot. A spell attack's Atk rolls to hit, with its **ADV** or **DIS** on a line under the number, as on a weapon.
-- **CAST** on a spell that summons a creature, such as **Find Familiar** or **Animate Dead**, also adds the creature to the **Companions** tab.
+- **CAST** on a spell that summons a creature, such as **Find Familiar** or **Animate Dead**, opens the summon window and adds the creature to the **Companions** tab.
 - **Free casts.** A spell you can cast once per Long Rest without a slot, such as a species' spells or the level 1 spell from **Magic Initiate**, has an outlined **CAST** that counts the cast and greys out once it is used; a rest gives it back.
 - A cantrip that needs concentration, such as **Guidance**, has a **CAST** button in place of At Will, and casting it starts your concentration.
 - A choice that picks a list of spells, such as a **Circle of the Land** Druid's land, prepares that list's spells, and **Natural Recovery** casts one of them without a slot.
-- The Spells tab tells you when each class can change its prepared spells: after a Long Rest or when you gain a level, how many, and from where (a Wizard's spellbook).
+- When a class can change its prepared spells shows where you do it: the **Long Rest** window lists **Spells you can change** for each class that changes them after a rest (a Wizard picks from its spellbook), and a class that changes them when it gains a level says so on its card in the Builder.
 - **Items that hold spells** (a wand or staff with charges) get their own section with the item's charges. CAST spends those charges and uses the item's own save DC and attack bonus, and works only while the item is equipped (and attuned, if it needs attunement). Spell scrolls work too.
 
 ![The Spells tab of a level 9 Warlock: spell save DC 17 and spell attack +10, cantrips with their attack and damage, free and at-will spells, and Pact Magic with its slot boxes and CAST buttons.](images/spells.png)
 
 ### Companions and Wild Shape
 
-A familiar, a steed, the creatures you animate or summon, and your Wild Shape forms get their own **Companions** tab, after Spells. It appears once a character has a companion, or a spell, feature or class option that brings one, such as **Find Familiar**, **Find Steed**, **Animate Dead**, **Animate Objects**, **Giant Insect** or **Summon Dragon**.
+A familiar, a steed, the creatures you animate or summon, and your Wild Shape forms get their own **Companions** tab, after Spells. It appears once a character has a companion, or a spell, feature or class option that brings one, such as **Find Familiar**, **Find Steed**, **Animate Dead**, **Animate Objects**, **Giant Insect**, **Summon Dragon** or the SRD 5.1 **Conjure** spells.
 
-- **Cast to summon.** **CAST** on a spell that summons a creature opens a window to pick the creature and what it asks for, such as its kind (celestial, fey or fiend) or its size, then adds it to the tab. A free cast, a spell scroll or an item that holds the spell works the same way. Casting a spell that gives you only one creature again, such as **Find Steed**, updates the one you have. Until you cast, a card with **Summon** waits on the tab for each spell or feature that can bring a creature.
+- **Cast to summon.** **CAST** on a spell that summons a creature opens the summon window: the creatures you can choose from in a list, the one you pick as its full stat block beside it, and what the spell asks for, such as its kind (celestial, fey or fiend), its size or how many. **How you cast it** picks the way: a spell slot of a level you choose, a Pact slot, a free cast, as a ritual, or the scroll or item that holds the spell. A line says what the casting spends, and the button says it again. Then the creature joins the tab. Casting a spell that gives you only one creature again, such as **Find Steed**, updates the one you have. Until you cast, a card with **Summon** waits on the tab for each spell or feature that can bring a creature.
 - **A full stat block, worked out for you.** Each creature has its own Hit Points with Heal and Damage, temporary Hit Points and Hit Dice, its abilities, saves, skills and Initiative, and attacks that roll on its own numbers. Hover a number that grows with you or with the spell to see how it is worked out, such as "10 + the spell's level (2)". A creature from a class option uses that class's level, also when you have more than one class.
 - **Its own conditions.** A creature has its own conditions and Exhaustion, which change its rolls and never yours. The Conditions window greys out the conditions it is immune to.
-- **Dismiss and Summon.** **Dismiss** sends a creature away and **Summon** brings it back. Its menu renames it, adds a note, changes its form (a familiar from an owl to a cat) or removes it.
+- **Dismiss and Summon.** **Dismiss** sends a creature away. A familiar from **Find Familiar** waits in its pocket dimension and **Call back** brings it back for free. Any other creature needs a real casting to come back: **Summon…** opens the summon window on your last picks, where you can also choose another creature or form, and casting it spends a slot, a Pact slot or a free cast, or nothing as a ritual. A creature's menu renames it, adds a note, changes its form (a familiar from an owl to a cat) or removes it.
+- **Mixed castings.** One casting of **Animate Dead** can raise Skeletons and Zombies together, and **Animate Objects** can animate objects of different sizes (a Large object counts as two, a Huge one as three). An Animated Object's stat block shows the size you picked.
+- **The SRD 5.1 Conjure spells.** **Conjure Animals**, **Conjure Minor Elementals** and **Conjure Woodland Beings** ask how many creatures you call, by challenge rating (one of CR 2, two of CR 1, four of CR 1/2 or eight of CR 1/4), with more from a higher slot. **Conjure Elemental**, **Conjure Fey** and **Conjure Celestial** let you call a stronger creature from a higher slot.
 - **At 0 Hit Points.** A creature a spell brings, such as a familiar or Animate Dead's Skeletons, is gone at 0 Hit Points until you cast the spell again: a Long Rest heals the ones still standing and leaves the fallen out, and the block says so. A companion from a feature or a feat comes back at full Hit Points after a Long Rest.
 - **Its attacks in your Favorites.** Mark a companion's attack as a Favorite and it joins the Favorites at the top of the Actions tab, with its own to-hit and damage.
-- **Several of one creature.** Animate Dead's Skeletons or Animate Objects' objects share one stat block with a row of Hit Points boxes. Click a box to pick that creature, or Shift+click to pick several: Heal and Damage act on the ones you picked, **Apply to** in the Conditions window gives a condition to the ones you choose, and an attack rolls for the picked creature or for **each standing** one, each with its own advantage or disadvantage. A box's own menu heals that creature, drops it to 0, dismisses it or removes it.
+- **Several of one creature.** Animate Dead's Skeletons or Animate Objects' objects share one stat block with a row of Hit Points boxes. Click a box to pick that creature, or Shift+click to pick several: Heal and Damage act on the ones you picked, **Apply to** in the Conditions window gives a condition to the ones you choose, and an attack rolls for the picked creature or for **each standing** one, each with its own advantage or disadvantage. A box's own menu heals that creature, drops it to 0, dismisses it or removes it, and for a dismissed one casts the spell again (**Cast Animate Dead…**).
 - **Features that change a companion.** **Investment of the Chain Master** gives your familiar a flying or swimming speed and lets it attack when you command it with a Bonus Action. A Draconic Sorcerer's **Dragon Companion** casts Summon Dragon without Concentration: the summon window asks.
 
 **Wild Shape.** A Druid's Companions tab holds a **Wild Shape** block: the beasts you can turn into (a 2024 Druid picks its known forms in the Builder), each with its challenge rating, AC, Speed and first attack, and your uses. **SHIFT** turns you into one and spends a use:
@@ -239,7 +246,7 @@ A familiar, a steed, the creatures you animate or summon, and your Wild Shape fo
 - **Drag and drop.** Drag a row into a container, out of it, or onto **On you**. Drop it on a matching item to add it to that stack. An item that is equipped or attuned, has its own note, charges or changes, or is a container keeps its own row.
 - Each row's menu: Equip or Unequip, **Move to** another container, **Trade with…** another character, Quantity, Split one off, Edit note, Remove.
 - **Select** picks several rows at once to trade, move or remove them together.
-- **Trade** items and coins with another character in your vault. The Trade window shows both inventories side by side: move items either way (part of a stack, a container with what is in it; worn or attuned items come off), add coins, then **Trade**. **Undo** puts both characters back, and each Inventory keeps a **Given and received** list.
+- **Trade** items and coins with another character in your vault. The Trade window shows the two characters side by side, each with their coins right above their items: move items either way (part of a stack, a container with what is in it; worn or attuned items come off), add coins, then **Trade**. **Undo** puts both characters back, and each Inventory keeps a **Given and received** list.
 - **Benefits follow what you wear.** An item's resistances, immunities, AC, saves, senses, speeds and effects count while it is equipped (and attuned, if it needs attunement). A magic weapon that needs attunement attacks as a plain weapon until you attune it.
 - Item **notes**, **charges** with when they come back ("Dawn 1d6+1"), and a **Customize** card for changes to one item.
 - **Icons** for weapons, armor, gear, potions, wands, rings and more.
@@ -343,6 +350,7 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 | Command | What it does |
 | --- | --- |
 | New character | Makes a new character and opens the Builder. Also on the ribbon, and as **New character here** on any folder. |
+| Find in character sheet | Opens the find bar on the sheet you are looking at, like Cmd+F (Ctrl+F) or the search button at the top of the sheet. |
 | Insert monster block | Adds a monster outline where your cursor is. |
 | Insert spell block | Adds a spell outline. |
 | Insert magic item block | Adds a magic item outline. |
@@ -352,7 +360,7 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 
 ### Is it free?
 
-Yes. Archivist is free to download and use, under the freeware licence in [LICENSE](LICENSE).
+Yes. You can use all of the current features completely free, under the freeware licence in [LICENSE](LICENSE).
 
 ### Is it open source?
 
@@ -376,7 +384,7 @@ Rolling uses the Dice Roller plugin. Stat blocks, the compendiums and the charac
 
 ### Does it work with my theme?
 
-Yes. Stat blocks, the character sheet and the Builder keep their parchment look under any theme.
+Yes. Stat blocks, the character sheet, its windows and the Builder keep their parchment look under any theme.
 
 ### Is this the Archivist I saw elsewhere?
 
