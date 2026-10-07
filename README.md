@@ -367,10 +367,6 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 
 Yes. You can use all of the current features completely free, under the freeware licence in [LICENSE](LICENSE).
 
-### Is it open source?
-
-No. From 0.10.0 on, Archivist is free to use but its source code is not published; this page holds the downloads, the licence and the notices. Versions up to 0.9.0 were released under AGPL-3.0 and stay under it.
-
 ### Why isn't it in the Community plugins list?
 
 It is not listed there yet. Until it is, BRAT installs it from this page and keeps it up to date.
@@ -414,7 +410,7 @@ In [Issues](https://github.com/archivist-gg/archivist-obsidian-plugin/issues). T
 
 ## Licence and legal
 
-**Licence.** Archivist is freeware: free to download and use, with no modifying, reselling or redistributing. See [LICENSE](LICENSE). Versions up to 0.9.0 were released under the GNU Affero General Public License, version 3 (AGPL-3.0), and stay under it.
+**Licence.** Archivist is freeware: free to download and use, with no modifying, reselling or redistributing. See [LICENSE](LICENSE).
 
 **Compatibility and SRD content.** Archivist is a free, unofficial Obsidian plugin, compatible with fifth edition. It includes rules content from SRD 5.1 and SRD 5.2 under CC-BY-4.0. Not affiliated with Wizards of the Coast.
 
