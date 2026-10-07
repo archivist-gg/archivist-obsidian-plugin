@@ -225,11 +225,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 ## Icons (CC BY 3.0)
 
-The character sheet's item, condition, spell effect and rest button icons are line icons from Noun Project
+The character sheet's item, condition, spell effect and rest button icons are icons from Noun Project
 (https://thenounproject.com/) creators, each licensed under the Creative Commons Attribution 3.0
 License (CC BY 3.0, https://creativecommons.org/licenses/by/3.0/). They are embedded in main.js
 with the attribution text removed, and credited here in the form "Title by Creator from Noun
-Project (CC BY 3.0)". 136 icons (138 keys), 31 creators.
+Project (CC BY 3.0)". 136 icons (138 keys), 32 creators. An icon credited as "adapted" was changed:
+the short rest button's Flame by Doodle Icons is redrawn in brush strokes to match the long rest
+button's Moon.
 
 ### 4urbrand
 
@@ -347,10 +349,6 @@ Project (CC BY 3.0)". 136 icons (138 keys), 31 creators.
 
 - explosion by Andrejs Kirma from Noun Project (CC BY 3.0) https://thenounproject.com/icon/2181796/ (spell effect `physical`)
 
-### Ariyanto Deni
-
-- Night by Ariyanto Deni from Noun Project (CC BY 3.0) https://thenounproject.com/icon/6430732/ (sheet button `long-rest`)
-
 ### Arkinasi
 
 - Bomb by Arkinasi from Noun Project (CC BY 3.0) https://thenounproject.com/icon/8404843/ (key `bomb`)
@@ -360,6 +358,10 @@ Project (CC BY 3.0)". 136 icons (138 keys), 31 creators.
 - Spear by Art Isnakafa from Noun Project (CC BY 3.0) https://thenounproject.com/icon/8417234/ (key `pike`)
 - Pickaxe by Art Isnakafa from Noun Project (CC BY 3.0) https://thenounproject.com/icon/8194020/ (key `war-pick`)
 
+### arte ador
+
+- Moon by arte ador from Noun Project (CC BY 3.0) https://thenounproject.com/icon/5989475/ (sheet button `long-rest`)
+
 ### Azam Ishaq
 
 - Moai by Azam Ishaq from Noun Project (CC BY 3.0) https://thenounproject.com/icon/4945433/ (key `petrified`)
@@ -367,6 +369,10 @@ Project (CC BY 3.0)". 136 icons (138 keys), 31 creators.
 ### Circlon Tech
 
 - Love by Circlon Tech from Noun Project (CC BY 3.0) https://thenounproject.com/icon/8214933/ (key `charmed`)
+
+### Doodle Icons
+
+- Flame by Doodle Icons from Noun Project (CC BY 3.0), adapted https://thenounproject.com/icon/3883894/ (sheet button `short-rest`)
 
 ### Elena Babushkina
 
@@ -452,7 +458,6 @@ Project (CC BY 3.0)". 136 icons (138 keys), 31 creators.
 ### Yosua Bungaran
 
 - Flame by Yosua Bungaran from Noun Project (CC BY 3.0) https://thenounproject.com/icon/8388501/ (spell effect `fire`)
-- Campfire by Yosua Bungaran from Noun Project (CC BY 3.0) https://thenounproject.com/icon/8388494/ (sheet button `short-rest`)
 
 ### yus
 

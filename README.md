@@ -6,7 +6,7 @@
 
 **Fifth edition character sheets for [Obsidian](https://obsidian.md) that do the math for you and roll with a click.** Build your character step by step, and the sheet works out every number from the rules: saves, skills, attacks, damage, spells, resources and rests. Give your character a portrait, fill a backpack, and watch an item's benefits switch on when you put it on. Around the sheet, monsters and spells you write in your notes appear as parchment stat blocks, dice in your notes roll with a click, and the System Reference Document 5.1 and 5.2 arrive as linked compendiums next to your own homebrew. Everything stays in your vault as ordinary notes you own.
 
-![The character sheet of Ser Aldric Vane, a level 11 Human Paladin with a painted portrait: Armor Class 21, hit points, the six abilities with their saves, resistances, the skills list, and the Actions tab with weapons, weapon masteries and class features.](images/hero-sheet.png)
+![The character sheet of Ser Aldric Vane, a level 11 Human Paladin with a painted portrait: Armor Class 21, hit points, Hit Dice, the Short Rest and Long Rest buttons, the six abilities with their saves, resistances, the skills list, and the Actions tab with weapons, weapon masteries and class features.](images/hero-sheet.png)
 
 > **Which Archivist?** This is **Archivist by archivist-gg**, installed from this page. It is not related to other Obsidian plugins or apps named Archivist.
 
@@ -51,7 +51,7 @@ BRAT looks for new versions on its own. To update right away, open the command p
 
 The first time Archivist starts (and after an update that changes the SRD), it adds the SRD to your vault: about 3,600 read-only notes in `Compendium/SRD 5e` (SRD 5.1) and `Compendium/SRD 2024` (SRD 5.2). That first start takes a little longer than the ones after it. SRD 5e starts hidden from the lists you pick from; turn it on in **Settings → Archivist → Compendiums**.
 
-Then make a character with the **New character** command, the ribbon button, or **New character here** on any folder in the file explorer.
+Then make a character with the **New character** command, the ribbon button, or **New character** in the right-click menu of any folder in the file explorer.
 
 ## Contents
 
@@ -94,7 +94,7 @@ At a glance:
 
 ### Character sheet
 
-Every character is an ordinary note in your vault. Open it and you get the sheet. Keep it in any folder, and link, search and back it up like any other note.
+Every character is an ordinary note in your vault. Open it and you get the sheet. Keep it in any folder, and link, search and back it up like any other note. On Windows and Linux the sheet keeps the same width when a long tab brings up the scroll bar, so nothing jumps as you switch tabs or open a row.
 
 **Find in the sheet.** Press Cmd+F (Ctrl+F) on a sheet, or the search button at the top of it, and type: every match lights up and the bar counts them ("3 of 23"). Enter and Shift+Enter step through them, and Esc closes the bar. Each tab shows how many matches it holds, and Enter after the last one goes on to the next tab. The sheet uses the same keys as Obsidian's own search in a note.
 
@@ -156,7 +156,7 @@ Rolling your own dice at the table? Turn off **Roll dice when you click a number
 | Attack (HIT) | Roll to hit | Advantage | Disadvantage | **Roll attack…** window | Menu: the rolls, Roll attack…, saved rolls, Favorite, Hide |
 | Damage | Roll all the damage | Critical hit | | **Roll damage…** window | Menu: damage, critical, each extra bonus, Roll damage…, saved rolls |
 
-**Checks, saves and Initiative.** Roll a d20 plus your bonus. Advantage and disadvantage that always apply are used for you (advantage on Stealth rolls two d20s and keeps the higher; having both cancels them out), and the result says where the advantage came from.
+**Checks, saves and Initiative.** Roll a d20 plus your bonus. Advantage and disadvantage that always apply are used for you (advantage on Stealth rolls two d20s and keeps the higher; having both cancels them out), and the result says where the advantage came from. Under the 2024 rules, each level of Exhaustion takes 2 off every d20 you roll, and the sheet's numbers already include it: saves, skills, ability checks, Initiative, attacks and spell attacks.
 
 **Death saves.** At 0 HP, click DEATH SAVES to roll one and fill in its circle: 10 or more is a success, a natural 1 counts as two failures, and a natural 20 brings you back with 1 HP.
 
@@ -191,7 +191,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 
 **Passive & Features tab.** Species, background, class and subclass features, feats, and passive or free actions, each with where it comes from and at what level. Features you switch on (Rage) or use have their button here.
 
-**Resources tab.** Every limited resource, grouped by when it comes back (Short Rest or Long Rest): Hit Dice, use boxes, pools such as Lay On Hands, and dice that work like Hit Dice (the die, how many are left, − and +, and a box to type a number). Hover a die to see when it grows, such as "d6 at Bard 3, d8 at Bard 5". A feature that spends another resource lets you spend it right there.
+**Resources tab.** Every limited resource, grouped by when it comes back (Short Rest or Long Rest): Hit Dice, use boxes, pools such as Lay On Hands, and dice that work like Hit Dice (the die, how many are left, − and +, and a box to type a number). Hover a die to see when it grows, such as "d6 at Bard 3, d8 at Bard 5". A feature that spends another resource lets you spend it right there. A tracker you write yourself can count from an ability score, such as a pool of 5 times your Wisdom score: it grows when an item or an increase raises that score and keeps what you have spent.
 
 **Option tabs.** Classes that choose from a list of options get their own tab, such as **Eldritch Invocations** or **Metamagic**: a table with filters, how many you know, prerequisites, and Activate or Spend buttons where an option has them. An option whose prerequisite you no longer meet stays listed so you can swap it out, and does nothing until you meet it.
 
@@ -206,6 +206,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 - Columns for casting time, range, **Hit / DC**, effect (damage dice with a damage type icon, healing, targets) and components with duration, plus concentration and ritual marks.
 - **CAST** spends a slot. A spell attack's Atk rolls to hit, with its **ADV** or **DIS** on a line under the number, as on a weapon.
 - **CAST** on a spell that summons a creature, such as **Find Familiar** or **Animate Dead**, opens the summon window and adds the creature to the **Companions** tab.
+- **Spells from a feat.** A feat that gives spells, one you write yourself or import, now gives them: the Builder asks for the spells it lets you choose (cantrips, a spell list, a spell of a given level or school) and for its spellcasting ability, and they appear on the Spells tab, with a free cast for a spell it lets you cast once per Long Rest.
 - **Free casts.** A spell you can cast once per Long Rest without a slot, such as a species' spells or the level 1 spell from **Magic Initiate**, has an outlined **CAST** that counts the cast and greys out once it is used; a rest gives it back.
 - A cantrip that needs concentration, such as **Guidance**, has a **CAST** button in place of At Will, and casting it starts your concentration.
 - A choice that picks a list of spells, such as a **Circle of the Land** Druid's land, prepares that list's spells, and **Natural Recovery** casts one of them without a slot.
@@ -219,6 +220,7 @@ Anything you can roll gets a dotted underline when you hover it. Dice in your no
 A familiar, a steed, the creatures you animate or summon, and your Wild Shape forms get their own **Companions** tab, after Spells. It appears once a character has a companion, or a spell, feature or class option that brings one, such as **Find Familiar**, **Find Steed**, **Animate Dead**, **Animate Objects**, **Giant Insect**, **Summon Dragon** or the SRD 5.1 **Conjure** spells.
 
 - **Cast to summon.** **CAST** on a spell that summons a creature opens the summon window: the creatures you can choose from in a list, the one you pick as its full stat block beside it, and what the spell asks for, such as its kind (celestial, fey or fiend), its size or how many. **How you cast it** picks the way: a spell slot of a level you choose, a Pact slot, a free cast, as a ritual, or the scroll or item that holds the spell. A line says what the casting spends, and the button says it again. Then the creature joins the tab. Casting a spell that gives you only one creature again, such as **Find Steed**, updates the one you have. Until you cast, a card with **Summon** waits on the tab for each spell or feature that can bring a creature.
+- **Creatures from every compendium.** The summon window and the Wild Shape forms list creatures from every compendium you have not hidden, SRD 5.1 and SRD 5.2 alike, the spell's or class's own compendium first. Each row names its compendium, and the **Compendium** filter ticks compendiums on and off.
 - **A full stat block, worked out for you.** Each creature has its own Hit Points with Heal and Damage, temporary Hit Points and Hit Dice, its abilities, saves, skills and Initiative, and attacks that roll on its own numbers. Hover a number that grows with you or with the spell to see how it is worked out, such as "10 + the spell's level (2)". A creature from a class option uses that class's level, also when you have more than one class.
 - **Its own conditions.** A creature has its own conditions and Exhaustion, which change its rolls and never yours. The Conditions window greys out the conditions it is immune to.
 - **Dismiss and Summon.** **Dismiss** sends a creature away. A familiar from **Find Familiar** waits in its pocket dimension and **Call back** brings it back for free. Any other creature needs a real casting to come back: **Summon…** opens the summon window on your last picks, where you can also choose another creature or form, and casting it spends a slot, a Pact slot or a free cast, or nothing as a ritual. A creature's menu renames it, adds a note, changes its form (a familiar from an owl to a cat) or removes it.
@@ -246,7 +248,7 @@ A familiar, a steed, the creatures you animate or summon, and your Wild Shape fo
 - **Drag and drop.** Drag a row into a container, out of it, or onto **On you**. Drop it on a matching item to add it to that stack. An item that is equipped or attuned, has its own note, charges or changes, or is a container keeps its own row.
 - Each row's menu: Equip or Unequip, **Move to** another container, **Trade with…** another character, Quantity, Split one off, Edit note, Remove.
 - **Select** picks several rows at once to trade, move or remove them together.
-- **Trade** items and coins with another character in your vault. The Trade window shows the two characters side by side, each with their coins right above their items: move items either way (part of a stack, a container with what is in it; worn or attuned items come off), add coins, then **Trade**. **Undo** puts both characters back, and each Inventory keeps a **Given and received** list.
+- **Trade** items and coins with another character in your vault. The Trade window shows the two characters side by side, each with their coins right above their items. Both sides list what that character has **On you** first, then each container, and the two lists line up row for row. Move items either way (part of a stack, a container with what is in it; worn or attuned items come off), add coins, then **Trade**. **Undo** puts both characters back, and each Inventory keeps a **Given and received** list.
 - **Benefits follow what you wear.** An item's resistances, immunities, AC, saves, senses, speeds and effects count while it is equipped (and attuned, if it needs attunement). A magic weapon that needs attunement attacks as a plain weapon until you attune it.
 - Item **notes**, **charges** with when they come back ("Dawn 1d6+1"), and a **Customize** card for changes to one item.
 - **Icons** for weapons, armor, gear, potions, wands, rings and more.
@@ -255,10 +257,12 @@ A familiar, a steed, the creatures you animate or summon, and your Wild Shape fo
 
 ### Builder
 
-Make a character with **New character** (the command or the ribbon button) or **New character here** on any folder, and the Builder opens. Come back later with **Manage & level up** to level up or change a choice.
+Make a character with **New character** (the command, the ribbon button, or the right-click menu of any folder), and the Builder opens. Come back later with **Manage & level up** to level up or change a choice.
 
 - Six steps: **Race / Species**, **Class & Levels**, **Background**, **Abilities**, **Equipment** and **Details**.
 - Every pick is a list of what is in your compendiums, SRD and homebrew together, with where each one comes from. Select one to read its full card before you decide.
+- **Every edition in every list.** Lists are not split by edition: a 2024 character can pick a 2014 spell, feat or option, and the other way round. Only a compendium you hide stays out of the lists.
+- **Your first class sets the rules.** A character follows the edition of its first class: a 2024 class plays the 2024 rules for conditions, Exhaustion and actions, a 2014 class the 2014 rules. Characters you made before follow their class too, with no change to their note.
 - **What you decide** lists every choice your pick asks for (skills, a lineage, a Fighting Style, Weapon Mastery, a subclass, feats or Ability Score Improvements) with its level, and marks what is still open.
 - **Features by level** shows the whole class progression: features you have are filled in, the ones ahead are hollow.
 - Multiclass with **Add another class**, set ability scores by standard array, point buy, typing them in or rolling, and take your starting equipment from your class and background.
@@ -273,12 +277,13 @@ Make a character with **New character** (the command or the ribbon button) or **
 
 A compendium is a folder of notes inside your `Compendium` folder, one note for each monster, spell, item and so on.
 
-- **SRD 5.1 and SRD 5.2 included.** Archivist adds both as read-only compendiums (`SRD 5e` and `SRD 2024`): every SRD spell, monster, magic item, class, subclass, species, background, feat and condition. An update only touches the notes that changed. SRD 5e starts hidden from the lists you pick from.
+- **SRD 5.1 and SRD 5.2 included.** Archivist adds both as read-only compendiums (`SRD 5e` and `SRD 2024`): every SRD spell, monster, magic item, class, subclass, species, background, feat and condition. An update only touches the notes that changed, and Archivist notices any changed SRD note, so a fix to the SRD reaches your vault with the update that brings it. SRD 5e starts hidden from the lists you pick from.
 - **Your own homebrew.** Keep your own monsters, spells, items and more in your own compendiums, next to the SRD. Save any stat block to a compendium with the button beside it; if you do not have one yet, Archivist offers to make one.
 - **Name them your way.** Give SRD 5e and SRD 2024 any name in **Settings → Archivist → Compendiums**, and Archivist shows it wherever it names them. Your folders, notes and links keep their names.
 - **Show or hide, lock or unlock.** Each compendium has a **Visible** switch (whether its entries show up in the sheet's and the Builder's lists and when you type `{{`) and a **Read-only** switch. "Save as new" copies an entry from a read-only compendium into one you can edit.
 - **Changes show up right away.** Edit, add, rename or delete a compendium note and Archivist uses it at once, with no restart. An open sheet shows the change the next time it updates.
 - **Quick to start.** Archivist remembers your compendiums on each device, so later starts only read the notes that changed.
+- **Bring your own content with an AI assistant.** The Archivist skills teach an AI assistant such as Claude to turn a character sheet, a PDF or your own homebrew into notes Archivist reads, and to check and update older notes: [download the Archivist skills](https://github.com/archivist-gg/archivist-obsidian-plugin/releases/latest/download/Archivist-skills.zip).
 
 ![Typing {{spell:fire in a note lists Fire Bolt, Fire Shield, Fire Storm, Fireball, Delayed Blast Fireball, Faerie Fire and Wall of Fire from SRD 2024.](images/compendium-suggest.png)
 
@@ -337,7 +342,7 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 | Setting | What it does |
 | --- | --- |
 | Compendium root folder | The folder that holds your compendiums (`Compendium` unless you change it). |
-| Player characters folder | Where **New character** puts new characters. A character works in any folder. |
+| Default player character folder | Where the **New character** command and the ribbon button put new characters. A character works in any folder. |
 | Portraits folder | Where the portrait picker looks for pictures and keeps the ones you import (`PlayerCharacters/Portraits` unless you change it). |
 | Rolls → Critical hits | What a critical hit does to damage: double the dice (the default), maximum dice plus a roll, or double the total. |
 | Rolls → Where roll results appear | Top right (the default), bottom right, top left or bottom left of the window, for every roll: the sheet's, a stat block's and the dice in your notes. **Next to the number** opens a sheet roll's result beside the number you clicked. |
@@ -349,7 +354,7 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 
 | Command | What it does |
 | --- | --- |
-| New character | Makes a new character and opens the Builder. Also on the ribbon, and as **New character here** on any folder. |
+| New character | Makes a new character and opens the Builder. Also on the ribbon, and in the right-click menu of any folder, which puts the character in that folder. |
 | Find in character sheet | Opens the find bar on the sheet you are looking at, like Cmd+F (Ctrl+F) or the search button at the top of the sheet. |
 | Insert monster block | Adds a monster outline where your cursor is. |
 | Insert spell block | Adds a spell outline. |
@@ -416,7 +421,7 @@ In [Issues](https://github.com/archivist-gg/archivist-obsidian-plugin/issues). T
 The verbatim SRD 5.1 and SRD 5.2 attribution, and how the material was changed, are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 **Credits.**
-- **Icons:** the item, condition and spell effect icons are line icons by Noun Project creators, under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Every icon and creator is listed in [CREDITS.md](CREDITS.md).
+- **Icons:** the sheet's icons (items, conditions, spell effects and the rest buttons) are by Noun Project creators, under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Every icon and creator is listed in [CREDITS.md](CREDITS.md).
 - **Fonts:** Libre Baskerville and Noto Sans, under the SIL Open Font License 1.1.
 - **Libraries:** js-yaml and zod (MIT), monkey-around (ISC).
 - **Portrait in the screenshots:** *Man in Armour* by Rembrandt (1655), Kelvingrove Art Gallery and Museum, Glasgow. Public domain, from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Rembrandt_Man_in_Armour.jpg).
