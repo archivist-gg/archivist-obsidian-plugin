@@ -4,6 +4,8 @@
 [![Obsidian 1.7.2+ desktop and tablet](https://img.shields.io/badge/Obsidian-1.7.2%2B%20desktop%20and%20tablet-7c3aed?logo=obsidian&logoColor=white)](https://obsidian.md)
 [![Telegram @archivist_gg](https://img.shields.io/badge/Telegram-%40archivist__gg-26a5e4?logo=telegram&logoColor=white)](https://t.me/archivist_gg)
 
+**Website:** [archivist.gg](https://archivist.gg) · **Discord:** [join the Archivist Discord](https://discord.gg/P3creky4Uq)
+
 **Archivist GG: D&D character sheets for [Obsidian](https://obsidian.md) that do the math for you and roll with a click.** Build your character step by step, and the sheet works out every number from the rules: saves, skills, attacks, damage, spells, resources and rests. Give your character a portrait, fill a backpack, and watch an item's benefits switch on when you put it on. Around the sheet, monsters and spells you write in your notes appear as parchment stat blocks, dice in your notes roll with a click, and the System Reference Document 5.1 and 5.2 arrive as linked compendiums next to your own homebrew. Everything stays in your vault as ordinary notes you own.
 
 ![The character sheet of Ser Aldric Vane, a level 11 Human Paladin with a painted portrait: Armor Class 21, hit points, Hit Dice, the Short Rest and Long Rest buttons, the six abilities with their saves, resistances, the skills list, and the Actions tab with weapons, weapon masteries and class features.](images/hero-sheet.png)
@@ -53,9 +55,40 @@ The first time Archivist starts (and after an update that changes the SRD), it a
 
 Then make a character with the **New character** command, the ribbon button, or **New character** in the right-click menu of any folder in the file explorer.
 
+## Screenshots
+
+**Build your character step by step.** The Builder walks you through species, class, background, abilities, equipment and details, and shows which choices are still open.
+
+![The Builder on the Class & Levels step: a level 1 Fighter with Athletics and Perception picked as skills, Weapon Mastery still to choose, and Defense picked as the Fighting Style.](images/builder.webp)
+
+**Spells with the numbers worked out.** Each spell shows its casting time, range, to-hit or save DC, damage and components. A spell you can cast for free once per Long Rest has its own outlined CAST button.
+
+![The Spells tab: Mage Hand, Prestidigitation, Thaumaturgy and Fire Bolt as cantrips you cast at will, Mage Armor and Hellish Rebuke at 1st level, Darkness at 2nd level, and a hover over a free cast that reads "Cast it without a spell slot (once per Long Rest)".](images/spells.webp)
+
+**See where every number comes from.** Hover your Armor Class or Speed to see what adds up to it.
+
+![Hovering Armor Class and Speed on the sheet. Armor Class 21 adds up Plate Armor (Armor of Necrotic Resistance) +18, Shield +2 and Cloak of Protection +1. Speed shows a walking speed of 30 ft. from Halfling and a climbing speed of 30 ft. from Slippers of Spider Climbing.](images/breakdown.webp)
+
+**Roll with a click.** Every die shows, the damage is split by type, and the roll says where your advantage comes from.
+
+| | |
+| --- | --- |
+| <img src="images/roll-damage-result-popup.webp" width="400" alt="A critical Longsword hit with Savage Attacker and a 2nd-level Searing Smite: 42 damage, split into Slashing 8, Radiant 15 and Fire 19, with every die shown and the Savage Attacker dice that were not kept struck through."> | <img src="images/stealth-advantage.webp" width="400" alt="A Stealth check rolled with advantage: 33, with a natural 20 kept and a 17 struck through, and the advantage coming from Cloak of Elvenkind and Boots of Elvenkind."> |
+
+**Conditions of your own.** Make a condition with your own words and what it does on the sheet, and add a note such as how long it lasts.
+
+![A homemade Frostbitten condition on the sheet, with its note "Until he warms up by a fire" and its description in a hover: the cold slows you down and you can't take Reactions.](images/custom-condition.webp)
+
+**Trackers of your own.** Add a tracker yourself, or let an AI helper with the Archivist skills add it for you.
+
+![Two trackers on the Resources tab, under Doesn't reset: Sanity at 56 of 65, which comes back by 1 on a Long Rest, and Hero Points at 3.](images/ai-trackers.webp)
+
+More screenshots are on [archivist.gg](https://archivist.gg).
+
 ## Contents
 
 - [Install](#install)
+- [Screenshots](#screenshots)
 - [Features](#features)
   - [Character sheet](#character-sheet)
   - [Portrait](#portrait)
@@ -411,6 +444,8 @@ In [Issues](https://github.com/archivist-gg/archivist-obsidian-plugin/issues). T
 
 ## Community
 
+- **Website:** [archivist.gg](https://archivist.gg), with screenshots, a short video and the install steps.
+- **Discord:** [join the Archivist Discord](https://discord.gg/P3creky4Uq) to ask questions, share ideas and hear about new versions.
 - **Telegram:** [t.me/archivist_gg](https://t.me/archivist_gg) (@archivist_gg) for release news.
 - **GitHub Issues:** [bugs and ideas](https://github.com/archivist-gg/archivist-obsidian-plugin/issues).
 
