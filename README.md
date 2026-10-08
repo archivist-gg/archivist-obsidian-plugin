@@ -89,7 +89,8 @@ At a glance:
 - The **SRD 5.1 and SRD 5.2** as compendiums, plus **your own homebrew** next to them.
 - **Stat blocks** for monsters, spells, items and more, written right in your notes.
 - **Dice in your notes** that roll with a click, and any compendium entry pulled into a note by typing `{{`.
-- Stat blocks, the sheet and its windows keep their parchment look **under any theme**, light or dark, and a long window keeps its title and buttons in view while the middle scrolls.
+- Stat blocks, the sheet and its windows keep their parchment look **under any theme**, light or dark, and so do their drop-down lists, with a tick on the current choice. A long window keeps its title and buttons in view while the middle scrolls.
+- **One window at a time.** A window you open from another one, such as **New condition** from the Conditions window, takes its place, with a link back to the first one at the top. **Create**, **Cancel**, the link or Esc take you back to the first window as you left it; the × closes both.
 - On an **iPad** or another **tablet** the sheet fills the screen, and pressing and holding opens the menus.
 
 ### Character sheet
