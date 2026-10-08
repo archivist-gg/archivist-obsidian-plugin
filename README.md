@@ -2,7 +2,6 @@
 
 [![Latest release](https://img.shields.io/github/v/release/archivist-gg/archivist-obsidian-plugin?label=release&color=8b2a1a)](https://github.com/archivist-gg/archivist-obsidian-plugin/releases/latest)
 [![Obsidian 1.7.2+ desktop and tablet](https://img.shields.io/badge/Obsidian-1.7.2%2B%20desktop%20and%20tablet-7c3aed?logo=obsidian&logoColor=white)](https://obsidian.md)
-[![Telegram @archivist_gg](https://img.shields.io/badge/Telegram-%40archivist__gg-26a5e4?logo=telegram&logoColor=white)](https://t.me/archivist_gg)
 
 **Website:** [archivist.gg](https://archivist.gg) · **Discord:** [join the Archivist Discord](https://discord.gg/P3creky4Uq)
 
@@ -446,7 +445,6 @@ In [Issues](https://github.com/archivist-gg/archivist-obsidian-plugin/issues). T
 
 - **Website:** [archivist.gg](https://archivist.gg), with screenshots, a short video and the install steps.
 - **Discord:** [join the Archivist Discord](https://discord.gg/P3creky4Uq) to ask questions, share ideas and hear about new versions.
-- **Telegram:** [t.me/archivist_gg](https://t.me/archivist_gg) (@archivist_gg) for release news.
 - **GitHub Issues:** [bugs and ideas](https://github.com/archivist-gg/archivist-obsidian-plugin/issues).
 
 ## Licence and legal
