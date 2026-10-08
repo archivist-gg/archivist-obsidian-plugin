@@ -1,14 +1,14 @@
-# Archivist
+# Archivist GG
 
 [![Latest release](https://img.shields.io/github/v/release/archivist-gg/archivist-obsidian-plugin?label=release&color=8b2a1a)](https://github.com/archivist-gg/archivist-obsidian-plugin/releases/latest)
 [![Obsidian 1.7.2+ desktop and tablet](https://img.shields.io/badge/Obsidian-1.7.2%2B%20desktop%20and%20tablet-7c3aed?logo=obsidian&logoColor=white)](https://obsidian.md)
 [![Telegram @archivist_gg](https://img.shields.io/badge/Telegram-%40archivist__gg-26a5e4?logo=telegram&logoColor=white)](https://t.me/archivist_gg)
 
-**Fifth edition character sheets for [Obsidian](https://obsidian.md) that do the math for you and roll with a click.** Build your character step by step, and the sheet works out every number from the rules: saves, skills, attacks, damage, spells, resources and rests. Give your character a portrait, fill a backpack, and watch an item's benefits switch on when you put it on. Around the sheet, monsters and spells you write in your notes appear as parchment stat blocks, dice in your notes roll with a click, and the System Reference Document 5.1 and 5.2 arrive as linked compendiums next to your own homebrew. Everything stays in your vault as ordinary notes you own.
+**Archivist GG: fifth edition character sheets for [Obsidian](https://obsidian.md) that do the math for you and roll with a click.** Build your character step by step, and the sheet works out every number from the rules: saves, skills, attacks, damage, spells, resources and rests. Give your character a portrait, fill a backpack, and watch an item's benefits switch on when you put it on. Around the sheet, monsters and spells you write in your notes appear as parchment stat blocks, dice in your notes roll with a click, and the System Reference Document 5.1 and 5.2 arrive as linked compendiums next to your own homebrew. Everything stays in your vault as ordinary notes you own.
 
 ![The character sheet of Ser Aldric Vane, a level 11 Human Paladin with a painted portrait: Armor Class 21, hit points, Hit Dice, the Short Rest and Long Rest buttons, the six abilities with their saves, resistances, the skills list, and the Actions tab with weapons, weapon masteries and class features.](images/hero-sheet.png)
 
-> **Which Archivist?** This is **Archivist by archivist-gg**, installed from this page. It is not related to other Obsidian plugins or apps named Archivist.
+> **Which Archivist?** This is **Archivist GG** by archivist-gg, installed from this page. It is not related to other Obsidian plugins or apps named Archivist.
 
 ## Install
 
@@ -19,7 +19,7 @@ Archivist is not in Obsidian's community plugin list yet, so you install it with
 1. In Obsidian, open **Settings → Community plugins**. Turn community plugins on if Obsidian asks, choose **Browse**, search for **BRAT** (Obsidian42 BRAT), then install and enable it.
 2. Open **Settings → BRAT** and choose **Add beta plugin**.
 3. Paste `archivist-gg/archivist-obsidian-plugin`, keep **Latest version** selected, and choose **Add plugin**.
-4. Enable **Archivist** under **Settings → Community plugins** if BRAT has not already done it.
+4. Enable **Archivist GG** under **Settings → Community plugins** if BRAT has not already done it.
 
 **One-click link.** Once BRAT is installed, paste this link into your browser's address bar and Obsidian opens BRAT with Archivist already filled in:
 
@@ -49,7 +49,7 @@ BRAT looks for new versions on its own. To update right away, open the command p
 
 ### The first start
 
-The first time Archivist starts (and after an update that changes the SRD), it adds the SRD to your vault: about 3,600 read-only notes in `Compendium/SRD 5e` (SRD 5.1) and `Compendium/SRD 2024` (SRD 5.2). That first start takes a little longer than the ones after it. SRD 5e starts hidden from the lists you pick from; turn it on in **Settings → Archivist → Compendiums**.
+The first time Archivist starts (and after an update that changes the SRD), it adds the SRD to your vault: about 3,600 read-only notes in `Compendium/SRD 5e` (SRD 5.1) and `Compendium/SRD 2024` (SRD 5.2). That first start takes a little longer than the ones after it. SRD 5e starts hidden from the lists you pick from; turn it on in **Settings → Archivist GG → Compendiums**.
 
 Then make a character with the **New character** command, the ribbon button, or **New character** in the right-click menu of any folder in the file explorer.
 
@@ -284,7 +284,7 @@ A compendium is a folder of notes inside your `Compendium` folder, one note for 
 
 - **SRD 5.1 and SRD 5.2 included.** Archivist adds both as read-only compendiums (`SRD 5e` and `SRD 2024`): every SRD spell, monster, magic item, class, subclass, species, background, feat and condition. An update only touches the notes that changed, and Archivist notices any changed SRD note, so a fix to the SRD reaches your vault with the update that brings it. SRD 5e starts hidden from the lists you pick from.
 - **Your own homebrew.** Keep your own monsters, spells, items and more in your own compendiums, next to the SRD. Save any stat block to a compendium with the button beside it; if you do not have one yet, Archivist offers to make one.
-- **Name them your way.** Give SRD 5e and SRD 2024 any name in **Settings → Archivist → Compendiums**, and Archivist shows it wherever it names them. Your folders, notes and links keep their names.
+- **Name them your way.** Give SRD 5e and SRD 2024 any name in **Settings → Archivist GG → Compendiums**, and Archivist shows it wherever it names them. Your folders, notes and links keep their names.
 - **Show or hide, lock or unlock.** Each compendium has a **Visible** switch (whether its entries show up in the sheet's and the Builder's lists and when you type `{{`) and a **Read-only** switch. "Save as new" copies an entry from a read-only compendium into one you can edit.
 - **Changes show up right away.** Edit, add, rename or delete a compendium note and Archivist uses it at once, with no restart. An open sheet shows the change the next time it updates.
 - **Quick to start.** Archivist remembers your compendiums on each device, so later starts only read the notes that changed.
@@ -342,7 +342,7 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 
 ### Settings
 
-**Settings → Archivist:**
+**Settings → Archivist GG:**
 
 | Setting | What it does |
 | --- | --- |
@@ -417,6 +417,8 @@ In [Issues](https://github.com/archivist-gg/archivist-obsidian-plugin/issues). T
 ## Licence and legal
 
 **Licence.** Archivist is freeware: free to download and use, with no modifying, reselling or redistributing. See [LICENSE](LICENSE).
+
+Archivist's source code is not public. Obsidian's reviewers can read it privately on request.
 
 **Compatibility and SRD content.** Archivist is a free, unofficial Obsidian plugin, compatible with fifth edition. It includes rules content from SRD 5.1 and SRD 5.2 under CC-BY-4.0. Not affiliated with Wizards of the Coast.
 
