@@ -9,23 +9,20 @@
 
 ![The character sheet of Ser Aldric Vane, a level 11 Human Paladin with a painted portrait: Armor Class 21, hit points, Hit Dice, the Short Rest and Long Rest buttons, the six abilities with their saves, resistances, the skills list, and the Actions tab with weapons, weapon masteries and class features.](images/hero-sheet.png)
 
-> **Which Archivist?** This is **Archivist GG** by archivist-gg, installed from this page. It is not related to other Obsidian plugins or apps named Archivist.
+> **Which Archivist?** This is **Archivist GG** by archivist-gg, listed in Obsidian's Community plugins as **Archivist GG**. It is not related to other Obsidian plugins or apps named Archivist.
 
 ## Install
 
-Archivist is not in Obsidian's community plugin list yet, so you install it with **BRAT**: a free helper plugin that installs plugins straight from their GitHub page and keeps them up to date.
+Archivist GG is in Obsidian's **Community plugins**, so you install it like any other plugin and Obsidian keeps it up to date.
 
-### With BRAT (recommended)
+1. In Obsidian, open **Settings → Community plugins**. Turn community plugins on if Obsidian asks, then choose **Browse**.
+2. Search for **Archivist GG** and choose **Install**.
+3. Choose **Enable**.
 
-1. In Obsidian, open **Settings → Community plugins**. Turn community plugins on if Obsidian asks, choose **Browse**, search for **BRAT** (Obsidian42 BRAT), then install and enable it.
-2. Open **Settings → BRAT** and choose **Add beta plugin**.
-3. Paste `archivist-gg/archivist-obsidian-plugin`, keep **Latest version** selected, and choose **Add plugin**.
-4. Enable **Archivist GG** under **Settings → Community plugins** if BRAT has not already done it.
-
-**One-click link.** Once BRAT is installed, paste this link into your browser's address bar and Obsidian opens BRAT with Archivist already filled in:
+**One-click link.** Paste this link into your browser's address bar and Obsidian opens Archivist GG in Community plugins:
 
 ```
-obsidian://brat?plugin=archivist-gg/archivist-obsidian-plugin
+obsidian://show-plugin?id=archivist-gg
 ```
 
 ### Recommended: the Dice Roller plugin
@@ -37,16 +34,15 @@ Archivist rolls its dice with the free **Dice Roller** plugin (by Javalent). Ins
 | | |
 | --- | --- |
 | Obsidian | 1.7.2 or later, on a computer (Windows, macOS, Linux), an iPad or another tablet. Phones work too, but the layout is not polished for a small screen yet. |
-| BRAT | The current BRAT needs Obsidian 1.11.4 or later. |
 | Rolling | The Dice Roller plugin. |
 
 ### Installing by hand
 
-Download the three files attached to the [latest release](https://github.com/archivist-gg/archivist-obsidian-plugin/releases/latest), put them in a new folder named `archivist-gg` inside your vault's `.obsidian/plugins` folder, restart Obsidian and enable Archivist. A copy installed by hand does not update itself.
+Download the three files attached to the [latest release](https://github.com/archivist-gg/archivist-obsidian-plugin/releases/latest), put them in a new folder named `archivist-gg` inside your vault's `.obsidian/plugins` folder, restart Obsidian and enable Archivist GG. Obsidian then updates it like any other community plugin.
 
 ### Updating
 
-BRAT looks for new versions on its own. To update right away, open the command palette, type **BRAT** and run its command that checks all beta plugins for updates. If you chose a specific version in BRAT instead of **Latest version**, BRAT keeps you on that version.
+Obsidian checks for new versions of your community plugins. To update right away, open **Settings → Community plugins** and choose **Check for updates**.
 
 ### The first start
 
@@ -405,13 +401,13 @@ Type `{{` and start typing a name to pull any entry from your compendiums into a
 
 Yes. You can use all of the current features completely free, under the freeware licence in [LICENSE](LICENSE).
 
-### Why isn't it in the Community plugins list?
+### Is it in the Community plugins list?
 
-It is not listed there yet. Until it is, BRAT installs it from this page and keeps it up to date.
+Yes. Search for **Archivist GG** under **Settings → Community plugins → Browse**.
 
 ### Does it work on mobile?
 
-On an iPad or another tablet, yes: the sheet fills the screen edge to edge, and pressing and holding opens the menu a right-click opens on a computer, or shows what hovering shows. BRAT installs and updates it as on a computer. On a phone Archivist works too, but the layout is not polished for a small screen yet.
+On an iPad or another tablet, yes: the sheet fills the screen edge to edge, and pressing and holding opens the menu a right-click opens on a computer, or shows what hovering shows. You install and update it from Community plugins, as on a computer. On a phone Archivist works too, but the layout is not polished for a small screen yet.
 
 ### What content does it include?
 
@@ -427,7 +423,7 @@ Yes. Stat blocks, the character sheet, its windows and the Builder keep their pa
 
 ### Is this the Archivist I saw elsewhere?
 
-Only if it installs from `archivist-gg/archivist-obsidian-plugin`. Other plugins and apps named Archivist are unrelated.
+Only if it is **Archivist GG** (id `archivist-gg`) from `archivist-gg/archivist-obsidian-plugin`. Other plugins and apps named Archivist are unrelated.
 
 ### Was AI used to build it?
 
